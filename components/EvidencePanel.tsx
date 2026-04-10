@@ -29,16 +29,16 @@ export function EvidencePanel({
   themeTitle
 }: EvidencePanelProps) {
   return (
-    <aside className="rounded-[2rem] border border-white/10 bg-slate-950/65 p-4 shadow-2xl shadow-black/40 backdrop-blur-xl lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
+    <aside className="rounded-2xl border border-slate-700/70 bg-slate-950/80 p-4 shadow-2xl shadow-black/45 backdrop-blur-xl lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:overflow-y-auto">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.36em] text-slate-500">根拠ドロワー</p>
-          <h2 className="mt-2 font-display text-3xl text-white">{themeTitle}</h2>
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.36em] text-slate-500">Evidence Drilldown</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">{themeTitle}</h2>
         </div>
         <span className="h-3 w-3 rounded-full" style={{ background: accent, boxShadow: `0 0 24px ${accent}` }} />
       </div>
 
-      <section className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+      <section className="mt-6 rounded-xl border border-slate-700/70 bg-white/[0.04] p-5">
         <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">{localizeKind(detail.kind)}</div>
         <h3 className="mt-3 text-2xl font-semibold leading-tight text-white">{localizeAnyLabel(detail.id, detail.label)}</h3>
         <p className="mt-4 text-sm leading-6 text-slate-300">{localizeSummary(detail.id, detail.summary)}</p>
@@ -48,12 +48,12 @@ export function EvidencePanel({
         </div>
       </section>
 
-      <section className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4">
+      <section className="mt-4 rounded-xl border border-slate-700/70 bg-white/[0.035] p-4">
         <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">根拠グラフ</div>
         <EvidenceGraph graph={evidenceGraph} accent={accent} onSelect={onSelect} selectedId={selectedId} />
       </section>
 
-      <section className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4">
+      <section className="mt-4 rounded-xl border border-slate-700/70 bg-white/[0.035] p-4">
         <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">関連エンティティ</div>
         <div className="mt-3 flex flex-wrap gap-2">
           {detail.relatedEntities.map((entity) => (
@@ -70,7 +70,7 @@ export function EvidencePanel({
         </div>
       </section>
 
-      <section className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4">
+      <section className="mt-4 rounded-xl border border-slate-700/70 bg-white/[0.035] p-4">
         <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">出典文書</div>
         <div className="mt-3 space-y-3">
           {detail.sources.map((source) => (
@@ -88,7 +88,7 @@ export function EvidencePanel({
         </div>
       </section>
 
-      <section className="mt-4 rounded-[1.5rem] border border-white/10 bg-[#02040a] p-4">
+      <section className="mt-4 rounded-xl border border-slate-700/70 bg-[#02040a] p-4">
         <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">SPARQL クエリ案</div>
         <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-2xl bg-black/60 p-4 font-mono text-[0.68rem] leading-5 text-cyan-100">
           {detail.sparql.query}

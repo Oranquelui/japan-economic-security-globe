@@ -1,0 +1,132 @@
+import type { ThemeView } from "../../types/presentation";
+import type { DependencyFlow, Observation, SemanticEntity } from "../../types/semantic";
+import {
+  localizeAnyLabel,
+  localizeFlowLabel,
+  localizeKind,
+  localizeObservationLabel
+} from "./japanese";
+
+export type OperationMapMode = "point" | "cluster" | "choropleth" | "route" | "static";
+
+export type OperationRow = {
+  id: string;
+  type: string;
+  label: string;
+  subject: string;
+  urgency: string;
+  status: string;
+  action: string;
+  period: string;
+};
+
+const OPERATION_MODE_LABELS: Record<OperationMapMode, string> = {
+  choropleth: "地域塗り",
+  cluster: "集約",
+  point: "地点",
+  route: "ルート",
+  static: "固定"
+};
+
+export function getOperationModeLabel(mode: OperationMapMode): string {
+  return OPERATION_MODE_LABELS[mode];
+}
+
+export function buildOperationRows(view: ThemeView): OperationRow[] {
+  return [
+    ...view.flows.map((flow) => flowToRow(flow, view.entities)),
+    ...view.observations.map((observation) => observationToRow(observation, view.entities)),
+    ...view.japanImpacts.map((impact) => impactToRow(impact))
+  ];
+}
+
+export function filterOperationRows(rows: OperationRow[], query: string): OperationRow[] {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return rows;
+  }
+
+  return rows.filter((row) =>
+    [row.type, row.label, row.subject, row.urgency, row.status, row.action, row.period]
+      .join(" ")
+      .toLowerCase()
+      .includes(normalizedQuery)
+  );
+}
+
+function flowToRow(flow: DependencyFlow, entities: SemanticEntity[]): OperationRow {
+  const subject = entities.find((entity) => entity.id === flow.resourceId || entity.id === flow.productId);
+
+  return {
+    id: flow.id,
+    type: "依存ルート",
+    label: localizeFlowLabel(flow.id, flow.label),
+    subject: subject ? localizeAnyLabel(subject.id, subject.label) : "日本",
+    urgency: flowUrgency(flow.id),
+    status: "監視中",
+    action: "ルートと根拠を確認",
+    period: localizePeriod(flow.period)
+  };
+}
+
+function observationToRow(observation: Observation, entities: SemanticEntity[]): OperationRow {
+  const subject = entities.find((entity) => entity.id === observation.subjectId);
+
+  return {
+    id: observation.id,
+    type: localizeKind(observation.kind),
+    label: localizeObservationLabel(observation.id, observation.label),
+    subject: subject ? localizeAnyLabel(subject.id, subject.label) : "日本",
+    urgency: observationUrgency(observation.id),
+    status: "要確認",
+    action: "出典と政策文脈を確認",
+    period: localizePeriod(observation.period)
+  };
+}
+
+function impactToRow(impact: SemanticEntity): OperationRow {
+  return {
+    id: impact.id,
+    type: localizeKind(impact.kind),
+    label: localizeAnyLabel(impact.id, impact.label),
+    subject: "国内着地点",
+    urgency: "通常",
+    status: "表示対象",
+    action: "地図上の位置を確認",
+    period: "第0段階"
+  };
+}
+
+function flowUrgency(id: string): string {
+  if (id.includes("oil") || id.includes("lng")) {
+    return "高";
+  }
+
+  if (id.includes("rice") || id.includes("semiconductor")) {
+    return "中";
+  }
+
+  return "通常";
+}
+
+function observationUrgency(id: string): string {
+  if (id.includes("rice") || id.includes("lng") || id.includes("reservoir")) {
+    return "高";
+  }
+
+  return "中";
+}
+
+function localizePeriod(period: string): string {
+  if (period === "FY2026") {
+    return "2026年度";
+  }
+
+  if (/^\d{4}-\d{2}$/.test(period)) {
+    const [year, month] = period.split("-");
+    return `${year}年${Number(month)}月`;
+  }
+
+  return period;
+}

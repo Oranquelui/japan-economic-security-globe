@@ -2,6 +2,7 @@
 
 import type { GlobeFlowViewModel } from "../types/presentation";
 import type { Observation, SemanticEntity, ThemeId } from "../types/semantic";
+import type { OperationMapMode } from "../lib/presentation/operations";
 import {
   getThemeLabel,
   localizeEntityLabel,
@@ -10,24 +11,33 @@ import {
   localizeObservationLabel,
   localizeSummary
 } from "../lib/presentation/japanese";
+import { getOperationModeLabel } from "../lib/presentation/operations";
 
 interface JapanMainMapProps {
   accent: string;
   activeId: string;
   flows: GlobeFlowViewModel[];
   impacts: SemanticEntity[];
+  mapMode: OperationMapMode;
   observations: Observation[];
+  onMapModeChange: (mode: OperationMapMode) => void;
   onSelect: (id: string) => void;
+  resultCount: number;
   themeId: ThemeId;
 }
+
+const OPERATION_MODES: OperationMapMode[] = ["point", "cluster", "choropleth", "route", "static"];
 
 export function JapanMainMap({
   accent,
   activeId,
   flows,
   impacts,
+  mapMode,
   observations,
+  onMapModeChange,
   onSelect,
+  resultCount,
   themeId
 }: JapanMainMapProps) {
   const theme = getThemeLabel(themeId);
@@ -35,162 +45,201 @@ export function JapanMainMap({
   const selectedFlow = flows.find((flow) => flow.id === activeId) ?? flows[0];
 
   return (
-    <section className="relative min-h-[640px] overflow-hidden rounded-[2.5rem] border border-white/10 bg-[#162231] shadow-2xl shadow-black/50">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:46px_46px]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_55%_42%,rgba(255,255,255,0.1),transparent_22%),radial-gradient(circle_at_28%_74%,rgba(255,159,47,0.14),transparent_24%),linear-gradient(180deg,rgba(6,12,20,0.08),rgba(2,6,12,0.52))]" />
+    <section className="relative min-h-[690px] overflow-hidden rounded-2xl border border-slate-700/70 bg-[#101a28] shadow-2xl shadow-black/50">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(219,236,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(219,236,255,0.045)_1px,transparent_1px)] bg-[size:44px_44px]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_62%_42%,rgba(92,180,255,0.16),transparent_24%),radial-gradient(circle_at_38%_78%,rgba(255,159,47,0.12),transparent_25%),linear-gradient(180deg,rgba(6,12,20,0.04),rgba(3,8,14,0.56))]" />
 
-      <div className="relative grid min-h-[640px] grid-cols-1 lg:grid-cols-[1fr_310px]">
-        <div className="relative min-h-[520px]">
-          <div className="absolute left-5 top-5 z-10 rounded-2xl border border-white/10 bg-[#09111d]/75 px-4 py-3 shadow-2xl backdrop-blur-md">
-            <p className="font-mono text-[0.62rem] uppercase tracking-[0.32em] text-slate-400">メインレイヤー</p>
-            <p className="mt-1 text-lg font-semibold text-white">{theme.label}</p>
-            <p className="mt-1 text-xs text-slate-400">{theme.sublabel}</p>
-          </div>
+      <MapToolbar
+        accent={accent}
+        mapMode={mapMode}
+        onMapModeChange={onMapModeChange}
+        resultCount={resultCount}
+        themeLabel={theme.label}
+      />
 
-          <svg viewBox="0 0 920 640" role="img" aria-label="日本中心の依存インテリジェンス地図" className="h-full min-h-[640px] w-full">
-            <defs>
-              <filter id="nervGlow">
-                <feGaussianBlur stdDeviation="5" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-              <linearGradient id="seaLane" x1="0%" x2="100%">
-                <stop offset="0%" stopColor={accent} stopOpacity="0" />
-                <stop offset="52%" stopColor={accent} stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#e8fbff" stopOpacity="0.95" />
-              </linearGradient>
-            </defs>
+      <div className="absolute bottom-4 left-4 z-20 max-w-xl rounded-xl border border-slate-700/80 bg-[#050b14]/90 p-4 shadow-2xl backdrop-blur-md">
+        <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-slate-500">選択中</p>
+        <h2 className="mt-2 text-xl font-semibold text-white">
+          {selectedFlow ? localizeFlowLabel(selectedFlow.id, selectedFlow.label) : theme.label}
+        </h2>
+        <p className="mt-2 max-w-lg text-xs leading-5 text-slate-400">
+          {selectedFlow
+            ? localizeSummary(selectedFlow.id, selectedFlow.label)
+            : "日本国内のどこに依存リスクが着地するかを表示します。"}
+        </p>
+      </div>
 
-            {Array.from({ length: 7 }).map((_, index) => (
-              <path
-                key={`contour-${index}`}
-                d={`M${64 + index * 44} ${520 - index * 52} C${210 + index * 22} ${420 - index * 44}, ${
-                  350 + index * 32
-                } ${610 - index * 62}, ${760 - index * 14} ${182 + index * 54}`}
-                fill="none"
-                stroke="rgba(226,238,255,0.08)"
-                strokeWidth="1"
+      <div className="absolute bottom-4 right-4 z-20 hidden w-72 rounded-xl border border-slate-700/80 bg-[#050b14]/90 p-3 shadow-2xl backdrop-blur-md xl:block">
+        <GlobalRouteInset accent={accent} activeId={activeId} flows={flows} onSelect={onSelect} />
+      </div>
+
+      <div className="absolute left-4 top-28 z-20 flex flex-col gap-2">
+        {["+", "-", "⌖"].map((control) => (
+          <button
+            key={control}
+            type="button"
+            className="grid h-9 w-9 place-items-center rounded-lg border border-slate-700 bg-[#050b14]/90 text-sm text-slate-200 shadow-lg backdrop-blur-md transition hover:border-sky-300/50 hover:text-white"
+          >
+            {control}
+          </button>
+        ))}
+      </div>
+
+      <svg viewBox="0 0 1080 690" role="img" aria-label="日本中心の依存インテリジェンス地図" className="relative z-10 h-full min-h-[690px] w-full">
+        <defs>
+          <filter id="operationsGlow">
+            <feGaussianBlur stdDeviation="5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <linearGradient id="operationsSeaLane" x1="0%" x2="100%">
+            <stop offset="0%" stopColor={accent} stopOpacity="0" />
+            <stop offset="52%" stopColor={accent} stopOpacity="0.78" />
+            <stop offset="100%" stopColor="#e8fbff" stopOpacity="0.95" />
+          </linearGradient>
+        </defs>
+
+        {Array.from({ length: 12 }).map((_, index) => (
+          <path
+            key={`contour-${index}`}
+            d={`M${42 + index * 58} ${614 - index * 45} C${216 + index * 18} ${466 - index * 24}, ${
+              430 + index * 34
+            } ${660 - index * 54}, ${1020 - index * 22} ${182 + index * 38}`}
+            fill="none"
+            stroke="rgba(226,238,255,0.07)"
+            strokeWidth="1"
+          />
+        ))}
+
+        <g opacity={mapMode === "route" ? 1 : 0.65}>
+          {flows.slice(0, 8).map((flow, index) => {
+            const source = projectGlobalSource(flow.origin.coordinates?.lat ?? 0, flow.origin.coordinates?.lon ?? 0, index);
+            const targetImpact = pickLandingImpact(flow, visibleImpacts);
+            const target = targetImpact?.coordinates
+              ? projectJapanPoint(targetImpact.coordinates.lat, targetImpact.coordinates.lon)
+              : { x: 712, y: 370 };
+            const isActive = flow.id === activeId;
+
+            return (
+              <g key={flow.id} onClick={() => onSelect(flow.id)} className="cursor-pointer">
+                <path
+                  d={`M ${source.x} ${source.y} C ${source.x + 190} ${source.y - 78}, ${target.x - 210} ${
+                    target.y + 108
+                  }, ${target.x} ${target.y}`}
+                  fill="none"
+                  stroke="url(#operationsSeaLane)"
+                  strokeDasharray={isActive ? "0" : "9 13"}
+                  strokeLinecap="round"
+                  strokeWidth={isActive ? 3.8 : 1.8}
+                  opacity={isActive ? 0.96 : 0.42}
+                  filter={isActive ? "url(#operationsGlow)" : undefined}
+                />
+                <circle cx={source.x} cy={source.y} r={isActive ? 6 : 4} fill={accent} opacity={isActive ? 0.95 : 0.5} />
+                <text x={source.x + 12} y={source.y - 8} fill="#d6e9f9" fontSize="12" fontFamily="monospace" opacity="0.76">
+                  {localizeEntityLabel(flow.origin.id, flow.origin.label)}
+                </text>
+              </g>
+            );
+          })}
+        </g>
+
+        <JapanShape accent={accent} mapMode={mapMode} />
+
+        {visibleImpacts.map((impact) => {
+          const point = projectJapanPoint(impact.coordinates!.lat, impact.coordinates!.lon);
+          const isSelected = activeId === impact.id;
+
+          return (
+            <g key={impact.id} onClick={() => onSelect(impact.id)} className="cursor-pointer">
+              <circle
+                cx={point.x}
+                cy={point.y}
+                r={isSelected ? 13 : 7}
+                fill={isSelected ? "#ffffff" : accent}
+                filter="url(#operationsGlow)"
+                opacity={isSelected ? 1 : 0.82}
               />
-            ))}
-
-            {flows.slice(0, 7).map((flow, index) => {
-              const source = projectGlobalSource(flow.origin.coordinates?.lat ?? 0, flow.origin.coordinates?.lon ?? 0, index);
-              const targetImpact = pickLandingImpact(flow, visibleImpacts);
-              const target = targetImpact?.coordinates
-                ? projectJapanPoint(targetImpact.coordinates.lat, targetImpact.coordinates.lon)
-                : { x: 612, y: 360 };
-              const isActive = flow.id === activeId;
-
-              return (
-                <g key={flow.id} onClick={() => onSelect(flow.id)} className="cursor-pointer">
-                  <path
-                    d={`M ${source.x} ${source.y} C ${source.x + 140} ${source.y - 70}, ${target.x - 170} ${
-                      target.y + 88
-                    }, ${target.x} ${target.y}`}
-                    fill="none"
-                    stroke="url(#seaLane)"
-                    strokeDasharray={isActive ? "0" : "10 14"}
-                    strokeLinecap="round"
-                    strokeWidth={isActive ? 3.6 : 2}
-                    opacity={isActive ? 0.95 : 0.44}
-                    filter={isActive ? "url(#nervGlow)" : undefined}
-                  />
-                  <circle cx={source.x} cy={source.y} r={isActive ? 6 : 4} fill={accent} opacity={isActive ? 0.95 : 0.5} />
-                  <text x={source.x + 12} y={source.y - 8} fill="#d6e9f9" fontSize="12" fontFamily="monospace" opacity="0.8">
-                    {localizeEntityLabel(flow.origin.id, flow.origin.label)}
-                  </text>
-                </g>
-              );
-            })}
-
-            <JapanShape />
-
-            {visibleImpacts.map((impact) => {
-              const point = projectJapanPoint(impact.coordinates!.lat, impact.coordinates!.lon);
-              const isSelected = activeId === impact.id;
-
-              return (
-                <g key={impact.id} onClick={() => onSelect(impact.id)} className="cursor-pointer">
-                  <circle
-                    cx={point.x}
-                    cy={point.y}
-                    r={isSelected ? 13 : 8}
-                    fill={isSelected ? "#ffffff" : accent}
-                    filter="url(#nervGlow)"
-                    opacity={isSelected ? 1 : 0.78}
-                  />
-                  <circle cx={point.x} cy={point.y} r={isSelected ? 32 : 22} fill="none" stroke={accent} strokeOpacity="0.28" />
-                  <text x={point.x + 15} y={point.y + 5} fill="#f4fbff" fontSize="13" fontWeight="700">
-                    {localizeEntityLabel(impact.id, impact.label)}
-                  </text>
-                  <text x={point.x + 15} y={point.y + 21} fill="#a9bac8" fontSize="10" fontFamily="monospace">
-                    {localizeKind(impact.kind)}
-                  </text>
-                </g>
-              );
-            })}
-
-            <g transform="translate(36 584)">
-              <text fill="#9fb0bf" fontSize="11" fontFamily="monospace">
-                国際関係は日本に入るルートとして表示。詳細は右側の根拠グラフへ。
+              <circle cx={point.x} cy={point.y} r={isSelected ? 34 : 21} fill="none" stroke={accent} strokeOpacity="0.26" />
+              <text x={point.x + 15} y={point.y + 5} fill="#f4fbff" fontSize="13" fontWeight="700">
+                {localizeEntityLabel(impact.id, impact.label)}
+              </text>
+              <text x={point.x + 15} y={point.y + 21} fill="#a9bac8" fontSize="10" fontFamily="monospace">
+                {localizeKind(impact.kind)}
               </text>
             </g>
-          </svg>
-        </div>
+          );
+        })}
 
-        <aside className="relative border-t border-white/10 bg-[#090f19]/80 p-5 backdrop-blur-md lg:border-l lg:border-t-0">
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">選択中</p>
-          <h3 className="mt-3 text-2xl font-semibold text-white">
-            {selectedFlow ? localizeFlowLabel(selectedFlow.id, selectedFlow.label) : theme.label}
-          </h3>
-          <p className="mt-4 text-sm leading-6 text-slate-300">
-            {selectedFlow
-              ? localizeSummary(selectedFlow.id, selectedFlow.label)
-              : "日本国内のどこに依存リスクが着地するかを表示します。"}
-          </p>
+        <g transform="translate(760 140)">
+          {observations.slice(0, 4).map((observation, index) => (
+            <g key={observation.id} onClick={() => onSelect(observation.id)} className="cursor-pointer" transform={`translate(0 ${index * 58})`}>
+              <rect width="250" height="42" rx="8" fill={activeId === observation.id ? "rgba(125,211,252,0.16)" : "rgba(3,8,14,0.76)"} stroke="rgba(148,163,184,0.32)" />
+              <text x="12" y="17" fill="#e2f2ff" fontSize="11" fontWeight="700">
+                {localizeObservationLabel(observation.id, observation.label).slice(0, 21)}
+              </text>
+              <text x="12" y="32" fill="#7f8ea3" fontSize="9" fontFamily="monospace">
+                {localizeKind(observation.kind)}
+              </text>
+            </g>
+          ))}
+        </g>
 
-          <GlobalRouteInset accent={accent} activeId={activeId} flows={flows} onSelect={onSelect} />
-
-          <div className="mt-6 space-y-3">
-            {flows.slice(0, 5).map((flow) => (
-              <button
-                key={flow.id}
-                type="button"
-                onClick={() => onSelect(flow.id)}
-                className={`w-full rounded-2xl border p-4 text-left transition ${
-                  activeId === flow.id
-                    ? "border-white/30 bg-white/[0.08]"
-                    : "border-white/10 bg-white/[0.035] hover:border-white/25 hover:bg-white/[0.06]"
-                }`}
-              >
-                <div className="font-mono text-[0.62rem] uppercase tracking-[0.24em] text-slate-500">
-                  依存ルート
-                </div>
-                <div className="mt-2 text-sm font-semibold text-white">{localizeFlowLabel(flow.id, flow.label)}</div>
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-slate-500">国内シグナル</p>
-            <div className="mt-3 space-y-2">
-              {observations.slice(0, 3).map((observation) => (
-                <button
-                  key={observation.id}
-                  type="button"
-                  onClick={() => onSelect(observation.id)}
-                  className="block w-full rounded-xl bg-black/20 px-3 py-2 text-left text-xs text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
-                >
-                  {localizeObservationLabel(observation.id, observation.label)}
-                </button>
-              ))}
-            </div>
-          </div>
-        </aside>
-      </div>
+        <g transform="translate(40 656)">
+          <text fill="#9fb0bf" fontSize="11" fontFamily="monospace">
+            日本が受ける影響を主語にし、国際関係は日本へ入るルートとして表示。詳細は右側の根拠グラフへ。
+          </text>
+        </g>
+      </svg>
     </section>
+  );
+}
+
+function MapToolbar({
+  accent,
+  mapMode,
+  onMapModeChange,
+  resultCount,
+  themeLabel
+}: {
+  accent: string;
+  mapMode: OperationMapMode;
+  onMapModeChange: (mode: OperationMapMode) => void;
+  resultCount: number;
+  themeLabel: string;
+}) {
+  return (
+    <div className="absolute left-4 right-4 top-4 z-20 rounded-xl border border-slate-700/80 bg-[#050b14]/90 shadow-2xl backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span className="h-2.5 w-2.5 rounded-full" style={{ background: accent, boxShadow: `0 0 18px ${accent}` }} />
+          <div>
+            <div className="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-slate-500">Main / Japan Operations Map</div>
+            <div className="text-sm font-semibold text-white">{themeLabel} レイヤー</div>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {OPERATION_MODES.map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => onMapModeChange(mode)}
+              className={`rounded-lg border px-3 py-2 text-xs transition ${
+                mode === mapMode
+                  ? "border-sky-300/60 bg-sky-300/15 text-white"
+                  : "border-slate-700 bg-slate-900/70 text-slate-400 hover:border-slate-500 hover:text-slate-100"
+              }`}
+            >
+              {getOperationModeLabel(mode)}
+            </button>
+          ))}
+          <span className="rounded-lg border border-slate-700 bg-black/30 px-3 py-2 font-mono text-[0.65rem] text-slate-400">
+            {resultCount} 件
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -208,7 +257,7 @@ function GlobalRouteInset({
   const japanPoint = { x: 226, y: 72 };
 
   return (
-    <div className="mt-6 rounded-2xl border border-white/10 bg-[#050a12]/80 p-3">
+    <div>
       <div className="flex items-center justify-between gap-3">
         <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-slate-500">国際補助レイヤー</p>
         <span className="h-2 w-2 rounded-full" style={{ background: accent, boxShadow: `0 0 16px ${accent}` }} />
@@ -223,47 +272,17 @@ function GlobalRouteInset({
             </feMerge>
           </filter>
         </defs>
-        <rect width="270" height="150" rx="18" fill="rgba(4,10,18,0.92)" />
+        <rect width="270" height="150" rx="12" fill="rgba(4,10,18,0.92)" />
         {Array.from({ length: 5 }).map((_, index) => (
-          <line
-            key={`lat-${index}`}
-            x1="14"
-            x2="256"
-            y1={24 + index * 25}
-            y2={24 + index * 25}
-            stroke="rgba(226,238,255,0.08)"
-          />
+          <line key={`lat-${index}`} x1="14" x2="256" y1={24 + index * 25} y2={24 + index * 25} stroke="rgba(226,238,255,0.08)" />
         ))}
         {Array.from({ length: 7 }).map((_, index) => (
-          <line
-            key={`lon-${index}`}
-            x1={28 + index * 36}
-            x2={28 + index * 36}
-            y1="14"
-            y2="136"
-            stroke="rgba(226,238,255,0.08)"
-          />
+          <line key={`lon-${index}`} x1={28 + index * 36} x2={28 + index * 36} y1="14" y2="136" stroke="rgba(226,238,255,0.08)" />
         ))}
-        <path
-          d="M34 47 C48 34 72 35 85 49 C97 62 83 78 64 77 C44 75 24 64 34 47 Z"
-          fill="rgba(221,236,255,0.09)"
-          stroke="rgba(221,236,255,0.18)"
-        />
-        <path
-          d="M104 42 C126 24 160 32 164 57 C168 82 138 91 116 76 C96 62 88 54 104 42 Z"
-          fill="rgba(221,236,255,0.09)"
-          stroke="rgba(221,236,255,0.18)"
-        />
-        <path
-          d="M178 58 C198 42 226 46 237 66 C246 84 229 102 204 98 C184 95 164 73 178 58 Z"
-          fill="rgba(221,236,255,0.09)"
-          stroke="rgba(221,236,255,0.18)"
-        />
-        <path
-          d="M194 107 C210 99 231 105 238 121 C226 133 204 134 190 123 C184 118 186 111 194 107 Z"
-          fill="rgba(221,236,255,0.09)"
-          stroke="rgba(221,236,255,0.18)"
-        />
+        <path d="M34 47 C48 34 72 35 85 49 C97 62 83 78 64 77 C44 75 24 64 34 47 Z" fill="rgba(221,236,255,0.09)" stroke="rgba(221,236,255,0.18)" />
+        <path d="M104 42 C126 24 160 32 164 57 C168 82 138 91 116 76 C96 62 88 54 104 42 Z" fill="rgba(221,236,255,0.09)" stroke="rgba(221,236,255,0.18)" />
+        <path d="M178 58 C198 42 226 46 237 66 C246 84 229 102 204 98 C184 95 164 73 178 58 Z" fill="rgba(221,236,255,0.09)" stroke="rgba(221,236,255,0.18)" />
+        <path d="M194 107 C210 99 231 105 238 121 C226 133 204 134 190 123 C184 118 186 111 194 107 Z" fill="rgba(221,236,255,0.09)" stroke="rgba(221,236,255,0.18)" />
 
         {flows.slice(0, 6).map((flow, index) => {
           const source = projectWorldInset(flow.origin.coordinates?.lat ?? 0, flow.origin.coordinates?.lon ?? 0);
@@ -293,36 +312,36 @@ function GlobalRouteInset({
           日本
         </text>
       </svg>
-      <p className="mt-2 text-xs leading-5 text-slate-500">
-        日本が受ける影響を主にし、供給国との関係だけを補助表示します。
-      </p>
     </div>
   );
 }
 
-function JapanShape() {
+function JapanShape({ accent, mapMode }: { accent: string; mapMode: OperationMapMode }) {
+  const fillOpacity = mapMode === "choropleth" ? 0.22 : 0.08;
+
   return (
-    <g filter="url(#nervGlow)">
+    <g filter="url(#operationsGlow)">
       <path
-        d="M650 58 C686 92 694 142 678 184 C664 222 668 256 698 288 C732 324 722 374 682 404 C646 430 638 470 660 520 C674 552 654 594 616 604 C584 612 552 588 558 546 C564 488 540 450 506 422 C468 390 470 342 506 314 C542 286 532 248 506 210 C476 166 492 116 536 96 C578 78 600 50 612 22 C622 0 636 44 650 58 Z"
-        fill="rgba(235,245,255,0.08)"
-        stroke="rgba(233,244,255,0.55)"
+        d="M732 54 C768 90 776 144 758 188 C742 228 748 264 782 298 C820 336 808 392 762 424 C722 452 714 496 738 552 C754 586 730 632 686 642 C650 650 614 624 622 578 C628 516 602 474 562 442 C518 406 522 354 562 324 C602 292 592 252 562 212 C528 166 544 112 594 90 C642 70 668 42 682 14 C694 -10 716 36 732 54 Z"
+        fill={mapMode === "choropleth" ? accent : "rgba(235,245,255,0.08)"}
+        fillOpacity={fillOpacity}
+        stroke="rgba(233,244,255,0.58)"
         strokeWidth="1.6"
       />
       <path
-        d="M470 410 C430 426 404 454 394 494 C384 536 414 570 458 566 C492 562 512 532 506 496 C498 454 516 426 470 410 Z"
+        d="M520 420 C474 438 444 470 432 514 C420 560 454 598 504 592 C542 586 566 552 558 512 C550 466 572 436 520 420 Z"
         fill="rgba(235,245,255,0.06)"
         stroke="rgba(233,244,255,0.42)"
         strokeWidth="1.2"
       />
       <path
-        d="M700 442 C730 474 722 522 690 546 C664 566 630 556 624 526 C618 494 634 462 664 446 C680 438 694 434 700 442 Z"
+        d="M790 456 C824 492 814 544 778 570 C748 592 710 580 704 548 C698 512 716 478 750 460 C770 450 784 446 790 456 Z"
         fill="rgba(235,245,255,0.06)"
         stroke="rgba(233,244,255,0.38)"
         strokeWidth="1.2"
       />
       <path
-        d="M452 120 C416 138 394 176 404 212 C414 246 450 258 476 232 C502 206 494 166 472 136 C466 128 460 122 452 120 Z"
+        d="M500 122 C460 142 436 184 448 224 C460 262 500 274 530 244 C560 214 550 170 526 138 C518 130 510 124 500 122 Z"
         fill="rgba(235,245,255,0.06)"
         stroke="rgba(233,244,255,0.38)"
         strokeWidth="1.2"
@@ -333,25 +352,25 @@ function JapanShape() {
 
 function projectJapanPoint(lat: number, lon: number): { x: number; y: number } {
   return {
-    x: 360 + ((lon - 128) / 18) * 420,
-    y: 38 + ((46 - lat) / 16) * 560
+    x: 450 + ((lon - 128) / 18) * 430,
+    y: 42 + ((46 - lat) / 16) * 590
   };
 }
 
 function projectGlobalSource(lat: number, lon: number, index: number): { x: number; y: number } {
   if (lon > 100 && lat < 0) {
-    return { x: 312, y: 514 };
+    return { x: 348, y: 556 };
   }
 
   if (lon > 100) {
-    return { x: 302, y: 210 + index * 34 };
+    return { x: 334, y: 236 + index * 34 };
   }
 
   if (lon < -30) {
-    return { x: 112, y: 245 + index * 30 };
+    return { x: 122, y: 266 + index * 30 };
   }
 
-  return { x: 114, y: 170 + index * 44 };
+  return { x: 120, y: 184 + index * 44 };
 }
 
 function projectWorldInset(lat: number, lon: number): { x: number; y: number } {
