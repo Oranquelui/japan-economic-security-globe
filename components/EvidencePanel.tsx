@@ -9,6 +9,7 @@ import {
   localizeSummary,
   localizeWhyItMatters
 } from "../lib/presentation/japanese";
+import { toStableSvgNumber } from "../lib/presentation/svg";
 
 interface EvidencePanelProps {
   accent: string;
@@ -116,8 +117,8 @@ function EvidenceGraph({
       return [
         node.id,
         {
-          x: 150 + Math.cos(angle) * radius,
-          y: 140 + Math.sin(angle) * radius
+          x: toStableSvgNumber(150 + Math.cos(angle) * radius),
+          y: toStableSvgNumber(140 + Math.sin(angle) * radius)
         }
       ] as const;
     })
@@ -158,7 +159,13 @@ function EvidenceGraph({
               fill={isSelected ? "#ffffff" : accent}
               opacity={isSelected ? 1 : 0.72}
             />
-            <text x={position.x + 13} y={position.y + 4} fill="#dcecff" fontSize="9" fontFamily="monospace">
+            <text
+              x={toStableSvgNumber(position.x + 13)}
+              y={toStableSvgNumber(position.y + 4)}
+              fill="#dcecff"
+              fontSize="9"
+              fontFamily="monospace"
+            >
               {localizeAnyLabel(node.id, node.label).slice(0, 24)}
             </text>
           </g>
