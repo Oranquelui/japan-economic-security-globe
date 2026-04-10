@@ -1,6 +1,14 @@
 "use client";
 
 import type { DetailViewModel, EvidenceGraphViewModel } from "../types/presentation";
+import {
+  localizeAnyLabel,
+  localizeKind,
+  localizePublisher,
+  localizeSourceLabel,
+  localizeSummary,
+  localizeWhyItMatters
+} from "../lib/presentation/japanese";
 
 interface EvidencePanelProps {
   accent: string;
@@ -23,29 +31,29 @@ export function EvidencePanel({
     <aside className="rounded-[2rem] border border-white/10 bg-slate-950/65 p-4 shadow-2xl shadow-black/40 backdrop-blur-xl lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:overflow-y-auto">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.36em] text-slate-500">Evidence drawer</p>
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.36em] text-slate-500">根拠ドロワー</p>
           <h2 className="mt-2 font-display text-3xl text-white">{themeTitle}</h2>
         </div>
         <span className="h-3 w-3 rounded-full" style={{ background: accent, boxShadow: `0 0 24px ${accent}` }} />
       </div>
 
       <section className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-        <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">{detail.kind}</div>
-        <h3 className="mt-3 text-2xl font-semibold leading-tight text-white">{detail.label}</h3>
-        <p className="mt-4 text-sm leading-6 text-slate-300">{detail.summary}</p>
+        <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">{localizeKind(detail.kind)}</div>
+        <h3 className="mt-3 text-2xl font-semibold leading-tight text-white">{localizeAnyLabel(detail.id, detail.label)}</h3>
+        <p className="mt-4 text-sm leading-6 text-slate-300">{localizeSummary(detail.id, detail.summary)}</p>
         <div className="mt-5 border-t border-white/10 pt-5">
-          <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">Why it matters for Japan</div>
-          <p className="mt-3 text-sm leading-6 text-slate-300">{detail.whyItMatters}</p>
+          <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">日本にとっての意味</div>
+          <p className="mt-3 text-sm leading-6 text-slate-300">{localizeWhyItMatters(detail.id, detail.whyItMatters)}</p>
         </div>
       </section>
 
       <section className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4">
-        <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">Evidence graph</div>
+        <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">根拠グラフ</div>
         <EvidenceGraph graph={evidenceGraph} accent={accent} onSelect={onSelect} selectedId={selectedId} />
       </section>
 
       <section className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4">
-        <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">Related entities</div>
+        <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">関連エンティティ</div>
         <div className="mt-3 flex flex-wrap gap-2">
           {detail.relatedEntities.map((entity) => (
             <button
@@ -55,14 +63,14 @@ export function EvidencePanel({
               className="rounded-full border border-white/10 bg-slate-950/70 px-3 py-2 text-xs text-slate-300 transition hover:border-white/25 hover:text-white"
             >
               {entity.flagEmoji ? `${entity.flagEmoji} ` : ""}
-              {entity.label}
+              {localizeAnyLabel(entity.id, entity.label)}
             </button>
           ))}
         </div>
       </section>
 
       <section className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-4">
-        <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">Source documents</div>
+        <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">出典文書</div>
         <div className="mt-3 space-y-3">
           {detail.sources.map((source) => (
             <a
@@ -72,15 +80,15 @@ export function EvidencePanel({
               rel="noreferrer"
               className="block rounded-2xl border border-white/10 bg-slate-950/65 p-3 transition hover:border-white/25 hover:bg-white/[0.06]"
             >
-              <div className="text-sm font-semibold text-white">{source.label}</div>
-              <div className="mt-1 text-xs text-slate-500">{source.publisher}</div>
+              <div className="text-sm font-semibold text-white">{localizeSourceLabel(source.id, source.label)}</div>
+              <div className="mt-1 text-xs text-slate-500">{localizePublisher(source.publisher)}</div>
             </a>
           ))}
         </div>
       </section>
 
       <section className="mt-4 rounded-[1.5rem] border border-white/10 bg-[#02040a] p-4">
-        <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">{detail.sparql.title}</div>
+        <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em] text-slate-500">SPARQL クエリ案</div>
         <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-2xl bg-black/60 p-4 font-mono text-[0.68rem] leading-5 text-cyan-100">
           {detail.sparql.query}
         </pre>
@@ -151,7 +159,7 @@ function EvidenceGraph({
               opacity={isSelected ? 1 : 0.72}
             />
             <text x={position.x + 13} y={position.y + 4} fill="#dcecff" fontSize="9" fontFamily="monospace">
-              {node.label.slice(0, 24)}
+              {localizeAnyLabel(node.id, node.label).slice(0, 24)}
             </text>
           </g>
         );

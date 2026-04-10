@@ -599,8 +599,9 @@ Check:
 
 - Energy default theme
 - Rice, Water, Defense, Semiconductors available
-- clickable globe flows
-- Japan impact section
+- clickable Japan operations map
+- global route inset
+- operations signal table
 - evidence drawer
 - SPARQL preview
 - source documents

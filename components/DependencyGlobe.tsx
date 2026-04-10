@@ -14,6 +14,7 @@ import {
 
 import type { GlobeFlowViewModel } from "../types/presentation";
 import type { ThemeId } from "../types/semantic";
+import { getThemeLabel } from "../lib/presentation/japanese";
 
 interface DependencyGlobeProps {
   accent: string;
@@ -24,6 +25,8 @@ interface DependencyGlobeProps {
 }
 
 export function DependencyGlobe({ accent, activeId, flows, onSelect, themeId }: DependencyGlobeProps) {
+  const theme = getThemeLabel(themeId);
+
   return (
     <div className="relative h-[620px] min-h-[520px] overflow-hidden rounded-[2.25rem] bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.09),transparent_54%),linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))]">
       <Canvas camera={{ position: [0, 0, 6.5], fov: 44 }}>
@@ -36,9 +39,9 @@ export function DependencyGlobe({ accent, activeId, flows, onSelect, themeId }: 
 
       <div className="pointer-events-none absolute left-6 top-6 rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 backdrop-blur-lg">
         <div className="font-mono text-[0.62rem] uppercase tracking-[0.32em] text-slate-500">
-          Active layer
+          補助レイヤー
         </div>
-        <div className="mt-1 text-sm font-semibold text-white">{themeId}</div>
+        <div className="mt-1 text-sm font-semibold text-white">{theme.label}</div>
       </div>
       <div className="pointer-events-none absolute inset-0 rounded-[2.25rem] ring-1 ring-inset ring-white/10" />
     </div>

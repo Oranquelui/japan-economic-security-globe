@@ -3,28 +3,28 @@ import type { SemanticGraph, ThemeId } from "../../types/semantic";
 
 const THEME_META: Record<ThemeId, Pick<ThemeView, "title" | "headline" | "accent">> = {
   energy: {
-    title: "Energy",
-    headline: "When global energy routes shake, where does the risk land inside Japan?",
+    title: "エネルギー",
+    headline: "原油・LNG・海上輸送路の揺れは、日本のどこに着地するのか。",
     accent: "#ff9f2f"
   },
   rice: {
-    title: "Rice",
-    headline: "How do import pressure, stockpiles, water, and policy signals reach the dinner table?",
+    title: "コメ",
+    headline: "価格、備蓄、水、政策シグナルは、食卓にどうつながるのか。",
     accent: "#d9b45b"
   },
   water: {
-    title: "Water",
-    headline: "Which reservoirs and regions show stress before it becomes a household issue?",
+    title: "水",
+    headline: "水不足が生活問題になる前に、どの地域と貯水池に兆候が出るのか。",
     accent: "#39c6ff"
   },
   defense: {
-    title: "Defense",
-    headline: "Where does FY2026 defense spending flow, and which capabilities does it support?",
+    title: "防衛",
+    headline: "2026年度防衛予算は、どの能力領域へ流れているのか。",
     accent: "#d85d68"
   },
   semiconductors: {
-    title: "Semiconductors",
-    headline: "Which countries and policies shape Japan's semiconductor dependency graph?",
+    title: "半導体",
+    headline: "日本の半導体依存は、どの国・政策・産業基盤に支えられているのか。",
     accent: "#49f0d0"
   }
 };

@@ -1,6 +1,13 @@
 "use client";
 
 import type { Observation, SemanticEntity, ThemeId } from "../types/semantic";
+import {
+  getThemeLabel,
+  localizeEntityLabel,
+  localizeKind,
+  localizeObservationLabel,
+  localizeSummary
+} from "../lib/presentation/japanese";
 
 interface JapanImpactMapProps {
   accent: string;
@@ -19,22 +26,24 @@ export function JapanImpactMap({
   selectedId,
   themeId
 }: JapanImpactMapProps) {
+  const theme = getThemeLabel(themeId);
+
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950/50 p-5 backdrop-blur-xl">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.36em] text-slate-500">
-            Japan impact map
+            国内影響マップ
           </p>
-          <h2 className="mt-3 font-display text-3xl text-white">Where the global shock lands</h2>
+          <h2 className="mt-3 font-display text-3xl text-white">依存リスクが国内で着地する場所</h2>
         </div>
         <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.24em] text-slate-400">
-          {themeId}
+          {theme.label}
         </span>
       </div>
 
       <div className="mt-5 grid gap-5 md:grid-cols-[1fr_0.95fr]">
-        <svg viewBox="0 0 320 460" role="img" aria-label="Stylized Japan regional dependency map" className="h-[360px] w-full">
+          <svg viewBox="0 0 320 460" role="img" aria-label="日本国内の依存影響マップ" className="h-[360px] w-full">
           <defs>
             <filter id="mapGlow">
               <feGaussianBlur stdDeviation="4" result="blur" />
@@ -83,7 +92,7 @@ export function JapanImpactMap({
                   />
                   <circle cx={point.x} cy={point.y} r={isSelected ? 28 : 20} fill="none" stroke={accent} opacity="0.22" />
                   <text x={point.x + 14} y={point.y + 4} fill="#eaf6ff" fontSize="12" fontFamily="monospace">
-                    {impact.label}
+                    {localizeEntityLabel(impact.id, impact.label)}
                   </text>
                 </g>
               );
@@ -102,9 +111,11 @@ export function JapanImpactMap({
                   : "border-white/10 bg-white/[0.03] hover:border-white/25"
               }`}
             >
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">{impact.kind}</div>
-              <div className="mt-2 font-semibold text-white">{impact.label}</div>
-              <p className="mt-2 line-clamp-3 text-xs leading-5 text-slate-400">{impact.summary}</p>
+              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">{localizeKind(impact.kind)}</div>
+              <div className="mt-2 font-semibold text-white">{localizeEntityLabel(impact.id, impact.label)}</div>
+              <p className="mt-2 line-clamp-3 text-xs leading-5 text-slate-400">
+                {localizeSummary(impact.id, impact.summary)}
+              </p>
             </button>
           ))}
           {observations.slice(0, 2).map((observation) => (
@@ -114,8 +125,10 @@ export function JapanImpactMap({
               onClick={() => onSelect(observation.id)}
               className="w-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition hover:border-white/25"
             >
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">{observation.metric}</div>
-              <div className="mt-2 font-semibold text-white">{observation.label}</div>
+              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">観測指標</div>
+              <div className="mt-2 font-semibold text-white">
+                {localizeObservationLabel(observation.id, observation.label)}
+              </div>
             </button>
           ))}
         </div>

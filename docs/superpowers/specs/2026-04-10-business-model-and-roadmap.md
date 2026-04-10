@@ -35,7 +35,7 @@ The paid product helps institutions monitor, query, and operationalize the same 
 The following should stay free:
 
 - public website
-- default globe, Japan map, and evidence graph
+- Japan operations map, global supporting layer, operations table, and evidence graph
 - public seeded data
 - core source provenance
 - basic SPARQL examples
@@ -310,7 +310,7 @@ Scope:
 
 - Energy-led hybrid hero
 - Rice, Water, Defense, and Semiconductors as complete thin slices
-- globe, Japan map, and evidence graph
+- Japan operations map, global supporting layer, operations table, and evidence graph
 - seeded local JSON/TTL data
 - `ontology/` Turtle stubs
 - `queries/` SPARQL examples

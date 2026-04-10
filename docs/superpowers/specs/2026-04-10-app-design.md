@@ -4,6 +4,26 @@
 **Date:** 2026-04-10  
 **Status:** App design draft before implementation planning
 
+## 0. 2026-04-10 UI Decision Update
+
+The front end is **Japan-first**, not globe-first.
+
+The reference direction is Palantir-style operations mapping in information structure, not in color:
+
+- left: signal inbox, theme filters, operational scope
+- center top: Japan operations map as the main canvas
+- center lower: signal/event table for routes, observations, domestic landing points
+- right: evidence drawer with graph, sources, related entities, and SPARQL preview
+- global layer: supporting inset map and evidence graph only; it explains foreign suppliers and chokepoints as relationships to Japan
+
+The service region is Japan. Foreign countries are not user-service regions; they are explanatory nodes for Japan's dependency intelligence.
+
+The first screen should answer:
+
+> 日本は何に依存していて、その揺れは日本国内のどこに着地するのか。
+
+The globe-style view should not dominate the first screen until it can show readable geography. For Phase 0, a small global route inset is safer than a large 3D globe with weak map legibility.
+
 ## 1. App Purpose
 
 The app is a public-interest semantic intelligence interface for people in Japan.
@@ -22,19 +42,20 @@ The first screen should launch with the `Energy` story because the April 2026 at
 
 The story path should be:
 
-1. Energy shock or route risk on the globe
-2. Japanese port / terminal / refinery exposure
+1. energy shock or route risk shown as a global-to-Japan relationship
+2. Japanese port / terminal / refinery exposure on the main Japan map
 3. domestic household or policy impact
-4. evidence graph and source documents
-5. bridge to Rice, Water, Defense, or Semiconductors
+4. operations table row for the selected signal
+5. evidence graph and source documents
+6. bridge to Rice, Water, Defense, or Semiconductors
 
 The default hero copy:
 
-> When global energy routes shake, where does the risk land inside Japan?
+> 原油・LNG・海上輸送路の揺れは、日本のどこに着地するのか。
 
 Secondary copy:
 
-> Follow oil, LNG, coal, rice, water, defense budgets, and semiconductor dependencies through a source-linked semantic graph.
+> 日本地図を主画面にして、国際供給元・政策文書・出典をセマンティックグラフで確認する。
 
 ## 3. Visual Direction
 
@@ -63,18 +84,18 @@ The app should avoid:
 Desktop layout:
 
 - left vertical theme rail
-- central globe canvas
+- central Japan operations map
 - right evidence drawer
-- bottom Japan impact strip
+- bottom operations signal table
 - floating selected-entity inspector
 
 Mobile layout:
 
 - top story selector
-- globe hero
+- Japan operations map hero
 - collapsible evidence drawer
 - horizontal theme chips
-- Japan impact section below the globe
+- operations signal table below the map
 
 ### 4.2 Left Theme Rail
 
@@ -93,36 +114,47 @@ Each theme should show:
 - active story count
 - current selected story headline
 
-### 4.3 Globe Canvas
+### 4.3 Japan Operations Map
 
 Responsibilities:
 
 - show Japan as the fixed semantic anchor
-- show supplier countries
-- show dependency arcs
-- show chokepoints and sea lanes
-- show route-to-Japan flows
+- show where supplier-country dependency lands in Japan
+- show ports, LNG terminals, refineries, reservoirs, prefectures, and budget landing points
+- show sea lanes and chokepoints as inbound routes to Japan
+- show a small global context inset only as a supporting layer
 
 Interactions:
 
-- click country
+- click domestic landing point
 - click route
 - click chokepoint
 - click flow arc
-- hover for quick label
+- click signal row
 - selected object opens detail inspector and evidence drawer
 
-### 4.4 Japan Impact Strip
+### 4.4 Global Supporting Layer
 
 Responsibilities:
 
-- show where the global story lands in Japan
-- display ports, terminals, refineries, reservoirs, prefectures, and strategic facilities
-- show small regional indicators for rice, water, energy, and defense
+- show supplier countries
+- show dependency arcs to Japan
+- show chokepoints and sea lanes as explanatory context
+- avoid becoming the main user-service map
+
+The global layer should be an inset or secondary view in Phase 0. A large 3D globe can return later only if the map geography is visually legible.
+
+### 4.5 Operations Signal Table
+
+Responsibilities:
+
+- show routes, observations, and domestic landing points in an operational list
+- support fast triage by type, urgency, status, action, and period
+- make the product feel like an intelligence workflow, not a static dashboard
 
 This should not become a full domestic logistics product in Phase 0.
 
-### 4.5 Evidence Drawer
+### 4.6 Evidence Drawer
 
 Responsibilities:
 
@@ -141,7 +173,7 @@ Sections:
 - Related entities
 - SPARQL preview
 
-### 4.6 Evidence Graph Panel
+### 4.7 Evidence Graph Panel
 
 Responsibilities:
 
@@ -156,8 +188,9 @@ The graph should be visible enough to prove semantic-web depth, but not dominate
 
 Switching theme should change:
 
-- active globe arcs
-- active Japan impact objects
+- active Japan operations map objects
+- active global route inset arcs
+- active operations table rows
 - active evidence graph neighborhood
 - hero headline
 - color accents
@@ -209,8 +242,8 @@ Data pipeline for Phase 0:
 1. load seeded JSON/TTL
 2. normalize into canonical entities and edges
 3. derive theme views
-4. derive globe flows
-5. derive Japan impact map data
+4. derive global-to-Japan flows
+5. derive Japan operations map data
 6. derive evidence graph nodes and links
 7. derive SPARQL preview text
 
@@ -238,9 +271,9 @@ Recommended component boundaries:
 
 - `AppShell`
 - `ThemeRail`
-- `HeroGlobe`
-- `GlobeFlowLayer`
-- `JapanImpactMap`
+- `JapanMainMap`
+- `GlobalRouteInset`
+- `OperationsSignalTable`
 - `EvidenceDrawer`
 - `EvidenceGraph`
 - `SparqlPreview`
@@ -277,7 +310,7 @@ Typography:
 Motion:
 
 - one strong initial reveal
-- globe arc shimmer
+- route arc shimmer
 - evidence drawer slide
 - subtle graph node pulse
 - no excessive micro-animation
@@ -330,8 +363,8 @@ Do not add RDS in Phase 0.
 A visitor should understand within 10 seconds:
 
 - this is about Japan
-- the globe exists to explain Japan's external dependency
-- the map exists to explain domestic impact
+- the main map exists to explain domestic impact in Japan
+- the global inset and graph explain Japan's external dependencies
 - the graph exists to show evidence and source relationships
 
 A reviewer should understand within 2 minutes:
@@ -357,8 +390,9 @@ It should implement:
 
 - working homepage
 - theme switching
-- clickable globe flows
-- Japan map section
+- clickable Japan operations map
+- global route inset
+- operations signal table
 - evidence graph section
 - seeded semantic data
 - ontology stubs
@@ -374,8 +408,8 @@ After this app design is approved, create an implementation plan with tasks for:
 3. create seed data and ontology files
 4. build visual shell
 5. wire theme switching
-6. implement globe interactions
-7. implement Japan impact map
+6. implement Japan operations map interactions
+7. implement global route inset
 8. implement evidence graph and drawer
 9. add README and public project framing
 10. verify build and local app

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Japan Economic Security Globe | 日本の依存インテリジェンス",
+  title: "日本経済安全保障マップ | 日本の依存インテリジェンス",
   description:
-    "A public-interest semantic intelligence map of Japan's dependency exposure, domestic impact, and source-linked evidence."
+    "日本の依存関係、国内影響、出典根拠を結ぶ公共目的のセマンティック・インテリジェンスマップ。"
 };
 
 export default function RootLayout({

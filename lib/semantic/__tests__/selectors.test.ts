@@ -48,6 +48,7 @@ describe("getThemeView", () => {
     const view = getThemeView(graph, "energy");
 
     expect(view.id).toBe("energy");
+    expect(view.title).toBe("エネルギー");
     expect(view.entities).toHaveLength(1);
     expect(view.flows).toHaveLength(1);
     expect(view.sources).toHaveLength(1);
