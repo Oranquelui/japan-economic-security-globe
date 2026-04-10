@@ -1,114 +1,112 @@
-# Japan Economic Security Globe
+# 日本経済安全保障グローブ
 
-Japan Economic Security Globe is a public-interest semantic web MVP for explaining Japan's strategic dependencies through an interactive globe, a domestic Japan impact map, and a source-linked evidence graph.
+日本経済安全保障グローブは、日本の戦略的依存を「地球儀」「日本国内マップ」「根拠グラフ」で説明する、公共目的のセマンティックWeb MVPです。
 
-The launch view is Energy-led because the April 2026 attention wave is around oil, LNG, sea lanes, electricity, and logistics. Rice, Water, Defense, and Semiconductors are already modeled as the next layers so the project does not become a one-news-cycle dashboard.
+最初の表示は `Energy` を中心にしています。理由は、2026年4月時点では原油、LNG、海上輸送路、電気代、物流への関心が高く、注目を取りやすい入口だからです。ただし、このプロジェクトは一時的なニュース可視化で終わらせません。`Rice`、`Water`、`Defense`、`Semiconductors` も同じオントロジー上に最初から載せています。
 
-## Product Concept
+## 中心となる問い
 
-Main question:
+> 日本は何に依存しているのか。そして、その依存は暮らし、公共支出、国内インフラのどこに着地するのか。
 
-> What does Japan depend on, and where does that dependency land in daily life, public spending, and domestic infrastructure?
+この問いを、次の3層で見せます。
 
-The UI is intentionally split into three layers:
+- `Globe`: 原油、LNG、石炭、半導体、供給国、海上輸送路、チョークポイントなど、世界依存のストーリーを見せる。
+- `Japan map`: コメ、水、貯水池、港湾、LNG受入基地、製油所、都道府県など、国内に着地する影響を見せる。
+- `Evidence graph`: 政策、予算、法令、組織、出典文書、provenance の関係を見せる。
 
-- `Globe`: global dependency stories, including crude oil, LNG, coal, semiconductors, supplier countries, routes, and maritime chokepoints.
-- `Japan map`: domestic impact stories, including rice, water, reservoir stress, ports, LNG receiving terminals, refineries, and prefectures.
-- `Evidence graph`: policy, budget, law, organization, source document, and provenance relationships.
+このプロジェクトの主語は日本です。外国は、あくまで日本人の暮らしや安全保障への影響を説明するために表示します。一般的な国別プロフィール集ではありません。
 
-The project is Japan-centered. Foreign countries are shown only when they explain a relationship that matters for people in Japan.
+## セマンティックWebを使う理由
 
-## Why Semantic Web Matters
+目的は、きれいな地図を描くだけではありません。日本の依存関係、政策根拠、予算、法令、出典を、後から OWL / RDF / SHACL / SPARQL に自然に移行できる形で設計することが目的です。
 
-The goal is not just to draw a beautiful map. The product is designed as a knowledge-graph-first system that can later map to OWL, RDF, SHACL, and SPARQL without rewriting the product ontology.
+現在の MVP では、すでに次の層を分けています。
 
-The current MVP already separates:
+- `types/semantic.ts`: 国、地域、資源、製品、依存フロー、観測値、出典、グラフエッジの意味モデル。
+- `data/seed/`: Phase 0 用のローカル seed JSON。各項目に provenance を持たせ、将来の `prov:wasDerivedFrom` に対応しやすくしている。
+- `ontology/`: OWL/RDF 化を前提にした初期 Turtle ファイル。
+- `queries/`: 5つの公共ストーリーに対応する SPARQL クエリ例。
+- `lib/semantic/`: テーマ別 selector、detail view、provenance helper、SPARQL preview、表示用 view model。
 
-- `types/semantic.ts`: canonical entity, flow, observation, source, and graph-edge model.
-- `data/seed/`: local seeded JSON with provenance fields aligned to `prov:wasDerivedFrom`.
-- `ontology/`: initial Turtle stubs for the OWL/RDF model.
-- `queries/`: example SPARQL files for the five public stories.
-- `lib/semantic/`: selectors, view models, provenance helpers, and SPARQL preview generation.
+各詳細パネルには、概要、日本にとっての意味、出典文書、関連エンティティ、将来の SPARQL クエリ案を表示します。
 
-Every visible detail panel includes source documents, related entities, and a future-facing SPARQL preview block.
+## MVP の範囲
 
-## MVP Scope
+MVP では、各テーマについて薄いが一貫した一連の導線を入れています。
 
-The MVP includes one thin but complete slice for each theme:
+- `Energy`: 原油、LNG、石炭、湾岸ルート、ホルムズ海峡、マラッカ海峡、横浜港、袖ケ浦LNG受入基地、京浜製油所エリア。
+- `Rice`: コメ価格圧力、備蓄・政策シグナル、エネルギーや肥料投入が家計の食料負担へつながる流れ。
+- `Water`: 東京都と小河内貯水池を使った水ストレス例。
+- `Defense`: 2026年度防衛予算からスタンド・オフ防衛能力への予算フロー例。
+- `Semiconductors`: 台湾、韓国、オランダ、米国、中国と日本を結ぶ先端半導体依存フロー。
 
-- `Energy`: crude oil, LNG, coal, Gulf routes, Hormuz, Malacca, Yokohama Port, Sodegaura LNG Terminal, and Keihin refinery area.
-- `Rice`: rice price pressure, stockpile and policy signal, and the bridge from energy and fertilizer inputs into household food exposure.
-- `Water`: Tokyo and Ogouchi Reservoir as a reservoir-stress example.
-- `Defense`: FY2026 defense budget flow into stand-off capability.
-- `Semiconductors`: Japan linked to Taiwan, South Korea, Netherlands, United States, and China through advanced semiconductor dependency flows.
+Phase 0 の物流粒度は「港湾・受入基地まで」です。つまり、海上チョークポイント、輸入ルート、日本側の港湾、LNG受入基地、製油所までを扱います。国内トラック輸送、倉庫、小売流通網は今後の対象です。
 
-Logistics scope for Phase 0 is `ports and receiving infrastructure`: maritime chokepoints, import routes, Japanese ports, LNG receiving terminals, and refineries. Domestic trucking, warehousing, and retail distribution are intentionally left for later.
+## ロードマップ
 
-## Roadmap
+`Phase 0`: 公開 MVP
 
-`Phase 0`: Public MVP
+- 無料公開サイト。
+- 認証なし。
+- データベースなし。
+- ローカル seed JSON と Turtle artifact。
+- Cloudflare だけで運用できる構成を優先。
+- 日本人向けの依存インテリジェンスとして公開する。
 
-- Free public site.
-- No auth.
-- No database.
-- Local seeded JSON and Turtle artifacts.
-- Cloudflare-only deployment target.
-- Japan-centered dependency intelligence for citizens.
+`Phase 1`: 地政学的隣国レイヤー
 
-`Phase 1`: Strategic neighborhood layer
+- 主語は引き続き日本と日本人。
+- 日本への影響説明に必要な範囲で、地政学的隣国との関係を追加する。
+- ルート、港湾、施設、出典文書の対象範囲を増やす。
+- 繰り返し可能な取り込み処理と検証を始める。
 
-- Still Japan-centered and still public.
-- Add geopolitical-neighbor relationships only when they explain Japan's exposure.
-- Add richer route, port, facility, and source-document coverage.
-- Begin repeatable ingestion jobs and validation.
+`Phase 2`: 法人・組織向け intelligence product
 
-`Phase 2`: Institutional intelligence product
+- メディア、シンクタンク、政策チーム、リスク管理チーム、事業戦略チーム向けの有料ワークスペース。
+- ルート、資源、政策、予算、出典更新に関するアラート。
+- 非公開シナリオノートブックと保存済みグラフビュー。
+- 依存グラフの部分データに対する API / データアクセス。
+- 内部データ統合とカスタムオントロジーマッピング。
+- OWL / RDF / SPARQL / SHACL 導入支援パッケージ。
 
-- Paid workspaces for media, think tanks, policy teams, risk teams, and business strategy teams.
-- Alerts on route, resource, policy, budget, and source changes.
-- Private scenario notebooks and saved graph views.
-- API/data access for dependency graph slices.
-- Internal data integration and custom ontology mapping.
-- Advisory/implementation packages for OWL/RDF/SPARQL/SHACL adoption.
+Palantir 的に考えるなら、長期価値は公開地球儀そのものではありません。公共データ、民間データ、出典根拠、アラート、シナリオ、意思決定の流れをつなぐセマンティック運用レイヤーが価値になります。この MVP は、Phase 0 を過剰な法人向け製品にせず、その将来拡張だけを設計上残しています。
 
-If Palantir were approaching this, the durable value would not be the public globe alone. It would be the semantic operating layer that lets an institution connect public evidence, private data, alerts, scenarios, and decision workflows. This MVP keeps that option open without turning Phase 0 into enterprise software too early.
-
-## Local Setup
+## ローカル起動
 
 ```bash
 npm install
 npm run dev
 ```
 
-Run tests and production build:
+テストと本番ビルド:
 
 ```bash
 npm test
 npm run build
 ```
 
-The app runs without external environment variables.
+このアプリは外部環境変数なしで動きます。
 
-## Repository Structure
+## ディレクトリ構成
 
 ```text
-app/                    Next.js App Router entry points
-components/             Globe, Japan map, evidence drawer, and app shell
-data/seed/              Local semantic seed data for Phase 0
-docs/superpowers/       Product design, roadmap, and implementation plan notes
-lib/data/               Seed graph loader
-lib/semantic/           Selectors, detail view, provenance, SPARQL, and view models
-ontology/               Initial Turtle ontology stubs
-queries/                Example SPARQL query files
-types/                  Semantic and presentation TypeScript types
+app/                    Next.js App Router の入口
+components/             地球儀、日本マップ、根拠ドロワー、アプリ外枠
+data/seed/              Phase 0 用のローカル semantic seed data
+docs/superpowers/       企画、ロードマップ、実装計画メモ
+lib/data/               seed graph の読み込み処理
+lib/semantic/           selector、detail view、provenance、SPARQL、表示用 model
+ontology/               初期 Turtle ontology stub
+queries/                SPARQL query example
+types/                  semantic type と presentation type
 ```
 
-## Data and Provenance
+## データと provenance
 
-This is a manual seed-data MVP. It is not yet a real-time public data feed and should not be treated as operational intelligence.
+現時点では手動 seed data の MVP です。リアルタイムの公共データ配信でも、運用判断に使うインテリジェンスシステムでもありません。
 
-Every seeded entity, flow, and observation must keep source references. The long-term target is to convert these source references into RDF triples using `prov:wasDerivedFrom`, then validate them with SHACL and serve them through a SPARQL endpoint.
+ただし、各 entity、flow、observation は出典参照を持つ設計です。長期的には、この出典参照を `prov:wasDerivedFrom` を使った RDF triple に変換し、SHACL で検証し、SPARQL endpoint から提供することを目指します。
 
-## Public-Interest Caveat
+## 公共目的の注意
 
-This project is designed to help people in Japan understand dependency exposure, public evidence, and domestic impact. It should avoid becoming a military targeting UI, a fear dashboard, or a generic country-profile explorer. The product subject is Japan and the Japanese public.
+このプロジェクトは、日本に住む人が依存関係、政策根拠、国内影響を理解するためのものです。軍事的なターゲット選定 UI、恐怖を煽るダッシュボード、汎用的な国別探索ツールにはしません。プロダクトの主語は、日本と日本人です。
