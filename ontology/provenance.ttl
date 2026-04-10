@@ -1,0 +1,7 @@
+@prefix jpsdg: <https://data.jp-strategic-dependency-graph.org/ontology#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+jpsdg:ManualSeedIngestion a prov:Activity ;
+  rdfs:label "Manual MVP seed ingestion" ;
+  rdfs:comment "Phase 0 data is manually curated from public source URLs and aligned to prov:wasDerivedFrom for later ETL and SPARQL endpoint migration." .

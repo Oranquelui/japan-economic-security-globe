@@ -1,0 +1,14 @@
+PREFIX jpsdg: <https://data.jp-strategic-dependency-graph.org/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?observation ?reservoir ?reservoirLabel ?metric ?value ?source WHERE {
+  ?observation a jpsdg:WaterIndicator ;
+    jpsdg:theme "water" ;
+    jpsdg:observedAt ?reservoir ;
+    jpsdg:metric ?metric ;
+    jpsdg:value ?value .
+  ?reservoir a jpsdg:Reservoir ;
+    rdfs:label ?reservoirLabel .
+  OPTIONAL { ?observation prov:wasDerivedFrom ?source . }
+}

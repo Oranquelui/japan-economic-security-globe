@@ -1,0 +1,122 @@
+[
+  {
+    "id": "observation:lng-electricity-april-2026",
+    "kind": "DependencyObservation",
+    "theme": "energy",
+    "subjectId": "resource:lng",
+    "label": "LNG-linked electricity cost exposure",
+    "metric": "electricity_cost_exposure",
+    "value": "rate change signal",
+    "unit": "qualitative",
+    "period": "2026-04",
+    "sourceIds": ["source:tepco-2026-april-power"],
+    "summary": "A public-facing observation linking LNG and electricity cost exposure.",
+    "provenance": [
+      {
+        "sourceId": "source:tepco-2026-april-power",
+        "claim": "Manual seed observation for electricity cost exposure.",
+        "retrievedAt": "2026-04-10"
+      }
+    ]
+  },
+  {
+    "id": "observation:rice-price-signal-2026",
+    "kind": "PriceObservation",
+    "theme": "rice",
+    "subjectId": "product:rice",
+    "label": "Rice price pressure signal",
+    "metric": "retail_price_pressure",
+    "value": "elevated",
+    "unit": "qualitative",
+    "period": "2026",
+    "sourceIds": ["source:maff-rice-policy"],
+    "summary": "A manual seed observation representing rice price concern and policy attention.",
+    "provenance": [
+      {
+        "sourceId": "source:maff-rice-policy",
+        "claim": "Manual seed observation for rice price and policy pressure.",
+        "retrievedAt": "2026-04-10"
+      }
+    ]
+  },
+  {
+    "id": "observation:rice-stockpile-policy-2026",
+    "kind": "PolicySignal",
+    "theme": "rice",
+    "subjectId": "product:rice",
+    "label": "Rice stockpile and policy signal",
+    "metric": "policy_attention",
+    "value": "active",
+    "unit": "qualitative",
+    "period": "2026",
+    "sourceIds": ["source:maff-rice-policy"],
+    "summary": "A policy signal connecting stockpile discussions to the rice dependency story.",
+    "provenance": [
+      {
+        "sourceId": "source:maff-rice-policy",
+        "claim": "Manual seed observation for stockpile and policy event examples.",
+        "retrievedAt": "2026-04-10"
+      }
+    ]
+  },
+  {
+    "id": "observation:ogochi-reservoir-stress",
+    "kind": "ReservoirObservation",
+    "theme": "water",
+    "subjectId": "reservoir:ogochi",
+    "label": "Ogouchi reservoir stress example",
+    "metric": "reservoir_stress",
+    "value": "watch",
+    "unit": "qualitative",
+    "period": "2026",
+    "sourceIds": ["source:mlit-drought-portal"],
+    "summary": "A manual seed observation for reservoir and drought visualization.",
+    "provenance": [
+      {
+        "sourceId": "source:mlit-drought-portal",
+        "claim": "Manual seed observation for water stress example.",
+        "retrievedAt": "2026-04-10"
+      }
+    ]
+  },
+  {
+    "id": "observation:defense-budget-standoff-fy2026",
+    "kind": "BudgetObservation",
+    "theme": "defense",
+    "subjectId": "budget:fiscal-2026-stand-off-defense",
+    "label": "FY2026 stand-off budget line",
+    "metric": "budget_allocation",
+    "value": "sample_line",
+    "unit": "qualitative",
+    "period": "FY2026",
+    "sourceIds": ["source:mod-fy2026-budget"],
+    "summary": "A sample FY2026 defense budget observation for the evidence graph.",
+    "provenance": [
+      {
+        "sourceId": "source:mod-fy2026-budget",
+        "claim": "Manual seed observation for FY2026 defense budget category.",
+        "retrievedAt": "2026-04-10"
+      }
+    ]
+  },
+  {
+    "id": "observation:semiconductor-policy-signal-2026",
+    "kind": "PolicySignal",
+    "theme": "semiconductors",
+    "subjectId": "policy:semiconductor-industrial-base",
+    "label": "Semiconductor industrial base policy signal",
+    "metric": "economic_security_policy_attention",
+    "value": "active",
+    "unit": "qualitative",
+    "period": "2026",
+    "sourceIds": ["source:meti-semiconductor-frame", "source:cabinet-tsmc-2026"],
+    "summary": "A policy signal connecting semiconductor industrial base policy to Japan's economic security story.",
+    "provenance": [
+      {
+        "sourceId": "source:meti-semiconductor-frame",
+        "claim": "Manual seed observation for semiconductor policy emphasis.",
+        "retrievedAt": "2026-04-10"
+      }
+    ]
+  }
+]

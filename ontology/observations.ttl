@@ -1,0 +1,28 @@
+@prefix jpsdg: <https://data.jp-strategic-dependency-graph.org/ontology#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+jpsdg:Observation a owl:Class ;
+  rdfs:label "Observation" ;
+  rdfs:comment "A source-linked indicator or policy signal attached to a subject entity." .
+
+jpsdg:PriceObservation a owl:Class ;
+  rdfs:subClassOf jpsdg:Observation ;
+  rdfs:label "Price observation" .
+
+jpsdg:ReservoirObservation a owl:Class ;
+  rdfs:subClassOf jpsdg:WaterIndicator ;
+  rdfs:label "Reservoir observation" .
+
+jpsdg:BudgetObservation a owl:Class ;
+  rdfs:subClassOf jpsdg:Observation ;
+  rdfs:label "Budget observation" .
+
+jpsdg:DependencyObservation a owl:Class ;
+  rdfs:subClassOf jpsdg:Observation ;
+  rdfs:label "Dependency observation" .
+
+jpsdg:retrievedAt a owl:DatatypeProperty ;
+  rdfs:domain jpsdg:Observation ;
+  rdfs:range xsd:date .

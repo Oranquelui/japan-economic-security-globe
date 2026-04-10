@@ -1,0 +1,77 @@
+@prefix jpsdg: <https://data.jp-strategic-dependency-graph.org/ontology#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+jpsdg: a owl:Ontology ;
+  rdfs:label "Japan Strategic Dependency Graph ontology" ;
+  rdfs:comment "Initial MVP ontology for a Japan-centered public dependency intelligence layer." ;
+  owl:versionInfo "0.1.0" .
+
+jpsdg:Country a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:Region a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:Prefecture a owl:Class ; rdfs:subClassOf jpsdg:Region .
+jpsdg:Resource a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:Product a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:DependencyFlow a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:PolicyDocument a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:Law a owl:Class ; rdfs:subClassOf jpsdg:PolicyDocument .
+jpsdg:BudgetLine a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:Organization a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:Facility a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:Port a owl:Class ; rdfs:subClassOf jpsdg:Facility .
+jpsdg:Terminal a owl:Class ; rdfs:subClassOf jpsdg:Facility .
+jpsdg:Refinery a owl:Class ; rdfs:subClassOf jpsdg:Facility .
+jpsdg:Reservoir a owl:Class ; rdfs:subClassOf jpsdg:Facility .
+jpsdg:Route a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:SeaLane a owl:Class ; rdfs:subClassOf jpsdg:Route .
+jpsdg:Chokepoint a owl:Class ; rdfs:subClassOf jpsdg:Route .
+jpsdg:WaterIndicator a owl:Class ; rdfs:subClassOf jpsdg:Observation .
+jpsdg:PolicySignal a owl:Class ; rdfs:subClassOf jpsdg:Observation .
+jpsdg:SourceDocument a owl:Class .
+
+jpsdg:importsFrom a owl:ObjectProperty ;
+  rdfs:domain jpsdg:DependencyFlow ;
+  rdfs:range jpsdg:Entity .
+
+jpsdg:importsTo a owl:ObjectProperty ;
+  rdfs:domain jpsdg:DependencyFlow ;
+  rdfs:range jpsdg:Country .
+
+jpsdg:dependsOn a owl:ObjectProperty ;
+  rdfs:domain jpsdg:DependencyFlow ;
+  rdfs:range jpsdg:Entity .
+
+jpsdg:transitsVia a owl:ObjectProperty ;
+  rdfs:domain jpsdg:DependencyFlow ;
+  rdfs:range jpsdg:Route .
+
+jpsdg:landsAt a owl:ObjectProperty ;
+  rdfs:domain jpsdg:DependencyFlow ;
+  rdfs:range jpsdg:Facility .
+
+jpsdg:observedAt a owl:ObjectProperty ;
+  rdfs:domain jpsdg:Observation ;
+  rdfs:range jpsdg:Entity .
+
+jpsdg:publishedBy a owl:ObjectProperty ;
+  rdfs:domain jpsdg:SourceDocument ;
+  rdfs:range jpsdg:Organization .
+
+jpsdg:theme a owl:DatatypeProperty ;
+  rdfs:range xsd:string .
+
+jpsdg:metric a owl:DatatypeProperty ;
+  rdfs:domain jpsdg:Observation ;
+  rdfs:range xsd:string .
+
+jpsdg:value a owl:DatatypeProperty ;
+  rdfs:domain jpsdg:Observation .
+
+jpsdg:period a owl:DatatypeProperty ;
+  rdfs:range xsd:string .
+
+prov:wasDerivedFrom a owl:ObjectProperty ;
+  rdfs:comment "Every MVP entity, flow, and observation should point to a jpsdg:SourceDocument or future source URI." .

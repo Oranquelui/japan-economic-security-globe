@@ -1,0 +1,61 @@
+[
+  {
+    "id": "source:meti-2026-energy-taskforce",
+    "label": "METI Minister press conference on Middle East energy response",
+    "url": "https://www.meti.go.jp/speeches/kaiken/2026/20260403001.html",
+    "publisher": "Ministry of Economy, Trade and Industry",
+    "published": "2026-04-03",
+    "accessed": "2026-04-10",
+    "description": "Public statement on energy response, alternative procurement, and petroleum reserve measures."
+  },
+  {
+    "id": "source:tepco-2026-april-power",
+    "label": "TEPCO April 2026 electricity rate announcement",
+    "url": "https://www.tepco.co.jp/ep/notice/pressrelease/2026/pdf/260226j0101.pdf",
+    "publisher": "Tokyo Electric Power Energy Partner",
+    "published": "2026-02-26",
+    "accessed": "2026-04-10",
+    "description": "Electricity rate announcement used as an example of household energy impact."
+  },
+  {
+    "id": "source:maff-rice-policy",
+    "label": "MAFF rice policy and stockpile information",
+    "url": "https://www.maff.go.jp/",
+    "publisher": "Ministry of Agriculture, Forestry and Fisheries",
+    "accessed": "2026-04-10",
+    "description": "Manual seed source for rice price, stockpile, import, and policy signal examples."
+  },
+  {
+    "id": "source:mlit-drought-portal",
+    "label": "MLIT water resources and drought information portal",
+    "url": "https://www.mlit.go.jp/mizukokudo/mizsei/index.html",
+    "publisher": "Ministry of Land, Infrastructure, Transport and Tourism",
+    "accessed": "2026-04-10",
+    "description": "Manual seed source for reservoir and drought observations."
+  },
+  {
+    "id": "source:mod-fy2026-budget",
+    "label": "MOD FY2026 defense budget materials",
+    "url": "https://www.mod.go.jp/j/budget/yosan_gaiyo/fy2026/yosan_20250829.pdf",
+    "publisher": "Ministry of Defense",
+    "accessed": "2026-04-10",
+    "description": "Manual seed source for FY2026 defense budget flow examples."
+  },
+  {
+    "id": "source:meti-semiconductor-frame",
+    "label": "METI AI and semiconductor industrial base framework",
+    "url": "https://www.meti.go.jp/policy/mono_info_service/ai_semiconductor_frame/ai_semiconductor_frame.html",
+    "publisher": "Ministry of Economy, Trade and Industry",
+    "accessed": "2026-04-10",
+    "description": "Manual seed source for semiconductor dependency and industrial policy examples."
+  },
+  {
+    "id": "source:cabinet-tsmc-2026",
+    "label": "Prime Minister's Office visit by TSMC Chairman and CEO C.C. Wei",
+    "url": "https://www.kantei.go.jp/jp/104/actions/202602/05hyoukei.html",
+    "publisher": "Prime Minister's Office of Japan",
+    "published": "2026-02-05",
+    "accessed": "2026-04-10",
+    "description": "Public statement linking advanced semiconductor manufacturing in Japan to economic security."
+  }
+]

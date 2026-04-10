@@ -1,0 +1,30 @@
+import { describe, expect, test } from "vitest";
+
+import { loadSeedGraph } from "../../data/seed-loader";
+import { getDetailView } from "../detail";
+
+describe("getDetailView", () => {
+  test("builds an evidence-ready detail view for an energy dependency flow", () => {
+    const graph = loadSeedGraph();
+
+    const detail = getDetailView(graph, "flow:qatar-lng-japan");
+
+    expect(detail.label).toBe("Qatar LNG to Japan");
+    expect(detail.kind).toBe("DependencyFlow");
+    expect(detail.sources.map((source) => source.id)).toContain("source:meti-2026-energy-taskforce");
+    expect(detail.relatedEntities.map((entity) => entity.id)).toEqual(
+      expect.arrayContaining([
+        "country:qatar",
+        "country:japan",
+        "resource:lng",
+        "chokepoint:hormuz",
+        "chokepoint:malacca",
+        "terminal:sodegaura-lng"
+      ])
+    );
+    expect(detail.sparql.title).toBe("SPARQL preview for Qatar LNG to Japan");
+    expect(detail.sparql.query).toContain("prov:wasDerivedFrom");
+    expect(detail.sparql.query).toContain("<https://data.jp-strategic-dependency-graph.org/id/flow/qatar-lng-japan>");
+    expect(detail.sparql.query).toContain("jpsdg:transitsVia");
+  });
+});

@@ -1,0 +1,222 @@
+# PRD: Japan Economic Security Globe Phase 0 MVP
+
+## Summary
+
+Build the Phase 0 public MVP for `japan-economic-security-globe`, a public-interest semantic intelligence service for people in Japan. The product explains what Japan depends on globally and how those dependencies flow back into rice, water, electricity, daily life, defense, and semiconductors.
+
+The app is an Energy-led hybrid launch experience. It opens with global energy/logistics risk, then bridges into domestic impacts like rice, water, defense budgets, and semiconductor dependencies. Phase 0 must be free, public, source-linked, and built around a clean semantic data model that can later migrate to OWL/RDF/SPARQL infrastructure.
+
+## Goals
+
+1. Create a working local Next.js App Router application.
+2. Build a visually strong public homepage with a dark globe, Japan impact map, and evidence graph.
+3. Use Energy as the default theme and include complete thin slices for Rice, Water, Defense, and Semiconductors.
+4. Model all MVP content as a canonical semantic graph rather than per-component hard-coded data.
+5. Add local seeded JSON data with provenance fields aligned to future `prov:wasDerivedFrom`.
+6. Add initial Turtle ontology stubs and SPARQL query examples.
+7. Add README explaining the project concept, semantic-web value, MVP scope, and future OWL/RDF/SPARQL plan.
+
+## Non-Goals
+
+1. Do not implement authentication.
+2. Do not implement billing or paid features.
+3. Do not implement a real SPARQL endpoint.
+4. Do not implement live data ingestion.
+5. Do not add RDS or external database dependencies.
+6. Do not fully model domestic trucking, warehouse, or distribution logistics.
+7. Do not create five disconnected mini apps.
+
+## Tech Stack
+
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- React Three Fiber or Three.js for globe
+- Lightweight SVG or D3-compatible approach for Japan impact map
+- react-force-graph or a similar graph component for evidence graph
+- Vitest for semantic selectors and SPARQL preview tests
+- Local JSON/TTL seed files
+- Cloudflare-only compatible architecture for future deployment
+
+## Product Framing
+
+The service is explicitly for people in Japan. Foreign countries and routes are explanatory variables, not primary service regions. Every selected country, route, port, facility, policy, budget, or source should ultimately answer why it matters to people in Japan.
+
+Phase 0 is `Japan civic dependency service`.
+
+Phase 1 later adds `Japan strategic neighborhood layer` while keeping the audience unchanged.
+
+Phase 2 later adds institutional paid features such as private workspaces, alerts, API/data access, internal source integration, scenario analysis, and custom ontology build services.
+
+## Required Phase 0 UX
+
+1. Left theme rail with Energy, Rice, Water, Defense, Semiconductors.
+2. Energy is the default active theme.
+3. Main hero area with dark interactive globe.
+4. Globe shows Japan anchor, supplier countries, chokepoints, routes, and dependency arcs.
+5. Japan impact section shows domestic landing points such as ports, terminals, refineries, reservoirs, prefectures, and strategic facilities.
+6. Evidence drawer shows summary, why it matters for Japan, linked flows, source documents, related entities, and SPARQL preview.
+7. Evidence graph connects source documents, policy documents, budget lines, laws, organizations, facilities, products, observations, and flows.
+8. Clicking a country, route, chokepoint, port, terminal, refinery, reservoir, prefecture, observation, policy document, budget line, or source document updates the detail view.
+9. Foreign country detail windows show flag, small map/geographic cue, relation to Japan, flows to Japan, key sources, and related themes. They must not become generic country profiles.
+
+## Semantic Model
+
+The semantic layer has five parts:
+
+1. Core ontology
+2. Observation layer
+3. Provenance layer
+4. Presentation layer
+5. Strategic extension reserved for Phase 1
+
+Core entities:
+
+- Country
+- Prefecture
+- WorldRegion
+- Resource
+- Product
+- PolicyDocument
+- Law
+- BudgetLine
+- CapabilityArea
+- Organization
+- Facility
+- Route
+- Chokepoint
+- Port
+- Terminal
+- Refinery
+- Reservoir
+- SeaLane
+- DependencyFlow
+
+Observation entities:
+
+- Observation
+- PriceObservation
+- ImportObservation
+- ReservoirObservation
+- WaterObservation
+- BudgetObservation
+- DependencyObservation
+- PolicySignal
+
+Provenance entities:
+
+- SourceDocument
+- ExtractedClaim
+- Citation
+- DatasetRelease
+
+Presentation entities:
+
+- ThemeLens
+- StoryPreset
+- HighlightedQuery
+- DetailWindow
+
+Phase 1 strategic extension entities:
+
+- StrategicRelation
+- GeopoliticalEvent
+- DiplomaticAction
+- TradeRestriction
+- Sanction
+- SecurityIssue
+- AllianceOrPartnership
+
+Important relationship verbs:
+
+- dependsOn
+- exportsTo
+- importsFrom
+- transitsVia
+- landsAt
+- receivesAt
+- operatedBy
+- governedBy
+- authorizedBy
+- fundedBy
+- mentions
+- affects
+- measuredBy
+- observedAt
+- reportedIn
+- allocatedTo
+- derivedFrom
+- linkedToTheme
+
+## Seed Data Requirements
+
+Create local seed data under `data/seed/`:
+
+- entities.json
+- flows.json
+- observations.json
+- sources.json
+
+Every item must include source labels and source URLs. All facts must include provenance fields that can later map to `prov:wasDerivedFrom`.
+
+Theme slices:
+
+1. Energy: Japan linked to oil, LNG, and coal supplier countries; Hormuz and Malacca; ports/terminals/refinery examples; electricity/fertilizer impact.
+2. Rice: rice price, stockpile, import, and policy signal observations connected to energy/fertilizer dependency.
+3. Water: selected prefectures or reservoir systems with water stress/drought examples.
+4. Defense: sample FY2026 budget categories linked to capability areas and source documents.
+5. Semiconductors: Japan linked to Taiwan, South Korea, Netherlands, United States, and China.
+
+## Ontology and Query Files
+
+Create:
+
+- ontology/core.ttl
+- ontology/observations.ttl
+- ontology/provenance.ttl
+- queries/energy-dependency.rq
+- queries/rice-energy-impact.rq
+- queries/water-stress.rq
+- queries/defense-budget-flow.rq
+- queries/semiconductor-dependency.rq
+
+## Recommended Implementation Tasks
+
+1. Scaffold Next.js app and tooling.
+2. Define semantic and presentation TypeScript types.
+3. Add seed data and seed loader.
+4. Add semantic graph selectors and tests.
+5. Add SPARQL preview and provenance helpers.
+6. Add ontology Turtle stubs.
+7. Build app shell and theme rail.
+8. Build Energy-led hero globe.
+9. Build Japan impact map.
+10. Build evidence drawer and graph panel.
+11. Add visual polish and responsive layout.
+12. Add README and public project framing.
+13. Run final verification with tests, build, and local app inspection.
+
+## Verification
+
+Run:
+
+```bash
+npm test
+npm run build
+npm run dev
+```
+
+Acceptance checklist:
+
+- Energy is default theme.
+- All five themes are present.
+- Globe flows are clickable.
+- Japan impact section is visible.
+- Evidence drawer is visible.
+- Evidence graph is visible.
+- SPARQL preview appears for selected objects.
+- Source documents are listed.
+- Seeded data has provenance fields.
+- Ontology stubs exist.
+- Query examples exist.
+- README explains project and semantic-web direction.

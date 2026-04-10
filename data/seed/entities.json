@@ -1,0 +1,292 @@
+[
+  {
+    "id": "country:japan",
+    "kind": "Country",
+    "label": "Japan",
+    "labelJa": "日本",
+    "summary": "The service anchor: all external dependencies are interpreted through their impact on people in Japan.",
+    "whyItMatters": "Japan is the subject of the service, not just another country node.",
+    "themes": ["energy", "rice", "water", "defense", "semiconductors"],
+    "coordinates": { "lat": 36.2048, "lon": 138.2529 },
+    "countryCode": "JP",
+    "flagEmoji": "🇯🇵",
+    "provenance": ["source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "country:saudi-arabia",
+    "kind": "Country",
+    "label": "Saudi Arabia",
+    "summary": "A major Middle East oil supplier in Japan's energy dependency story.",
+    "whyItMatters": "Middle East route risk can feed into Japanese fuel, electricity, logistics, and input cost pressure.",
+    "themes": ["energy"],
+    "coordinates": { "lat": 23.8859, "lon": 45.0792 },
+    "countryCode": "SA",
+    "flagEmoji": "🇸🇦",
+    "provenance": ["source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "country:qatar",
+    "kind": "Country",
+    "label": "Qatar",
+    "summary": "A Gulf LNG supplier used in the MVP energy route story.",
+    "whyItMatters": "LNG supply risk is easier for Japanese users to understand when tied to electricity exposure.",
+    "themes": ["energy"],
+    "coordinates": { "lat": 25.3548, "lon": 51.1839 },
+    "countryCode": "QA",
+    "flagEmoji": "🇶🇦",
+    "provenance": ["source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "country:australia",
+    "kind": "Country",
+    "label": "Australia",
+    "summary": "A major LNG and coal supplier in Japan's energy mix.",
+    "whyItMatters": "Australia shows that Japan's energy exposure is not only a Middle East problem.",
+    "themes": ["energy"],
+    "coordinates": { "lat": -25.2744, "lon": 133.7751 },
+    "countryCode": "AU",
+    "flagEmoji": "🇦🇺",
+    "provenance": ["source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "country:taiwan",
+    "kind": "Country",
+    "label": "Taiwan",
+    "summary": "A key semiconductor node in Japan's economic security story.",
+    "whyItMatters": "Taiwan's semiconductor ecosystem shapes Japan's technology supply-chain exposure.",
+    "themes": ["semiconductors"],
+    "coordinates": { "lat": 23.6978, "lon": 120.9605 },
+    "countryCode": "TW",
+    "flagEmoji": "🇹🇼",
+    "provenance": ["source:cabinet-tsmc-2026", "source:meti-semiconductor-frame"]
+  },
+  {
+    "id": "country:south-korea",
+    "kind": "Country",
+    "label": "South Korea",
+    "summary": "A neighboring semiconductor and advanced manufacturing partner and competitor.",
+    "whyItMatters": "South Korea is part of the regional semiconductor dependency landscape around Japan.",
+    "themes": ["semiconductors"],
+    "coordinates": { "lat": 35.9078, "lon": 127.7669 },
+    "countryCode": "KR",
+    "flagEmoji": "🇰🇷",
+    "provenance": ["source:meti-semiconductor-frame"]
+  },
+  {
+    "id": "country:netherlands",
+    "kind": "Country",
+    "label": "Netherlands",
+    "summary": "A critical country in advanced semiconductor equipment dependency.",
+    "whyItMatters": "Semiconductor capability depends not only on fabs but also on highly specialized equipment ecosystems.",
+    "themes": ["semiconductors"],
+    "coordinates": { "lat": 52.1326, "lon": 5.2913 },
+    "countryCode": "NL",
+    "flagEmoji": "🇳🇱",
+    "provenance": ["source:meti-semiconductor-frame"]
+  },
+  {
+    "id": "country:united-states",
+    "kind": "Country",
+    "label": "United States",
+    "summary": "A strategic partner in semiconductor and defense-related dependency stories.",
+    "whyItMatters": "Japan's economic security often depends on US-linked technology, defense, and industrial policy coordination.",
+    "themes": ["defense", "semiconductors"],
+    "coordinates": { "lat": 37.0902, "lon": -95.7129 },
+    "countryCode": "US",
+    "flagEmoji": "🇺🇸",
+    "provenance": ["source:meti-semiconductor-frame", "source:mod-fy2026-budget"]
+  },
+  {
+    "id": "country:china",
+    "kind": "Country",
+    "label": "China",
+    "summary": "A neighboring economic and strategic dependency variable for Japan.",
+    "whyItMatters": "China is relevant to Japan's supply-chain, market, and strategic risk explanations.",
+    "themes": ["semiconductors"],
+    "coordinates": { "lat": 35.8617, "lon": 104.1954 },
+    "countryCode": "CN",
+    "flagEmoji": "🇨🇳",
+    "provenance": ["source:meti-semiconductor-frame"]
+  },
+  {
+    "id": "chokepoint:hormuz",
+    "kind": "Chokepoint",
+    "label": "Strait of Hormuz",
+    "summary": "A critical maritime chokepoint for Gulf energy shipments.",
+    "whyItMatters": "For Japanese users, Hormuz matters when route risk becomes fuel, electricity, logistics, and food input pressure.",
+    "themes": ["energy", "rice"],
+    "coordinates": { "lat": 26.5667, "lon": 56.25 },
+    "provenance": ["source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "chokepoint:malacca",
+    "kind": "Chokepoint",
+    "label": "Strait of Malacca",
+    "summary": "A maritime route connecting Indian Ocean energy flows to East Asia.",
+    "whyItMatters": "Malacca helps explain why sea-lane disruption can become a Japanese domestic supply story.",
+    "themes": ["energy", "semiconductors"],
+    "coordinates": { "lat": 2.5, "lon": 101 },
+    "provenance": ["source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "route:gulf-to-japan",
+    "kind": "SeaLane",
+    "label": "Gulf to Japan sea lane",
+    "summary": "A simplified MVP sea lane from Gulf suppliers through Hormuz and Malacca to Japan.",
+    "whyItMatters": "It connects a faraway crisis to Japanese domestic energy exposure.",
+    "themes": ["energy", "rice"],
+    "provenance": ["source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "port:yokohama",
+    "kind": "Port",
+    "label": "Yokohama Port",
+    "summary": "A representative Japanese port used to show domestic landing points.",
+    "whyItMatters": "Ports show where global dependency becomes domestic infrastructure exposure.",
+    "themes": ["energy"],
+    "coordinates": { "lat": 35.45, "lon": 139.65 },
+    "provenance": ["source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "terminal:sodegaura-lng",
+    "kind": "Terminal",
+    "label": "Sodegaura LNG Terminal",
+    "summary": "Representative LNG receiving infrastructure in the Tokyo Bay energy system.",
+    "whyItMatters": "LNG receiving terminals make global gas dependency visible inside Japan.",
+    "themes": ["energy"],
+    "coordinates": { "lat": 35.45, "lon": 139.99 },
+    "provenance": ["source:tepco-2026-april-power"]
+  },
+  {
+    "id": "refinery:keihin",
+    "kind": "Refinery",
+    "label": "Keihin refinery area",
+    "summary": "Representative refinery cluster for domestic oil-product exposure.",
+    "whyItMatters": "Refineries translate crude supply risk into Japanese fuel and logistics exposure.",
+    "themes": ["energy", "rice"],
+    "coordinates": { "lat": 35.52, "lon": 139.75 },
+    "provenance": ["source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "prefecture:tokyo",
+    "kind": "Prefecture",
+    "label": "Tokyo",
+    "labelJa": "東京都",
+    "summary": "A domestic impact anchor for energy and water stress stories.",
+    "whyItMatters": "Tokyo makes national dependency concrete for household costs and reservoir concerns.",
+    "themes": ["energy", "water"],
+    "coordinates": { "lat": 35.6762, "lon": 139.6503 },
+    "provenance": ["source:tepco-2026-april-power", "source:mlit-drought-portal"]
+  },
+  {
+    "id": "reservoir:ogochi",
+    "kind": "Reservoir",
+    "label": "Ogouchi Reservoir",
+    "summary": "A reservoir example used for the water stress MVP slice.",
+    "whyItMatters": "Reservoir levels make water dependency visible before it becomes a household disruption.",
+    "themes": ["water"],
+    "coordinates": { "lat": 35.7907, "lon": 139.0502 },
+    "provenance": ["source:mlit-drought-portal"]
+  },
+  {
+    "id": "prefecture:niigata",
+    "kind": "Prefecture",
+    "label": "Niigata",
+    "labelJa": "新潟県",
+    "summary": "A rice-producing region used to connect national rice concerns to regional production.",
+    "whyItMatters": "Rice becomes clearer when global inputs and domestic producing regions are shown together.",
+    "themes": ["rice", "water"],
+    "coordinates": { "lat": 37.9026, "lon": 139.0232 },
+    "provenance": ["source:maff-rice-policy"]
+  },
+  {
+    "id": "product:rice",
+    "kind": "Product",
+    "label": "Rice",
+    "summary": "Japan's staple food and the key domestic bridge from dependency to household impact.",
+    "whyItMatters": "Rice turns abstract dependency into a daily-life issue for people in Japan.",
+    "themes": ["rice"],
+    "provenance": ["source:maff-rice-policy"]
+  },
+  {
+    "id": "resource:lng",
+    "kind": "Resource",
+    "label": "LNG",
+    "summary": "Liquefied natural gas used in Japan's energy dependency story.",
+    "whyItMatters": "LNG exposure connects overseas supply routes to Japanese electricity costs.",
+    "themes": ["energy"],
+    "provenance": ["source:meti-2026-energy-taskforce", "source:tepco-2026-april-power"]
+  },
+  {
+    "id": "resource:crude-oil",
+    "kind": "Resource",
+    "label": "Crude oil",
+    "summary": "Crude oil import dependency is the MVP's launch-hook resource.",
+    "whyItMatters": "Oil price and route risk can affect fuel, logistics, fertilizer, and food prices in Japan.",
+    "themes": ["energy", "rice"],
+    "provenance": ["source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "resource:coal",
+    "kind": "Resource",
+    "label": "Coal",
+    "summary": "Coal is included to show that Japan's energy dependency is multi-resource.",
+    "whyItMatters": "Coal exposure changes the route and supplier picture beyond the Gulf.",
+    "themes": ["energy"],
+    "provenance": ["source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "product:fertilizer-inputs",
+    "kind": "Product",
+    "label": "Fertilizer inputs",
+    "summary": "A bridge product connecting energy and agricultural input costs.",
+    "whyItMatters": "Fertilizer makes the Energy-to-Rice relationship easier to understand.",
+    "themes": ["energy", "rice"],
+    "provenance": ["source:maff-rice-policy", "source:meti-2026-energy-taskforce"]
+  },
+  {
+    "id": "budget:fiscal-2026-stand-off-defense",
+    "kind": "BudgetLine",
+    "label": "FY2026 stand-off defense capability",
+    "summary": "A sample defense budget line linked to capability-area reasoning.",
+    "whyItMatters": "Defense spending becomes understandable when budget lines connect to capability areas and source documents.",
+    "themes": ["defense"],
+    "provenance": ["source:mod-fy2026-budget"]
+  },
+  {
+    "id": "capability:standoff",
+    "kind": "CapabilityArea",
+    "label": "Stand-off defense capability",
+    "summary": "A capability-area node for defense budget flow explanations.",
+    "whyItMatters": "Capability areas make budget allocations interpretable for citizens.",
+    "themes": ["defense"],
+    "provenance": ["source:mod-fy2026-budget"]
+  },
+  {
+    "id": "org:mod",
+    "kind": "Organization",
+    "label": "Ministry of Defense",
+    "summary": "Government organization publishing defense budget materials.",
+    "whyItMatters": "Organizations anchor who publishes or administers policy and budget claims.",
+    "themes": ["defense"],
+    "provenance": ["source:mod-fy2026-budget"]
+  },
+  {
+    "id": "product:advanced-semiconductors",
+    "kind": "Product",
+    "label": "Advanced semiconductors",
+    "summary": "A strategic product in Japan's economic security graph.",
+    "whyItMatters": "Semiconductor dependencies shape industrial resilience, economic security, and policy choices.",
+    "themes": ["semiconductors"],
+    "provenance": ["source:meti-semiconductor-frame", "source:cabinet-tsmc-2026"]
+  },
+  {
+    "id": "policy:semiconductor-industrial-base",
+    "kind": "PolicyDocument",
+    "label": "AI and semiconductor industrial base framework",
+    "summary": "Policy framework used as an MVP source-linked semiconductor document.",
+    "whyItMatters": "Policy documents show that the visualization is evidence-linked, not decorative.",
+    "themes": ["semiconductors"],
+    "provenance": ["source:meti-semiconductor-frame"]
+  }
+]
