@@ -106,27 +106,9 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         themePalette={themePalette}
       />
 
-      <div className="min-h-0 p-4">
-        <div
-          className="hidden h-full min-h-0 gap-4 lg:grid"
-          style={{
-            gridTemplateColumns: `${leftWidth}px minmax(0, 1fr)`,
-            gridTemplateRows: `minmax(0, 1fr) ${compareHeight}px`
-          }}
-        >
-          <aside data-testid="layout-left-nav" className="row-span-2 min-h-0">
-            <MapInboxPanel
-              collapsed={!isInboxOpen}
-              query={searchQuery}
-              themePalette={themePalette}
-              themeId={themeId}
-              onQueryChange={setSearchQuery}
-              onToggleCollapsed={() => setInboxOpen((value) => !value)}
-              onThemeChange={handleThemeChange}
-            />
-          </aside>
-
-          <section data-testid="layout-map-section" className="relative min-h-0">
+      <div className="min-h-0">
+        <div className="relative hidden h-full min-h-0 lg:block">
+          <section data-testid="layout-map-section" className="absolute inset-0 min-h-0">
             <JapanMainMap
               activeId={activeId}
               detail={detail}
@@ -141,31 +123,60 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
               statusPalette={statusPalette}
               themePalette={themePalette}
             />
-
-            <div
-              data-testid="layout-evidence-overlay"
-              className="pointer-events-none absolute bottom-4 right-4 top-4 z-30 flex justify-end"
-            >
-              <div
-                className="pointer-events-auto h-full transition-[width] duration-200 ease-out"
-                style={{ width: isEvidenceOpen ? 320 : 56 }}
-              >
-                <EvidencePanel
-                  collapsed={!isEvidenceOpen}
-                  detail={detail}
-                  evidenceGraph={evidenceGraph}
-                  onSelect={setSelectedId}
-                  selectedId={activeId}
-                  statusPalette={statusPalette}
-                  themePalette={themePalette}
-                  themeTitle={view.title}
-                  onToggleCollapsed={() => setEvidenceOpen((value) => !value)}
-                />
-              </div>
-            </div>
           </section>
 
-          <section data-testid="layout-compare-section" className="min-h-0">
+          <aside
+            data-testid="layout-left-nav"
+            className="absolute left-4 top-4 z-30 min-h-0 transition-[width] duration-200 ease-out"
+            style={{
+              width: leftWidth,
+              bottom: 16
+            }}
+          >
+            <MapInboxPanel
+              collapsed={!isInboxOpen}
+              query={searchQuery}
+              themePalette={themePalette}
+              themeId={themeId}
+              onQueryChange={setSearchQuery}
+              onToggleCollapsed={() => setInboxOpen((value) => !value)}
+              onThemeChange={handleThemeChange}
+            />
+          </aside>
+
+          <div
+            data-testid="layout-evidence-overlay"
+            className="pointer-events-none absolute right-4 top-4 z-30 flex justify-end"
+            style={{
+              bottom: compareHeight + 32
+            }}
+          >
+            <div
+              className="pointer-events-auto h-full transition-[width] duration-200 ease-out"
+              style={{ width: isEvidenceOpen ? 320 : 56 }}
+            >
+              <EvidencePanel
+                collapsed={!isEvidenceOpen}
+                detail={detail}
+                evidenceGraph={evidenceGraph}
+                onSelect={setSelectedId}
+                selectedId={activeId}
+                statusPalette={statusPalette}
+                themePalette={themePalette}
+                themeTitle={view.title}
+                onToggleCollapsed={() => setEvidenceOpen((value) => !value)}
+              />
+            </div>
+          </div>
+
+          <section
+            data-testid="layout-compare-overlay"
+            className="absolute bottom-4 right-4 z-30 min-h-0"
+            style={{
+              left: leftWidth + 24,
+              height: compareHeight
+            }}
+          >
             <OperationsSignalTable
               activeId={activeId}
               collapsed={false}

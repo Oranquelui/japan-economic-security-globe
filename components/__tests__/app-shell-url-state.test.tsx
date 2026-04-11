@@ -78,13 +78,13 @@ beforeEach(() => {
 });
 
 describe("AppShell url sync", () => {
-  test("renders the shell as header plus left nav, map, evidence, and comparison sections", () => {
+  test("renders the shell as header plus full map stage with overlaid navigation, evidence, and comparison", () => {
     render(<AppShell graph={loadSeedGraph()} />);
 
     expect(screen.getByRole("banner")).toBeTruthy();
     expect(screen.getByTestId("layout-left-nav")).toBeTruthy();
     expect(screen.getByTestId("layout-map-section")).toBeTruthy();
-    expect(screen.getByTestId("layout-compare-section")).toBeTruthy();
+    expect(screen.getByTestId("layout-compare-overlay")).toBeTruthy();
     expect(screen.getByTestId("layout-evidence-overlay")).toBeTruthy();
     expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("yes");
     expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
