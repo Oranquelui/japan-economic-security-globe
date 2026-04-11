@@ -23,7 +23,7 @@ describe("operations url state", () => {
         selected: ""
       })
     ).toEqual({
-      mapMode: "route",
+      mapMode: "point",
       selectedId: null,
       themeId: "energy"
     });
@@ -33,7 +33,7 @@ describe("operations url state", () => {
     expect(
       serializeOperationsUrlState({
         themeId: "energy",
-        mapMode: "route",
+        mapMode: "point",
         selectedId: null
       })
     ).toBe("");

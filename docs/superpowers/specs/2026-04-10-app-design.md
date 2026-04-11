@@ -4,17 +4,18 @@
 **Date:** 2026-04-10  
 **Status:** App design draft before implementation planning
 
-## 0. 2026-04-10 UI Decision Update
+## 0. 2026-04-11 UI Decision Update
 
 The front end is **Japan-first**, not globe-first.
 
 The reference direction is Palantir-style operations mapping in information structure, not in color:
 
-- left: signal inbox, theme filters, operational scope
-- center top: Japan operations map as the main canvas
-- center lower: signal/event table for routes, observations, domestic landing points
+- top: action bar for lens, mode, search, and shareable state
+- left: navigation rail for story presets, filters, and semantic counts
+- center: Japan operations map as the main canvas
+- bottom: comparison grid for routes, observations, facilities, and policy signals
 - right: evidence drawer with graph, sources, related entities, and SPARQL preview
-- global layer: supporting inset map and evidence graph only; it explains foreign suppliers and chokepoints as relationships to Japan
+- global layer: revealed by zoom-out or map mode, not as the default hero
 
 The service region is Japan. Foreign countries are not user-service regions; they are explanatory nodes for Japan's dependency intelligence.
 
@@ -22,7 +23,7 @@ The first screen should answer:
 
 > 日本は何に依存していて、その揺れは日本国内のどこに着地するのか。
 
-The globe-style view should not dominate the first screen until it can show readable geography. For Phase 0, a small global route inset is safer than a large 3D globe with weak map legibility.
+The globe-style view should not dominate the first screen. For Phase 0, a single Japan map canvas with zoom-out global context is safer than a large 3D globe with weak map legibility.
 
 ## 1. App Purpose
 
@@ -38,7 +39,7 @@ The app must feel like a serious semantic-web and public-interest data product, 
 
 Phase 0 is a free public MVP.
 
-The first screen should launch with the `Energy` story because the April 2026 attention wave is about energy, chokepoints, oil, LNG, and electricity costs.
+The first screen should launch with the `Energy` lens because the April 2026 attention wave is about energy, chokepoints, oil, LNG, and electricity costs.
 
 The story path should be:
 
@@ -56,6 +57,13 @@ The default hero copy:
 Secondary copy:
 
 > 日本地図を主画面にして、国際供給元・政策文書・出典をセマンティックグラフで確認する。
+
+The first impression should be:
+
+- stable Japan viewport
+- visible domestic anchors
+- readable navigation state
+- no automatic fit-to-route before the user asks for it
 
 ## 3. Visual Direction
 
@@ -83,23 +91,44 @@ The app should avoid:
 
 Desktop layout:
 
-- left vertical theme rail
+- top action bar
+- left navigation rail
 - central Japan operations map
 - right evidence drawer
-- bottom operations signal table
-- floating selected-entity inspector
+- bottom comparison grid
+- lightweight selected-entity briefing strip
 
 Mobile layout:
 
-- top story selector
+- top story selector and mode switch
 - Japan operations map hero
 - collapsible evidence drawer
 - horizontal theme chips
-- operations signal table below the map
+- comparison grid below the map
 
-### 4.2 Left Theme Rail
+### 4.2 Action Bar
 
-Order:
+Responsibilities:
+
+- show product identity and current public question
+- show the current map mode and lens
+- expose search or command entry
+- expose share/copy-link actions
+- keep state understandable without opening drawers
+
+### 4.3 Navigation Rail
+
+The rail should not be only a color-coded theme switcher.
+
+It should contain:
+
+1. story lenses
+2. semantic presets
+3. filter pills
+4. current result counts
+5. compact signal inbox list
+
+Lens order:
 
 1. Energy
 2. Rice
@@ -107,14 +136,23 @@ Order:
 4. Defense
 5. Semiconductors
 
-Each theme should show:
+Each lens should show:
 
 - short label
 - color marker
-- active story count
-- current selected story headline
+- active result count
+- current selected story or preset headline
 
-### 4.3 Japan Operations Map
+Semantic preset examples:
+
+- 中東輸送路
+- カタールLNG
+- コメ価格
+- 渇水監視
+- FY2026防衛予算
+- 半導体供給
+
+### 4.4 Japan Operations Map
 
 Responsibilities:
 
@@ -122,10 +160,13 @@ Responsibilities:
 - show where supplier-country dependency lands in Japan
 - show ports, LNG terminals, refineries, reservoirs, prefectures, and budget landing points
 - show sea lanes and chokepoints as inbound routes to Japan
-- show a small global context inset only as a supporting layer
+- reveal global context by zoom-out or mode change, not by separate first-screen hero
 
 Interactions:
 
+- initial viewport is fixed on Japan
+- initial mode is `point` or `cluster`
+- no auto-fit on first load
 - click domestic landing point
 - click route
 - click chokepoint
@@ -133,7 +174,7 @@ Interactions:
 - click signal row
 - selected object opens detail inspector and evidence drawer
 
-### 4.4 Global Supporting Layer
+### 4.5 Global Supporting Layer
 
 Responsibilities:
 
@@ -142,9 +183,9 @@ Responsibilities:
 - show chokepoints and sea lanes as explanatory context
 - avoid becoming the main user-service map
 
-The global layer should be an inset or secondary view in Phase 0. A large 3D globe can return later only if the map geography is visually legible.
+The global layer should appear when the user zooms out or switches to `route` mode. A large 3D globe is not required in Phase 0.
 
-### 4.5 Operations Signal Table
+### 4.6 Comparison Grid
 
 Responsibilities:
 
@@ -154,7 +195,7 @@ Responsibilities:
 
 This should not become a full domestic logistics product in Phase 0.
 
-### 4.6 Evidence Drawer
+### 4.7 Evidence Drawer
 
 Responsibilities:
 
@@ -173,7 +214,7 @@ Sections:
 - Related entities
 - SPARQL preview
 
-### 4.7 Evidence Graph Panel
+### 4.8 Evidence Graph Panel
 
 Responsibilities:
 
@@ -184,13 +225,13 @@ The graph should be visible enough to prove semantic-web depth, but not dominate
 
 ## 5. Interaction Model
 
-### 5.1 Theme switching
+### 5.1 Lens switching
 
-Switching theme should change:
+Switching lens should change:
 
 - active Japan operations map objects
-- active global route inset arcs
-- active operations table rows
+- active global route overlays
+- active comparison grid rows
 - active evidence graph neighborhood
 - hero headline
 - color accents
@@ -198,7 +239,28 @@ Switching theme should change:
 
 It should not change the underlying data model.
 
-### 5.2 Selection model
+### 5.2 Story preset model
+
+The public app should use purpose-based entry points similar to model selection for scenarios.
+
+Users should choose:
+
+- a public question
+- a semantic preset
+- then a specific object
+
+They should not need to understand the ontology first.
+
+Every preset should resolve to:
+
+- a lens
+- a primary map mode
+- a filtered object set
+- a default comparison grid slice
+
+Future data refreshes should update preset results without changing the preset identity.
+
+### 5.3 Selection model
 
 Selectable objects:
 
@@ -218,7 +280,7 @@ Selectable objects:
 
 Every selected object should have a normalized `DetailViewModel`.
 
-### 5.3 Detail window for foreign countries
+### 5.4 Detail window for foreign countries
 
 Foreign countries are explanatory variables, not service regions.
 
@@ -270,17 +332,17 @@ Recommended modules:
 Recommended component boundaries:
 
 - `AppShell`
-- `ThemeRail`
+- `ActionBar`
+- `NavigationRail`
 - `JapanMainMap`
-- `GlobalRouteInset`
-- `OperationsSignalTable`
+- `ComparisonGrid`
 - `EvidenceDrawer`
 - `EvidenceGraph`
 - `SparqlPreview`
 - `SourceList`
 - `RelatedEntities`
 - `DetailWindow`
-- `StoryHeader`
+- `BriefingStrip`
 
 Each component should receive view models rather than raw seed data.
 
@@ -389,10 +451,10 @@ It should not try to:
 It should implement:
 
 - working homepage
-- theme switching
+- lens switching
 - clickable Japan operations map
-- global route inset
-- operations signal table
+- zoom-out global context
+- comparison grid
 - evidence graph section
 - seeded semantic data
 - ontology stubs
@@ -406,10 +468,10 @@ After this app design is approved, create an implementation plan with tasks for:
 1. scaffold Next.js app
 2. define semantic TypeScript types
 3. create seed data and ontology files
-4. build visual shell
-5. wire theme switching
+4. build action bar and navigation rail
+5. wire lens switching and preset state
 6. implement Japan operations map interactions
-7. implement global route inset
+7. implement zoom-out global context
 8. implement evidence graph and drawer
 9. add README and public project framing
 10. verify build and local app

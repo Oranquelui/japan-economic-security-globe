@@ -10,7 +10,7 @@ export interface OperationsUrlState {
 export const DEFAULT_OPERATIONS_URL_STATE: OperationsUrlState = {
   themeId: "energy",
   selectedId: null,
-  mapMode: "route"
+  mapMode: "point"
 };
 
 const VALID_THEMES = new Set<ThemeId>(["energy", "rice", "water", "defense", "semiconductors"]);

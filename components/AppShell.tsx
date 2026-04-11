@@ -17,6 +17,8 @@ import {
   serializeOperationsUrlState,
   type OperationsUrlState
 } from "../lib/presentation/url-state";
+import { localizeAnyLabel } from "../lib/presentation/japanese";
+import { ActionBar } from "./ActionBar";
 import { EvidencePanel } from "./EvidencePanel";
 import { JapanMainMap } from "./JapanMainMap";
 import { MapInboxPanel } from "./MapInboxPanel";
@@ -46,11 +48,18 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   const filteredOperationRows = filterOperationRows(operationRows, searchQuery);
   const validSelectedId = resolveSelectableId(view, selectedId);
   const activeId = resolveActiveId(view, validSelectedId);
+  const focusTargetId = validSelectedId;
   const detail = getDetailView(graph, activeId);
   const mapModel = buildJapanMapCanvasModel(graph, view, activeId);
   const themePalette = getThemePalette(themeId);
   const statusPalette = getStatusPalette();
   const metrics = buildOperationsMetrics(view, filteredOperationRows);
+  const serializedState = serializeOperationsUrlState({
+    themeId,
+    mapMode,
+    selectedId: validSelectedId
+  });
+  const sharePath = serializedState ? `${pathname}?${serializedState}` : pathname;
   const shellStyle = {
     background: themePalette.surfaceCanvas,
     "--ops-accent": themePalette.accent,
@@ -65,6 +74,8 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   } as CSSProperties;
   const leftOffset = isInboxOpen ? 360 : 88;
   const rightOffset = isEvidenceOpen ? 380 : 88;
+  const panelTop = 108;
+  const panelBottom = 16;
 
   useEffect(() => {
     const serialized = serializeOperationsUrlState({
@@ -91,26 +102,40 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
 
   return (
     <main className="relative h-screen overflow-hidden text-slate-100" style={shellStyle}>
+      <ActionBar
+        evidenceOpen={isEvidenceOpen}
+        gridOpen={isGridOpen}
+        inboxOpen={isInboxOpen}
+        mapMode={mapMode}
+        onMapModeChange={setMapMode}
+        onOpenEvidence={() => setEvidenceOpen(true)}
+        onOpenGrid={() => setGridOpen(true)}
+        onOpenInbox={() => setInboxOpen(true)}
+        resultCount={filteredOperationRows.length}
+        selectedLabel={localizeAnyLabel(detail.id, detail.label)}
+        sharePath={sharePath}
+        themeId={themeId}
+        themePalette={themePalette}
+      />
+
       <JapanMainMap
         activeId={activeId}
         detail={detail}
+        focusTargetId={focusTargetId}
         gridExpanded={isGridOpen}
         mapMode={mapMode}
         metrics={metrics}
         model={mapModel}
         leftOffset={leftOffset}
         metricsExpanded={metricsExpanded}
-        onMapModeChange={setMapMode}
         onToggleMetrics={() => setMetricsExpanded((value) => !value)}
         onSelect={setSelectedId}
-        resultCount={filteredOperationRows.length}
         rightOffset={rightOffset}
         statusPalette={statusPalette}
         themePalette={themePalette}
-        themeId={themeId}
       />
 
-      <div className="absolute inset-y-4 left-4 z-30 hidden lg:block" style={{ width: isInboxOpen ? 320 : 48 }}>
+      <div className="absolute left-4 z-30 hidden lg:block" style={{ top: panelTop, bottom: panelBottom, width: isInboxOpen ? 320 : 48 }}>
         <MapInboxPanel
           activeId={activeId}
           collapsed={!isInboxOpen}
@@ -122,12 +147,12 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
           view={view}
           onQueryChange={setSearchQuery}
           onSelect={setSelectedId}
-        onToggleCollapsed={() => setInboxOpen((value) => !value)}
-        onThemeChange={handleThemeChange}
-      />
+          onToggleCollapsed={() => setInboxOpen((value) => !value)}
+          onThemeChange={handleThemeChange}
+        />
       </div>
 
-      <div className="absolute inset-y-4 right-4 z-30 hidden lg:block" style={{ width: isEvidenceOpen ? 360 : 48 }}>
+      <div className="absolute right-4 z-30 hidden lg:block" style={{ top: panelTop, bottom: panelBottom, width: isEvidenceOpen ? 360 : 48 }}>
         <EvidencePanel
           collapsed={!isEvidenceOpen}
           detail={detail}

@@ -219,11 +219,97 @@
         "metadata": {
           "verification": true
         }
+      },
+      {
+        "id": 14,
+        "title": "Reframe the shell around Japan-first operating-picture navigation",
+        "description": "Refactor the app shell from a theme-driven demo layout into an operating-picture navigation structure built around action bar, navigation rail, map canvas, context drawer, and comparison grid.",
+        "status": "pending",
+        "dependencies": [
+          13
+        ],
+        "priority": "high",
+        "details": "Update AppShell, navigation components, and layout rules so the main experience follows a public-interest operating picture. The map must remain primary, while actions, presets, evidence, and comparison surfaces become clearly secondary but synchronized. Use the navigation concepts from Palantir Slate and Workshop scenario/model selection as IA references, not as a visual clone.",
+        "testStrategy": "Run npm run build and manually inspect that the initial reading order is action bar, navigation rail, Japan map canvas, then context surfaces without obscuring the map.",
+        "subtasks": [],
+        "metadata": {
+          "phase": "navigation-reframe",
+          "references": [
+            "https://www.palantir.com/docs/jp/foundry/workshop/scenarios-select-model/",
+            "https://www.palantir.com/docs/jp/foundry/slate/navigation/"
+          ]
+        }
+      },
+      {
+        "id": 15,
+        "title": "Stabilize first-load map behavior for Japan-first exploration",
+        "description": "Make the initial viewport stable on Japan and move route analysis to an explicit second-step interaction.",
+        "status": "pending",
+        "dependencies": [
+          14
+        ],
+        "priority": "high",
+        "details": "Change the default map mode to point or cluster, stop auto-fit on first load, and only focus to selected routes or global context after an explicit user action or shared URL state. Keep Japan fixed as the initial semantic anchor while allowing zoom-out into supplier-country context.",
+        "testStrategy": "Add or update tests around URL defaults and initial map focus behavior. Verify that first load stays on Japan and that route mode only appears after user action.",
+        "subtasks": [],
+        "metadata": {
+          "surface": "map-canvas"
+        }
+      },
+      {
+        "id": 16,
+        "title": "Introduce purpose-based story presets and public navigation state",
+        "description": "Replace simple theme switching with public-question presets that bind to semantic filters, map mode, comparison grid, and evidence state.",
+        "status": "pending",
+        "dependencies": [
+          14
+        ],
+        "priority": "high",
+        "details": "Add story presets such as Middle East routes, Qatar LNG, rice prices, water stress, FY2026 defense budget, and semiconductor supply. Each preset should resolve to a semantic lens, primary map mode, selected object set, and URL-shareable navigation state. Keep the underlying ontology stable while changing the presentation entry points.",
+        "testStrategy": "Run npm test and verify preset parsing/serialization, URL syncing, and deterministic state restoration from shared links.",
+        "subtasks": [],
+        "metadata": {
+          "surface": "navigation-state"
+        }
+      },
+      {
+        "id": 17,
+        "title": "Refactor context drawer and comparison grid for operational reading order",
+        "description": "Reduce visual clutter and make the map, comparison, and evidence surfaces work in a deliberate sequence.",
+        "status": "pending",
+        "dependencies": [
+          14,
+          15,
+          16
+        ],
+        "priority": "medium",
+        "details": "Simplify the right drawer, ensure the bottom grid acts as the main comparison surface, and keep the top-level action bar concise. The user should be able to go from map to table to evidence without losing map context. Foreign-country detail windows must remain explanatory overlays, not separate profile screens.",
+        "testStrategy": "Run npm run build and manually inspect desktop/mobile layouts to confirm the map remains dominant and drawer/grid surfaces do not overwhelm the initial screen.",
+        "subtasks": [],
+        "metadata": {
+          "surface": "information-architecture"
+        }
+      },
+      {
+        "id": 18,
+        "title": "Verify navigation architecture against public-interest product goals",
+        "description": "Run a targeted UX and semantic verification pass on the reworked navigation model before further data expansion.",
+        "status": "pending",
+        "dependencies": [
+          17
+        ],
+        "priority": "medium",
+        "details": "Check that the navigation explains Japanese domestic impact first, keeps global context secondary, preserves ontology-driven detail views, and supports shareable states. Confirm the app no longer reads as a loose widget collage and instead feels like a coherent Japan civic dependency service.",
+        "testStrategy": "Run npm test, npm run lint, npm run build, and a manual review against the PRD acceptance criteria for navigation, first-load map behavior, and evidence flow.",
+        "subtasks": [],
+        "metadata": {
+          "verification": "navigation-reframe"
+        }
       }
     ],
     "metadata": {
       "created": "2026-04-10T00:00:00+09:00",
-      "updated": "2026-04-10T00:00:00+09:00",
+      "updated": "2026-04-11T00:00:00+09:00",
       "description": "Phase 0 MVP implementation tasks for japan-economic-security-globe"
     }
   }

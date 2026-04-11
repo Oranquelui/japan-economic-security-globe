@@ -3,64 +3,55 @@
 import { useState, type ReactNode } from "react";
 
 import type { DetailViewModel } from "../types/presentation";
-import type { ThemeId } from "../types/semantic";
 import type { OperationMetric } from "../lib/presentation/metrics";
 import type { JapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import type { OperationMapMode } from "../lib/presentation/operations";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
-import { getThemeLabel, localizeAnyLabel, localizeKind, localizeSummary } from "../lib/presentation/japanese";
-import { getOperationModeLabel } from "../lib/presentation/operations";
+import { localizeAnyLabel, localizeKind, localizeSummary } from "../lib/presentation/japanese";
 import { resolveToneColor } from "../lib/presentation/palette";
 import { JapanOperationsMapCanvas } from "./JapanOperationsMapCanvas";
 
 interface JapanMainMapProps {
   activeId: string;
   detail: DetailViewModel;
+  focusTargetId: string | null;
   gridExpanded: boolean;
   leftOffset: number;
   mapMode: OperationMapMode;
   metricsExpanded: boolean;
   metrics: OperationMetric[];
   model: JapanMapCanvasModel;
-  onMapModeChange: (mode: OperationMapMode) => void;
   onToggleMetrics: () => void;
   onSelect: (id: string) => void;
-  resultCount: number;
   rightOffset: number;
   statusPalette: StatusPalette;
   themePalette: ThemePalette;
-  themeId: ThemeId;
 }
-
-const OPERATION_MODES: OperationMapMode[] = ["point", "cluster", "choropleth", "route", "static"];
 
 export function JapanMainMap({
   activeId,
   detail,
+  focusTargetId,
   gridExpanded,
   leftOffset,
   mapMode,
   metricsExpanded,
   metrics,
   model,
-  onMapModeChange,
   onToggleMetrics,
   onSelect,
-  resultCount,
   rightOffset,
   statusPalette,
-  themePalette,
-  themeId
+  themePalette
 }: JapanMainMapProps) {
-  const theme = getThemeLabel(themeId);
   const [command, setCommand] = useState<{ nonce: number; type: "recenter" | "zoomIn" | "zoomOut" }>();
-  const activeModeLabel = getOperationModeLabel(mapMode);
 
   return (
     <section className="absolute inset-0 overflow-hidden" style={{ background: themePalette.surfaceCanvas }}>
       <JapanOperationsMapCanvas
         activeId={activeId}
         command={command}
+        focusTargetId={focusTargetId}
         mapMode={mapMode}
         model={model}
         onSelect={onSelect}
@@ -69,92 +60,7 @@ export function JapanMainMap({
       />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(255,255,255,0.06),transparent_22%),linear-gradient(180deg,rgba(3,8,14,0.18),rgba(3,8,14,0.5))]" />
 
-      <div
-        className="absolute top-4 z-20 rounded-xl border shadow-2xl backdrop-blur-md"
-        style={{
-          left: leftOffset,
-          right: rightOffset,
-          background: "rgba(5, 11, 20, 0.88)",
-          borderColor: themePalette.borderSubtle
-        }}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <span
-              className="h-2.5 w-2.5 rounded-full"
-              style={{
-                background: themePalette.accent,
-                boxShadow: `0 0 16px ${themePalette.accent}`
-              }}
-            />
-            <div>
-              <div className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-                Main / Japan Operations Map
-              </div>
-              <div className="text-sm font-semibold text-white">{theme.label} レイヤー</div>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {OPERATION_MODES.map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => onMapModeChange(mode)}
-                className="rounded-lg border px-3 py-2 text-xs transition"
-                style={
-                  mode === mapMode
-                    ? {
-                        borderColor: themePalette.accent,
-                        background: themePalette.accentSoft,
-                        color: themePalette.textPrimary
-                      }
-                    : {
-                        borderColor: themePalette.borderSubtle,
-                        background: "rgba(15, 23, 33, 0.72)",
-                        color: themePalette.textMuted
-                      }
-                }
-              >
-                {getOperationModeLabel(mode)}
-              </button>
-            ))}
-            <span
-              className="rounded-lg border px-3 py-2 font-mono text-[0.65rem]"
-              style={{
-                borderColor: themePalette.borderSubtle,
-                background: "rgba(0, 0, 0, 0.3)",
-                color: themePalette.textMuted
-              }}
-            >
-              {activeModeLabel} / {resultCount} 件
-            </span>
-            <span
-              className="rounded-lg border px-3 py-2 font-mono text-[0.65rem]"
-              style={{
-                borderColor: themePalette.borderSubtle,
-                background: "rgba(0, 0, 0, 0.3)",
-                color: themePalette.textMuted
-              }}
-            >
-              縮小で海外供給網
-            </span>
-            <button
-              type="button"
-              onClick={onToggleMetrics}
-              className="rounded-lg border px-3 py-2 text-xs transition"
-              style={{
-                borderColor: themePalette.borderSubtle,
-                background: "rgba(15, 23, 33, 0.72)",
-                color: themePalette.textMuted
-              }}
-            >
-              {metricsExpanded ? "要約" : "詳細"}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="absolute top-[88px] z-20" style={{ left: leftOffset + 60, right: rightOffset }}>
+      <div className="absolute top-[108px] z-20" style={{ left: leftOffset + 12, right: rightOffset }}>
         {metricsExpanded ? (
           <div className="grid gap-3 md:grid-cols-5">
             {metrics.map((metric) => {
@@ -207,11 +113,38 @@ export function JapanMainMap({
                 </span>
               );
             })}
+            <button
+              type="button"
+              onClick={onToggleMetrics}
+              className="rounded-full border px-2.5 py-1 text-[0.7rem] transition"
+              style={{
+                borderColor: themePalette.borderSubtle,
+                background: "rgba(2, 8, 16, 0.9)",
+                color: themePalette.textMuted
+              }}
+            >
+              詳細
+            </button>
           </div>
         )}
       </div>
 
-      <div className="absolute left-4 top-28 z-20 flex flex-col gap-2" style={{ left: leftOffset }}>
+      {metricsExpanded ? (
+        <button
+          type="button"
+          onClick={onToggleMetrics}
+          className="absolute right-4 top-[108px] z-20 rounded-xl border px-3 py-2 text-xs transition"
+          style={{
+            borderColor: themePalette.borderSubtle,
+            background: "rgba(7, 13, 22, 0.88)",
+            color: themePalette.textMuted
+          }}
+        >
+          要約
+        </button>
+      ) : null}
+
+      <div className="absolute left-4 top-[166px] z-20 flex flex-col gap-2" style={{ left: leftOffset }}>
         <MapControlButton label="+" ariaLabel="地図を拡大" onClick={() => setCommand({ nonce: Date.now(), type: "zoomIn" })} />
         <MapControlButton label="-" ariaLabel="地図を縮小" onClick={() => setCommand({ nonce: Date.now(), type: "zoomOut" })} />
         <MapControlButton label="⌖" ariaLabel="日本中心に戻す" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />

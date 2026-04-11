@@ -1,0 +1,32 @@
+# PRD Addendum: Navigation Reframe for Japan Economic Security Globe
+
+## Purpose
+
+Refactor the public app from a theme-demo shell into a Japan-first operating picture.
+
+The product must help a person in Japan answer:
+
+- what dependency is moving,
+- where it lands in Japan,
+- what evidence supports that view.
+
+## Requirements
+
+1. The initial screen must be a stable Japan map viewport.
+2. The initial map mode must be point or cluster, not route.
+3. The map must not auto-fit to a route on first load.
+4. A top action bar must show current lens, map mode, search/share actions, and a compact state summary.
+5. A left navigation rail must show story presets, semantic filters, and current counts.
+6. Story presets must be purpose-based entry points such as Middle East route risk, Qatar LNG, rice prices, water stress, FY2026 defense budget, and semiconductor supply.
+7. The bottom comparison grid must become the main comparison surface for routes, observations, facilities, and policy signals.
+8. The right evidence drawer must stay secondary to the map and comparison grid while preserving semantic depth.
+9. Global context must appear through zoom-out or explicit route mode, not as the default landing state.
+10. URL state must preserve lens, mode, and selected object.
+
+## Acceptance
+
+1. First load is Japan-first and readable.
+2. The map remains the dominant surface.
+3. Navigation explains public questions before ontology details.
+4. Global context is visible only when asked for.
+5. The product reads like a coherent Japan civic dependency service rather than a loose widget collage.

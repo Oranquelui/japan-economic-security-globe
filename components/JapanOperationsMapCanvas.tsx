@@ -13,6 +13,7 @@ interface JapanOperationsMapCanvasProps {
     nonce: number;
     type: "recenter" | "zoomIn" | "zoomOut";
   };
+  focusTargetId: string | null;
   mapMode: OperationMapMode;
   model: JapanMapCanvasModel;
   onSelect: (id: string) => void;
@@ -28,6 +29,7 @@ const DOMESTIC_CONTEXT_MIN_ZOOM = 3.2;
 export function JapanOperationsMapCanvas({
   activeId,
   command,
+  focusTargetId,
   mapMode,
   model,
   onSelect,
@@ -366,7 +368,10 @@ export function JapanOperationsMapCanvas({
         });
 
         applyModeVisibility(map, mapMode);
-        focusMapOnSelection(map, model, activeId, mapMode, zoomRef.current);
+
+        if (focusTargetId) {
+          focusMapOnSelection(map, model, focusTargetId, mapMode, zoomRef.current);
+        }
       });
     }
 
@@ -448,12 +453,12 @@ export function JapanOperationsMapCanvas({
   useEffect(() => {
     const map = mapRef.current;
 
-    if (!map || !map.isStyleLoaded()) {
+    if (!map || !map.isStyleLoaded() || !focusTargetId) {
       return;
     }
 
-    focusMapOnSelection(map, model, activeId, mapMode, zoomRef.current);
-  }, [activeId, mapMode, model]);
+    focusMapOnSelection(map, model, focusTargetId, mapMode, zoomRef.current);
+  }, [focusTargetId, mapMode, model]);
 
   useEffect(() => {
     const map = mapRef.current;

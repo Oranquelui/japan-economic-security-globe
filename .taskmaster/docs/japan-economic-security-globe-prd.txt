@@ -4,13 +4,13 @@
 
 Build the Phase 0 public MVP for `japan-economic-security-globe`, a public-interest semantic intelligence service for people in Japan. The product explains what Japan depends on globally and how those dependencies flow back into rice, water, electricity, daily life, defense, and semiconductors.
 
-The app is an Energy-led hybrid launch experience. It opens with global energy/logistics risk, then bridges into domestic impacts like rice, water, defense budgets, and semiconductor dependencies. Phase 0 must be free, public, source-linked, and built around a clean semantic data model that can later migrate to OWL/RDF/SPARQL infrastructure.
+The app is a Japan-first operating picture. The first screen is not a globe demo and not a generic dashboard. It is a full-screen Japan map canvas with supporting navigation, comparison, and evidence surfaces. Global routes and foreign countries appear only as explanatory context for Japan. Phase 0 must be free, public, source-linked, and built around a clean semantic data model that can later migrate to OWL/RDF/SPARQL infrastructure.
 
 ## Goals
 
 1. Create a working local Next.js App Router application.
-2. Build a visually strong public homepage with a dark globe, Japan impact map, and evidence graph.
-3. Use Energy as the default theme and include complete thin slices for Rice, Water, Defense, and Semiconductors.
+2. Build a visually strong public homepage with a full-screen Japan operations map, supporting global context, and an evidence graph.
+3. Use Energy as the default story lens and include complete thin slices for Rice, Water, Defense, and Semiconductors.
 4. Model all MVP content as a canonical semantic graph rather than per-component hard-coded data.
 5. Add local seeded JSON data with provenance fields aligned to future `prov:wasDerivedFrom`.
 6. Add initial Turtle ontology stubs and SPARQL query examples.
@@ -31,8 +31,8 @@ The app is an Energy-led hybrid launch experience. It opens with global energy/l
 - Next.js App Router
 - TypeScript
 - Tailwind CSS
-- React Three Fiber or Three.js for globe
-- Lightweight SVG or D3-compatible approach for Japan impact map
+- MapLibre GL JS for the main Japan map canvas
+- Lightweight SVG or GeoJSON-based overlays for semantic regions and supporting mini-views
 - react-force-graph or a similar graph component for evidence graph
 - Vitest for semantic selectors and SPARQL preview tests
 - Local JSON/TTL seed files
@@ -50,15 +50,70 @@ Phase 2 later adds institutional paid features such as private workspaces, alert
 
 ## Required Phase 0 UX
 
-1. Left theme rail with Energy, Rice, Water, Defense, Semiconductors.
-2. Energy is the default active theme.
-3. Main hero area with dark interactive globe.
-4. Globe shows Japan anchor, supplier countries, chokepoints, routes, and dependency arcs.
-5. Japan impact section shows domestic landing points such as ports, terminals, refineries, reservoirs, prefectures, and strategic facilities.
-6. Evidence drawer shows summary, why it matters for Japan, linked flows, source documents, related entities, and SPARQL preview.
-7. Evidence graph connects source documents, policy documents, budget lines, laws, organizations, facilities, products, observations, and flows.
-8. Clicking a country, route, chokepoint, port, terminal, refinery, reservoir, prefecture, observation, policy document, budget line, or source document updates the detail view.
-9. Foreign country detail windows show flag, small map/geographic cue, relation to Japan, flows to Japan, key sources, and related themes. They must not become generic country profiles.
+1. A top action bar shows the product name, active story lens, map mode, shareable state, and high-level actions.
+2. A left navigation rail contains story lenses, semantic presets, and operational filters rather than only visual theme buttons.
+3. Energy is the default active story lens, but the navigation model must work for all themes without redesign.
+4. The main hero area is a full-screen Japan operations map canvas.
+5. The initial viewport is fixed on Japan and must not auto-fit to a selected route on first load.
+6. The initial map mode is `point` or `cluster`; route mode is a second-step analysis view, not the default first impression.
+7. Zooming out or switching mode reveals global supplier countries, chokepoints, and sea-lane routes as supporting context.
+8. The bottom comparison grid lists routes, observations, facilities, and policy signals in a comparable operational table.
+9. The right evidence drawer shows summary, why it matters for Japan, linked flows, source documents, related entities, and SPARQL preview.
+10. Evidence graph connects source documents, policy documents, budget lines, laws, organizations, facilities, products, observations, and flows.
+11. Clicking a country, route, chokepoint, port, terminal, refinery, reservoir, prefecture, observation, policy document, budget line, or source document updates the detail view.
+12. Foreign country detail windows show flag, small map/geographic cue, relation to Japan, flows to Japan, key sources, and related themes. They must not become generic country profiles.
+
+## Navigation and Selection Architecture
+
+The navigation model should follow an operating-picture pattern rather than a dashboard-card pattern.
+
+Primary areas:
+
+1. Action bar
+2. Navigation rail
+3. Map canvas
+4. Context drawer
+5. Comparison grid
+
+Action bar responsibilities:
+
+- show current lens and map mode
+- expose global search or command entry
+- expose share/copy-link behavior
+- keep the current state legible without opening side panels
+
+Navigation rail responsibilities:
+
+- choose story lens by public question, not by raw data type
+- expose semantic presets such as `中東輸送路`, `コメ価格`, `水ストレス`, `FY2026防衛予算`, `半導体供給`
+- expose filters and counts
+- remain compact enough that the map canvas stays primary
+
+Map canvas responsibilities:
+
+- remain the main operational surface
+- default to a stable Japan viewport
+- support point, cluster, choropleth, route, and static analysis modes
+- reveal global context only when zoom or mode indicates the user asked for it
+
+Context drawer responsibilities:
+
+- explain the selected object
+- connect to evidence, source documents, and semantic relations
+- avoid dominating the initial screen
+
+Comparison grid responsibilities:
+
+- support triage, ranking, and comparison
+- synchronize with map selection and URL state
+- feel like an operational list rather than a generic data table
+
+The selection model should follow a scenario-select pattern:
+
+- users choose a public question or story lens
+- the app binds that lens to a semantic preset
+- the preset controls which entities, flows, observations, and sources become primary
+- future data refreshes should update the preset automatically without changing the navigation structure
 
 ## Semantic Model
 
@@ -114,6 +169,8 @@ Presentation entities:
 
 - ThemeLens
 - StoryPreset
+- NavigationState
+- ExplorationFilter
 - HighlightedQuery
 - DetailWindow
 
@@ -188,13 +245,14 @@ Create:
 4. Add semantic graph selectors and tests.
 5. Add SPARQL preview and provenance helpers.
 6. Add ontology Turtle stubs.
-7. Build app shell and theme rail.
-8. Build Energy-led hero globe.
-9. Build Japan impact map.
+7. Build action bar, navigation rail, and story lens state.
+8. Build Japan-first map canvas with stable initial viewport.
+9. Build global context overlays that appear only when zoom or mode requires them.
 10. Build evidence drawer and graph panel.
-11. Add visual polish and responsive layout.
-12. Add README and public project framing.
-13. Run final verification with tests, build, and local app inspection.
+11. Build comparison grid and URL-synced navigation state.
+12. Add visual polish and responsive layout.
+13. Add README and public project framing.
+14. Run final verification with tests, build, and local app inspection.
 
 ## Verification
 
@@ -208,10 +266,11 @@ npm run dev
 
 Acceptance checklist:
 
-- Energy is default theme.
+- Energy is default story lens.
 - All five themes are present.
-- Globe flows are clickable.
-- Japan impact section is visible.
+- Japan map is the dominant first surface.
+- Initial load is Japan-fixed and does not auto-fit to a selected route.
+- Global context appears when zooming out or changing map mode.
 - Evidence drawer is visible.
 - Evidence graph is visible.
 - SPARQL preview appears for selected objects.

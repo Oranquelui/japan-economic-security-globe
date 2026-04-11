@@ -40,17 +40,15 @@ vi.mock("../MapInboxPanel", () => ({
 vi.mock("../JapanMainMap", () => ({
   JapanMainMap: ({
     activeId,
-    mapMode,
-    onMapModeChange
+    focusTargetId,
+    mapMode
   }: {
     activeId: string;
+    focusTargetId: string | null;
     mapMode: OperationMapMode;
-    onMapModeChange: (mode: OperationMapMode) => void;
   }) => (
-    <div data-testid="map" data-active={activeId} data-mode={mapMode}>
-      <button type="button" onClick={() => onMapModeChange("cluster")}>
-        change-mode-cluster
-      </button>
+    <div data-testid="map" data-active={activeId} data-focus={focusTargetId ?? ""} data-mode={mapMode}>
+      mocked-map
     </div>
   )
 }));
@@ -89,7 +87,16 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("inbox")[0].getAttribute("data-theme")).toBe("rice");
     expect(screen.getByTestId("map").getAttribute("data-mode")).toBe("cluster");
     expect(screen.getByTestId("map").getAttribute("data-active")).toBe("observation:rice-price-signal-2026");
+    expect(screen.getByTestId("map").getAttribute("data-focus")).toBe("observation:rice-price-signal-2026");
     expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  test("keeps Japan-first default mode and does not focus the fallback active item on first load", () => {
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    expect(screen.getByTestId("map").getAttribute("data-mode")).toBe("point");
+    expect(screen.getByTestId("map").getAttribute("data-active")).toBe("flow:saudi-oil-japan");
+    expect(screen.getByTestId("map").getAttribute("data-focus")).toBe("");
   });
 
   test("replaces the URL when theme, map mode, and selection change", async () => {
@@ -100,7 +107,7 @@ describe("AppShell url sync", () => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice", { scroll: false });
     });
 
-    fireEvent.click(screen.getByText("change-mode-cluster"));
+    fireEvent.click(screen.getByRole("button", { name: "集約" }));
     await waitFor(() => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice&mode=cluster", { scroll: false });
     });

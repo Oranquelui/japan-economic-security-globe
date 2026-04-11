@@ -4,7 +4,7 @@ import type { ThemeView } from "../types/presentation";
 import type { ThemeId } from "../types/semantic";
 import type { OperationRow } from "../lib/presentation/operations";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
-import { getThemeLabel } from "../lib/presentation/japanese";
+import { getThemeLabel, getThemeQuestion } from "../lib/presentation/japanese";
 import { getUrgencyTone, resolveToneColor } from "../lib/presentation/palette";
 
 const THEME_ORDER: ThemeId[] = ["energy", "rice", "water", "defense", "semiconductors"];
@@ -39,6 +39,7 @@ export function MapInboxPanel({
   onThemeChange
 }: MapInboxPanelProps) {
   const highCount = rows.filter((row) => row.urgency === "高").length;
+  const question = getThemeQuestion(themeId);
 
   if (collapsed) {
     return (
@@ -150,7 +151,7 @@ export function MapInboxPanel({
       <div className="flex min-w-0 flex-col p-4">
         <div className="pb-4" style={{ borderBottom: `1px solid ${themePalette.borderSubtle}` }}>
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.36em]" style={{ color: themePalette.textMuted }}>
-            Map Inbox
+            Navigation
           </p>
           <div className="mt-2 flex items-center justify-between gap-3">
             <h1 className="text-xl font-semibold leading-tight text-white">日本経済安全保障</h1>
@@ -181,13 +182,31 @@ export function MapInboxPanel({
             </div>
           </div>
           <p className="mt-2 text-[0.7rem] leading-5" style={{ color: themePalette.textMuted }}>
+            {question}
+          </p>
+        </div>
+
+        <div
+          className="mt-4 rounded-xl border p-3"
+          style={{
+            borderColor: `${themePalette.accent}33`,
+            background: themePalette.accentSoft
+          }}
+        >
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.24em]" style={{ color: themePalette.accentText }}>
+            Story Lens
+          </p>
+          <div className="mt-2 text-sm font-semibold" style={{ color: themePalette.textPrimary }}>
+            {getThemeLabel(themeId).label}
+          </div>
+          <p className="mt-1 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
             検索して選択し、比較は下部グリッド、詳細は右ドロワーで確認。
           </p>
         </div>
 
         <label className="mt-4 block">
           <span className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-            検索
+            Search / Filter
           </span>
           <input
             value={query}
@@ -248,7 +267,7 @@ export function MapInboxPanel({
 
         <div className="mt-5">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-            テーマ
+            Story Lenses
           </p>
           <div className="mt-2 space-y-2">
             {THEME_ORDER.map((id) => {

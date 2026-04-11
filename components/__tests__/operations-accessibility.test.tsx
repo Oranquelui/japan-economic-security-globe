@@ -140,20 +140,18 @@ describe("operations accessibility", () => {
       <JapanMainMap
         activeId="flow:saudi-oil-japan"
         detail={detail}
+        focusTargetId={null}
         gridExpanded={false}
         leftOffset={24}
         mapMode="route"
         metricsExpanded={false}
         metrics={[]}
         model={mapModel}
-        onMapModeChange={() => undefined}
         onToggleMetrics={() => undefined}
         onSelect={() => undefined}
-        resultCount={1}
         rightOffset={24}
         statusPalette={statusPalette}
         themePalette={themePalette}
-        themeId="energy"
       />
     );
 
