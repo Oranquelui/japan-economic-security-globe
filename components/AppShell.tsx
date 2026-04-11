@@ -37,7 +37,6 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(true);
   const [isEvidenceOpen, setEvidenceOpen] = useState(false);
-  const [isGridOpen, setGridOpen] = useState(false);
   const [metricsExpanded, setMetricsExpanded] = useState(false);
   const [, startTransition] = useTransition();
   const initialSerializedRef = useRef(serializeOperationsUrlState(initialUrlState));
@@ -71,9 +70,8 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
     "--ops-text-primary": themePalette.textPrimary,
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
-  const leftWidth = isInboxOpen ? 224 : 48;
-  const rightWidth = isEvidenceOpen ? 320 : 48;
-  const compareHeight = isGridOpen ? 248 : 72;
+  const leftWidth = isInboxOpen ? 264 : 56;
+  const compareHeight = 248;
 
   useEffect(() => {
     const serialized = serializeOperationsUrlState({
@@ -100,33 +98,41 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
 
   return (
     <main className="grid h-screen min-h-screen grid-rows-[56px,minmax(0,1fr)] overflow-hidden text-slate-100" style={shellStyle}>
-      <ActionBar sharePath={sharePath} themePalette={themePalette} />
+      <ActionBar
+        metrics={metrics}
+        onClearFilters={() => setSearchQuery("")}
+        queryActive={searchQuery.length > 0}
+        sharePath={sharePath}
+        themePalette={themePalette}
+      />
 
       <div className="min-h-0 p-4">
         <div
           className="hidden h-full min-h-0 gap-4 lg:grid"
           style={{
-            gridTemplateColumns: `${leftWidth}px minmax(0, 1fr) ${rightWidth}px`,
+            gridTemplateColumns: `${leftWidth}px minmax(0, 1fr)`,
             gridTemplateRows: `minmax(0, 1fr) ${compareHeight}px`
           }}
         >
           <aside data-testid="layout-left-nav" className="row-span-2 min-h-0">
             <MapInboxPanel
               collapsed={!isInboxOpen}
+              query={searchQuery}
               themePalette={themePalette}
               themeId={themeId}
+              onQueryChange={setSearchQuery}
               onToggleCollapsed={() => setInboxOpen((value) => !value)}
               onThemeChange={handleThemeChange}
             />
           </aside>
 
-          <section data-testid="layout-map-section" className="min-h-0">
+          <section data-testid="layout-map-section" className="relative min-h-0">
             <JapanMainMap
               activeId={activeId}
               detail={detail}
               focusTargetId={focusTargetId}
               mapMode={mapMode}
-              metrics={metrics}
+              metrics={[]}
               model={mapModel}
               metricsExpanded={metricsExpanded}
               onMapModeChange={setMapMode}
@@ -135,67 +141,78 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
               statusPalette={statusPalette}
               themePalette={themePalette}
             />
-          </section>
 
-          <aside data-testid="layout-evidence-section" className="row-span-2 min-h-0">
-            <EvidencePanel
-              collapsed={!isEvidenceOpen}
-              detail={detail}
-              evidenceGraph={evidenceGraph}
-              onSelect={setSelectedId}
-              selectedId={activeId}
-              statusPalette={statusPalette}
-              themePalette={themePalette}
-              themeTitle={view.title}
-              onToggleCollapsed={() => setEvidenceOpen((value) => !value)}
-            />
-          </aside>
+            <div
+              data-testid="layout-evidence-overlay"
+              className="pointer-events-none absolute bottom-4 right-4 top-4 z-30 flex justify-end"
+            >
+              <div
+                className="pointer-events-auto h-full transition-[width] duration-200 ease-out"
+                style={{ width: isEvidenceOpen ? 320 : 56 }}
+              >
+                <EvidencePanel
+                  collapsed={!isEvidenceOpen}
+                  detail={detail}
+                  evidenceGraph={evidenceGraph}
+                  onSelect={setSelectedId}
+                  selectedId={activeId}
+                  statusPalette={statusPalette}
+                  themePalette={themePalette}
+                  themeTitle={view.title}
+                  onToggleCollapsed={() => setEvidenceOpen((value) => !value)}
+                />
+              </div>
+            </div>
+          </section>
 
           <section data-testid="layout-compare-section" className="min-h-0">
             <OperationsSignalTable
               activeId={activeId}
-              collapsed={!isGridOpen}
+              collapsed={false}
+              collapsible={false}
               onSelect={setSelectedId}
               query={searchQuery}
               rows={filteredOperationRows}
               statusPalette={statusPalette}
               themePalette={themePalette}
-              onQueryChange={setSearchQuery}
-              onToggleCollapsed={() => setGridOpen((value) => !value)}
+              onToggleCollapsed={() => undefined}
             />
           </section>
         </div>
 
         <div className="space-y-4 lg:hidden">
-        <MapInboxPanel
-          collapsed={false}
-          themePalette={themePalette}
-          themeId={themeId}
-          onToggleCollapsed={() => undefined}
-          onThemeChange={handleThemeChange}
-        />
-        <OperationsSignalTable
-          activeId={activeId}
-          collapsed={false}
-          onSelect={setSelectedId}
-          query={searchQuery}
-          rows={filteredOperationRows}
-          statusPalette={statusPalette}
-          themePalette={themePalette}
-          onQueryChange={setSearchQuery}
-          onToggleCollapsed={() => undefined}
-        />
-        <EvidencePanel
-          collapsed={false}
-          detail={detail}
-          evidenceGraph={evidenceGraph}
-          onSelect={setSelectedId}
-          selectedId={activeId}
-          statusPalette={statusPalette}
-          themePalette={themePalette}
-          themeTitle={view.title}
-          onToggleCollapsed={() => undefined}
-        />
+          <MapInboxPanel
+            collapsed={false}
+            query={searchQuery}
+            themePalette={themePalette}
+            themeId={themeId}
+            onQueryChange={setSearchQuery}
+            onToggleCollapsed={() => undefined}
+            onThemeChange={handleThemeChange}
+          />
+          <OperationsSignalTable
+            activeId={activeId}
+            collapsed={false}
+            collapsible={false}
+            onSelect={setSelectedId}
+            query={searchQuery}
+            rows={filteredOperationRows}
+            statusPalette={statusPalette}
+            themePalette={themePalette}
+            onToggleCollapsed={() => undefined}
+          />
+          <EvidencePanel
+            collapsed={false}
+            collapsible={false}
+            detail={detail}
+            evidenceGraph={evidenceGraph}
+            onSelect={setSelectedId}
+            selectedId={activeId}
+            statusPalette={statusPalette}
+            themePalette={themePalette}
+            themeTitle={view.title}
+            onToggleCollapsed={() => undefined}
+          />
         </div>
       </div>
     </main>

@@ -8,16 +8,20 @@ const THEME_ORDER: ThemeId[] = ["energy", "rice", "water", "defense", "semicondu
 
 interface MapInboxPanelProps {
   collapsed: boolean;
+  query: string;
   themePalette: ThemePalette;
   themeId: ThemeId;
+  onQueryChange: (query: string) => void;
   onToggleCollapsed: () => void;
   onThemeChange: (themeId: ThemeId) => void;
 }
 
 export function MapInboxPanel({
   collapsed,
+  query,
   themePalette,
   themeId,
+  onQueryChange,
   onToggleCollapsed,
   onThemeChange
 }: MapInboxPanelProps) {
@@ -88,9 +92,12 @@ export function MapInboxPanel({
     >
       <div className="flex min-w-0 flex-1 flex-col p-4">
         <div className="flex items-center justify-between gap-3 pb-3" style={{ borderBottom: `1px solid ${themePalette.borderSubtle}` }}>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-            テーマ
-          </p>
+          <div>
+            <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+              監視インボックス
+            </p>
+            <div className="mt-1 text-sm font-semibold text-white">{getThemeLabel(themeId).label}</div>
+          </div>
           <button
             type="button"
             onClick={onToggleCollapsed}
@@ -105,9 +112,70 @@ export function MapInboxPanel({
             ←
           </button>
         </div>
-        <div className="mt-3">
+        <div className="mt-4">
+          <label className="block">
+            <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+              検索
+            </div>
+            <input
+              value={query}
+              onChange={(event) => onQueryChange(event.target.value)}
+              placeholder="LNG、港湾、コメ、予算"
+              className="mt-2 w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-500"
+              style={{
+                borderColor: themePalette.borderSubtle,
+                background: themePalette.surfacePanelElevated,
+                color: themePalette.textPrimary
+              }}
+            />
+          </label>
+        </div>
+
+        <div className="mt-4">
+          <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+            絞り込み
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {[
+              { label: "全部", value: "" },
+              { label: "高リスク", value: "高" },
+              { label: "監視中", value: "監視中" }
+            ].map((filter) => {
+              const active = query === filter.value;
+
+              return (
+                <button
+                  key={filter.label}
+                  type="button"
+                  onClick={() => onQueryChange(filter.value)}
+                  className="rounded-full border px-3 py-2 text-[0.68rem] transition"
+                  style={
+                    active
+                      ? {
+                          borderColor: themePalette.accent,
+                          background: themePalette.accentSoft,
+                          color: themePalette.textPrimary
+                        }
+                      : {
+                          borderColor: themePalette.borderSubtle,
+                          background: themePalette.surfacePanelElevated,
+                          color: themePalette.textMuted
+                        }
+                  }
+                >
+                  {filter.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+            テーマ
+          </div>
           <div
-            className="overflow-hidden rounded-xl border"
+            className="mt-2 overflow-hidden rounded-xl border"
             style={{
               borderColor: themePalette.borderSubtle,
               background: themePalette.surfacePanelElevated

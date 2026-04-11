@@ -8,6 +8,7 @@ import { JapanMainMap } from "../JapanMainMap";
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
 import type { DetailViewModel } from "../../types/presentation";
 import type { JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
+import type { OperationMetric } from "../../lib/presentation/metrics";
 
 vi.mock("../JapanOperationsMapCanvas", () => ({
   JapanOperationsMapCanvas: () => <div data-testid="ops-canvas" />
@@ -43,11 +44,24 @@ const mapModel: JapanMapCanvasModel = {
   globalRoutes: []
 };
 
+const metrics: OperationMetric[] = [
+  {
+    id: "visible",
+    label: "表示中",
+    value: 8,
+    description: "表示中件数",
+    tone: "monitoring"
+  }
+];
+
 describe("navigation shell", () => {
   test("keeps app navigation separate from map-layer controls", () => {
     render(
       <>
         <ActionBar
+          metrics={metrics}
+          onClearFilters={() => undefined}
+          queryActive={false}
           sharePath="/"
           themePalette={themePalette}
         />

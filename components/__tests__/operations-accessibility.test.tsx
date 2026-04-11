@@ -103,7 +103,6 @@ describe("operations accessibility", () => {
         ]}
         statusPalette={statusPalette}
         themePalette={themePalette}
-        onQueryChange={() => undefined}
       />
     );
 

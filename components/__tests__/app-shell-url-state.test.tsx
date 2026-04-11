@@ -54,12 +54,12 @@ vi.mock("../JapanMainMap", () => ({
 }));
 
 vi.mock("../EvidencePanel", () => ({
-  EvidencePanel: () => <div data-testid="evidence" />
+  EvidencePanel: ({ collapsed }: { collapsed: boolean }) => <div data-testid="evidence" data-collapsed={collapsed ? "yes" : "no"} />
 }));
 
 vi.mock("../OperationsSignalTable", () => ({
-  OperationsSignalTable: ({ onSelect }: { onSelect: (id: string) => void }) => (
-    <div data-testid="grid">
+  OperationsSignalTable: ({ collapsed, onSelect }: { collapsed: boolean; onSelect: (id: string) => void }) => (
+    <div data-testid="grid" data-collapsed={collapsed ? "yes" : "no"}>
       <button type="button" onClick={() => onSelect("observation:rice-price-signal-2026")}>
         select-rice-observation
       </button>
@@ -84,8 +84,10 @@ describe("AppShell url sync", () => {
     expect(screen.getByRole("banner")).toBeTruthy();
     expect(screen.getByTestId("layout-left-nav")).toBeTruthy();
     expect(screen.getByTestId("layout-map-section")).toBeTruthy();
-    expect(screen.getByTestId("layout-evidence-section")).toBeTruthy();
     expect(screen.getByTestId("layout-compare-section")).toBeTruthy();
+    expect(screen.getByTestId("layout-evidence-overlay")).toBeTruthy();
+    expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("yes");
+    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
   });
 
   test("hydrates initial state from the provided url state", () => {

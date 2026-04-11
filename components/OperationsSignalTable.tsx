@@ -7,27 +7,27 @@ import { getStatusTone, getUrgencyTone, resolveToneColor } from "../lib/presenta
 interface OperationsSignalTableProps {
   activeId: string;
   collapsed: boolean;
+  collapsible?: boolean;
   onSelect: (id: string) => void;
   onToggleCollapsed: () => void;
   query: string;
   rows: OperationRow[];
   statusPalette: StatusPalette;
   themePalette: ThemePalette;
-  onQueryChange: (query: string) => void;
 }
 
 export function OperationsSignalTable({
   activeId,
   collapsed,
+  collapsible = true,
   onSelect,
   onToggleCollapsed,
   query,
   rows,
   statusPalette,
-  themePalette,
-  onQueryChange
+  themePalette
 }: OperationsSignalTableProps) {
-  if (collapsed) {
+  if (collapsible && collapsed) {
     return (
       <section
         className="mx-auto max-w-md rounded-2xl border shadow-2xl shadow-black/35"
@@ -82,45 +82,6 @@ export function OperationsSignalTable({
           <h2 className="mt-1 text-base font-semibold text-white">日本向け依存シグナル</h2>
         </div>
         <div className="flex items-center gap-2 font-mono text-[0.68rem] uppercase tracking-[0.2em]" style={{ color: themePalette.textMuted }}>
-          <input
-            value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="表内検索"
-            className="w-40 rounded border px-3 py-2 text-[0.72rem] normal-case tracking-normal outline-none transition placeholder:text-slate-500"
-            style={{
-              borderColor: themePalette.borderSubtle,
-              background: themePalette.surfacePanelElevated,
-              color: themePalette.textPrimary
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => onQueryChange("")}
-            className="rounded border px-3 py-2 text-[0.68rem] transition"
-            style={{
-              borderColor: themePalette.borderSubtle,
-              background: themePalette.surfacePanelElevated,
-              color: themePalette.textMuted
-            }}
-          >
-            全部
-          </button>
-          <button
-            type="button"
-            onClick={() => onQueryChange("高")}
-            className="rounded border px-3 py-2 text-[0.68rem] transition"
-            style={buildWidgetButtonStyle(statusPalette.high)}
-          >
-            高リスク
-          </button>
-          <button
-            type="button"
-            onClick={() => onQueryChange("監視中")}
-            className="rounded border px-3 py-2 text-[0.68rem] transition"
-            style={buildWidgetButtonStyle(statusPalette.monitoring)}
-          >
-            監視中
-          </button>
           <span
             className="rounded border px-3 py-2"
             style={{
@@ -130,6 +91,14 @@ export function OperationsSignalTable({
           >
             {rows.length} 件表示
           </span>
+          {query ? (
+            <span
+              className="rounded border px-3 py-2"
+              style={buildWidgetButtonStyle(statusPalette.monitoring)}
+            >
+              絞り込み中
+            </span>
+          ) : null}
           <span
             className="rounded border px-3 py-2"
             style={{
@@ -139,18 +108,20 @@ export function OperationsSignalTable({
           >
             出典あり
           </span>
-          <button
-            type="button"
-            onClick={onToggleCollapsed}
-            className="rounded border px-3 py-2 text-[0.68rem] transition"
-            style={{
-              borderColor: themePalette.borderSubtle,
-              background: themePalette.surfacePanelElevated,
-              color: themePalette.textMuted
-            }}
-          >
-            閉じる
-          </button>
+          {collapsible ? (
+            <button
+              type="button"
+              onClick={onToggleCollapsed}
+              className="rounded border px-3 py-2 text-[0.68rem] transition"
+              style={{
+                borderColor: themePalette.borderSubtle,
+                background: themePalette.surfacePanelElevated,
+                color: themePalette.textMuted
+              }}
+            >
+              閉じる
+            </button>
+          ) : null}
         </div>
       </div>
 

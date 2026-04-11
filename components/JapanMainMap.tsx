@@ -68,76 +68,78 @@ export function JapanMainMap({
         }}
       />
 
-      <div className="absolute left-4 right-[280px] top-4 z-20">
-        {metricsExpanded ? (
-          <div className="grid gap-2 md:grid-cols-4">
-            {metrics.slice(0, 4).map((metric) => {
-              const metricColor = resolveToneColor(metric.tone, themePalette, statusPalette);
+      {metrics.length ? (
+        <div className="absolute left-4 right-[280px] top-4 z-20">
+          {metricsExpanded ? (
+            <div className="grid gap-2 md:grid-cols-4">
+              {metrics.slice(0, 4).map((metric) => {
+                const metricColor = resolveToneColor(metric.tone, themePalette, statusPalette);
 
-              return (
-                <div
-                  key={metric.id}
-                  className="rounded-xl border px-3 py-2.5 shadow-xl backdrop-blur-md"
-                  style={{
-                    background: themePalette.surfacePanel,
-                    borderColor: themePalette.borderSubtle
-                  }}
-                >
-                  <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-                    {metric.label}
+                return (
+                  <div
+                    key={metric.id}
+                    className="rounded-xl border px-3 py-2.5 shadow-xl backdrop-blur-md"
+                    style={{
+                      background: themePalette.surfacePanel,
+                      borderColor: themePalette.borderSubtle
+                    }}
+                  >
+                    <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+                      {metric.label}
+                    </div>
+                    <div className="mt-1.5 text-[1.15rem] font-semibold leading-none" style={{ color: metricColor }}>
+                      {metric.value}
+                    </div>
+                    <div className="mt-1.5 line-clamp-2 text-[0.64rem] leading-4" style={{ color: themePalette.textMuted }}>
+                      {metric.description}
+                    </div>
                   </div>
-                  <div className="mt-1.5 text-[1.15rem] font-semibold leading-none" style={{ color: metricColor }}>
-                    {metric.value}
-                  </div>
-                  <div className="mt-1.5 line-clamp-2 text-[0.64rem] leading-4" style={{ color: themePalette.textMuted }}>
-                    {metric.description}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div
-            className="flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 shadow-2xl backdrop-blur-md"
-            style={{
-              background: themePalette.surfacePanel,
-              borderColor: themePalette.borderSubtle
-            }}
-          >
-            {metrics.slice(0, 4).map((metric) => {
-              const metricColor = resolveToneColor(metric.tone, themePalette, statusPalette);
-
-              return (
-                <span
-                  key={metric.id}
-                  className="rounded-full border px-2.5 py-1 text-[0.66rem]"
-                  style={{
-                    borderColor: `${metricColor}44`,
-                    background: `${metricColor}14`,
-                    color: metricColor
-                  }}
-                >
-                  {metric.label} {metric.value}
-                </span>
-              );
-            })}
-            <button
-              type="button"
-              onClick={onToggleMetrics}
-              className="rounded-full border px-2.5 py-1 text-[0.66rem] transition"
+                );
+              })}
+            </div>
+          ) : (
+            <div
+              className="flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 shadow-2xl backdrop-blur-md"
               style={{
-                borderColor: themePalette.borderSubtle,
-                background: themePalette.surfacePanelElevated,
-                color: themePalette.textMuted
+                background: themePalette.surfacePanel,
+                borderColor: themePalette.borderSubtle
               }}
             >
-              詳細
-            </button>
-          </div>
-        )}
-      </div>
+              {metrics.slice(0, 4).map((metric) => {
+                const metricColor = resolveToneColor(metric.tone, themePalette, statusPalette);
 
-      {metricsExpanded ? (
+                return (
+                  <span
+                    key={metric.id}
+                    className="rounded-full border px-2.5 py-1 text-[0.66rem]"
+                    style={{
+                      borderColor: `${metricColor}44`,
+                      background: `${metricColor}14`,
+                      color: metricColor
+                    }}
+                  >
+                    {metric.label} {metric.value}
+                  </span>
+                );
+              })}
+              <button
+                type="button"
+                onClick={onToggleMetrics}
+                className="rounded-full border px-2.5 py-1 text-[0.66rem] transition"
+                style={{
+                  borderColor: themePalette.borderSubtle,
+                  background: themePalette.surfacePanelElevated,
+                  color: themePalette.textMuted
+                }}
+              >
+                詳細
+              </button>
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      {metricsExpanded && metrics.length ? (
         <button
           type="button"
           onClick={onToggleMetrics}

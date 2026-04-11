@@ -16,6 +16,7 @@ import { toStableSvgNumber } from "../lib/presentation/svg";
 
 interface EvidencePanelProps {
   collapsed: boolean;
+  collapsible?: boolean;
   detail: DetailViewModel;
   evidenceGraph: EvidenceGraphViewModel;
   onSelect: (id: string) => void;
@@ -28,6 +29,7 @@ interface EvidencePanelProps {
 
 export function EvidencePanel({
   collapsed,
+  collapsible = true,
   detail,
   evidenceGraph,
   onSelect,
@@ -39,7 +41,7 @@ export function EvidencePanel({
 }: EvidencePanelProps) {
   const [tab, setTab] = useState<"summary" | "sources" | "sparql">("summary");
 
-  if (collapsed) {
+  if (collapsible && collapsed) {
     return (
       <aside
         className="flex h-full flex-col items-center rounded-2xl border py-3 shadow-2xl shadow-black/45 backdrop-blur-xl"
@@ -106,19 +108,21 @@ export function EvidencePanel({
               boxShadow: `0 0 24px ${themePalette.accent}`
             }}
           />
-          <button
-            type="button"
-            onClick={onToggleCollapsed}
-            className="grid h-8 w-8 place-items-center rounded-lg border text-sm transition"
-            style={{
-              borderColor: themePalette.borderSubtle,
-              background: themePalette.surfacePanelElevated,
-              color: themePalette.textMuted
-            }}
-            aria-label="Evidence Drilldown を閉じる"
-          >
-            →
-          </button>
+          {collapsible ? (
+            <button
+              type="button"
+              onClick={onToggleCollapsed}
+              className="grid h-8 w-8 place-items-center rounded-lg border text-sm transition"
+              style={{
+                borderColor: themePalette.borderSubtle,
+                background: themePalette.surfacePanelElevated,
+                color: themePalette.textMuted
+              }}
+              aria-label="Evidence Drilldown を閉じる"
+            >
+              →
+            </button>
+          ) : null}
         </div>
       </div>
 
