@@ -41,14 +41,19 @@ vi.mock("../JapanMainMap", () => ({
   JapanMainMap: ({
     activeId,
     focusTargetId,
-    mapMode
+    mapMode,
+    onMapModeChange
   }: {
     activeId: string;
     focusTargetId: string | null;
     mapMode: OperationMapMode;
+    onMapModeChange: (mode: OperationMapMode) => void;
   }) => (
     <div data-testid="map" data-active={activeId} data-focus={focusTargetId ?? ""} data-mode={mapMode}>
       mocked-map
+      <button type="button" onClick={() => onMapModeChange("cluster")}>
+        change-mode-cluster
+      </button>
     </div>
   )
 }));
@@ -107,7 +112,7 @@ describe("AppShell url sync", () => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice", { scroll: false });
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "集約" }));
+    fireEvent.click(screen.getByText("change-mode-cluster"));
     await waitFor(() => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice&mode=cluster", { scroll: false });
     });

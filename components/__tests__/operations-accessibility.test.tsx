@@ -147,6 +147,7 @@ describe("operations accessibility", () => {
         metricsExpanded={false}
         metrics={[]}
         model={mapModel}
+        onMapModeChange={() => undefined}
         onToggleMetrics={() => undefined}
         onSelect={() => undefined}
         rightOffset={24}

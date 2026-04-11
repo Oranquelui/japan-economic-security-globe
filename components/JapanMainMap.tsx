@@ -6,6 +6,7 @@ import type { DetailViewModel } from "../types/presentation";
 import type { OperationMetric } from "../lib/presentation/metrics";
 import type { JapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import type { OperationMapMode } from "../lib/presentation/operations";
+import { getOperationModeLabel } from "../lib/presentation/operations";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
 import { localizeAnyLabel, localizeKind, localizeSummary } from "../lib/presentation/japanese";
 import { resolveToneColor } from "../lib/presentation/palette";
@@ -21,6 +22,7 @@ interface JapanMainMapProps {
   metricsExpanded: boolean;
   metrics: OperationMetric[];
   model: JapanMapCanvasModel;
+  onMapModeChange: (mode: OperationMapMode) => void;
   onToggleMetrics: () => void;
   onSelect: (id: string) => void;
   rightOffset: number;
@@ -38,6 +40,7 @@ export function JapanMainMap({
   metricsExpanded,
   metrics,
   model,
+  onMapModeChange,
   onToggleMetrics,
   onSelect,
   rightOffset,
@@ -66,7 +69,7 @@ export function JapanMainMap({
         }}
       />
 
-      <div className="absolute top-[108px] z-20" style={{ left: leftOffset + 12, right: rightOffset }}>
+      <div className="absolute top-[184px] z-20" style={{ left: leftOffset + 12, right: rightOffset }}>
         {metricsExpanded ? (
           <div className="grid gap-3 md:grid-cols-5">
             {metrics.map((metric) => {
@@ -139,7 +142,7 @@ export function JapanMainMap({
         <button
           type="button"
           onClick={onToggleMetrics}
-          className="absolute right-4 top-[108px] z-20 rounded-xl border px-3 py-2 text-xs transition"
+          className="absolute right-4 top-[184px] z-20 rounded-xl border px-3 py-2 text-xs transition"
           style={{
             borderColor: themePalette.borderSubtle,
             background: themePalette.surfacePanel,
@@ -150,7 +153,46 @@ export function JapanMainMap({
         </button>
       ) : null}
 
-      <div className="absolute left-4 top-[166px] z-20 flex flex-col gap-2" style={{ left: leftOffset }}>
+      <div className="absolute right-4 top-[184px] z-20" style={{ right: rightOffset }}>
+        <div
+          className="rounded-xl border px-3 py-3 shadow-2xl backdrop-blur-md"
+          style={{
+            borderColor: themePalette.borderSubtle,
+            background: themePalette.surfacePanel
+          }}
+        >
+          <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+            表示レイヤー
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {(["point", "cluster", "choropleth", "route", "static"] as OperationMapMode[]).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => onMapModeChange(mode)}
+                className="rounded-lg border px-3 py-2 text-xs transition"
+                style={
+                  mode === mapMode
+                    ? {
+                        borderColor: themePalette.accent,
+                        background: themePalette.accentSoft,
+                        color: themePalette.textPrimary
+                      }
+                    : {
+                        borderColor: themePalette.borderSubtle,
+                        background: themePalette.surfacePanelElevated,
+                        color: themePalette.textMuted
+                      }
+                }
+              >
+                {getOperationModeLabel(mode)}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute left-4 top-[184px] z-20 flex flex-col gap-2" style={{ left: leftOffset }}>
         <MapControlButton label="+" ariaLabel="地図を拡大" onClick={() => setCommand({ nonce: Date.now(), type: "zoomIn" })} />
         <MapControlButton label="-" ariaLabel="地図を縮小" onClick={() => setCommand({ nonce: Date.now(), type: "zoomOut" })} />
         <MapControlButton label="⌖" ariaLabel="日本中心に戻す" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />

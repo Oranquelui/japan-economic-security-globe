@@ -3,19 +3,13 @@
 import { useState, type ReactNode } from "react";
 
 import type { ThemeId } from "../types/semantic";
-import type { OperationMapMode } from "../lib/presentation/operations";
 import type { ThemePalette } from "../lib/presentation/palette";
-import { getOperationModeLabel } from "../lib/presentation/operations";
 import { getThemeLabel, getThemeQuestion } from "../lib/presentation/japanese";
-
-const OPERATION_MODES: OperationMapMode[] = ["point", "cluster", "choropleth", "route", "static"];
 
 interface ActionBarProps {
   evidenceOpen: boolean;
   gridOpen: boolean;
   inboxOpen: boolean;
-  mapMode: OperationMapMode;
-  onMapModeChange: (mode: OperationMapMode) => void;
   onOpenEvidence: () => void;
   onOpenGrid: () => void;
   onOpenInbox: () => void;
@@ -30,8 +24,6 @@ export function ActionBar({
   evidenceOpen,
   gridOpen,
   inboxOpen,
-  mapMode,
-  onMapModeChange,
   onOpenEvidence,
   onOpenGrid,
   onOpenInbox,
@@ -73,7 +65,6 @@ export function ActionBar({
           <h1 className="mt-2 text-lg font-semibold text-white">日本経済安全保障</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <BarChip themePalette={themePalette}>{theme.label}</BarChip>
-            <BarChip themePalette={themePalette}>{getOperationModeLabel(mapMode)}</BarChip>
             <BarChip themePalette={themePalette}>{resultCount} 件</BarChip>
           </div>
           <p className="mt-2 text-sm leading-6" style={{ color: themePalette.textPrimary }}>
@@ -86,32 +77,7 @@ export function ActionBar({
 
         <div className="flex min-w-[420px] flex-col items-end gap-3">
           <div className="flex flex-wrap items-center justify-end gap-2">
-            {OPERATION_MODES.map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => onMapModeChange(mode)}
-                className="rounded-lg border px-3 py-2 text-xs transition"
-                style={
-                  mode === mapMode
-                    ? {
-                        borderColor: themePalette.accent,
-                        background: themePalette.accentSoft,
-                        color: themePalette.textPrimary
-                      }
-                    : {
-                        borderColor: themePalette.borderSubtle,
-                        background: themePalette.surfacePanelElevated,
-                        color: themePalette.textMuted
-                      }
-                }
-              >
-                {getOperationModeLabel(mode)}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap items-center justify-end gap-2">
+            <DockButton active={true} label="運用画像" onClick={() => undefined} themePalette={themePalette} />
             <DockButton active={inboxOpen} label="受信トレイ" onClick={onOpenInbox} themePalette={themePalette} />
             <DockButton active={gridOpen} label="比較表" onClick={onOpenGrid} themePalette={themePalette} />
             <DockButton active={evidenceOpen} label="根拠" onClick={onOpenEvidence} themePalette={themePalette} />
@@ -125,7 +91,7 @@ export function ActionBar({
                 color: copied ? themePalette.textPrimary : themePalette.textMuted
               }}
             >
-              {copied ? "URL をコピー済み" : "共有リンク"}
+              {copied ? "URL をコピー済み" : "共有ビュー"}
             </button>
           </div>
         </div>

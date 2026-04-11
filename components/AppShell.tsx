@@ -106,8 +106,6 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         evidenceOpen={isEvidenceOpen}
         gridOpen={isGridOpen}
         inboxOpen={isInboxOpen}
-        mapMode={mapMode}
-        onMapModeChange={setMapMode}
         onOpenEvidence={() => setEvidenceOpen(true)}
         onOpenGrid={() => setGridOpen(true)}
         onOpenInbox={() => setInboxOpen(true)}
@@ -128,6 +126,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         model={mapModel}
         leftOffset={leftOffset}
         metricsExpanded={metricsExpanded}
+        onMapModeChange={setMapMode}
         onToggleMetrics={() => setMetricsExpanded((value) => !value)}
         onSelect={setSelectedId}
         rightOffset={rightOffset}
