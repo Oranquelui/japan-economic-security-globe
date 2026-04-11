@@ -13,11 +13,11 @@ describe("presentation palettes", () => {
     expect(status.high).not.toBe(status.normal);
   });
 
-  test("provides dark system surfaces for the operating picture", () => {
+  test("provides a neutral gray map canvas with readable panel surfaces", () => {
     const energy = getThemePalette("energy");
 
-    expect(energy.surfaceCanvas).toMatch(/^#/);
-    expect(energy.surfacePanel).toMatch(/^#/);
-    expect(energy.textPrimary).toBe("#f3f6fa");
+    expect(energy.surfaceCanvas).toBe("#d7dde2");
+    expect(energy.surfacePanel).toContain("rgba");
+    expect(energy.textPrimary).toBe("#f5f7fa");
   });
 });

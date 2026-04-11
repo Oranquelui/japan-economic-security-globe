@@ -47,7 +47,7 @@ export function MapInboxPanel({
         className="flex h-full flex-col items-center rounded-2xl border py-3 shadow-2xl shadow-black/45"
         style={{
           borderColor: themePalette.borderSubtle,
-          background: "rgba(8, 17, 29, 0.95)"
+          background: themePalette.surfacePanel
         }}
       >
         <button
@@ -83,7 +83,7 @@ export function MapInboxPanel({
                       }
                     : {
                         borderColor: themePalette.borderSubtle,
-                        background: "rgba(15, 23, 33, 0.72)",
+                        background: themePalette.surfacePanelElevated,
                         color: themePalette.textMuted
                       }
                 }
@@ -107,14 +107,14 @@ export function MapInboxPanel({
       className="grid h-full overflow-hidden rounded-2xl border shadow-2xl shadow-black/45 lg:grid-cols-[56px_1fr]"
       style={{
         borderColor: themePalette.borderSubtle,
-        background: "rgba(8, 17, 29, 0.95)"
+        background: themePalette.surfacePanel
       }}
     >
       <div
         className="hidden py-4 lg:flex lg:flex-col lg:items-center lg:gap-3"
         style={{
           borderRight: `1px solid ${themePalette.borderSubtle}`,
-          background: "rgba(5, 11, 20, 0.92)"
+          background: themePalette.surfacePanelElevated
         }}
       >
         {THEME_ORDER.map((id) => {
@@ -136,7 +136,7 @@ export function MapInboxPanel({
                     }
                   : {
                       borderColor: themePalette.borderSubtle,
-                      background: "rgba(15, 23, 33, 0.72)",
+                      background: themePalette.surfacePanelElevated,
                       color: themePalette.textMuted
                     }
               }
@@ -160,7 +160,7 @@ export function MapInboxPanel({
                 className="rounded-full border px-2 py-1 text-[0.65rem]"
                 style={{
                   borderColor: themePalette.borderSubtle,
-                  background: "rgba(2, 8, 16, 0.9)",
+                  background: themePalette.surfacePanelElevated,
                   color: themePalette.textMuted
                 }}
               >
@@ -172,7 +172,7 @@ export function MapInboxPanel({
                 className="grid h-8 w-8 place-items-center rounded-lg border text-sm transition"
                 style={{
                   borderColor: themePalette.borderSubtle,
-                  background: "rgba(15, 23, 33, 0.72)",
+                  background: themePalette.surfacePanelElevated,
                   color: themePalette.textMuted
                 }}
                 aria-label="Map Inbox を閉じる"
@@ -186,25 +186,51 @@ export function MapInboxPanel({
           </p>
         </div>
 
-        <div
-          className="mt-4 rounded-xl border p-3"
-          style={{
-            borderColor: `${themePalette.accent}33`,
-            background: themePalette.accentSoft
-          }}
-        >
-          <p className="font-mono text-[0.6rem] uppercase tracking-[0.24em]" style={{ color: themePalette.accentText }}>
-            Story Lens
+        <div className="mt-4">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+            Story Presets
           </p>
-          <div className="mt-2 text-sm font-semibold" style={{ color: themePalette.textPrimary }}>
-            {getThemeLabel(themeId).label}
+          <div className="mt-2 space-y-2">
+            {THEME_ORDER.map((id) => {
+              const theme = getThemeLabel(id);
+              const isActive = id === themeId;
+
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => onThemeChange(id)}
+                  className="w-full rounded-xl border px-3 py-2 text-left transition"
+                  style={
+                    isActive
+                      ? {
+                          borderColor: themePalette.accent,
+                          background: themePalette.accentSoft,
+                          color: themePalette.textPrimary
+                        }
+                      : {
+                          borderColor: themePalette.borderSubtle,
+                          background: themePalette.surfacePanelElevated,
+                          color: themePalette.textMuted
+                        }
+                  }
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-sm font-semibold">{theme.label}</div>
+                    {isActive ? (
+                      <span className="h-2 w-2 rounded-full" style={{ background: themePalette.accent }} />
+                    ) : null}
+                  </div>
+                  <div className="mt-0.5 text-[0.68rem]" style={{ color: isActive ? themePalette.accentText : themePalette.textMuted }}>
+                    {theme.sublabel}
+                  </div>
+                </button>
+              );
+            })}
           </div>
-          <p className="mt-1 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
-            検索して選択し、比較は下部グリッド、詳細は右ドロワーで確認。
-          </p>
         </div>
 
-        <label className="mt-4 block">
+        <label className="mt-5 block">
           <span className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
             Search / Filter
           </span>
@@ -215,7 +241,7 @@ export function MapInboxPanel({
             className="mt-2 w-full rounded-xl border px-3 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-600"
             style={{
               borderColor: themePalette.borderSubtle,
-              background: "#030810"
+              background: themePalette.surfacePanelElevated
             }}
           />
         </label>
@@ -227,7 +253,7 @@ export function MapInboxPanel({
             className="rounded-xl border px-3 py-2 text-xs"
             style={{
               borderColor: themePalette.borderSubtle,
-              background: "rgba(15, 23, 33, 0.72)",
+              background: themePalette.surfacePanelElevated,
               color: themePalette.textPrimary
             }}
           >
@@ -265,50 +291,11 @@ export function MapInboxPanel({
           <SignalPill color={statusPalette.monitoring} label={`監視中 ${rows.filter((row) => row.status === "監視中").length}`} />
         </div>
 
-        <div className="mt-5">
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-            Story Lenses
-          </p>
-          <div className="mt-2 space-y-2">
-            {THEME_ORDER.map((id) => {
-              const theme = getThemeLabel(id);
-              const isActive = id === themeId;
-
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => onThemeChange(id)}
-                  className="w-full rounded-xl border px-3 py-2 text-left transition"
-                  style={
-                    isActive
-                      ? {
-                          borderColor: themePalette.accent,
-                          background: themePalette.accentSoft,
-                          color: themePalette.textPrimary
-                        }
-                      : {
-                          borderColor: themePalette.borderSubtle,
-                          background: "rgba(15, 23, 33, 0.6)",
-                          color: themePalette.textMuted
-                        }
-                  }
-                >
-                  <div className="text-sm font-semibold">{theme.label}</div>
-                  <div className="mt-0.5 text-[0.68rem]" style={{ color: isActive ? themePalette.accentText : themePalette.textMuted }}>
-                    {theme.sublabel}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         <div
           className="mt-5 min-h-0 flex-1 overflow-hidden rounded-xl border"
           style={{
             borderColor: themePalette.borderSubtle,
-            background: "rgba(5, 11, 20, 0.8)"
+            background: themePalette.surfacePanelElevated
           }}
         >
           <div
@@ -318,7 +305,7 @@ export function MapInboxPanel({
               color: themePalette.textMuted
             }}
           >
-            シグナル
+            Signal Inbox
           </div>
           <div className="max-h-[42vh] overflow-auto">
             {rows.slice(0, 12).map((row) => (
@@ -344,13 +331,16 @@ export function MapInboxPanel({
           }}
         >
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.24em]" style={{ color: themePalette.accentText }}>
-            範囲
+            Active Question
           </p>
           <p className="mt-2 text-xs leading-5" style={{ color: themePalette.textPrimary }}>
-            Phase 0 は日本向け。物流はチョークポイント、港湾、LNG受入基地、製油所まで。
+            {question}
           </p>
           <p className="mt-2 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
-            {view.title}
+            Phase 0 は日本向け。物流はチョークポイント、港湾、LNG受入基地、製油所まで。
+          </p>
+          <p className="mt-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+            現在のフォーカス: {view.title}
           </p>
         </div>
       </div>

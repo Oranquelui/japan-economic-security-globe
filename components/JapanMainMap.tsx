@@ -58,7 +58,13 @@ export function JapanMainMap({
         statusPalette={statusPalette}
         themePalette={themePalette}
       />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(255,255,255,0.06),transparent_22%),linear-gradient(180deg,rgba(3,8,14,0.18),rgba(3,8,14,0.5))]" />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 8%, rgba(255,255,255,0.22), transparent 26%), linear-gradient(180deg, rgba(255,255,255,0.02), rgba(148,163,184,0.12))"
+        }}
+      />
 
       <div className="absolute top-[108px] z-20" style={{ left: leftOffset + 12, right: rightOffset }}>
         {metricsExpanded ? (
@@ -71,7 +77,7 @@ export function JapanMainMap({
                   key={metric.id}
                   className="rounded-xl border px-4 py-3 shadow-2xl backdrop-blur-md"
                   style={{
-                    background: "rgba(7, 13, 22, 0.88)",
+                    background: themePalette.surfacePanel,
                     borderColor: themePalette.borderSubtle
                   }}
                 >
@@ -92,7 +98,7 @@ export function JapanMainMap({
           <div
             className="flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2 shadow-2xl backdrop-blur-md"
             style={{
-              background: "rgba(7, 13, 22, 0.86)",
+              background: themePalette.surfacePanel,
               borderColor: themePalette.borderSubtle
             }}
           >
@@ -119,7 +125,7 @@ export function JapanMainMap({
               className="rounded-full border px-2.5 py-1 text-[0.7rem] transition"
               style={{
                 borderColor: themePalette.borderSubtle,
-                background: "rgba(2, 8, 16, 0.9)",
+                background: themePalette.surfacePanelElevated,
                 color: themePalette.textMuted
               }}
             >
@@ -136,7 +142,7 @@ export function JapanMainMap({
           className="absolute right-4 top-[108px] z-20 rounded-xl border px-3 py-2 text-xs transition"
           style={{
             borderColor: themePalette.borderSubtle,
-            background: "rgba(7, 13, 22, 0.88)",
+            background: themePalette.surfacePanel,
             color: themePalette.textMuted
           }}
         >
@@ -154,7 +160,7 @@ export function JapanMainMap({
         <div
           className="flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 shadow-2xl backdrop-blur-md"
           style={{
-            background: "rgba(5, 11, 20, 0.88)",
+            background: themePalette.surfacePanel,
             borderColor: themePalette.borderSubtle
           }}
         >
@@ -164,20 +170,20 @@ export function JapanMainMap({
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <div className="truncate text-base font-semibold text-white">{localizeAnyLabel(detail.id, detail.label)}</div>
-              <InfoChip borderColor={themePalette.borderSubtle} fill="rgba(2, 8, 16, 0.9)" textColor={themePalette.textMuted}>
+              <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textMuted}>
                 {localizeKind(detail.kind)}
               </InfoChip>
-              <InfoChip borderColor={themePalette.borderSubtle} fill="rgba(2, 8, 16, 0.9)" textColor={themePalette.textMuted}>
+              <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textMuted}>
                 {detail.sources.length} 出典
               </InfoChip>
-              <InfoChip borderColor={themePalette.borderSubtle} fill="rgba(2, 8, 16, 0.9)" textColor={themePalette.textMuted}>
+              <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textMuted}>
                 {detail.relatedEntities.length} 関連
               </InfoChip>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {model.foreignWindow ? (
-              <InfoChip borderColor={themePalette.borderSubtle} fill="rgba(2, 8, 16, 0.9)" textColor={themePalette.textPrimary}>
+              <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textPrimary}>
                 対外関係 {model.foreignWindow.entities.length}
               </InfoChip>
             ) : null}
@@ -195,7 +201,7 @@ export function JapanMainMap({
                   className="rounded-full border px-3 py-1.5 text-xs transition hover:text-white"
                   style={{
                     borderColor: themePalette.borderSubtle,
-                    background: "rgba(2, 8, 16, 0.92)",
+                    background: themePalette.surfacePanelElevated,
                     color: themePalette.textPrimary
                   }}
                 >
@@ -217,8 +223,8 @@ function MapControlButton({ ariaLabel, label, onClick }: { ariaLabel: string; la
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className="grid h-12 w-12 place-items-center rounded-lg border bg-[#050b14]/92 text-xl text-slate-200 shadow-lg backdrop-blur-md transition hover:text-white"
-      style={{ borderColor: "var(--ops-border-subtle)" }}
+      className="grid h-12 w-12 place-items-center rounded-lg border text-xl text-slate-200 shadow-lg backdrop-blur-md transition hover:text-white"
+      style={{ borderColor: "var(--ops-border-subtle)", background: "var(--ops-surface-panel)" }}
     >
       {label}
     </button>

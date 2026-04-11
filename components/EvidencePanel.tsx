@@ -45,7 +45,7 @@ export function EvidencePanel({
         className="flex h-full flex-col items-center rounded-2xl border py-3 shadow-2xl shadow-black/45 backdrop-blur-xl"
         style={{
           borderColor: themePalette.borderSubtle,
-          background: "rgba(7, 13, 22, 0.86)"
+          background: themePalette.surfacePanel
         }}
       >
         <button
@@ -85,7 +85,7 @@ export function EvidencePanel({
       className="h-full overflow-y-auto rounded-2xl border p-4 shadow-2xl shadow-black/45 backdrop-blur-xl"
       style={{
         borderColor: themePalette.borderSubtle,
-        background: "rgba(7, 13, 22, 0.86)"
+        background: themePalette.surfacePanel
       }}
     >
       <div className="flex items-center justify-between gap-4">
@@ -109,7 +109,7 @@ export function EvidencePanel({
             className="grid h-8 w-8 place-items-center rounded-lg border text-sm transition"
             style={{
               borderColor: themePalette.borderSubtle,
-              background: "rgba(15, 23, 33, 0.72)",
+              background: themePalette.surfacePanelElevated,
               color: themePalette.textMuted
             }}
             aria-label="Evidence Drilldown を閉じる"
@@ -120,11 +120,11 @@ export function EvidencePanel({
       </div>
 
       <section
-        className="mt-6 rounded-xl border p-5"
-        style={{
-          borderColor: themePalette.borderSubtle,
-          background: "rgba(255, 255, 255, 0.03)"
-        }}
+      className="mt-6 rounded-xl border p-5"
+      style={{
+        borderColor: themePalette.borderSubtle,
+        background: themePalette.surfacePanelElevated
+      }}
       >
         <div className="flex flex-wrap items-center gap-2">
           <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
@@ -171,7 +171,7 @@ export function EvidencePanel({
               className="rounded-xl border p-4"
               style={{
                 borderColor: themePalette.borderSubtle,
-                background: "rgba(255, 255, 255, 0.025)"
+                background: themePalette.surfacePanelElevated
               }}
             >
               <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
@@ -190,7 +190,7 @@ export function EvidencePanel({
               className="rounded-xl border p-4"
               style={{
                 borderColor: themePalette.borderSubtle,
-                background: "rgba(255, 255, 255, 0.025)"
+                background: themePalette.surfacePanelElevated
               }}
             >
               <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
@@ -206,7 +206,7 @@ export function EvidencePanel({
                     className="block rounded-xl border p-3 transition hover:bg-white/[0.06]"
                     style={{
                       borderColor: themePalette.borderSubtle,
-                      background: "rgba(2, 8, 16, 0.78)"
+                      background: themePalette.surfacePanel
                     }}
                   >
                     <div className="flex flex-wrap items-center gap-2">
@@ -252,13 +252,16 @@ export function EvidencePanel({
               className="rounded-xl border p-4"
               style={{
                 borderColor: themePalette.borderSubtle,
-                background: "rgba(255, 255, 255, 0.025)"
+                background: themePalette.surfacePanelElevated
               }}
             >
               <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
                 SPARQL クエリ案
               </div>
-              <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-xl bg-black/60 p-4 font-mono text-[0.68rem] leading-5 text-cyan-100">
+              <pre
+                className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-xl p-4 font-mono text-[0.68rem] leading-5"
+                style={{ background: "rgba(24, 28, 33, 0.92)", color: "#d8e5ee" }}
+              >
                 {detail.sparql.query}
               </pre>
             </section>
@@ -267,7 +270,7 @@ export function EvidencePanel({
               className="rounded-xl border p-4"
               style={{
                 borderColor: themePalette.borderSubtle,
-                background: "rgba(255, 255, 255, 0.025)"
+                background: themePalette.surfacePanelElevated
               }}
             >
               <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
@@ -282,7 +285,7 @@ export function EvidencePanel({
                     className="rounded-full border px-3 py-2 text-xs transition hover:text-white"
                     style={{
                       borderColor: themePalette.borderSubtle,
-                      background: "rgba(2, 8, 16, 0.78)",
+                      background: themePalette.surfacePanel,
                       color: themePalette.textMuted
                     }}
                   >
@@ -297,11 +300,11 @@ export function EvidencePanel({
       </section>
 
       <section
-        className="mt-4 rounded-xl border p-4"
-        style={{
-          borderColor: themePalette.borderSubtle,
-          background: "rgba(255, 255, 255, 0.025)"
-        }}
+      className="mt-4 rounded-xl border p-4"
+      style={{
+        borderColor: themePalette.borderSubtle,
+        background: themePalette.surfacePanelElevated
+      }}
       >
         <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
           読み取り方
@@ -450,7 +453,7 @@ function TabButton({
             }
           : {
               borderColor: themePalette.borderSubtle,
-              background: "rgba(15, 23, 33, 0.72)",
+              background: themePalette.surfacePanelElevated,
               color: themePalette.textMuted
             }
       }
@@ -470,7 +473,10 @@ function PanelChip({
   textColor: string;
 }) {
   return (
-    <span className="rounded-full border bg-slate-950/80 px-2.5 py-1 text-[0.68rem]" style={{ borderColor, color: textColor }}>
+    <span
+      className="rounded-full border px-2.5 py-1 text-[0.68rem]"
+      style={{ borderColor, color: textColor, background: "rgba(24, 28, 33, 0.92)" }}
+    >
       {children}
     </span>
   );
@@ -490,7 +496,7 @@ function FactRow({
       className="rounded-xl border p-3"
       style={{
         borderColor: themePalette.borderSubtle,
-        background: "rgba(2, 8, 16, 0.72)"
+        background: themePalette.surfacePanel
       }}
     >
       <div className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>

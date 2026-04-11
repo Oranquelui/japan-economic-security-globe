@@ -65,6 +65,10 @@ export function JapanOperationsMapCanvas({
         style: buildOperationsBasemapStyle(themePalette)
       });
 
+      map.dragRotate.disable();
+      map.touchZoomRotate.disableRotation();
+      map.addControl(new maplibre.AttributionControl({ compact: true }), "bottom-left");
+
       mapRef.current = map;
 
       map.on("zoomend", () => {
@@ -133,6 +137,29 @@ export function JapanOperationsMapCanvas({
         });
 
         map.addLayer({
+          id: "global-route-direction",
+          type: "symbol",
+          source: "global-routes",
+          maxzoom: GLOBAL_CONTEXT_MAX_ZOOM,
+          layout: {
+            "symbol-placement": "line",
+            "text-field": "▶",
+            "text-size": 10,
+            "symbol-spacing": 120,
+            "text-keep-upright": false
+          },
+          paint: {
+            "text-color": [
+              "case",
+              ["boolean", ["get", "selected"], false],
+              statusPalette.selected,
+              themePalette.accent
+            ],
+            "text-opacity": 0.74
+          }
+        });
+
+        map.addLayer({
           id: "global-point-circle",
           type: "circle",
           source: "global-points",
@@ -147,7 +174,7 @@ export function JapanOperationsMapCanvas({
               statusPalette.watch,
               statusPalette.normal
             ],
-            "circle-stroke-color": "#f8fbff",
+            "circle-stroke-color": "#27313a",
             "circle-stroke-width": [
               "case",
               ["boolean", ["get", "selected"], false],
@@ -177,9 +204,9 @@ export function JapanOperationsMapCanvas({
             "text-anchor": "left"
           },
           paint: {
-            "text-color": "#f0f7ff",
-            "text-halo-color": "rgba(4,10,18,0.92)",
-            "text-halo-width": 1.3
+            "text-color": "#2a3440",
+            "text-halo-color": "rgba(250,252,255,0.96)",
+            "text-halo-width": 1.4
           }
         });
 
@@ -205,7 +232,7 @@ export function JapanOperationsMapCanvas({
           source: "jp-regions",
           minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
           paint: {
-            "line-color": "rgba(233,244,255,0.45)",
+            "line-color": "rgba(62, 73, 85, 0.42)",
             "line-width": 1.2
           }
         });
@@ -232,8 +259,31 @@ export function JapanOperationsMapCanvas({
               "case",
               ["boolean", ["get", "selected"], false],
               0.96,
-              0.5
+              0.62
             ]
+          }
+        });
+
+        map.addLayer({
+          id: "jp-route-direction",
+          type: "symbol",
+          source: "jp-routes",
+          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          layout: {
+            "symbol-placement": "line",
+            "text-field": "▶",
+            "text-size": 11,
+            "symbol-spacing": 110,
+            "text-keep-upright": false
+          },
+          paint: {
+            "text-color": [
+              "case",
+              ["boolean", ["get", "selected"], false],
+              statusPalette.selected,
+              themePalette.accent
+            ],
+            "text-opacity": 0.82
           }
         });
 
@@ -252,7 +302,7 @@ export function JapanOperationsMapCanvas({
               statusPalette.watch,
               statusPalette.normal
             ],
-            "circle-stroke-color": "#f8fbff",
+            "circle-stroke-color": "#27313a",
             "circle-stroke-width": [
               "case",
               ["boolean", ["get", "selected"], false],
@@ -282,9 +332,9 @@ export function JapanOperationsMapCanvas({
             "text-anchor": "left"
           },
           paint: {
-            "text-color": "#f0f7ff",
-            "text-halo-color": "rgba(4,10,18,0.92)",
-            "text-halo-width": 1.5
+            "text-color": "#23303b",
+            "text-halo-color": "rgba(250,252,255,0.98)",
+            "text-halo-width": 1.7
           }
         });
 
@@ -329,7 +379,7 @@ export function JapanOperationsMapCanvas({
             "text-size": 12
           },
           paint: {
-            "text-color": "#f8fbff"
+            "text-color": "#f5f7fa"
           }
         });
 
@@ -401,6 +451,12 @@ export function JapanOperationsMapCanvas({
       statusPalette.selected,
       themePalette.accent
     ]);
+    map.setPaintProperty("global-route-direction", "text-color", [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      statusPalette.selected,
+      themePalette.accent
+    ]);
     map.setPaintProperty("global-point-circle", "circle-color", [
       "match",
       ["get", "tone"],
@@ -417,6 +473,12 @@ export function JapanOperationsMapCanvas({
       themePalette.accent
     ]);
     map.setPaintProperty("jp-route-line", "line-color", [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      statusPalette.selected,
+      themePalette.accent
+    ]);
+    map.setPaintProperty("jp-route-direction", "text-color", [
       "case",
       ["boolean", ["get", "selected"], false],
       statusPalette.selected,
@@ -496,10 +558,12 @@ function applyModeVisibility(map: any, mapMode: OperationMapMode) {
   map.setLayoutProperty("global-point-circle", "visibility", visibility(showPoints));
   map.setLayoutProperty("global-point-label", "visibility", visibility(showPoints));
   map.setLayoutProperty("global-route-line", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("global-route-direction", "visibility", visibility(showRoutes));
 
   map.setLayoutProperty("jp-point-circle", "visibility", visibility(showPoints));
   map.setLayoutProperty("jp-point-label", "visibility", visibility(showPoints));
   map.setLayoutProperty("jp-route-line", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("jp-route-direction", "visibility", visibility(showRoutes));
   map.setLayoutProperty("jp-region-fill", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-region-outline", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-cluster-circle", "visibility", visibility(mapMode === "cluster"));
@@ -631,7 +695,9 @@ function focusMapOnSelection(
         .map((pointId) => model.points.find((point) => point.id === pointId))
         .filter((point): point is JapanMapPoint => Boolean(point))
     : [];
+  const prefersGlobalRoute = mapMode === "route" && Boolean(activeGlobalRoute);
   const prefersGlobal =
+    prefersGlobalRoute ||
     (!activeRoute && !activePoint && !activeRegion && (activeGlobalRoute || activeGlobalPoint)) ||
     currentZoom <= GLOBAL_CONTEXT_MAX_ZOOM + 0.15;
 

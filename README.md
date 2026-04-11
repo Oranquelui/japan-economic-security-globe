@@ -124,6 +124,14 @@ Phase 0 から `Cloudflare Workers + OpenNext adapter` を前提にします。
 - Route53 を authoritative DNS のまま維持したい場合は、Workers custom domain より Pages 側の方が簡単です。
 - 今回は将来の server-side fetch、secret、scheduled ingestion を見越して Workers を採用しています。
 
+この運用は、**収益化前の Phase 0 / Phase 1 までの公開運用**として扱います。
+
+- GitHub 公開リポジトリを source of truth にする
+- `main` と Cloudflare Workers を使って public site を更新する
+- public civic layer を速く改善することを優先する
+
+Phase 2 で institutional / paid product に入る時点では、この運用を最終形とみなさず、public site と private runtime を分ける前提で再設計します。
+
 ## ディレクトリ構成
 
 ```text

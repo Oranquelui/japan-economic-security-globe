@@ -13,6 +13,23 @@ Phase 0 should stay Cloudflare-only and avoid RDS or any external managed relati
 
 This keeps the public launch cheap, easy to fork, and easy to verify, while still leaving room for server-side source fetches and secret-backed adapters.
 
+## Operating Rule
+
+The current deployment and operations model is only for the pre-monetization period.
+
+- GitHub public repository as the main source of truth
+- `main` branch push and Cloudflare Workers deployment for the public site
+- single public hostname for the civic product
+- no separation between public delivery runtime and institutional runtime
+
+This is the correct shape for Phase 0 and Phase 1 because the product is still proving public framing, ontology quality, provenance discipline, and attention.
+
+Once monetization starts in Phase 2, this should be re-evaluated. At that point the architecture should likely split into:
+
+- public civic site
+- institutional/private product runtime
+- separate data refresh and customer-specific operational layers
+
 ## Initial Production Host
 
 - `economic-security.quadrillionaaa.com`

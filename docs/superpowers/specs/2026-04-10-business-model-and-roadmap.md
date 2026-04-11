@@ -322,6 +322,12 @@ Business model:
 - no auth
 - no paid features
 
+Operating model:
+
+- GitHub public repository + Cloudflare Workers public deployment
+- single public runtime
+- optimized for public trust-building, fast shipping, and citation-friendly updates
+
 Success signal:
 
 - people understand the core question in under 10 seconds
@@ -349,6 +355,11 @@ Business model:
 - still free
 - public trust-building phase
 
+Operating model:
+
+- keep the same public GitHub + Cloudflare deployment shape
+- continue treating the product as a public civic service, not a private SaaS workspace
+
 Success signal:
 
 - the service explains why external geopolitical events matter to people in Japan
@@ -375,6 +386,12 @@ Business model:
 - paid institutional tier
 - custom strategic layer
 - no consumer paywall
+
+Operating model transition:
+
+- the Phase 0 / Phase 1 public deployment model should no longer be treated as the complete operating model
+- split the public civic site from the institutional runtime
+- add separate private/customer-specific operational layers, secrets, and data refresh surfaces as needed
 
 Success signal:
 

@@ -24,39 +24,39 @@ export type StatusPalette = {
 export type SemanticTone = "accent" | "high" | "watch" | "normal" | "monitoring" | "selected" | "neutral";
 
 const BASE_THEME: Omit<ThemePalette, "accent" | "accentSoft" | "accentText"> = {
-  surfaceCanvas: "#050913",
-  surfacePanel: "#0c131d",
-  surfacePanelElevated: "#111923",
-  borderSubtle: "#253140",
-  borderStrong: "#334359",
-  textPrimary: "#f3f6fa",
-  textMuted: "#8a97a6"
+  surfaceCanvas: "#d7dde2",
+  surfacePanel: "rgba(34, 40, 47, 0.88)",
+  surfacePanelElevated: "rgba(48, 56, 64, 0.82)",
+  borderSubtle: "rgba(88, 102, 116, 0.42)",
+  borderStrong: "rgba(75, 88, 100, 0.68)",
+  textPrimary: "#f5f7fa",
+  textMuted: "#b4bec8"
 };
 
 const THEME_PALETTES: Record<ThemeId, Pick<ThemePalette, "accent" | "accentSoft" | "accentText">> = {
   energy: {
     accent: "#b67a45",
-    accentSoft: "rgba(182, 122, 69, 0.18)",
+    accentSoft: "rgba(182, 122, 69, 0.12)",
     accentText: "#f0d7bf"
   },
   rice: {
     accent: "#a88a56",
-    accentSoft: "rgba(168, 138, 86, 0.18)",
+    accentSoft: "rgba(168, 138, 86, 0.12)",
     accentText: "#efe0bc"
   },
   water: {
     accent: "#5a9fc2",
-    accentSoft: "rgba(90, 159, 194, 0.18)",
+    accentSoft: "rgba(90, 159, 194, 0.12)",
     accentText: "#d2ebf8"
   },
   defense: {
     accent: "#8b6773",
-    accentSoft: "rgba(139, 103, 115, 0.18)",
+    accentSoft: "rgba(139, 103, 115, 0.12)",
     accentText: "#eed9df"
   },
   semiconductors: {
     accent: "#5aae9d",
-    accentSoft: "rgba(90, 174, 157, 0.18)",
+    accentSoft: "rgba(90, 174, 157, 0.12)",
     accentText: "#d9f4ee"
   }
 };

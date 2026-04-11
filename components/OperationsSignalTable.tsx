@@ -29,7 +29,7 @@ export function OperationsSignalTable({
         className="mx-auto max-w-md rounded-2xl border shadow-2xl shadow-black/35"
         style={{
           borderColor: themePalette.borderSubtle,
-          background: "rgba(7, 16, 27, 0.95)"
+          background: themePalette.surfacePanel
         }}
       >
         <div className="flex items-center justify-between gap-4 px-4 py-3">
@@ -61,7 +61,7 @@ export function OperationsSignalTable({
       className="overflow-hidden rounded-2xl border shadow-2xl shadow-black/35"
       style={{
         borderColor: themePalette.borderSubtle,
-        background: "rgba(7, 16, 27, 0.95)"
+        background: themePalette.surfacePanel
       }}
     >
       <div
@@ -82,7 +82,7 @@ export function OperationsSignalTable({
             className="rounded border px-3 py-2"
             style={{
               borderColor: themePalette.borderSubtle,
-              background: "rgba(0, 0, 0, 0.3)"
+              background: themePalette.surfacePanelElevated
             }}
           >
             {rows.length} 件表示
@@ -91,7 +91,7 @@ export function OperationsSignalTable({
             className="rounded border px-3 py-2"
             style={{
               borderColor: themePalette.borderSubtle,
-              background: "rgba(0, 0, 0, 0.3)"
+              background: themePalette.surfacePanelElevated
             }}
           >
             出典あり
@@ -102,7 +102,7 @@ export function OperationsSignalTable({
             className="rounded border px-3 py-2 text-[0.68rem] transition"
             style={{
               borderColor: themePalette.borderSubtle,
-              background: "rgba(0, 0, 0, 0.3)",
+              background: themePalette.surfacePanelElevated,
               color: themePalette.textMuted
             }}
           >
@@ -116,7 +116,7 @@ export function OperationsSignalTable({
           <thead
             className="sticky top-0 z-10 text-[0.62rem] uppercase tracking-[0.22em] backdrop-blur"
             style={{
-              background: "rgba(12, 22, 36, 0.95)",
+              background: themePalette.surfacePanelElevated,
               color: themePalette.textMuted
             }}
           >
