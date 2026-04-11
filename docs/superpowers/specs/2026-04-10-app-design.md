@@ -10,12 +10,17 @@ The front end is **Japan-first**, not globe-first.
 
 The reference direction is Palantir-style operations mapping in information structure, not in color:
 
-- top: action bar for lens, mode, search, and shareable state
+- top: action bar for product identity and app-level utility only
 - left: navigation rail for story presets, filters, and semantic counts
 - center: Japan operations map as the main canvas
 - bottom: comparison grid for routes, observations, facilities, and policy signals
 - right: evidence drawer with graph, sources, related entities, and SPARQL preview
 - global layer: revealed by zoom-out or map mode, not as the default hero
+
+Important rule:
+
+- menu と widget を混同しない
+- map-layer controls や drawer toggles は top menu に置かない
 
 The service region is Japan. Foreign countries are not user-service regions; they are explanatory nodes for Japan's dependency intelligence.
 
@@ -110,11 +115,16 @@ Mobile layout:
 
 Responsibilities:
 
-- show product identity and current public question
-- show the current map mode and lens
-- expose search or command entry
+- show product identity
+- show current app area
 - expose share/copy-link actions
-- keep state understandable without opening drawers
+- keep the shell legible without becoming a control panel
+
+Should not contain:
+
+- map mode controls
+- drawer toggles disguised as menu
+- theme counts or context widgets that belong to side panels
 
 ### 4.3 Navigation Rail
 
@@ -161,6 +171,7 @@ Responsibilities:
 - show ports, LNG terminals, refineries, reservoirs, prefectures, and budget landing points
 - show sea lanes and chokepoints as inbound routes to Japan
 - reveal global context by zoom-out or mode change, not by separate first-screen hero
+- keep the basemap simpler than the semantic overlays
 
 Interactions:
 
@@ -184,6 +195,12 @@ Responsibilities:
 - avoid becoming the main user-service map
 
 The global layer should appear when the user zooms out or switches to `route` mode. A large 3D globe is not required in Phase 0.
+
+Basemap principle:
+
+- default basemap should be low-assertion
+- coastlines and rough administrative structure are enough
+- dense road or terrain information should only appear when zoomed in enough that the user explicitly asked for local context
 
 ### 4.6 Comparison Grid
 

@@ -48,12 +48,6 @@ describe("navigation shell", () => {
     render(
       <>
         <ActionBar
-          evidenceOpen={false}
-          gridOpen={false}
-          inboxOpen={false}
-          onOpenEvidence={() => undefined}
-          onOpenGrid={() => undefined}
-          onOpenInbox={() => undefined}
           sharePath="/"
           themePalette={themePalette}
         />
@@ -78,10 +72,11 @@ describe("navigation shell", () => {
     );
 
     const header = screen.getByRole("banner");
-    expect(within(header).getByRole("button", { name: "受信トレイ" })).toBeTruthy();
-    expect(within(header).getByRole("button", { name: "比較表" })).toBeTruthy();
-    expect(within(header).getByRole("button", { name: "根拠" })).toBeTruthy();
+    expect(within(header).queryByRole("button", { name: "受信トレイ" })).toBeNull();
+    expect(within(header).queryByRole("button", { name: "比較表" })).toBeNull();
+    expect(within(header).queryByRole("button", { name: "根拠" })).toBeNull();
     expect(within(header).queryByRole("button", { name: "地点" })).toBeNull();
+    expect(within(header).getByText("運用地図")).toBeTruthy();
     expect(screen.getByText("表示レイヤー")).toBeTruthy();
     expect(screen.getByRole("button", { name: "地点" })).toBeTruthy();
   });

@@ -102,12 +102,6 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   return (
     <main className="relative h-screen overflow-hidden text-slate-100" style={shellStyle}>
       <ActionBar
-        evidenceOpen={isEvidenceOpen}
-        gridOpen={isGridOpen}
-        inboxOpen={isInboxOpen}
-        onOpenEvidence={() => setEvidenceOpen(true)}
-        onOpenGrid={() => setGridOpen(true)}
-        onOpenInbox={() => setInboxOpen(true)}
         sharePath={sharePath}
         themePalette={themePalette}
       />

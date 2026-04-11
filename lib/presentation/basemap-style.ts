@@ -40,12 +40,6 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       ],
       tileSize: 256,
       attribution: "Esri, HERE, Garmin"
-    },
-    "gsi-pale": {
-      type: "raster",
-      tiles: ["https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png"],
-      tileSize: 256,
-      attribution: "地理院タイル"
     }
   };
 
@@ -64,7 +58,7 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "raster",
       source: "gray-canvas-base",
       paint: {
-        "raster-opacity": 0.88,
+        "raster-opacity": 1,
         "raster-fade-duration": 0
       }
     },
@@ -73,17 +67,7 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "raster",
       source: "gray-canvas-reference",
       paint: {
-        "raster-opacity": 0.92,
-        "raster-fade-duration": 0
-      }
-    },
-    {
-      id: "gsi-pale",
-      type: "raster",
-      source: "gsi-pale",
-      minzoom: 3.8,
-      paint: {
-        "raster-opacity": 0.95,
+        "raster-opacity": 0.9,
         "raster-fade-duration": 0
       }
     },
@@ -92,7 +76,7 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "fill",
       source: "world-land",
       paint: {
-        "fill-color": "rgba(228,233,238,0.16)",
+        "fill-color": "rgba(232,236,240,0.12)",
         "fill-opacity": 1
       }
     },

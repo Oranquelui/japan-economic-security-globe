@@ -50,8 +50,8 @@ Phase 2 later adds institutional paid features such as private workspaces, alert
 
 ## Required Phase 0 UX
 
-1. A top action bar shows the product name, active story lens, map mode, shareable state, and high-level actions.
-2. A left navigation rail contains story lenses, semantic presets, and operational filters rather than only visual theme buttons.
+1. A top action bar shows product identity and app-level utility only. Widget toggles must not masquerade as menu items.
+2. A left navigation rail contains story lenses, semantic presets, and operational filters rather than only visual theme buttons. This rail is the primary navigation context.
 3. Energy is the default active story lens, but the navigation model must work for all themes without redesign.
 4. The main hero area is a full-screen Japan operations map canvas.
 5. The initial viewport is fixed on Japan and must not auto-fit to a selected route on first load.
@@ -77,10 +77,10 @@ Primary areas:
 
 Action bar responsibilities:
 
-- show current lens and map mode
-- expose global search or command entry
-- expose share/copy-link behavior
-- keep the current state legible without opening side panels
+- show product identity
+- show the current app area
+- expose share/copy-link behavior and other utilities
+- never duplicate widget controls such as drawer toggles or map-layer switches
 
 Navigation rail responsibilities:
 
@@ -95,12 +95,15 @@ Map canvas responsibilities:
 - default to a stable Japan viewport
 - support point, cluster, choropleth, route, and static analysis modes
 - reveal global context only when zoom or mode indicates the user asked for it
+- keep the basemap visually subordinate to semantic overlays
+- use a simple Japan-first basemap by default rather than a dense road map
 
 Context drawer responsibilities:
 
 - explain the selected object
 - connect to evidence, source documents, and semantic relations
 - avoid dominating the initial screen
+- behave as an analytical widget, not as a top-level menu destination unless it becomes a true standalone area
 
 Comparison grid responsibilities:
 

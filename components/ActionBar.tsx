@@ -5,23 +5,11 @@ import { useState } from "react";
 import type { ThemePalette } from "../lib/presentation/palette";
 
 interface ActionBarProps {
-  evidenceOpen: boolean;
-  gridOpen: boolean;
-  inboxOpen: boolean;
-  onOpenEvidence: () => void;
-  onOpenGrid: () => void;
-  onOpenInbox: () => void;
   sharePath: string;
   themePalette: ThemePalette;
 }
 
 export function ActionBar({
-  evidenceOpen,
-  gridOpen,
-  inboxOpen,
-  onOpenEvidence,
-  onOpenGrid,
-  onOpenInbox,
   sharePath,
   themePalette
 }: ActionBarProps) {
@@ -55,12 +43,10 @@ export function ActionBar({
             </div>
             <h1 className="mt-1 text-base font-semibold text-white">日本経済安全保障</h1>
           </div>
-          <nav className="flex items-center gap-1">
-            <NavTab active={true} label="運用地図" onClick={() => undefined} themePalette={themePalette} />
-            <NavTab active={inboxOpen} label="受信トレイ" onClick={onOpenInbox} themePalette={themePalette} />
-            <NavTab active={gridOpen} label="比較表" onClick={onOpenGrid} themePalette={themePalette} />
-            <NavTab active={evidenceOpen} label="根拠" onClick={onOpenEvidence} themePalette={themePalette} />
-          </nav>
+          <div className="h-7 w-px" style={{ background: themePalette.borderSubtle }} />
+          <div className="text-sm font-medium" style={{ color: themePalette.textPrimary }}>
+            運用地図
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -79,40 +65,5 @@ export function ActionBar({
         </div>
       </div>
     </header>
-  );
-}
-
-function NavTab({
-  active,
-  label,
-  onClick,
-  themePalette
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-  themePalette: ThemePalette;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="border-b px-3 py-2 text-xs transition"
-      style={
-        active
-          ? {
-              borderColor: themePalette.accent,
-              background: "transparent",
-              color: themePalette.textPrimary
-            }
-          : {
-              borderColor: "transparent",
-              background: "transparent",
-              color: themePalette.textMuted
-            }
-      }
-    >
-      {label}
-    </button>
   );
 }

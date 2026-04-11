@@ -224,12 +224,12 @@
         "id": 14,
         "title": "Reframe the shell around Japan-first operating-picture navigation",
         "description": "Refactor the app shell from a theme-driven demo layout into an operating-picture navigation structure built around action bar, navigation rail, map canvas, context drawer, and comparison grid.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           13
         ],
         "priority": "high",
-        "details": "Update AppShell, navigation components, and layout rules so the main experience follows a public-interest operating picture. The map must remain primary, while actions, presets, evidence, and comparison surfaces become clearly secondary but synchronized. Use the navigation concepts from Palantir Slate and Workshop scenario/model selection as IA references, not as a visual clone.",
+        "details": "Update AppShell, navigation components, and layout rules so the main experience follows a public-interest operating picture. The map must remain primary, while actions, presets, evidence, and comparison surfaces become clearly secondary but synchronized. Use the navigation concepts from Palantir Slate and Workshop scenario/model selection as IA references, not as a visual clone. Explicitly separate menu primitives from widget primitives: app-level destinations and utilities may appear in the top shell, while map modes, drawer toggles, metrics, and selected-object controls must remain widgets.",
         "testStrategy": "Run npm run build and manually inspect that the initial reading order is action bar, navigation rail, Japan map canvas, then context surfaces without obscuring the map.",
         "subtasks": [],
         "metadata": {
@@ -276,14 +276,14 @@
         "id": 17,
         "title": "Refactor context drawer and comparison grid for operational reading order",
         "description": "Reduce visual clutter and make the map, comparison, and evidence surfaces work in a deliberate sequence.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           14,
           15,
           16
         ],
         "priority": "medium",
-        "details": "Simplify the right drawer, ensure the bottom grid acts as the main comparison surface, and keep the top-level action bar concise. The user should be able to go from map to table to evidence without losing map context. Foreign-country detail windows must remain explanatory overlays, not separate profile screens.",
+        "details": "Simplify the right drawer, ensure the bottom grid acts as the main comparison surface, and keep the top-level action bar concise. The user should be able to go from map to table to evidence without losing map context. Foreign-country detail windows must remain explanatory overlays, not separate profile screens. Remove oversized always-on briefing widgets that compete with the map at first load.",
         "testStrategy": "Run npm run build and manually inspect desktop/mobile layouts to confirm the map remains dominant and drawer/grid surfaces do not overwhelm the initial screen.",
         "subtasks": [],
         "metadata": {
@@ -304,6 +304,22 @@
         "subtasks": [],
         "metadata": {
           "verification": "navigation-reframe"
+        }
+      },
+      {
+        "id": 19,
+        "title": "Document root-cause analysis for menu vs widget regression",
+        "description": "Write and maintain a root-cause analysis that captures why the shell kept regressing into a widget collage and how Palantir's application patterns should be interpreted for this project.",
+        "status": "in-progress",
+        "dependencies": [
+          14
+        ],
+        "priority": "high",
+        "details": "Create a durable spec that states: Map widget controls are not app navigation; Common Operating Picture and Alert Inbox are separate app patterns; story lenses are semantic presets derived from the canonical graph; and the basemap must remain subordinate to overlays. Use this document as a regression gate before further shell work.",
+        "testStrategy": "Review the written analysis against current screenshots and ensure future implementation decisions can be checked against it without ambiguity.",
+        "subtasks": [],
+        "metadata": {
+          "surface": "root-cause-analysis"
         }
       }
     ],

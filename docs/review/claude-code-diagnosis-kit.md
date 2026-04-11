@@ -62,6 +62,7 @@
 
 - PRD: [japan-economic-security-globe-prd.txt](/Users/louistoyozaki/Documents/GitHub/jp-strategic-dependency-graph/.taskmaster/docs/japan-economic-security-globe-prd.txt)
 - app design: [2026-04-10-app-design.md](/Users/louistoyozaki/Documents/GitHub/jp-strategic-dependency-graph/docs/superpowers/specs/2026-04-10-app-design.md)
+- root cause analysis: [2026-04-11-navigation-root-cause-analysis.md](/Users/louistoyozaki/Documents/GitHub/jp-strategic-dependency-graph/docs/superpowers/specs/2026-04-11-navigation-root-cause-analysis.md)
 - navigation addendum: [2026-04-11-navigation-reframe-addendum.txt](/Users/louistoyozaki/Documents/GitHub/jp-strategic-dependency-graph/.taskmaster/docs/2026-04-11-navigation-reframe-addendum.txt)
 - official source registry: [official-source-registry.md](/Users/louistoyozaki/Documents/GitHub/jp-strategic-dependency-graph/docs/official-source-registry.md)
 
@@ -80,6 +81,7 @@
 ### 4.1 Navigation / UX
 
 - 画面が widget collage に見えていないか
+- menu と widget が同じ primitive で扱われていないか
 - map canvas が主役になっているか
 - left / right / bottom surface が map を邪魔していないか
 - navigation が `theme switch` のまま止まっていないか
@@ -92,6 +94,7 @@
 - initial selection auto-fit が残っていないか
 - zoom-out で global context が自然に出るか
 - basemap が外部障害で壊れない構成か
+- basemap が overlay より強く読まれていないか
 
 ### 4.3 Semantic / Evidence
 
