@@ -55,8 +55,6 @@ describe("navigation shell", () => {
           activeId="flow:saudi-oil-japan"
           detail={detail}
           focusTargetId={null}
-          gridExpanded={false}
-          leftOffset={24}
           mapMode="point"
           metricsExpanded={false}
           metrics={[]}
@@ -64,7 +62,6 @@ describe("navigation shell", () => {
           onMapModeChange={() => undefined}
           onToggleMetrics={() => undefined}
           onSelect={() => undefined}
-          rightOffset={24}
           statusPalette={statusPalette}
           themePalette={themePalette}
         />

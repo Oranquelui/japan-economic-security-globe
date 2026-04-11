@@ -78,6 +78,16 @@ beforeEach(() => {
 });
 
 describe("AppShell url sync", () => {
+  test("renders the shell as header plus left nav, map, evidence, and comparison sections", () => {
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    expect(screen.getByRole("banner")).toBeTruthy();
+    expect(screen.getByTestId("layout-left-nav")).toBeTruthy();
+    expect(screen.getByTestId("layout-map-section")).toBeTruthy();
+    expect(screen.getByTestId("layout-evidence-section")).toBeTruthy();
+    expect(screen.getByTestId("layout-compare-section")).toBeTruthy();
+  });
+
   test("hydrates initial state from the provided url state", () => {
     render(
       <AppShell

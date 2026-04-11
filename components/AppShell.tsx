@@ -71,10 +71,9 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
     "--ops-text-primary": themePalette.textPrimary,
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
-  const leftOffset = isInboxOpen ? 264 : 88;
-  const rightOffset = isEvidenceOpen ? 344 : 88;
-  const panelTop = 82;
-  const panelBottom = 16;
+  const leftWidth = isInboxOpen ? 224 : 48;
+  const rightWidth = isEvidenceOpen ? 320 : 48;
+  const compareHeight = isGridOpen ? 248 : 72;
 
   useEffect(() => {
     const serialized = serializeOperationsUrlState({
@@ -100,43 +99,94 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   }
 
   return (
-    <main className="relative h-screen overflow-hidden text-slate-100" style={shellStyle}>
-      <ActionBar
-        sharePath={sharePath}
-        themePalette={themePalette}
-      />
+    <main className="grid h-screen min-h-screen grid-rows-[56px,minmax(0,1fr)] overflow-hidden text-slate-100" style={shellStyle}>
+      <ActionBar sharePath={sharePath} themePalette={themePalette} />
 
-      <JapanMainMap
-        activeId={activeId}
-        detail={detail}
-        focusTargetId={focusTargetId}
-        gridExpanded={isGridOpen}
-        mapMode={mapMode}
-        metrics={metrics}
-        model={mapModel}
-        leftOffset={leftOffset}
-        metricsExpanded={metricsExpanded}
-        onMapModeChange={setMapMode}
-        onToggleMetrics={() => setMetricsExpanded((value) => !value)}
-        onSelect={setSelectedId}
-        rightOffset={rightOffset}
-        statusPalette={statusPalette}
-        themePalette={themePalette}
-      />
+      <div className="min-h-0 p-4">
+        <div
+          className="hidden h-full min-h-0 gap-4 lg:grid"
+          style={{
+            gridTemplateColumns: `${leftWidth}px minmax(0, 1fr) ${rightWidth}px`,
+            gridTemplateRows: `minmax(0, 1fr) ${compareHeight}px`
+          }}
+        >
+          <aside data-testid="layout-left-nav" className="row-span-2 min-h-0">
+            <MapInboxPanel
+              collapsed={!isInboxOpen}
+              themePalette={themePalette}
+              themeId={themeId}
+              onToggleCollapsed={() => setInboxOpen((value) => !value)}
+              onThemeChange={handleThemeChange}
+            />
+          </aside>
 
-      <div className="absolute left-4 z-30 hidden lg:block" style={{ top: panelTop, width: isInboxOpen ? 224 : 48, maxHeight: "calc(100vh - 98px)" }}>
+          <section data-testid="layout-map-section" className="min-h-0">
+            <JapanMainMap
+              activeId={activeId}
+              detail={detail}
+              focusTargetId={focusTargetId}
+              mapMode={mapMode}
+              metrics={metrics}
+              model={mapModel}
+              metricsExpanded={metricsExpanded}
+              onMapModeChange={setMapMode}
+              onToggleMetrics={() => setMetricsExpanded((value) => !value)}
+              onSelect={setSelectedId}
+              statusPalette={statusPalette}
+              themePalette={themePalette}
+            />
+          </section>
+
+          <aside data-testid="layout-evidence-section" className="row-span-2 min-h-0">
+            <EvidencePanel
+              collapsed={!isEvidenceOpen}
+              detail={detail}
+              evidenceGraph={evidenceGraph}
+              onSelect={setSelectedId}
+              selectedId={activeId}
+              statusPalette={statusPalette}
+              themePalette={themePalette}
+              themeTitle={view.title}
+              onToggleCollapsed={() => setEvidenceOpen((value) => !value)}
+            />
+          </aside>
+
+          <section data-testid="layout-compare-section" className="min-h-0">
+            <OperationsSignalTable
+              activeId={activeId}
+              collapsed={!isGridOpen}
+              onSelect={setSelectedId}
+              query={searchQuery}
+              rows={filteredOperationRows}
+              statusPalette={statusPalette}
+              themePalette={themePalette}
+              onQueryChange={setSearchQuery}
+              onToggleCollapsed={() => setGridOpen((value) => !value)}
+            />
+          </section>
+        </div>
+
+        <div className="space-y-4 lg:hidden">
         <MapInboxPanel
-          collapsed={!isInboxOpen}
+          collapsed={false}
           themePalette={themePalette}
           themeId={themeId}
-          onToggleCollapsed={() => setInboxOpen((value) => !value)}
+          onToggleCollapsed={() => undefined}
           onThemeChange={handleThemeChange}
         />
-      </div>
-
-      <div className="absolute right-4 z-30 hidden lg:block" style={{ top: panelTop, bottom: panelBottom, width: isEvidenceOpen ? 320 : 48 }}>
+        <OperationsSignalTable
+          activeId={activeId}
+          collapsed={false}
+          onSelect={setSelectedId}
+          query={searchQuery}
+          rows={filteredOperationRows}
+          statusPalette={statusPalette}
+          themePalette={themePalette}
+          onQueryChange={setSearchQuery}
+          onToggleCollapsed={() => undefined}
+        />
         <EvidencePanel
-          collapsed={!isEvidenceOpen}
+          collapsed={false}
           detail={detail}
           evidenceGraph={evidenceGraph}
           onSelect={setSelectedId}
@@ -144,54 +194,9 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
           statusPalette={statusPalette}
           themePalette={themePalette}
           themeTitle={view.title}
-          onToggleCollapsed={() => setEvidenceOpen((value) => !value)}
-        />
-      </div>
-
-      <div className="absolute bottom-4 z-30 hidden lg:block" style={{ left: leftOffset, right: rightOffset }}>
-        <OperationsSignalTable
-          activeId={activeId}
-          collapsed={!isGridOpen}
-          onSelect={setSelectedId}
-          query={searchQuery}
-          rows={filteredOperationRows}
-          statusPalette={statusPalette}
-          themePalette={themePalette}
-          onQueryChange={setSearchQuery}
-          onToggleCollapsed={() => setGridOpen((value) => !value)}
-        />
-      </div>
-
-      <div className="absolute left-4 right-4 top-20 z-30 space-y-4 lg:hidden">
-        <MapInboxPanel
-          collapsed={false}
-          themePalette={themePalette}
-          themeId={themeId}
-          onToggleCollapsed={() => undefined}
-          onThemeChange={handleThemeChange}
-        />
-        <OperationsSignalTable
-          activeId={activeId}
-          collapsed={false}
-          onSelect={setSelectedId}
-          query={searchQuery}
-          rows={filteredOperationRows}
-          statusPalette={statusPalette}
-          themePalette={themePalette}
-          onQueryChange={setSearchQuery}
           onToggleCollapsed={() => undefined}
         />
-        <EvidencePanel
-          collapsed={false}
-          detail={detail}
-          evidenceGraph={evidenceGraph}
-          onSelect={setSelectedId}
-          selectedId={activeId}
-          statusPalette={statusPalette}
-          themePalette={themePalette}
-          themeTitle={view.title}
-          onToggleCollapsed={() => undefined}
-        />
+        </div>
       </div>
     </main>
   );

@@ -16,8 +16,6 @@ interface JapanMainMapProps {
   activeId: string;
   detail: DetailViewModel;
   focusTargetId: string | null;
-  gridExpanded: boolean;
-  leftOffset: number;
   mapMode: OperationMapMode;
   metricsExpanded: boolean;
   metrics: OperationMetric[];
@@ -25,7 +23,6 @@ interface JapanMainMapProps {
   onMapModeChange: (mode: OperationMapMode) => void;
   onToggleMetrics: () => void;
   onSelect: (id: string) => void;
-  rightOffset: number;
   statusPalette: StatusPalette;
   themePalette: ThemePalette;
 }
@@ -34,8 +31,6 @@ export function JapanMainMap({
   activeId,
   detail,
   focusTargetId,
-  gridExpanded,
-  leftOffset,
   mapMode,
   metricsExpanded,
   metrics,
@@ -43,14 +38,19 @@ export function JapanMainMap({
   onMapModeChange,
   onToggleMetrics,
   onSelect,
-  rightOffset,
   statusPalette,
   themePalette
 }: JapanMainMapProps) {
   const [command, setCommand] = useState<{ nonce: number; type: "recenter" | "zoomIn" | "zoomOut" }>();
 
   return (
-    <section className="absolute inset-0 overflow-hidden" style={{ background: themePalette.surfaceCanvas }}>
+    <section
+      className="relative h-full min-h-0 overflow-hidden rounded-2xl border shadow-2xl shadow-black/15"
+      style={{
+        background: themePalette.surfaceCanvas,
+        borderColor: themePalette.borderSubtle
+      }}
+    >
       <JapanOperationsMapCanvas
         activeId={activeId}
         command={command}
@@ -68,7 +68,7 @@ export function JapanMainMap({
         }}
       />
 
-      <div className="absolute top-[82px] z-20" style={{ left: leftOffset + 8, right: rightOffset + 12 }}>
+      <div className="absolute left-4 right-[280px] top-4 z-20">
         {metricsExpanded ? (
           <div className="grid gap-2 md:grid-cols-4">
             {metrics.slice(0, 4).map((metric) => {
@@ -141,7 +141,7 @@ export function JapanMainMap({
         <button
           type="button"
           onClick={onToggleMetrics}
-          className="absolute right-4 top-[82px] z-20 rounded-xl border px-3 py-2 text-xs transition"
+          className="absolute right-4 top-4 z-20 rounded-xl border px-3 py-2 text-xs transition"
           style={{
             borderColor: themePalette.borderSubtle,
             background: themePalette.surfacePanel,
@@ -152,7 +152,7 @@ export function JapanMainMap({
         </button>
       ) : null}
 
-      <div className="absolute right-4 top-[82px] z-20" style={{ right: rightOffset }}>
+      <div className="absolute right-4 top-4 z-20">
         <div
           className="rounded-xl border px-3 py-2.5 shadow-xl backdrop-blur-md"
           style={{
@@ -191,13 +191,13 @@ export function JapanMainMap({
         </div>
       </div>
 
-      <div className="absolute left-4 top-[126px] z-20 flex flex-col gap-2" style={{ left: leftOffset }}>
+      <div className="absolute left-4 top-16 z-20 flex flex-col gap-2">
         <MapControlButton label="+" ariaLabel="地図を拡大" onClick={() => setCommand({ nonce: Date.now(), type: "zoomIn" })} />
         <MapControlButton label="-" ariaLabel="地図を縮小" onClick={() => setCommand({ nonce: Date.now(), type: "zoomOut" })} />
         <MapControlButton label="⌖" ariaLabel="日本中心に戻す" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />
       </div>
 
-      <div className="absolute z-20" style={{ left: leftOffset, bottom: gridExpanded ? 292 : 88, maxWidth: 360 }}>
+      <div className="absolute bottom-4 left-4 z-20 max-w-[360px]">
         <div
           className="rounded-xl border px-3.5 py-2.5 shadow-xl backdrop-blur-md"
           style={{

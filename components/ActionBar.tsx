@@ -28,13 +28,15 @@ export function ActionBar({
   }
 
   return (
-    <header className="absolute left-4 right-4 top-4 z-40 hidden items-start justify-between lg:flex">
+    <header
+      className="hidden items-center justify-between border-b px-4 py-3 lg:flex"
+      style={{
+        borderColor: themePalette.borderSubtle,
+        background: themePalette.surfacePanel
+      }}
+    >
       <div
-        className="max-w-sm rounded-lg border px-4 py-3 shadow-lg shadow-black/10 backdrop-blur-md"
-        style={{
-          borderColor: themePalette.borderSubtle,
-          background: themePalette.surfacePanel
-        }}
+        className="max-w-sm"
       >
         <div className="font-mono text-[0.55rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
           日本向け依存インテリジェンス
@@ -45,10 +47,10 @@ export function ActionBar({
       <button
         type="button"
         onClick={handleCopyLink}
-        className="rounded-lg border px-3 py-2 text-[0.72rem] transition shadow-lg shadow-black/10 backdrop-blur-md"
+        className="rounded-lg border px-3 py-2 text-[0.72rem] transition"
         style={{
           borderColor: copied ? themePalette.accent : themePalette.borderSubtle,
-          background: copied ? themePalette.accentSoft : themePalette.surfacePanel,
+          background: copied ? themePalette.accentSoft : themePalette.surfacePanelElevated,
           color: copied ? themePalette.textPrimary : themePalette.textMuted
         }}
       >
