@@ -9,12 +9,20 @@
     "value": "rate change signal",
     "unit": "qualitative",
     "period": "2026-04",
-    "sourceIds": ["source:tepco-2026-april-power"],
+    "sourceIds": [
+      "source:enecho-energy-trends",
+      "source:tepco-2026-april-power"
+    ],
     "summary": "A public-facing observation linking LNG and electricity cost exposure.",
     "provenance": [
       {
+        "sourceId": "source:enecho-energy-trends",
+        "claim": "Official energy supply context for LNG-linked household exposure.",
+        "retrievedAt": "2026-04-11"
+      },
+      {
         "sourceId": "source:tepco-2026-april-power",
-        "claim": "Manual seed observation for electricity cost exposure.",
+        "claim": "Supplementary utility-side evidence for electricity cost exposure.",
         "retrievedAt": "2026-04-10"
       }
     ]
@@ -29,13 +37,18 @@
     "value": "elevated",
     "unit": "qualitative",
     "period": "2026",
-    "sourceIds": ["source:maff-rice-policy"],
+    "sourceIds": ["source:maff-rice-policy", "source:maff-rice-monthly-report"],
     "summary": "A manual seed observation representing rice price concern and policy attention.",
     "provenance": [
       {
         "sourceId": "source:maff-rice-policy",
         "claim": "Manual seed observation for rice price and policy pressure.",
         "retrievedAt": "2026-04-10"
+      },
+      {
+        "sourceId": "source:maff-rice-monthly-report",
+        "claim": "Supplementary MAFF monthly context for price and supply pressure.",
+        "retrievedAt": "2026-04-11"
       }
     ]
   },
@@ -49,13 +62,18 @@
     "value": "active",
     "unit": "qualitative",
     "period": "2026",
-    "sourceIds": ["source:maff-rice-policy"],
+    "sourceIds": ["source:maff-rice-policy", "source:maff-rice-monthly-report", "source:egov-law-search"],
     "summary": "A policy signal connecting stockpile discussions to the rice dependency story.",
     "provenance": [
       {
         "sourceId": "source:maff-rice-policy",
         "claim": "Manual seed observation for stockpile and policy event examples.",
         "retrievedAt": "2026-04-10"
+      },
+      {
+        "sourceId": "source:egov-law-search",
+        "claim": "Future legal provenance anchor for food-system and rice-policy references.",
+        "retrievedAt": "2026-04-11"
       }
     ]
   },
@@ -69,13 +87,18 @@
     "value": "watch",
     "unit": "qualitative",
     "period": "2026",
-    "sourceIds": ["source:mlit-drought-portal"],
+    "sourceIds": ["source:mlit-drought-portal", "source:jma-drought-spi"],
     "summary": "A manual seed observation for reservoir and drought visualization.",
     "provenance": [
       {
         "sourceId": "source:mlit-drought-portal",
         "claim": "Manual seed observation for water stress example.",
         "retrievedAt": "2026-04-10"
+      },
+      {
+        "sourceId": "source:jma-drought-spi",
+        "claim": "Official drought-monitoring method reference for precipitation stress.",
+        "retrievedAt": "2026-04-11"
       }
     ]
   },
@@ -89,13 +112,18 @@
     "value": "sample_line",
     "unit": "qualitative",
     "period": "FY2026",
-    "sourceIds": ["source:mod-fy2026-budget"],
+    "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
     "summary": "A sample FY2026 defense budget observation for the evidence graph.",
     "provenance": [
       {
         "sourceId": "source:mod-fy2026-budget",
         "claim": "Manual seed observation for FY2026 defense budget category.",
         "retrievedAt": "2026-04-10"
+      },
+      {
+        "sourceId": "source:mof-fy2026-budget",
+        "claim": "Budget-line provenance anchored to the official fiscal document set.",
+        "retrievedAt": "2026-04-11"
       }
     ]
   },
@@ -109,13 +137,22 @@
     "value": "active",
     "unit": "qualitative",
     "period": "2026",
-    "sourceIds": ["source:meti-semiconductor-frame", "source:cabinet-tsmc-2026"],
+    "sourceIds": [
+      "source:meti-semiconductor-frame",
+      "source:cabinet-tsmc-2026",
+      "source:customs-trade-statistics"
+    ],
     "summary": "A policy signal connecting semiconductor industrial base policy to Japan's economic security story.",
     "provenance": [
       {
         "sourceId": "source:meti-semiconductor-frame",
         "claim": "Manual seed observation for semiconductor policy emphasis.",
         "retrievedAt": "2026-04-10"
+      },
+      {
+        "sourceId": "source:customs-trade-statistics",
+        "claim": "Trade-statistics anchor for future import / dependency quantification.",
+        "retrievedAt": "2026-04-11"
       }
     ]
   }

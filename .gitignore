@@ -4,6 +4,9 @@ out
 dist
 .env*
 !.env.example
+.dev.vars*
+.wrangler
+.open-next
 .DS_Store
 coverage
 *.tsbuildinfo

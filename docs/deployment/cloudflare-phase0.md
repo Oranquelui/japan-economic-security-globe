@@ -4,14 +4,20 @@ Phase 0 should stay Cloudflare-only and avoid RDS or any external managed relati
 
 ## Recommended Phase 0 Shape
 
-- Static Next.js app deployed to Cloudflare Pages or Cloudflare Workers via an OpenNext-compatible path.
+- Next.js app deployed to Cloudflare Workers via the OpenNext adapter.
 - Local `data/seed/*.json` bundled at build time.
 - Turtle and SPARQL examples shipped as repository artifacts.
 - No authentication.
 - No private user data.
 - No server-side database dependency.
 
-This keeps the public launch cheap, easy to fork, and easy to verify.
+This keeps the public launch cheap, easy to fork, and easy to verify, while still leaving room for server-side source fetches and secret-backed adapters.
+
+## Initial Production Host
+
+- `economic-security.quadrillionaaa.com`
+
+This hostname should be attached as a Workers custom domain. Cloudflare's custom domains require an active Cloudflare zone, so the domain needs to be managed from Cloudflare DNS if this route is used directly.
 
 ## Why Not RDS Yet
 
@@ -23,7 +29,7 @@ The first durable backend should probably be a graph/data layer, not a generic a
 
 - `R2`: store source snapshots, generated TTL files, and ingestion artifacts.
 - `D1`: store lightweight ingestion metadata, source refresh state, and public app settings.
-- `Workers`: run scheduled source checks and publish static graph artifacts.
+- `Workers`: run scheduled source checks, source adapters, and publish refreshed graph artifacts.
 - `Queues`: decouple ingestion from validation if refresh volume grows.
 
 ## Later Graph Endpoint

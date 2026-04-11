@@ -1,3 +1,5 @@
+@import "maplibre-gl/dist/maplibre-gl.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -23,6 +25,21 @@ body {
   background: #030711;
   color: #eef7ff;
   font-family: var(--font-body);
+}
+
+.maplibregl-map {
+  font-family: var(--font-body);
+}
+
+.maplibregl-canvas {
+  outline: none;
+}
+
+.maplibregl-ctrl-bottom-right,
+.maplibregl-ctrl-bottom-left,
+.maplibregl-ctrl-top-right,
+.maplibregl-ctrl-top-left {
+  display: none;
 }
 
 a {

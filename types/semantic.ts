@@ -103,6 +103,9 @@ export interface SourceDocument {
   published?: string;
   accessed: string;
   description?: string;
+  official?: boolean;
+  accessMode?: "api" | "sparql" | "csv" | "excel" | "pdf" | "html";
+  tier?: "A" | "B" | "C";
 }
 
 export interface GraphEdge {

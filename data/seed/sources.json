@@ -1,61 +1,192 @@
 [
   {
+    "id": "source:egov-law-search",
+    "label": "e-Gov法令検索",
+    "url": "https://elaws.e-gov.go.jp/",
+    "publisher": "デジタル庁 / e-Gov法令検索",
+    "accessed": "2026-04-11",
+    "description": "法令・政省令・規則の一次ソース。将来の法令 adapter と RDF 化の基盤。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "A"
+  },
+  {
+    "id": "source:estat-api-v3",
+    "label": "政府統計の総合窓口（e-Stat）API 仕様 3.0版",
+    "url": "https://www.e-stat.go.jp/api/api-info/e-stat-manual3-0",
+    "publisher": "総務省統計局 / 政府統計の総合窓口（e-Stat）",
+    "accessed": "2026-04-11",
+    "description": "統計表情報取得、メタ情報取得、統計データ取得、一括取得を含む公式 API 仕様。",
+    "official": true,
+    "accessMode": "api",
+    "tier": "A"
+  },
+  {
+    "id": "source:estat-lod-sparql",
+    "label": "統計LOD SPARQLエンドポイント",
+    "url": "https://data.e-stat.go.jp/lod/sparql/",
+    "publisher": "総務省統計局 / 統計LOD",
+    "accessed": "2026-04-11",
+    "description": "将来の semantic layer で直接参照する SPARQL エンドポイント。",
+    "official": true,
+    "accessMode": "sparql",
+    "tier": "A"
+  },
+  {
+    "id": "source:kokkai-api",
+    "label": "国会会議録検索システム API",
+    "url": "https://kokkai.ndl.go.jp/api.html",
+    "publisher": "国立国会図書館",
+    "accessed": "2026-04-11",
+    "description": "会議単位・発言単位で XML / JSON を返す公式 API。政策・法令根拠グラフの主要ソース。",
+    "official": true,
+    "accessMode": "api",
+    "tier": "A"
+  },
+  {
+    "id": "source:customs-trade-statistics",
+    "label": "Trade Statistics of Japan",
+    "url": "https://www.customs.go.jp/toukei/srch/index.htm",
+    "publisher": "財務省関税局",
+    "accessed": "2026-04-11",
+    "description": "品目別・国別の輸出入統計。エネルギー・半導体依存の国別フロー seed に使う公式統計。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:boj-timeseries-api",
+    "label": "BOJ Time-Series Data Search API User Manual",
+    "url": "https://www.stat-search.boj.or.jp/info/api_manual_en.pdf",
+    "publisher": "日本銀行",
+    "published": "2026-02-18",
+    "accessed": "2026-04-11",
+    "description": "JSON / CSV で時系列データを取得できる公式 API。価格・為替・マクロ文脈の接続先。",
+    "official": true,
+    "accessMode": "api",
+    "tier": "A"
+  },
+  {
+    "id": "source:enecho-energy-trends",
+    "label": "エネルギー動向（資源エネルギー庁）",
+    "url": "https://www.enecho.meti.go.jp/about/energytrends/202506/pdf/energytrends_all.pdf",
+    "publisher": "資源エネルギー庁",
+    "accessed": "2026-04-11",
+    "description": "原油輸入先、中東依存度、備蓄日数を含む公式エネルギー需給資料。",
+    "official": true,
+    "accessMode": "pdf",
+    "tier": "B"
+  },
+  {
     "id": "source:meti-2026-energy-taskforce",
-    "label": "METI Minister press conference on Middle East energy response",
-    "url": "https://www.meti.go.jp/speeches/kaiken/2026/20260403001.html",
-    "publisher": "Ministry of Economy, Trade and Industry",
-    "published": "2026-04-03",
-    "accessed": "2026-04-10",
-    "description": "Public statement on energy response, alternative procurement, and petroleum reserve measures."
+    "label": "経産省・エネルギー安定供給関連公表資料",
+    "url": "https://www.meti.go.jp/",
+    "publisher": "経済産業省",
+    "accessed": "2026-04-11",
+    "description": "中東情勢、代替調達、備蓄対応などの政策説明の一次ソース群。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "C"
   },
   {
     "id": "source:tepco-2026-april-power",
-    "label": "TEPCO April 2026 electricity rate announcement",
+    "label": "東京電力エナジーパートナー 電気料金公表資料",
     "url": "https://www.tepco.co.jp/ep/notice/pressrelease/2026/pdf/260226j0101.pdf",
-    "publisher": "Tokyo Electric Power Energy Partner",
+    "publisher": "東京電力エナジーパートナー",
     "published": "2026-02-26",
-    "accessed": "2026-04-10",
-    "description": "Electricity rate announcement used as an example of household energy impact."
+    "accessed": "2026-04-11",
+    "description": "政府統計ではないが、家計影響の補助的な一次資料として保持。",
+    "official": false,
+    "accessMode": "pdf",
+    "tier": "C"
   },
   {
     "id": "source:maff-rice-policy",
-    "label": "MAFF rice policy and stockpile information",
-    "url": "https://www.maff.go.jp/",
-    "publisher": "Ministry of Agriculture, Forestry and Fisheries",
-    "accessed": "2026-04-10",
-    "description": "Manual seed source for rice price, stockpile, import, and policy signal examples."
+    "label": "米の相対取引価格・数量、集荷・契約・販売状況、民間在庫の推移等",
+    "url": "https://www.maff.go.jp/j/seisan/keikaku/soukatu/aitaikakaku.html",
+    "publisher": "農林水産省",
+    "accessed": "2026-04-11",
+    "description": "相対取引価格、民間在庫、販売数量を CSV / Excel / PDF で公表する公式ページ。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:maff-rice-monthly-report",
+    "label": "米に関するマンスリーレポート",
+    "url": "https://www.maff.go.jp/j/press/nousan/kikaku/attach/pdf/241220_1-2.pdf",
+    "publisher": "農林水産省",
+    "accessed": "2026-04-11",
+    "description": "コメ需給、在庫、政策整理を補助する月次レポート。",
+    "official": true,
+    "accessMode": "pdf",
+    "tier": "C"
   },
   {
     "id": "source:mlit-drought-portal",
-    "label": "MLIT water resources and drought information portal",
-    "url": "https://www.mlit.go.jp/mizukokudo/mizsei/index.html",
-    "publisher": "Ministry of Land, Infrastructure, Transport and Tourism",
-    "accessed": "2026-04-10",
-    "description": "Manual seed source for reservoir and drought observations."
+    "label": "利根川水系ダム貯水状況",
+    "url": "https://www.ktr.mlit.go.jp/river/shihon/river_shihon00000111.html",
+    "publisher": "国土交通省 関東地方整備局",
+    "accessed": "2026-04-11",
+    "description": "利根川上流ダムの貯水量・貯水率を掲載する公式ページ。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:jma-drought-spi",
+    "label": "標準化降水指数による干ばつ監視に関する気象庁資料",
+    "url": "https://www.jma.go.jp/jma/press/1903/19a/droughtinf20190319.pdf",
+    "publisher": "気象庁",
+    "accessed": "2026-04-11",
+    "description": "気象庁による少雨・干ばつ監視指標の公式説明資料。",
+    "official": true,
+    "accessMode": "pdf",
+    "tier": "C"
   },
   {
     "id": "source:mod-fy2026-budget",
-    "label": "MOD FY2026 defense budget materials",
-    "url": "https://www.mod.go.jp/j/budget/yosan_gaiyo/fy2026/yosan_20250829.pdf",
-    "publisher": "Ministry of Defense",
-    "accessed": "2026-04-10",
-    "description": "Manual seed source for FY2026 defense budget flow examples."
+    "label": "FY2026 Budget ~Major Projects~",
+    "url": "https://www.mod.go.jp/en/d_act/d_budget/pdf/fy2026_20251226a.pdf",
+    "publisher": "防衛省",
+    "accessed": "2026-04-11",
+    "description": "FY2026 防衛予算と capability area の対応関係を示す公式資料。",
+    "official": true,
+    "accessMode": "pdf",
+    "tier": "C"
+  },
+  {
+    "id": "source:mof-fy2026-budget",
+    "label": "令和8年度一般会計歳出予算各目明細書",
+    "url": "https://www.mof.go.jp/about_mof/mof_budget/budget/fy2026/ippan2026.pdf",
+    "publisher": "財務省",
+    "accessed": "2026-04-11",
+    "description": "FY2026 予算の財政面の一次資料。防衛予算 flow の財源・明細参照に使う。",
+    "official": true,
+    "accessMode": "pdf",
+    "tier": "C"
   },
   {
     "id": "source:meti-semiconductor-frame",
-    "label": "METI AI and semiconductor industrial base framework",
-    "url": "https://www.meti.go.jp/policy/mono_info_service/ai_semiconductor_frame/ai_semiconductor_frame.html",
-    "publisher": "Ministry of Economy, Trade and Industry",
-    "accessed": "2026-04-10",
-    "description": "Manual seed source for semiconductor dependency and industrial policy examples."
+    "label": "経産省 半導体産業基盤関連資料",
+    "url": "https://www.meti.go.jp/policy/policy_management/EBPM_kensyo/202308_Semicon_kensyo.pdf",
+    "publisher": "経済産業省",
+    "accessed": "2026-04-11",
+    "description": "半導体産業基盤整備と政策評価の一次資料。",
+    "official": true,
+    "accessMode": "pdf",
+    "tier": "C"
   },
   {
     "id": "source:cabinet-tsmc-2026",
-    "label": "Prime Minister's Office visit by TSMC Chairman and CEO C.C. Wei",
+    "label": "TSMC Chairman and CEO C.C. Weiによる表敬",
     "url": "https://www.kantei.go.jp/jp/104/actions/202602/05hyoukei.html",
-    "publisher": "Prime Minister's Office of Japan",
+    "publisher": "首相官邸",
     "published": "2026-02-05",
-    "accessed": "2026-04-10",
-    "description": "Public statement linking advanced semiconductor manufacturing in Japan to economic security."
+    "accessed": "2026-04-11",
+    "description": "先端半導体と経済安全保障の接続を示す首相官邸の一次資料。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "C"
   }
 ]

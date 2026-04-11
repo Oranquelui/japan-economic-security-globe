@@ -1,30 +1,125 @@
 "use client";
 
 import type { OperationRow } from "../lib/presentation/operations";
+import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
+import { getStatusTone, getUrgencyTone, resolveToneColor } from "../lib/presentation/palette";
 
 interface OperationsSignalTableProps {
   activeId: string;
+  collapsed: boolean;
   onSelect: (id: string) => void;
+  onToggleCollapsed: () => void;
   rows: OperationRow[];
+  statusPalette: StatusPalette;
+  themePalette: ThemePalette;
 }
 
-export function OperationsSignalTable({ activeId, onSelect, rows }: OperationsSignalTableProps) {
+export function OperationsSignalTable({
+  activeId,
+  collapsed,
+  onSelect,
+  onToggleCollapsed,
+  rows,
+  statusPalette,
+  themePalette
+}: OperationsSignalTableProps) {
+  if (collapsed) {
+    return (
+      <section
+        className="mx-auto max-w-md rounded-2xl border shadow-2xl shadow-black/35"
+        style={{
+          borderColor: themePalette.borderSubtle,
+          background: "rgba(7, 16, 27, 0.95)"
+        }}
+      >
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <div>
+            <p className="font-mono text-[0.62rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
+              Operations Grid
+            </p>
+            <div className="mt-1 text-sm font-semibold text-white">日本向け依存シグナル {rows.length}件</div>
+          </div>
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            className="rounded-lg border px-3 py-2 text-xs transition"
+            style={{
+              borderColor: themePalette.accent,
+              background: themePalette.accentSoft,
+              color: themePalette.textPrimary
+            }}
+          >
+            表を開く
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-700/70 bg-[#07101b]/95 shadow-2xl shadow-black/35">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700/70 bg-[#0c1624] px-5 py-3">
+    <section
+      className="overflow-hidden rounded-2xl border shadow-2xl shadow-black/35"
+      style={{
+        borderColor: themePalette.borderSubtle,
+        background: "rgba(7, 16, 27, 0.95)"
+      }}
+    >
+      <div
+        className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
+        style={{
+          borderBottom: `1px solid ${themePalette.borderSubtle}`,
+          background: themePalette.surfacePanel
+        }}
+      >
         <div>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.32em] text-slate-500">Operations Grid</p>
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
+            Operations Grid
+          </p>
           <h2 className="mt-1 text-base font-semibold text-white">日本向け依存シグナル</h2>
         </div>
-        <div className="flex items-center gap-2 font-mono text-[0.68rem] uppercase tracking-[0.2em] text-slate-400">
-          <span className="rounded border border-slate-700 bg-black/30 px-3 py-2">{rows.length} 件表示</span>
-          <span className="rounded border border-slate-700 bg-black/30 px-3 py-2">出典あり</span>
+        <div className="flex items-center gap-2 font-mono text-[0.68rem] uppercase tracking-[0.2em]" style={{ color: themePalette.textMuted }}>
+          <span
+            className="rounded border px-3 py-2"
+            style={{
+              borderColor: themePalette.borderSubtle,
+              background: "rgba(0, 0, 0, 0.3)"
+            }}
+          >
+            {rows.length} 件表示
+          </span>
+          <span
+            className="rounded border px-3 py-2"
+            style={{
+              borderColor: themePalette.borderSubtle,
+              background: "rgba(0, 0, 0, 0.3)"
+            }}
+          >
+            出典あり
+          </span>
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            className="rounded border px-3 py-2 text-[0.68rem] transition"
+            style={{
+              borderColor: themePalette.borderSubtle,
+              background: "rgba(0, 0, 0, 0.3)",
+              color: themePalette.textMuted
+            }}
+          >
+            閉じる
+          </button>
         </div>
       </div>
 
       <div className="max-h-72 overflow-auto">
         <table className="min-w-full border-collapse text-left text-sm">
-          <thead className="sticky top-0 z-10 bg-[#0c1624]/95 text-[0.62rem] uppercase tracking-[0.22em] text-slate-500 backdrop-blur">
+          <thead
+            className="sticky top-0 z-10 text-[0.62rem] uppercase tracking-[0.22em] backdrop-blur"
+            style={{
+              background: "rgba(12, 22, 36, 0.95)",
+              color: themePalette.textMuted
+            }}
+          >
             <tr>
               <th className="px-4 py-3 font-medium">種別</th>
               <th className="px-4 py-3 font-medium">シグナル</th>
@@ -40,21 +135,40 @@ export function OperationsSignalTable({ activeId, onSelect, rows }: OperationsSi
               <tr
                 key={row.id}
                 onClick={() => onSelect(row.id)}
-                className={`cursor-pointer border-t border-white/[0.06] transition ${
-                  activeId === row.id ? "bg-sky-300/[0.12] text-white" : "bg-transparent text-slate-300 hover:bg-white/[0.05]"
-                }`}
+                className="cursor-pointer transition"
+                style={{
+                  borderTop: "1px solid rgba(255,255,255,0.06)",
+                  background: activeId === row.id ? themePalette.accentSoft : "transparent",
+                  color: activeId === row.id ? themePalette.textPrimary : "#cbd5e1"
+                }}
               >
-                <td className="whitespace-nowrap px-4 py-3 font-mono text-[0.68rem] text-slate-500">{row.type}</td>
+                <td className="whitespace-nowrap px-4 py-3 font-mono text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                  {row.type}
+                </td>
                 <td className="min-w-64 px-4 py-3 font-semibold">{row.label}</td>
-                <td className="whitespace-nowrap px-4 py-3 text-slate-400">{row.subject}</td>
+                <td className="whitespace-nowrap px-4 py-3" style={{ color: themePalette.textMuted }}>
+                  {row.subject}
+                </td>
                 <td className="whitespace-nowrap px-4 py-3">
-                  <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-xs text-slate-200">
+                  <span
+                    className="rounded-full border px-2.5 py-1 text-xs"
+                    style={buildBadgeStyle(resolveToneColor(getUrgencyTone(row.urgency), themePalette, statusPalette))}
+                  >
                     {row.urgency}
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-slate-400">{row.status}</td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  <span
+                    className="rounded-full border px-2.5 py-1 text-xs"
+                    style={buildBadgeStyle(resolveToneColor(getStatusTone(row.status), themePalette, statusPalette))}
+                  >
+                    {row.status}
+                  </span>
+                </td>
                 <td className="min-w-40 px-4 py-3 text-slate-300">{row.action}</td>
-                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-500">{row.period}</td>
+                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs" style={{ color: themePalette.textMuted }}>
+                  {row.period}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -62,4 +176,12 @@ export function OperationsSignalTable({ activeId, onSelect, rows }: OperationsSi
       </div>
     </section>
   );
+}
+
+function buildBadgeStyle(color: string) {
+  return {
+    borderColor: `${color}55`,
+    background: `${color}14`,
+    color
+  };
 }

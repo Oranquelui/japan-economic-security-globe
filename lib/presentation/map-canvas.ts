@@ -1,0 +1,278 @@
+import type { ThemeView } from "../../types/presentation";
+import type { DependencyFlow, SemanticEntity, SemanticGraph } from "../../types/semantic";
+import { localizeAnyLabel } from "./japanese";
+
+export type JapanMapPoint = {
+  id: string;
+  kind: string;
+  label: string;
+  lat: number;
+  lon: number;
+  tone: "critical" | "watch" | "normal";
+};
+
+export type JapanMapRoute = {
+  id: string;
+  label: string;
+  pointIds: string[];
+};
+
+export type JapanMapRegion = {
+  id: string;
+  label: string;
+  lat: number;
+  lon: number;
+  value: number;
+};
+
+export type ForeignWindowEntity = {
+  id: string;
+  label: string;
+  flagEmoji?: string;
+  summary: string;
+};
+
+export type JapanMapCanvasModel = {
+  points: JapanMapPoint[];
+  routes: JapanMapRoute[];
+  regions: JapanMapRegion[];
+  globalPoints: JapanMapPoint[];
+  globalRoutes: JapanMapRoute[];
+  foreignWindow?: {
+    title: string;
+    entities: ForeignWindowEntity[];
+  };
+};
+
+export function buildJapanMapCanvasModel(
+  graph: SemanticGraph,
+  view: ThemeView,
+  activeId: string
+): JapanMapCanvasModel {
+  const japanEntity = graph.entities.find((entity) => entity.id === "country:japan");
+  const domesticPoints = dedupeById(
+    view.japanImpacts
+      .filter((entity) => entity.coordinates)
+      .map((entity) => toPoint(entity, classifyDomesticTone(entity)))
+  );
+  const visiblePoints =
+    domesticPoints.length > 0 || !japanEntity?.coordinates
+      ? domesticPoints
+      : [toPoint(japanEntity, "watch")];
+
+  const routes = view.flows
+    .map((flow) => {
+      const domesticSequence = resolveDomesticSequence(graph, flow.routeIds, view.japanImpacts);
+
+      if (domesticSequence.length < 2) {
+        return null;
+      }
+
+      return {
+        id: flow.id,
+        label: localizeAnyLabel(flow.id, flow.label),
+        pointIds: domesticSequence.map((entity) => entity.id)
+      };
+    })
+    .filter((route): route is JapanMapRoute => route !== null);
+
+  const regions = view.japanImpacts
+    .filter((entity) => entity.coordinates && (entity.kind === "Prefecture" || entity.kind === "Reservoir"))
+    .map((entity, index) => ({
+      id: entity.id,
+      label: localizeAnyLabel(entity.id, entity.label),
+      lat: entity.coordinates!.lat,
+      lon: entity.coordinates!.lon,
+      value: 55 + index * 15
+    }));
+
+  const globalPoints = buildGlobalPoints(graph, view, japanEntity);
+  const globalRoutes = buildGlobalRoutes(graph, view, globalPoints, japanEntity);
+
+  return {
+    points: visiblePoints,
+    routes,
+    regions,
+    globalPoints,
+    globalRoutes,
+    foreignWindow: buildForeignWindow(graph, view, activeId)
+  };
+}
+
+function buildGlobalPoints(
+  graph: SemanticGraph,
+  view: ThemeView,
+  japanEntity?: SemanticEntity
+): JapanMapPoint[] {
+  const globalEntities = dedupeById(
+    view.flows
+      .flatMap((flow) => [flow.originId, flow.destinationId, ...flow.routeIds])
+      .map((id) => graph.entities.find((entity) => entity.id === id))
+      .filter((entity): entity is SemanticEntity => Boolean(entity))
+      .filter(
+        (entity) =>
+          entity.coordinates &&
+          (entity.kind === "Country" ||
+            entity.kind === "Chokepoint" ||
+            entity.kind === "Port" ||
+            entity.kind === "Terminal" ||
+            entity.kind === "Refinery")
+      )
+  );
+
+  if (japanEntity?.coordinates && !globalEntities.some((entity) => entity.id === japanEntity.id)) {
+    globalEntities.push(japanEntity);
+  }
+
+  return globalEntities.map((entity) => toPoint(entity, classifyGlobalTone(entity)));
+}
+
+function buildGlobalRoutes(
+  graph: SemanticGraph,
+  view: ThemeView,
+  globalPoints: JapanMapPoint[],
+  japanEntity?: SemanticEntity
+): JapanMapRoute[] {
+  const pointIds = new Set(globalPoints.map((point) => point.id));
+
+  return view.flows
+    .map((flow) => {
+      const globalSequence = resolveGlobalSequence(graph, flow, japanEntity)
+        .filter((entity) => pointIds.has(entity.id))
+        .map((entity) => entity.id);
+
+      if (globalSequence.length < 2) {
+        return null;
+      }
+
+      return {
+        id: flow.id,
+        label: localizeAnyLabel(flow.id, flow.label),
+        pointIds: globalSequence
+      };
+    })
+    .filter((route): route is JapanMapRoute => route !== null);
+}
+
+function buildForeignWindow(graph: SemanticGraph, view: ThemeView, activeId: string): JapanMapCanvasModel["foreignWindow"] {
+  const activeFlow = view.flows.find((flow) => flow.id === activeId) ?? view.flows[0];
+
+  if (!activeFlow) {
+    return undefined;
+  }
+
+  const foreignEntities = dedupeById(
+    [activeFlow.originId, ...activeFlow.routeIds]
+      .map((id) => graph.entities.find((entity) => entity.id === id))
+      .filter((entity): entity is SemanticEntity => Boolean(entity))
+      .filter((entity) => entity.kind === "Country" || entity.kind === "Chokepoint")
+      .map((entity) => ({
+        id: entity.id,
+        label: localizeAnyLabel(entity.id, entity.label),
+        flagEmoji: entity.flagEmoji,
+        summary: entity.summary
+      }))
+  );
+
+  if (foreignEntities.length === 0) {
+    return undefined;
+  }
+
+  return {
+    title: localizeAnyLabel(activeFlow.id, activeFlow.label),
+    entities: foreignEntities
+  };
+}
+
+function resolveDomesticSequence(
+  graph: SemanticGraph,
+  routeIds: string[],
+  japanImpacts: SemanticEntity[]
+): SemanticEntity[] {
+  const domesticRouteEntities = routeIds
+    .map((id) => graph.entities.find((entity) => entity.id === id))
+    .filter((entity): entity is SemanticEntity => Boolean(entity))
+    .filter((entity) => entity.coordinates && entity.kind !== "Country" && entity.kind !== "Chokepoint" && entity.kind !== "SeaLane");
+
+  if (domesticRouteEntities.length >= 2) {
+    return domesticRouteEntities;
+  }
+
+  if (domesticRouteEntities.length === 1) {
+    const anchor =
+      japanImpacts.find((entity) => entity.kind === "Prefecture" && entity.id !== domesticRouteEntities[0].id) ??
+      japanImpacts.find((entity) => entity.id !== domesticRouteEntities[0].id);
+
+    if (anchor?.coordinates) {
+      return [domesticRouteEntities[0], anchor];
+    }
+  }
+
+  return [];
+}
+
+function resolveGlobalSequence(
+  graph: SemanticGraph,
+  flow: DependencyFlow,
+  japanEntity?: SemanticEntity
+): SemanticEntity[] {
+  const entityById = (id: string) => graph.entities.find((entity) => entity.id === id);
+  const routeEntities = flow.routeIds
+    .map(entityById)
+    .filter(hasCoordinates);
+  const origin = entityById(flow.originId);
+  const destination = entityById(flow.destinationId);
+  const tail =
+    [...routeEntities].reverse().find((entity) => entity.kind === "Terminal" || entity.kind === "Refinery" || entity.kind === "Port") ??
+    destination ??
+    japanEntity;
+
+  return dedupeById(
+    [origin, ...routeEntities, tail]
+      .filter(hasCoordinates)
+      .filter((entity) => entity.kind !== "SeaLane")
+  );
+}
+
+function toPoint(entity: SemanticEntity, tone: JapanMapPoint["tone"]): JapanMapPoint {
+  return {
+    id: entity.id,
+    kind: entity.kind,
+    label: localizeAnyLabel(entity.id, entity.label),
+    lat: entity.coordinates!.lat,
+    lon: entity.coordinates!.lon,
+    tone
+  };
+}
+
+function classifyDomesticTone(entity: SemanticEntity): JapanMapPoint["tone"] {
+  if (entity.kind === "Terminal" || entity.kind === "Refinery" || entity.kind === "Reservoir") {
+    return "critical";
+  }
+
+  if (entity.kind === "Port" || entity.kind === "Prefecture") {
+    return "watch";
+  }
+
+  return "normal";
+}
+
+function classifyGlobalTone(entity: SemanticEntity): JapanMapPoint["tone"] {
+  if (entity.kind === "Chokepoint" || entity.kind === "Terminal" || entity.kind === "Refinery") {
+    return "critical";
+  }
+
+  if (entity.kind === "Country" || entity.kind === "Port") {
+    return "watch";
+  }
+
+  return "normal";
+}
+
+function dedupeById<T extends { id: string }>(items: T[]): T[] {
+  return [...new Map(items.map((item) => [item.id, item])).values()];
+}
+
+function hasCoordinates(entity: SemanticEntity | undefined): entity is SemanticEntity {
+  return Boolean(entity?.coordinates);
+}

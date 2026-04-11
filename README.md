@@ -86,7 +86,43 @@ npm test
 npm run build
 ```
 
-このアプリは外部環境変数なしで動きます。
+Cloudflare Workers 実行環境に近いプレビュー:
+
+```bash
+npm run preview
+```
+
+Cloudflare Workers へのデプロイ:
+
+```bash
+npm run deploy
+```
+
+UI の表示自体は外部環境変数なしで動きます。  
+ただし、今後 `e-Stat API` を live で叩く場合は `.env.local` に次を追加します。
+
+```bash
+ESTAT_APP_ID=your-estat-app-id
+```
+
+`appId` は [e-Stat](https://www.e-stat.go.jp/) のユーザー登録後、マイページの API 機能から発行します。公開前のローカル開発でも、登録時の URL は `http://localhost/` で問題ありません。
+
+## Cloudflare Workers 配備
+
+Phase 0 から `Cloudflare Workers + OpenNext adapter` を前提にします。  
+本番の想定URLは `economic-security.quadrillionaaa.com` です。
+
+- Worker runtime: Cloudflare Workers
+- adapter: `@opennextjs/cloudflare`
+- config: [wrangler.jsonc](/Users/louistoyozaki/Documents/GitHub/jp-strategic-dependency-graph/wrangler.jsonc)
+- OpenNext: [open-next.config.ts](/Users/louistoyozaki/Documents/GitHub/jp-strategic-dependency-graph/open-next.config.ts)
+
+注意点:
+
+- Cloudflare Workers の custom domain は **active Cloudflare zone** が前提です。
+- つまり `economic-security.quadrillionaaa.com` を Worker に直結するなら、`quadrillionaaa.com` は Cloudflare 側で管理されている必要があります。
+- Route53 を authoritative DNS のまま維持したい場合は、Workers custom domain より Pages 側の方が簡単です。
+- 今回は将来の server-side fetch、secret、scheduled ingestion を見越して Workers を採用しています。
 
 ## ディレクトリ構成
 

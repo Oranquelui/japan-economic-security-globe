@@ -10,7 +10,7 @@
     "coordinates": { "lat": 36.2048, "lon": 138.2529 },
     "countryCode": "JP",
     "flagEmoji": "🇯🇵",
-    "provenance": ["source:meti-2026-energy-taskforce"]
+    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
   },
   {
     "id": "country:saudi-arabia",
@@ -22,7 +22,7 @@
     "coordinates": { "lat": 23.8859, "lon": 45.0792 },
     "countryCode": "SA",
     "flagEmoji": "🇸🇦",
-    "provenance": ["source:meti-2026-energy-taskforce"]
+    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
   },
   {
     "id": "country:qatar",
@@ -34,7 +34,7 @@
     "coordinates": { "lat": 25.3548, "lon": 51.1839 },
     "countryCode": "QA",
     "flagEmoji": "🇶🇦",
-    "provenance": ["source:meti-2026-energy-taskforce"]
+    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
   },
   {
     "id": "country:australia",
@@ -46,7 +46,7 @@
     "coordinates": { "lat": -25.2744, "lon": 133.7751 },
     "countryCode": "AU",
     "flagEmoji": "🇦🇺",
-    "provenance": ["source:meti-2026-energy-taskforce"]
+    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
   },
   {
     "id": "country:taiwan",
@@ -58,7 +58,7 @@
     "coordinates": { "lat": 23.6978, "lon": 120.9605 },
     "countryCode": "TW",
     "flagEmoji": "🇹🇼",
-    "provenance": ["source:cabinet-tsmc-2026", "source:meti-semiconductor-frame"]
+    "provenance": ["source:cabinet-tsmc-2026", "source:meti-semiconductor-frame", "source:customs-trade-statistics"]
   },
   {
     "id": "country:south-korea",
@@ -70,7 +70,7 @@
     "coordinates": { "lat": 35.9078, "lon": 127.7669 },
     "countryCode": "KR",
     "flagEmoji": "🇰🇷",
-    "provenance": ["source:meti-semiconductor-frame"]
+    "provenance": ["source:meti-semiconductor-frame", "source:customs-trade-statistics"]
   },
   {
     "id": "country:netherlands",
@@ -82,7 +82,7 @@
     "coordinates": { "lat": 52.1326, "lon": 5.2913 },
     "countryCode": "NL",
     "flagEmoji": "🇳🇱",
-    "provenance": ["source:meti-semiconductor-frame"]
+    "provenance": ["source:meti-semiconductor-frame", "source:customs-trade-statistics"]
   },
   {
     "id": "country:united-states",
@@ -94,7 +94,7 @@
     "coordinates": { "lat": 37.0902, "lon": -95.7129 },
     "countryCode": "US",
     "flagEmoji": "🇺🇸",
-    "provenance": ["source:meti-semiconductor-frame", "source:mod-fy2026-budget"]
+    "provenance": ["source:meti-semiconductor-frame", "source:customs-trade-statistics", "source:mod-fy2026-budget"]
   },
   {
     "id": "country:china",
@@ -106,7 +106,7 @@
     "coordinates": { "lat": 35.8617, "lon": 104.1954 },
     "countryCode": "CN",
     "flagEmoji": "🇨🇳",
-    "provenance": ["source:meti-semiconductor-frame"]
+    "provenance": ["source:meti-semiconductor-frame", "source:customs-trade-statistics"]
   },
   {
     "id": "chokepoint:hormuz",
@@ -116,7 +116,7 @@
     "whyItMatters": "For Japanese users, Hormuz matters when route risk becomes fuel, electricity, logistics, and food input pressure.",
     "themes": ["energy", "rice"],
     "coordinates": { "lat": 26.5667, "lon": 56.25 },
-    "provenance": ["source:meti-2026-energy-taskforce"]
+    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
   },
   {
     "id": "chokepoint:malacca",
@@ -126,7 +126,7 @@
     "whyItMatters": "Malacca helps explain why sea-lane disruption can become a Japanese domestic supply story.",
     "themes": ["energy", "semiconductors"],
     "coordinates": { "lat": 2.5, "lon": 101 },
-    "provenance": ["source:meti-2026-energy-taskforce"]
+    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
   },
   {
     "id": "route:gulf-to-japan",
@@ -155,7 +155,7 @@
     "whyItMatters": "LNG receiving terminals make global gas dependency visible inside Japan.",
     "themes": ["energy"],
     "coordinates": { "lat": 35.45, "lon": 139.99 },
-    "provenance": ["source:tepco-2026-april-power"]
+    "provenance": ["source:enecho-energy-trends", "source:tepco-2026-april-power"]
   },
   {
     "id": "refinery:keihin",
@@ -176,7 +176,7 @@
     "whyItMatters": "Tokyo makes national dependency concrete for household costs and reservoir concerns.",
     "themes": ["energy", "water"],
     "coordinates": { "lat": 35.6762, "lon": 139.6503 },
-    "provenance": ["source:tepco-2026-april-power", "source:mlit-drought-portal"]
+    "provenance": ["source:enecho-energy-trends", "source:tepco-2026-april-power", "source:mlit-drought-portal"]
   },
   {
     "id": "reservoir:ogochi",
@@ -186,7 +186,7 @@
     "whyItMatters": "Reservoir levels make water dependency visible before it becomes a household disruption.",
     "themes": ["water"],
     "coordinates": { "lat": 35.7907, "lon": 139.0502 },
-    "provenance": ["source:mlit-drought-portal"]
+    "provenance": ["source:mlit-drought-portal", "source:jma-drought-spi"]
   },
   {
     "id": "prefecture:niigata",
@@ -197,7 +197,7 @@
     "whyItMatters": "Rice becomes clearer when global inputs and domestic producing regions are shown together.",
     "themes": ["rice", "water"],
     "coordinates": { "lat": 37.9026, "lon": 139.0232 },
-    "provenance": ["source:maff-rice-policy"]
+    "provenance": ["source:maff-rice-policy", "source:maff-rice-monthly-report"]
   },
   {
     "id": "product:rice",
@@ -206,7 +206,7 @@
     "summary": "Japan's staple food and the key domestic bridge from dependency to household impact.",
     "whyItMatters": "Rice turns abstract dependency into a daily-life issue for people in Japan.",
     "themes": ["rice"],
-    "provenance": ["source:maff-rice-policy"]
+    "provenance": ["source:maff-rice-policy", "source:maff-rice-monthly-report"]
   },
   {
     "id": "resource:lng",
@@ -215,7 +215,7 @@
     "summary": "Liquefied natural gas used in Japan's energy dependency story.",
     "whyItMatters": "LNG exposure connects overseas supply routes to Japanese electricity costs.",
     "themes": ["energy"],
-    "provenance": ["source:meti-2026-energy-taskforce", "source:tepco-2026-april-power"]
+    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics", "source:tepco-2026-april-power"]
   },
   {
     "id": "resource:crude-oil",
@@ -224,7 +224,7 @@
     "summary": "Crude oil import dependency is the MVP's launch-hook resource.",
     "whyItMatters": "Oil price and route risk can affect fuel, logistics, fertilizer, and food prices in Japan.",
     "themes": ["energy", "rice"],
-    "provenance": ["source:meti-2026-energy-taskforce"]
+    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
   },
   {
     "id": "resource:coal",
@@ -233,7 +233,7 @@
     "summary": "Coal is included to show that Japan's energy dependency is multi-resource.",
     "whyItMatters": "Coal exposure changes the route and supplier picture beyond the Gulf.",
     "themes": ["energy"],
-    "provenance": ["source:meti-2026-energy-taskforce"]
+    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
   },
   {
     "id": "product:fertilizer-inputs",
@@ -242,7 +242,7 @@
     "summary": "A bridge product connecting energy and agricultural input costs.",
     "whyItMatters": "Fertilizer makes the Energy-to-Rice relationship easier to understand.",
     "themes": ["energy", "rice"],
-    "provenance": ["source:maff-rice-policy", "source:meti-2026-energy-taskforce"]
+    "provenance": ["source:maff-rice-policy", "source:maff-rice-monthly-report", "source:enecho-energy-trends"]
   },
   {
     "id": "budget:fiscal-2026-stand-off-defense",
@@ -251,7 +251,7 @@
     "summary": "A sample defense budget line linked to capability-area reasoning.",
     "whyItMatters": "Defense spending becomes understandable when budget lines connect to capability areas and source documents.",
     "themes": ["defense"],
-    "provenance": ["source:mod-fy2026-budget"]
+    "provenance": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"]
   },
   {
     "id": "capability:standoff",
@@ -260,7 +260,7 @@
     "summary": "A capability-area node for defense budget flow explanations.",
     "whyItMatters": "Capability areas make budget allocations interpretable for citizens.",
     "themes": ["defense"],
-    "provenance": ["source:mod-fy2026-budget"]
+    "provenance": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"]
   },
   {
     "id": "org:mod",
@@ -269,7 +269,7 @@
     "summary": "Government organization publishing defense budget materials.",
     "whyItMatters": "Organizations anchor who publishes or administers policy and budget claims.",
     "themes": ["defense"],
-    "provenance": ["source:mod-fy2026-budget"]
+    "provenance": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"]
   },
   {
     "id": "product:advanced-semiconductors",
@@ -278,7 +278,7 @@
     "summary": "A strategic product in Japan's economic security graph.",
     "whyItMatters": "Semiconductor dependencies shape industrial resilience, economic security, and policy choices.",
     "themes": ["semiconductors"],
-    "provenance": ["source:meti-semiconductor-frame", "source:cabinet-tsmc-2026"]
+    "provenance": ["source:meti-semiconductor-frame", "source:cabinet-tsmc-2026", "source:customs-trade-statistics"]
   },
   {
     "id": "policy:semiconductor-industrial-base",
@@ -287,6 +287,6 @@
     "summary": "Policy framework used as an MVP source-linked semiconductor document.",
     "whyItMatters": "Policy documents show that the visualization is evidence-linked, not decorative.",
     "themes": ["semiconductors"],
-    "provenance": ["source:meti-semiconductor-frame"]
+    "provenance": ["source:meti-semiconductor-frame", "source:egov-law-search", "source:kokkai-api"]
   }
 ]

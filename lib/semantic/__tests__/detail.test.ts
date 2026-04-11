@@ -12,6 +12,12 @@ describe("getDetailView", () => {
     expect(detail.label).toBe("Qatar LNG to Japan");
     expect(detail.kind).toBe("DependencyFlow");
     expect(detail.sources.map((source) => source.id)).toContain("source:meti-2026-energy-taskforce");
+    expect(detail.sources[0]).toEqual(
+      expect.objectContaining({
+        official: true,
+        accessMode: expect.any(String)
+      })
+    );
     expect(detail.relatedEntities.map((entity) => entity.id)).toEqual(
       expect.arrayContaining([
         "country:qatar",
