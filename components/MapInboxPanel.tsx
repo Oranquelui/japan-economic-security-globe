@@ -1,90 +1,36 @@
 "use client";
 
-import type { ThemeId } from "../types/semantic";
-import type { ThemePalette } from "../lib/presentation/palette";
-import { getThemeLabel } from "../lib/presentation/japanese";
+import type { ReactNode } from "react";
 
-const THEME_ORDER: ThemeId[] = ["energy", "rice", "water", "defense", "semiconductors"];
+import type { OperationRow } from "../lib/presentation/operations";
+import type { ThemePalette } from "../lib/presentation/palette";
 
 interface MapInboxPanelProps {
-  collapsed: boolean;
-  query: string;
-  themePalette: ThemePalette;
-  themeId: ThemeId;
+  activeId: string;
+  highRiskCount: number;
+  monitoringCount: number;
   onQueryChange: (query: string) => void;
-  onToggleCollapsed: () => void;
-  onThemeChange: (themeId: ThemeId) => void;
+  onSelect: (id: string) => void;
+  query: string;
+  rows: OperationRow[];
+  themeLabel: string;
+  themePalette: ThemePalette;
 }
 
 export function MapInboxPanel({
-  collapsed,
-  query,
-  themePalette,
-  themeId,
+  activeId,
+  highRiskCount,
+  monitoringCount,
   onQueryChange,
-  onToggleCollapsed,
-  onThemeChange
+  onSelect,
+  query,
+  rows,
+  themeLabel,
+  themePalette
 }: MapInboxPanelProps) {
-  if (collapsed) {
-    return (
-      <aside
-        className="flex flex-col items-center rounded-2xl border py-3 shadow-2xl shadow-black/45"
-        style={{
-          borderColor: themePalette.borderSubtle,
-          background: themePalette.surfacePanel
-        }}
-      >
-        <button
-          type="button"
-          onClick={onToggleCollapsed}
-          className="grid h-10 w-10 place-items-center rounded-xl border text-lg transition"
-          style={{
-            borderColor: themePalette.accent,
-            background: themePalette.accentSoft,
-            color: themePalette.textPrimary
-          }}
-          aria-label="左パネルを開く"
-        >
-          ≡
-        </button>
-        <div className="mt-4 flex flex-col items-center gap-3">
-          {THEME_ORDER.map((id) => {
-            const theme = getThemeLabel(id);
-            const isActive = id === themeId;
-
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => onThemeChange(id)}
-                className="grid h-10 w-10 place-items-center rounded-xl border text-[0.62rem] font-bold transition"
-                style={
-                  isActive
-                    ? {
-                        borderColor: themePalette.accent,
-                        background: themePalette.accentSoft,
-                        color: themePalette.textPrimary
-                      }
-                    : {
-                        borderColor: themePalette.borderSubtle,
-                        background: themePalette.surfacePanelElevated,
-                        color: themePalette.textMuted
-                      }
-                }
-                title={theme.label}
-              >
-                {theme.label.slice(0, 1)}
-              </button>
-            );
-          })}
-        </div>
-      </aside>
-    );
-  }
-
   return (
     <aside
-      className="flex min-w-0 flex-col overflow-hidden rounded-2xl border shadow-2xl shadow-black/25"
+      className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border shadow-2xl shadow-black/25"
       style={{
         borderColor: themePalette.borderSubtle,
         background: themePalette.surfacePanel
@@ -96,22 +42,28 @@ export function MapInboxPanel({
             <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
               監視インボックス
             </p>
-            <div className="mt-1 text-sm font-semibold text-white">{getThemeLabel(themeId).label}</div>
+            <div className="mt-1 text-sm font-semibold text-white">{themeLabel}</div>
           </div>
-          <button
-            type="button"
-            onClick={onToggleCollapsed}
-            className="grid h-8 w-8 place-items-center rounded-lg border text-sm transition"
-            style={{
-              borderColor: themePalette.borderSubtle,
-              background: themePalette.surfacePanelElevated,
-              color: themePalette.textMuted
-            }}
-            aria-label="左パネルを閉じる"
-          >
-            ←
-          </button>
+          <PaneBadge themePalette={themePalette}>{rows.length}件</PaneBadge>
         </div>
+
+        <div
+          className="mt-4 rounded-xl border p-4"
+          style={{
+            borderColor: themePalette.borderSubtle,
+            background: themePalette.surfacePanelElevated
+          }}
+        >
+          <div className="text-[1.8rem] font-semibold leading-none text-white">{rows.length}</div>
+          <div className="mt-2 text-sm" style={{ color: themePalette.textMuted }}>
+            現在の表示シグナル
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <PaneBadge themePalette={themePalette}>高リスク {highRiskCount}</PaneBadge>
+            <PaneBadge themePalette={themePalette}>監視中 {monitoringCount}</PaneBadge>
+          </div>
+        </div>
+
         <div className="mt-4">
           <label className="block">
             <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
@@ -170,26 +122,25 @@ export function MapInboxPanel({
           </div>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 min-h-0 flex-1">
           <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-            テーマ
+            シグナル
           </div>
           <div
-            className="mt-2 overflow-hidden rounded-xl border"
+            className="mt-2 h-full overflow-auto rounded-xl border"
             style={{
               borderColor: themePalette.borderSubtle,
               background: themePalette.surfacePanelElevated
             }}
           >
-            {THEME_ORDER.map((id) => {
-              const theme = getThemeLabel(id);
-              const isActive = id === themeId;
+            {rows.slice(0, 6).map((row) => {
+              const isActive = row.id === activeId;
 
               return (
                 <button
-                  key={id}
+                  key={row.id}
                   type="button"
-                  onClick={() => onThemeChange(id)}
+                  onClick={() => onSelect(row.id)}
                   className="w-full border-b px-3 py-3 text-left transition last:border-b-0"
                   style={
                     isActive
@@ -207,11 +158,14 @@ export function MapInboxPanel({
                         }
                   }
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-semibold">{theme.label}</div>
-                    {isActive ? (
-                      <span className="h-2 w-2 rounded-full" style={{ background: themePalette.accent }} />
-                    ) : null}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold">{row.label}</div>
+                      <div className="mt-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                        {row.subject} / {row.status}
+                      </div>
+                    </div>
+                    <PaneBadge themePalette={themePalette}>{row.urgency}</PaneBadge>
                   </div>
                 </button>
               );
@@ -220,5 +174,26 @@ export function MapInboxPanel({
         </div>
       </div>
     </aside>
+  );
+}
+
+function PaneBadge({
+  children,
+  themePalette
+}: {
+  children: ReactNode;
+  themePalette: ThemePalette;
+}) {
+  return (
+    <span
+      className="rounded-full border px-2.5 py-1 text-[0.68rem]"
+      style={{
+        borderColor: themePalette.borderSubtle,
+        background: themePalette.surfacePanel,
+        color: themePalette.textMuted
+      }}
+    >
+      {children}
+    </span>
   );
 }

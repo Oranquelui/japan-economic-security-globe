@@ -18,13 +18,27 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("../MapInboxPanel", () => ({
   MapInboxPanel: ({
+    onSelect
+  }: {
+    onSelect: (id: string) => void;
+  }) => (
+    <div data-testid="inbox">
+      <button type="button" onClick={() => onSelect("observation:rice-price-signal-2026")}>
+        select-rice-from-inbox
+      </button>
+    </div>
+  )
+}));
+
+vi.mock("../NavigationRail", () => ({
+  NavigationRail: ({
     onThemeChange,
     themeId
   }: {
     onThemeChange: (themeId: ThemeId) => void;
     themeId: ThemeId;
   }) => (
-    <div data-testid="inbox" data-theme={themeId}>
+    <div data-testid="nav-rail" data-theme={themeId}>
       <button type="button" onClick={() => onThemeChange("rice")}>
         change-theme-rice
       </button>
@@ -82,6 +96,7 @@ describe("AppShell url sync", () => {
     render(<AppShell graph={loadSeedGraph()} />);
 
     expect(screen.getByRole("banner")).toBeTruthy();
+    expect(screen.getByTestId("layout-navigation-rail")).toBeTruthy();
     expect(screen.getByTestId("layout-left-nav")).toBeTruthy();
     expect(screen.getByTestId("layout-map-section")).toBeTruthy();
     expect(screen.getByTestId("layout-compare-overlay")).toBeTruthy();
@@ -102,7 +117,7 @@ describe("AppShell url sync", () => {
       />
     );
 
-    expect(screen.getAllByTestId("inbox")[0].getAttribute("data-theme")).toBe("rice");
+    expect(screen.getAllByTestId("nav-rail")[0].getAttribute("data-theme")).toBe("rice");
     expect(screen.getByTestId("map").getAttribute("data-mode")).toBe("cluster");
     expect(screen.getByTestId("map").getAttribute("data-active")).toBe("observation:rice-price-signal-2026");
     expect(screen.getByTestId("map").getAttribute("data-focus")).toBe("observation:rice-price-signal-2026");

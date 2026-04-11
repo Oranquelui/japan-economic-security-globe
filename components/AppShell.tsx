@@ -17,10 +17,12 @@ import {
   serializeOperationsUrlState,
   type OperationsUrlState
 } from "../lib/presentation/url-state";
+import { getThemeLabel } from "../lib/presentation/japanese";
 import { ActionBar } from "./ActionBar";
 import { EvidencePanel } from "./EvidencePanel";
 import { JapanMainMap } from "./JapanMainMap";
 import { MapInboxPanel } from "./MapInboxPanel";
+import { NavigationRail } from "./NavigationRail";
 import { OperationsSignalTable } from "./OperationsSignalTable";
 
 interface AppShellProps {
@@ -52,6 +54,9 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   const themePalette = getThemePalette(themeId);
   const statusPalette = getStatusPalette();
   const metrics = buildOperationsMetrics(view, filteredOperationRows);
+  const themeLabel = getThemeLabel(themeId).label;
+  const highRiskCount = filteredOperationRows.filter((row) => row.urgency === "高").length;
+  const monitoringCount = filteredOperationRows.filter((row) => row.status === "監視中").length;
   const serializedState = serializeOperationsUrlState({
     themeId,
     mapMode,
@@ -70,7 +75,8 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
     "--ops-text-primary": themePalette.textPrimary,
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
-  const leftWidth = isInboxOpen ? 264 : 56;
+  const railWidth = 56;
+  const paneWidth = isInboxOpen ? 272 : 0;
   const compareHeight = 248;
 
   useEffect(() => {
@@ -126,21 +132,41 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
           </section>
 
           <aside
-            data-testid="layout-left-nav"
-            className="absolute left-4 top-4 z-30 min-h-0 transition-[width] duration-200 ease-out"
+            data-testid="layout-navigation-rail"
+            className="absolute left-4 top-4 z-30"
             style={{
-              width: leftWidth,
+              width: railWidth,
+              bottom: 16
+            }}
+          >
+            <NavigationRail
+              isInboxOpen={isInboxOpen}
+              onThemeChange={handleThemeChange}
+              onToggleInbox={() => setInboxOpen((value) => !value)}
+              themeId={themeId}
+              themePalette={themePalette}
+            />
+          </aside>
+
+          <aside
+            data-testid="layout-left-nav"
+            className="absolute left-[76px] top-4 z-30 min-h-0 overflow-hidden transition-[width,opacity] duration-200 ease-out"
+            style={{
+              width: paneWidth,
+              opacity: isInboxOpen ? 1 : 0,
               bottom: 16
             }}
           >
             <MapInboxPanel
-              collapsed={!isInboxOpen}
-              query={searchQuery}
-              themePalette={themePalette}
-              themeId={themeId}
+              activeId={activeId}
+              highRiskCount={highRiskCount}
+              monitoringCount={monitoringCount}
               onQueryChange={setSearchQuery}
-              onToggleCollapsed={() => setInboxOpen((value) => !value)}
-              onThemeChange={handleThemeChange}
+              onSelect={setSelectedId}
+              query={searchQuery}
+              rows={filteredOperationRows}
+              themeLabel={themeLabel}
+              themePalette={themePalette}
             />
           </aside>
 
@@ -173,7 +199,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
             data-testid="layout-compare-overlay"
             className="absolute bottom-4 right-4 z-30 min-h-0"
             style={{
-              left: leftWidth + 24,
+              left: railWidth + paneWidth + 28,
               height: compareHeight
             }}
           >
@@ -192,14 +218,23 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         </div>
 
         <div className="space-y-4 lg:hidden">
-          <MapInboxPanel
-            collapsed={false}
-            query={searchQuery}
-            themePalette={themePalette}
-            themeId={themeId}
-            onQueryChange={setSearchQuery}
-            onToggleCollapsed={() => undefined}
+          <NavigationRail
+            isInboxOpen
             onThemeChange={handleThemeChange}
+            onToggleInbox={() => undefined}
+            themeId={themeId}
+            themePalette={themePalette}
+          />
+          <MapInboxPanel
+            activeId={activeId}
+            highRiskCount={highRiskCount}
+            monitoringCount={monitoringCount}
+            onQueryChange={setSearchQuery}
+            onSelect={setSelectedId}
+            query={searchQuery}
+            rows={filteredOperationRows}
+            themeLabel={themeLabel}
+            themePalette={themePalette}
           />
           <OperationsSignalTable
             activeId={activeId}
