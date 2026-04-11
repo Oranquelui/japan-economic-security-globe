@@ -129,7 +129,6 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
           collapsed={!isInboxOpen}
           themePalette={themePalette}
           themeId={themeId}
-          view={view}
           onToggleCollapsed={() => setInboxOpen((value) => !value)}
           onThemeChange={handleThemeChange}
         />
@@ -168,7 +167,6 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
           collapsed={false}
           themePalette={themePalette}
           themeId={themeId}
-          view={view}
           onToggleCollapsed={() => undefined}
           onThemeChange={handleThemeChange}
         />

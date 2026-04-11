@@ -1,6 +1,5 @@
 "use client";
 
-import type { ThemeView } from "../types/presentation";
 import type { ThemeId } from "../types/semantic";
 import type { ThemePalette } from "../lib/presentation/palette";
 import { getThemeLabel } from "../lib/presentation/japanese";
@@ -11,7 +10,6 @@ interface MapInboxPanelProps {
   collapsed: boolean;
   themePalette: ThemePalette;
   themeId: ThemeId;
-  view: ThemeView;
   onToggleCollapsed: () => void;
   onThemeChange: (themeId: ThemeId) => void;
 }
@@ -20,7 +18,6 @@ export function MapInboxPanel({
   collapsed,
   themePalette,
   themeId,
-  view,
   onToggleCollapsed,
   onThemeChange
 }: MapInboxPanelProps) {
@@ -90,42 +87,27 @@ export function MapInboxPanel({
       }}
     >
       <div className="flex min-w-0 flex-1 flex-col p-4">
-        <div className="pb-3" style={{ borderBottom: `1px solid ${themePalette.borderSubtle}` }}>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.36em]" style={{ color: themePalette.textMuted }}>
-            文脈
-          </p>
-          <div className="mt-2 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-base font-semibold leading-tight text-white">{getThemeLabel(themeId).label}</h2>
-              <p className="mt-0.5 text-[0.66rem] leading-5" style={{ color: themePalette.textMuted }}>
-                {getThemeLabel(themeId).sublabel}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={onToggleCollapsed}
-              className="grid h-8 w-8 place-items-center rounded-lg border text-sm transition"
-              style={{
-                borderColor: themePalette.borderSubtle,
-                background: themePalette.surfacePanelElevated,
-                color: themePalette.textMuted
-              }}
-              aria-label="左パネルを閉じる"
-            >
-              ←
-            </button>
-          </div>
-          <p className="mt-2 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
-            {view.headline}
-          </p>
-        </div>
-
-        <div className="mt-3">
+        <div className="flex items-center justify-between gap-3 pb-3" style={{ borderBottom: `1px solid ${themePalette.borderSubtle}` }}>
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-            プリセット
+            テーマ
           </p>
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            className="grid h-8 w-8 place-items-center rounded-lg border text-sm transition"
+            style={{
+              borderColor: themePalette.borderSubtle,
+              background: themePalette.surfacePanelElevated,
+              color: themePalette.textMuted
+            }}
+            aria-label="左パネルを閉じる"
+          >
+            ←
+          </button>
+        </div>
+        <div className="mt-3">
           <div
-            className="mt-2 overflow-hidden rounded-xl border"
+            className="overflow-hidden rounded-xl border"
             style={{
               borderColor: themePalette.borderSubtle,
               background: themePalette.surfacePanelElevated
@@ -162,9 +144,6 @@ export function MapInboxPanel({
                     {isActive ? (
                       <span className="h-2 w-2 rounded-full" style={{ background: themePalette.accent }} />
                     ) : null}
-                  </div>
-                  <div className="mt-0.5 text-[0.66rem]" style={{ color: isActive ? themePalette.accentText : themePalette.textMuted }}>
-                    {theme.sublabel}
                   </div>
                 </button>
               );
