@@ -68,16 +68,16 @@ export function JapanMainMap({
         }}
       />
 
-      <div className="absolute top-[92px] z-20" style={{ left: leftOffset + 12, right: rightOffset + 16 }}>
+      <div className="absolute top-[82px] z-20" style={{ left: leftOffset + 8, right: rightOffset + 12 }}>
         {metricsExpanded ? (
-          <div className="grid gap-3 md:grid-cols-5">
-            {metrics.map((metric) => {
+          <div className="grid gap-2 md:grid-cols-4">
+            {metrics.slice(0, 4).map((metric) => {
               const metricColor = resolveToneColor(metric.tone, themePalette, statusPalette);
 
               return (
                 <div
                   key={metric.id}
-                  className="rounded-xl border px-4 py-3 shadow-2xl backdrop-blur-md"
+                  className="rounded-xl border px-3 py-2.5 shadow-xl backdrop-blur-md"
                   style={{
                     background: themePalette.surfacePanel,
                     borderColor: themePalette.borderSubtle
@@ -86,10 +86,10 @@ export function JapanMainMap({
                   <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
                     {metric.label}
                   </div>
-                  <div className="mt-2 text-[1.6rem] font-semibold leading-none" style={{ color: metricColor }}>
+                  <div className="mt-1.5 text-[1.15rem] font-semibold leading-none" style={{ color: metricColor }}>
                     {metric.value}
                   </div>
-                  <div className="mt-2 line-clamp-2 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
+                  <div className="mt-1.5 line-clamp-2 text-[0.64rem] leading-4" style={{ color: themePalette.textMuted }}>
                     {metric.description}
                   </div>
                 </div>
@@ -104,13 +104,13 @@ export function JapanMainMap({
               borderColor: themePalette.borderSubtle
             }}
           >
-            {metrics.map((metric) => {
+            {metrics.slice(0, 4).map((metric) => {
               const metricColor = resolveToneColor(metric.tone, themePalette, statusPalette);
 
               return (
                 <span
                   key={metric.id}
-                  className="rounded-full border px-2.5 py-1 text-[0.7rem]"
+                  className="rounded-full border px-2.5 py-1 text-[0.66rem]"
                   style={{
                     borderColor: `${metricColor}44`,
                     background: `${metricColor}14`,
@@ -124,7 +124,7 @@ export function JapanMainMap({
             <button
               type="button"
               onClick={onToggleMetrics}
-              className="rounded-full border px-2.5 py-1 text-[0.7rem] transition"
+              className="rounded-full border px-2.5 py-1 text-[0.66rem] transition"
               style={{
                 borderColor: themePalette.borderSubtle,
                 background: themePalette.surfacePanelElevated,
@@ -141,7 +141,7 @@ export function JapanMainMap({
         <button
           type="button"
           onClick={onToggleMetrics}
-          className="absolute right-4 top-[92px] z-20 rounded-xl border px-3 py-2 text-xs transition"
+          className="absolute right-4 top-[82px] z-20 rounded-xl border px-3 py-2 text-xs transition"
           style={{
             borderColor: themePalette.borderSubtle,
             background: themePalette.surfacePanel,
@@ -152,9 +152,9 @@ export function JapanMainMap({
         </button>
       ) : null}
 
-      <div className="absolute right-4 top-[92px] z-20" style={{ right: rightOffset }}>
+      <div className="absolute right-4 top-[82px] z-20" style={{ right: rightOffset }}>
         <div
-          className="rounded-xl border px-3 py-3 shadow-xl backdrop-blur-md"
+          className="rounded-xl border px-3 py-2.5 shadow-xl backdrop-blur-md"
           style={{
             borderColor: themePalette.borderSubtle,
             background: themePalette.surfacePanel
@@ -191,15 +191,15 @@ export function JapanMainMap({
         </div>
       </div>
 
-      <div className="absolute left-4 top-[136px] z-20 flex flex-col gap-2" style={{ left: leftOffset }}>
+      <div className="absolute left-4 top-[126px] z-20 flex flex-col gap-2" style={{ left: leftOffset }}>
         <MapControlButton label="+" ariaLabel="地図を拡大" onClick={() => setCommand({ nonce: Date.now(), type: "zoomIn" })} />
         <MapControlButton label="-" ariaLabel="地図を縮小" onClick={() => setCommand({ nonce: Date.now(), type: "zoomOut" })} />
         <MapControlButton label="⌖" ariaLabel="日本中心に戻す" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />
       </div>
 
-      <div className="absolute z-20" style={{ left: leftOffset, bottom: gridExpanded ? 300 : 94, maxWidth: 420 }}>
+      <div className="absolute z-20" style={{ left: leftOffset, bottom: gridExpanded ? 292 : 88, maxWidth: 360 }}>
         <div
-          className="rounded-xl border px-4 py-2 shadow-xl backdrop-blur-md"
+          className="rounded-xl border px-3.5 py-2.5 shadow-xl backdrop-blur-md"
           style={{
             background: themePalette.surfacePanel,
             borderColor: themePalette.borderSubtle
@@ -210,7 +210,7 @@ export function JapanMainMap({
               選択
             </div>
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
-              <div className="truncate text-[0.95rem] font-semibold text-white">{localizeAnyLabel(detail.id, detail.label)}</div>
+              <div className="truncate text-[0.9rem] font-semibold text-white">{localizeAnyLabel(detail.id, detail.label)}</div>
               <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textMuted}>
                 {localizeKind(detail.kind)}
               </InfoChip>
@@ -218,12 +218,12 @@ export function JapanMainMap({
                 {detail.sources.length} 出典
               </InfoChip>
             </div>
-            <div className="mt-1.5 truncate text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
+            <div className="mt-1 truncate text-[0.64rem] leading-4" style={{ color: themePalette.textMuted }}>
               {localizeSummary(detail.id, detail.summary)}
             </div>
           </div>
           {model.foreignWindow ? (
-            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textPrimary}>
                 対外関係 {model.foreignWindow.entities.length}
               </InfoChip>

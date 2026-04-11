@@ -31,6 +31,7 @@ describe("map inbox structure", () => {
     expect(screen.getByText("プリセット")).toBeTruthy();
     expect(screen.queryByText("絞り込み")).toBeNull();
     expect(screen.queryByText("主要シグナル")).toBeNull();
+    expect(screen.queryByText("分析導線")).toBeNull();
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(screen.queryByRole("button", { name: "全部" })).toBeNull();
   });

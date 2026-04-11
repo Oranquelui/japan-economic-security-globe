@@ -28,38 +28,32 @@ export function ActionBar({
   }
 
   return (
-    <header
-      className="absolute left-4 right-4 top-4 z-40 hidden rounded-lg border shadow-lg shadow-black/10 backdrop-blur-md lg:block"
-      style={{
-        borderColor: themePalette.borderSubtle,
-        background: themePalette.surfacePanel
-      }}
-    >
-      <div className="flex items-center justify-between gap-6 px-5 py-3">
-        <div className="min-w-0">
-          <div className="min-w-0">
-            <div className="font-mono text-[0.58rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
-              日本向け依存インテリジェンス
-            </div>
-            <h1 className="mt-1 text-base font-semibold text-white">日本経済安全保障</h1>
-          </div>
+    <header className="absolute left-4 right-4 top-4 z-40 hidden items-start justify-between lg:flex">
+      <div
+        className="max-w-sm rounded-lg border px-4 py-3 shadow-lg shadow-black/10 backdrop-blur-md"
+        style={{
+          borderColor: themePalette.borderSubtle,
+          background: themePalette.surfacePanel
+        }}
+      >
+        <div className="font-mono text-[0.55rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+          日本向け依存インテリジェンス
         </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleCopyLink}
-            className="rounded-md border px-3 py-2 text-xs transition"
-            style={{
-              borderColor: copied ? themePalette.accent : themePalette.borderSubtle,
-              background: copied ? themePalette.accentSoft : "transparent",
-              color: copied ? themePalette.textPrimary : themePalette.textMuted
-            }}
-          >
-            {copied ? "URL をコピー済み" : "共有ビュー"}
-          </button>
-        </div>
+        <h1 className="mt-1 text-[0.95rem] font-semibold text-white">日本経済安全保障</h1>
       </div>
+
+      <button
+        type="button"
+        onClick={handleCopyLink}
+        className="rounded-lg border px-3 py-2 text-[0.72rem] transition shadow-lg shadow-black/10 backdrop-blur-md"
+        style={{
+          borderColor: copied ? themePalette.accent : themePalette.borderSubtle,
+          background: copied ? themePalette.accentSoft : themePalette.surfacePanel,
+          color: copied ? themePalette.textPrimary : themePalette.textMuted
+        }}
+      >
+        {copied ? "URL コピー済み" : "共有"}
+      </button>
     </header>
   );
 }

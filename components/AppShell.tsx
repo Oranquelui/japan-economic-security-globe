@@ -71,9 +71,9 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
     "--ops-text-primary": themePalette.textPrimary,
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
-  const leftOffset = isInboxOpen ? 296 : 88;
-  const rightOffset = isEvidenceOpen ? 380 : 88;
-  const panelTop = 88;
+  const leftOffset = isInboxOpen ? 264 : 88;
+  const rightOffset = isEvidenceOpen ? 344 : 88;
+  const panelTop = 82;
   const panelBottom = 16;
 
   useEffect(() => {
@@ -124,7 +124,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         themePalette={themePalette}
       />
 
-      <div className="absolute left-4 z-30 hidden lg:block" style={{ top: panelTop, bottom: panelBottom, width: isInboxOpen ? 256 : 48 }}>
+      <div className="absolute left-4 z-30 hidden lg:block" style={{ top: panelTop, width: isInboxOpen ? 224 : 48, maxHeight: "calc(100vh - 98px)" }}>
         <MapInboxPanel
           collapsed={!isInboxOpen}
           themePalette={themePalette}
@@ -135,7 +135,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         />
       </div>
 
-      <div className="absolute right-4 z-30 hidden lg:block" style={{ top: panelTop, bottom: panelBottom, width: isEvidenceOpen ? 360 : 48 }}>
+      <div className="absolute right-4 z-30 hidden lg:block" style={{ top: panelTop, bottom: panelBottom, width: isEvidenceOpen ? 320 : 48 }}>
         <EvidencePanel
           collapsed={!isEvidenceOpen}
           detail={detail}
