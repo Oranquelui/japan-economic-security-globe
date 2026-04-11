@@ -23,7 +23,7 @@ export function NavigationRail({
 }: NavigationRailProps) {
   return (
     <aside
-      className="flex h-full flex-col items-center rounded-2xl border py-3 shadow-2xl shadow-black/35"
+      className="flex h-full flex-col items-center border-r py-3"
       style={{
         borderColor: themePalette.borderSubtle,
         background: themePalette.surfacePanel
@@ -32,7 +32,7 @@ export function NavigationRail({
       <button
         type="button"
         onClick={onToggleInbox}
-        className="grid h-10 w-10 place-items-center rounded-xl border text-lg transition"
+        className="grid h-10 w-10 place-items-center rounded-md border text-lg transition"
         style={{
           borderColor: isInboxOpen ? themePalette.accent : themePalette.borderSubtle,
           background: isInboxOpen ? themePalette.accentSoft : themePalette.surfacePanelElevated,
@@ -43,7 +43,7 @@ export function NavigationRail({
         ≡
       </button>
 
-      <div className="mt-4 flex flex-col items-center gap-3">
+      <div className="mt-4 flex flex-col items-center gap-2">
         {THEME_ORDER.map((id) => {
           const theme = getThemeLabel(id);
           const isActive = id === themeId;
@@ -53,7 +53,7 @@ export function NavigationRail({
               key={id}
               type="button"
               onClick={() => onThemeChange(id)}
-              className="grid h-10 w-10 place-items-center rounded-xl border text-[0.62rem] font-bold transition"
+              className="grid h-10 w-10 place-items-center rounded-md border text-[0.62rem] font-bold transition"
               style={
                 isActive
                   ? {

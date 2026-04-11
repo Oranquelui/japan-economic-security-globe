@@ -63,6 +63,7 @@ describe("navigation shell", () => {
           onClearFilters={() => undefined}
           queryActive={false}
           sharePath="/"
+          themeLabel="エネルギー"
           themePalette={themePalette}
         />
         <JapanMainMap
@@ -70,11 +71,8 @@ describe("navigation shell", () => {
           detail={detail}
           focusTargetId={null}
           mapMode="point"
-          metricsExpanded={false}
-          metrics={[]}
           model={mapModel}
           onMapModeChange={() => undefined}
-          onToggleMetrics={() => undefined}
           onSelect={() => undefined}
           statusPalette={statusPalette}
           themePalette={themePalette}

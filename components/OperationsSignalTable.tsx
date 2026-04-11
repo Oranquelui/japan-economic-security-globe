@@ -62,16 +62,16 @@ export function OperationsSignalTable({
 
   return (
     <section
-      className="overflow-hidden rounded-2xl border shadow-2xl shadow-black/35"
+      className="flex h-full flex-col overflow-hidden border-t"
       style={{
         borderColor: themePalette.borderSubtle,
         background: themePalette.surfacePanel
       }}
     >
       <div
-        className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
+        className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3"
         style={{
-          borderBottom: `1px solid ${themePalette.borderSubtle}`,
+          borderColor: themePalette.borderSubtle,
           background: themePalette.surfacePanel
         }}
       >
@@ -125,7 +125,7 @@ export function OperationsSignalTable({
         </div>
       </div>
 
-      <div className="max-h-72 overflow-auto">
+      <div className="min-h-0 flex-1 overflow-auto">
         <table className="min-w-full border-collapse text-left text-sm">
           <thead
             className="sticky top-0 z-10 text-[0.62rem] uppercase tracking-[0.22em] backdrop-blur"

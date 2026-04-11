@@ -30,14 +30,11 @@ export function MapInboxPanel({
 }: MapInboxPanelProps) {
   return (
     <aside
-      className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border shadow-2xl shadow-black/25"
-      style={{
-        borderColor: themePalette.borderSubtle,
-        background: themePalette.surfacePanel
-      }}
+      className="flex h-full min-w-0 flex-col overflow-hidden"
+      style={{ background: themePalette.surfacePanel }}
     >
-      <div className="flex min-w-0 flex-1 flex-col p-4">
-        <div className="flex items-center justify-between gap-3 pb-3" style={{ borderBottom: `1px solid ${themePalette.borderSubtle}` }}>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center justify-between gap-3 border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
           <div>
             <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
               監視インボックス
@@ -47,24 +44,15 @@ export function MapInboxPanel({
           <PaneBadge themePalette={themePalette}>{rows.length}件</PaneBadge>
         </div>
 
-        <div
-          className="mt-4 rounded-xl border p-4"
-          style={{
-            borderColor: themePalette.borderSubtle,
-            background: themePalette.surfacePanelElevated
-          }}
-        >
-          <div className="text-[1.8rem] font-semibold leading-none text-white">{rows.length}</div>
-          <div className="mt-2 text-sm" style={{ color: themePalette.textMuted }}>
-            現在の表示シグナル
+        <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
+          <div className="grid grid-cols-3 gap-2">
+            <MetricCell label="表示" value={rows.length} themePalette={themePalette} />
+            <MetricCell label="高リスク" value={highRiskCount} themePalette={themePalette} />
+            <MetricCell label="監視中" value={monitoringCount} themePalette={themePalette} />
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <PaneBadge themePalette={themePalette}>高リスク {highRiskCount}</PaneBadge>
-            <PaneBadge themePalette={themePalette}>監視中 {monitoringCount}</PaneBadge>
-          </div>
-        </div>
+        </section>
 
-        <div className="mt-4">
+        <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
           <label className="block">
             <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
               検索
@@ -81,9 +69,9 @@ export function MapInboxPanel({
               }}
             />
           </label>
-        </div>
+        </section>
 
-        <div className="mt-4">
+        <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
           <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
             絞り込み
           </div>
@@ -120,14 +108,19 @@ export function MapInboxPanel({
               );
             })}
           </div>
-        </div>
+        </section>
 
-        <div className="mt-4 min-h-0 flex-1">
-          <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-            シグナル
+        <section className="min-h-0 flex-1 px-4 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+              シグナル
+            </div>
+            <div className="text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+              上位 {Math.min(rows.length, 6)} 件
+            </div>
           </div>
           <div
-            className="mt-2 h-full overflow-auto rounded-xl border"
+            className="mt-2 h-full overflow-auto border"
             style={{
               borderColor: themePalette.borderSubtle,
               background: themePalette.surfacePanelElevated
@@ -147,7 +140,7 @@ export function MapInboxPanel({
                       ? {
                           borderBottomColor: themePalette.borderSubtle,
                           borderLeft: `2px solid ${themePalette.accent}`,
-                          background: "rgba(255,255,255,0.03)",
+                          background: themePalette.surfacePanel,
                           color: themePalette.textPrimary
                         }
                       : {
@@ -171,7 +164,7 @@ export function MapInboxPanel({
               );
             })}
           </div>
-        </div>
+        </section>
       </div>
     </aside>
   );
@@ -195,5 +188,30 @@ function PaneBadge({
     >
       {children}
     </span>
+  );
+}
+
+function MetricCell({
+  label,
+  value,
+  themePalette
+}: {
+  label: string;
+  value: number;
+  themePalette: ThemePalette;
+}) {
+  return (
+    <div
+      className="border px-3 py-2"
+      style={{
+        borderColor: themePalette.borderSubtle,
+        background: themePalette.surfacePanelElevated
+      }}
+    >
+      <div className="font-mono text-[0.55rem] uppercase tracking-[0.24em]" style={{ color: themePalette.textMuted }}>
+        {label}
+      </div>
+      <div className="mt-1 text-lg font-semibold text-white">{value}</div>
+    </div>
   );
 }

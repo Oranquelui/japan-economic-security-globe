@@ -10,6 +10,7 @@ interface ActionBarProps {
   onClearFilters: () => void;
   queryActive: boolean;
   sharePath: string;
+  themeLabel: string;
   themePalette: ThemePalette;
 }
 
@@ -18,6 +19,7 @@ export function ActionBar({
   onClearFilters,
   queryActive,
   sharePath,
+  themeLabel,
   themePalette
 }: ActionBarProps) {
   const [copied, setCopied] = useState(false);
@@ -46,7 +48,19 @@ export function ActionBar({
         <div className="font-mono text-[0.55rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
           日本向け依存インテリジェンス
         </div>
-        <h1 className="mt-1 text-[0.95rem] font-semibold text-white">日本経済安全保障</h1>
+        <div className="mt-1 flex items-center gap-2">
+          <h1 className="text-[0.95rem] font-semibold text-white">日本経済安全保障</h1>
+          <span
+            className="rounded-full border px-2 py-0.5 text-[0.62rem]"
+            style={{
+              borderColor: themePalette.borderSubtle,
+              background: themePalette.surfacePanelElevated,
+              color: themePalette.textMuted
+            }}
+          >
+            {themeLabel}
+          </span>
+        </div>
       </div>
 
       <div className="flex min-w-0 flex-1 items-center justify-center gap-2 overflow-hidden">

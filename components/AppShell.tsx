@@ -39,7 +39,6 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(true);
   const [isEvidenceOpen, setEvidenceOpen] = useState(false);
-  const [metricsExpanded, setMetricsExpanded] = useState(false);
   const [, startTransition] = useTransition();
   const initialSerializedRef = useRef(serializeOperationsUrlState(initialUrlState));
   const view = getThemeView(graph, themeId);
@@ -76,8 +75,10 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
   const railWidth = 56;
-  const paneWidth = isInboxOpen ? 272 : 0;
-  const compareHeight = 248;
+  const paneWidth = 320;
+  const visiblePaneWidth = isInboxOpen ? paneWidth : 0;
+  const compareHeight = 264;
+  const evidenceWidth = isEvidenceOpen ? 360 : 52;
 
   useEffect(() => {
     const serialized = serializeOperationsUrlState({
@@ -109,6 +110,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         onClearFilters={() => setSearchQuery("")}
         queryActive={searchQuery.length > 0}
         sharePath={sharePath}
+        themeLabel={themeLabel}
         themePalette={themePalette}
       />
 
@@ -120,11 +122,8 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
               detail={detail}
               focusTargetId={focusTargetId}
               mapMode={mapMode}
-              metrics={[]}
               model={mapModel}
-              metricsExpanded={metricsExpanded}
               onMapModeChange={setMapMode}
-              onToggleMetrics={() => setMetricsExpanded((value) => !value)}
               onSelect={setSelectedId}
               statusPalette={statusPalette}
               themePalette={themePalette}
@@ -133,10 +132,10 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
 
           <aside
             data-testid="layout-navigation-rail"
-            className="absolute left-4 top-4 z-30"
+            className="absolute left-0 top-0 z-30"
             style={{
               width: railWidth,
-              bottom: 16
+              bottom: 0
             }}
           >
             <NavigationRail
@@ -150,11 +149,14 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
 
           <aside
             data-testid="layout-left-nav"
-            className="absolute left-[76px] top-4 z-30 min-h-0 overflow-hidden transition-[width,opacity] duration-200 ease-out"
+            className="absolute left-14 top-0 z-30 min-h-0 overflow-hidden border-r transition-[transform,opacity] duration-200 ease-out"
             style={{
               width: paneWidth,
               opacity: isInboxOpen ? 1 : 0,
-              bottom: 16
+              transform: isInboxOpen ? "translateX(0)" : "translateX(-100%)",
+              bottom: 0,
+              borderColor: themePalette.borderSubtle,
+              background: themePalette.surfacePanel
             }}
           >
             <MapInboxPanel
@@ -172,14 +174,14 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
 
           <div
             data-testid="layout-evidence-overlay"
-            className="pointer-events-none absolute right-4 top-4 z-30 flex justify-end"
+            className="pointer-events-none absolute right-0 top-0 z-40 flex justify-end"
             style={{
-              bottom: compareHeight + 32
+              bottom: 0
             }}
           >
             <div
               className="pointer-events-auto h-full transition-[width] duration-200 ease-out"
-              style={{ width: isEvidenceOpen ? 320 : 56 }}
+              style={{ width: evidenceWidth }}
             >
               <EvidencePanel
                 collapsed={!isEvidenceOpen}
@@ -197,9 +199,10 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
 
           <section
             data-testid="layout-compare-overlay"
-            className="absolute bottom-4 right-4 z-30 min-h-0"
+            className="absolute bottom-0 right-0 z-30 min-h-0"
             style={{
-              left: railWidth + paneWidth + 28,
+              left: railWidth + visiblePaneWidth,
+              right: evidenceWidth,
               height: compareHeight
             }}
           >
@@ -218,13 +221,49 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         </div>
 
         <div className="space-y-4 lg:hidden">
-          <NavigationRail
-            isInboxOpen
-            onThemeChange={handleThemeChange}
-            onToggleInbox={() => undefined}
-            themeId={themeId}
-            themePalette={themePalette}
-          />
+          <section className="h-[50vh] min-h-[280px]">
+            <JapanMainMap
+              activeId={activeId}
+              detail={detail}
+              focusTargetId={focusTargetId}
+              mapMode={mapMode}
+              model={mapModel}
+              onMapModeChange={setMapMode}
+              onSelect={setSelectedId}
+              statusPalette={statusPalette}
+              themePalette={themePalette}
+            />
+          </section>
+          <section className="flex gap-2 overflow-auto px-4">
+            {(["energy", "rice", "water", "defense", "semiconductors"] as ThemeId[]).map((id) => {
+              const theme = getThemeLabel(id);
+              const isActive = id === themeId;
+
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => handleThemeChange(id)}
+                  className="rounded-full border px-3 py-2 text-xs whitespace-nowrap transition"
+                  style={
+                    isActive
+                      ? {
+                          borderColor: themePalette.accent,
+                          background: themePalette.accentSoft,
+                          color: themePalette.textPrimary
+                        }
+                      : {
+                          borderColor: themePalette.borderSubtle,
+                          background: themePalette.surfacePanelElevated,
+                          color: themePalette.textMuted
+                        }
+                  }
+                >
+                  {theme.label}
+                </button>
+              );
+            })}
+          </section>
           <MapInboxPanel
             activeId={activeId}
             highRiskCount={highRiskCount}

@@ -118,18 +118,18 @@ describe("AppShell url sync", () => {
     );
 
     expect(screen.getAllByTestId("nav-rail")[0].getAttribute("data-theme")).toBe("rice");
-    expect(screen.getByTestId("map").getAttribute("data-mode")).toBe("cluster");
-    expect(screen.getByTestId("map").getAttribute("data-active")).toBe("observation:rice-price-signal-2026");
-    expect(screen.getByTestId("map").getAttribute("data-focus")).toBe("observation:rice-price-signal-2026");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("cluster");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("observation:rice-price-signal-2026");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("observation:rice-price-signal-2026");
     expect(replaceMock).not.toHaveBeenCalled();
   });
 
   test("keeps Japan-first default mode and does not focus the fallback active item on first load", () => {
     render(<AppShell graph={loadSeedGraph()} />);
 
-    expect(screen.getByTestId("map").getAttribute("data-mode")).toBe("point");
-    expect(screen.getByTestId("map").getAttribute("data-active")).toBe("flow:saudi-oil-japan");
-    expect(screen.getByTestId("map").getAttribute("data-focus")).toBe("");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("point");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("flow:saudi-oil-japan");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
   });
 
   test("replaces the URL when theme, map mode, and selection change", async () => {
@@ -140,7 +140,7 @@ describe("AppShell url sync", () => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice", { scroll: false });
     });
 
-    fireEvent.click(screen.getByText("change-mode-cluster"));
+    fireEvent.click(screen.getAllByText("change-mode-cluster")[0]);
     await waitFor(() => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice&mode=cluster", { scroll: false });
     });

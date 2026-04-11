@@ -142,11 +142,8 @@ describe("operations accessibility", () => {
         detail={detail}
         focusTargetId={null}
         mapMode="route"
-        metricsExpanded={false}
-        metrics={[]}
         model={mapModel}
         onMapModeChange={() => undefined}
-        onToggleMetrics={() => undefined}
         onSelect={() => undefined}
         statusPalette={statusPalette}
         themePalette={themePalette}
