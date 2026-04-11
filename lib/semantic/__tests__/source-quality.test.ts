@@ -11,4 +11,15 @@ describe("source quality", () => {
     expect(source?.url).not.toBe("https://www.meti.go.jp/");
     expect(source?.url).toContain("meti.go.jp");
   });
+
+  test("uses concrete official release pages for rice and water observations", () => {
+    const graph = loadSeedGraph();
+    const ricePriceSource = graph.sources.find((item) => item.id === "source:maff-rice-policy");
+    const riceInventorySource = graph.sources.find((item) => item.id === "source:maff-rice-monthly-report");
+    const waterSource = graph.sources.find((item) => item.id === "source:mlit-drought-portal");
+
+    expect(ricePriceSource?.url).toBe("https://www.maff.go.jp/j/press/nousan/kikaku/260313.html");
+    expect(riceInventorySource?.url).toBe("https://www.maff.go.jp/j/press/nousan/kikaku/260331.html");
+    expect(waterSource?.url).toBe("https://www.ktr.mlit.go.jp/river/shihon/river_shihon00000226.html");
+  });
 });

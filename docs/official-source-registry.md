@@ -35,20 +35,23 @@
   - URL: https://www.enecho.meti.go.jp/about/energytrends/202506/pdf/energytrends_all.pdf
   - 用途: 原油輸入先、中東依存、備蓄日数
 - `農水省 米の相対取引価格・数量、民間在庫`
-  - URL: https://www.maff.go.jp/j/seisan/keikaku/soukatu/aitaikakaku.html
-  - 用途: コメ価格、民間在庫、販売数量
-- `関東地方整備局 利根川水系ダム貯水状況`
-  - URL: https://www.ktr.mlit.go.jp/river/shihon/river_shihon00000111.html
-  - 用途: ダム貯水率、渇水監視
+  - URL: https://www.maff.go.jp/j/press/nousan/kikaku/260313.html
+  - 用途: コメ価格、相対取引数量
+- `農水省 米穀流通の動向（集荷、販売、民間在庫）`
+  - URL: https://www.maff.go.jp/j/press/nousan/kikaku/260331.html
+  - 用途: 民間在庫、販売数量、政府備蓄米の市場反映
+- `関東地方整備局 首都圏の水資源状況（リアルタイム）`
+  - URL: https://www.ktr.mlit.go.jp/river/shihon/river_shihon00000226.html
+  - 用途: ダム貯水率、渇水監視、小河内ダムなどの当日値
 - `経済産業省 関東経済産業局 中東情勢関連対策ポータル`
   - URL: https://www.kanto.meti.go.jp/press/20260402chuto_josei_press.html
   - 用途: 中東情勢を受けた供給相談窓口、代替調達・備蓄対応の公式案内
 
 ### Tier C: 政策・予算・説明資料
 
-- `防衛省 FY2026 Budget ~Major Projects~`
-  - URL: https://www.mod.go.jp/en/d_act/d_budget/pdf/fy2026_20251226a.pdf
-  - 用途: BudgetLine / CapabilityArea
+- `防衛省 FY2026 Budget Major Projects`
+  - URL: https://www.mod.go.jp/en/d_act/d_budget/pdf/fy2026_20260302a.pdf
+  - 用途: BudgetLine / CapabilityArea / capability別予算額
 - `財務省 令和8年度一般会計歳出予算各目明細書`
   - URL: https://www.mof.go.jp/about_mof/mof_budget/budget/fy2026/ippan2026.pdf
   - 用途: 予算明細、財政 provenance
@@ -66,10 +69,10 @@
   - `資源エネルギー庁 エネルギー動向`
   - `中東情勢関連対策ポータル`
 - コメ
-  - 農水省の価格・在庫ページ
-  - 農水省マンスリーレポート
+  - 農水省の令和8年2月相対取引価格
+  - 農水省の令和8年2月民間在庫
 - 水
-  - 国交省のダム貯水ページ
+  - 国交省のリアルタイム水資源ページ
   - 気象庁の干ばつ監視資料
 - 防衛
   - 防衛省 FY2026 予算資料

@@ -33,21 +33,41 @@
     "theme": "rice",
     "subjectId": "product:rice",
     "label": "Rice price pressure signal",
-    "metric": "retail_price_pressure",
-    "value": "elevated",
-    "unit": "qualitative",
-    "period": "2026",
+    "metric": "relative_transaction_price",
+    "value": 35056,
+    "unit": "jpy_per_60kg",
+    "period": "2026-02",
     "sourceIds": ["source:maff-rice-policy", "source:maff-rice-monthly-report"],
-    "summary": "A manual seed observation representing rice price concern and policy attention.",
+    "summary": "MAFF reported an average relative transaction price of 35,056 yen per 60kg of brown rice for February 2026.",
     "provenance": [
       {
         "sourceId": "source:maff-rice-policy",
-        "claim": "Manual seed observation for rice price and policy pressure.",
-        "retrievedAt": "2026-04-10"
+        "claim": "MAFF reported a February 2026 average relative transaction price of 35,056 yen per 60kg.",
+        "retrievedAt": "2026-04-11"
       },
       {
         "sourceId": "source:maff-rice-monthly-report",
-        "claim": "Supplementary MAFF monthly context for price and supply pressure.",
+        "claim": "The monthly rice flow report supplies complementary context on price and supply conditions.",
+        "retrievedAt": "2026-04-11"
+      }
+    ]
+  },
+  {
+    "id": "observation:rice-private-inventory-feb-2026",
+    "kind": "Observation",
+    "theme": "rice",
+    "subjectId": "product:rice",
+    "label": "Private rice inventory at end of February 2026",
+    "metric": "private_inventory",
+    "value": 300,
+    "unit": "10k_genmai_tons",
+    "period": "2026-02",
+    "sourceIds": ["source:maff-rice-monthly-report"],
+    "summary": "MAFF reported 3.0 million tons of private rice inventory at the end of February 2026.",
+    "provenance": [
+      {
+        "sourceId": "source:maff-rice-monthly-report",
+        "claim": "MAFF reported 300 ten-thousand tons of private inventory at the end of February 2026, up 950 thousand tons year on year.",
         "retrievedAt": "2026-04-11"
       }
     ]
@@ -82,18 +102,18 @@
     "kind": "ReservoirObservation",
     "theme": "water",
     "subjectId": "reservoir:ogochi",
-    "label": "Ogouchi reservoir stress example",
-    "metric": "reservoir_stress",
-    "value": "watch",
-    "unit": "qualitative",
-    "period": "2026",
+    "label": "Ogouchi reservoir fill rate",
+    "metric": "reservoir_fill_rate",
+    "value": 34,
+    "unit": "percent",
+    "period": "2026-04-10",
     "sourceIds": ["source:mlit-drought-portal", "source:jma-drought-spi"],
-    "summary": "A manual seed observation for reservoir and drought visualization.",
+    "summary": "The MLIT realtime water resource page reported a 34% fill rate for Ogouchi Dam on 2026-04-10.",
     "provenance": [
       {
         "sourceId": "source:mlit-drought-portal",
-        "claim": "Manual seed observation for water stress example.",
-        "retrievedAt": "2026-04-10"
+        "claim": "The Kanto Regional Development Bureau reported 6,328 ten-thousand cubic meters and a 34% fill rate for Ogouchi Dam on 2026-04-10.",
+        "retrievedAt": "2026-04-11"
       },
       {
         "sourceId": "source:jma-drought-spi",
@@ -109,16 +129,66 @@
     "subjectId": "budget:fiscal-2026-stand-off-defense",
     "label": "FY2026 stand-off budget line",
     "metric": "budget_allocation",
-    "value": "sample_line",
-    "unit": "qualitative",
+    "value": 973.3,
+    "unit": "billion_jpy",
     "period": "FY2026",
     "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
-    "summary": "A sample FY2026 defense budget observation for the evidence graph.",
+    "summary": "The MOD FY2026 budget materials allocate approximately 973.3 billion yen to stand-off defense capabilities.",
     "provenance": [
       {
         "sourceId": "source:mod-fy2026-budget",
-        "claim": "Manual seed observation for FY2026 defense budget category.",
-        "retrievedAt": "2026-04-10"
+        "claim": "The MOD FY2026 budget material lists stand-off defense capabilities at approximately 973.3 billion yen.",
+        "retrievedAt": "2026-04-11"
+      },
+      {
+        "sourceId": "source:mof-fy2026-budget",
+        "claim": "Budget-line provenance anchored to the official fiscal document set.",
+        "retrievedAt": "2026-04-11"
+      }
+    ]
+  },
+  {
+    "id": "observation:defense-budget-iamd-fy2026",
+    "kind": "BudgetObservation",
+    "theme": "defense",
+    "subjectId": "budget:fiscal-2026-integrated-air-missile-defense",
+    "label": "FY2026 integrated air and missile defense budget line",
+    "metric": "budget_allocation",
+    "value": 509.1,
+    "unit": "billion_jpy",
+    "period": "FY2026",
+    "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
+    "summary": "The MOD FY2026 budget materials allocate approximately 509.1 billion yen to integrated air and missile defense capabilities.",
+    "provenance": [
+      {
+        "sourceId": "source:mod-fy2026-budget",
+        "claim": "The MOD FY2026 budget material lists integrated air and missile defense capabilities at approximately 509.1 billion yen.",
+        "retrievedAt": "2026-04-11"
+      },
+      {
+        "sourceId": "source:mof-fy2026-budget",
+        "claim": "Budget-line provenance anchored to the official fiscal document set.",
+        "retrievedAt": "2026-04-11"
+      }
+    ]
+  },
+  {
+    "id": "observation:defense-budget-unmanned-fy2026",
+    "kind": "BudgetObservation",
+    "theme": "defense",
+    "subjectId": "budget:fiscal-2026-unmanned-defense",
+    "label": "FY2026 unmanned defense budget line",
+    "metric": "budget_allocation",
+    "value": 277.3,
+    "unit": "billion_jpy",
+    "period": "FY2026",
+    "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
+    "summary": "The MOD FY2026 budget materials allocate approximately 277.3 billion yen to unmanned defense capabilities.",
+    "provenance": [
+      {
+        "sourceId": "source:mod-fy2026-budget",
+        "claim": "The MOD FY2026 budget material lists unmanned defense capabilities at approximately 277.3 billion yen.",
+        "retrievedAt": "2026-04-11"
       },
       {
         "sourceId": "source:mof-fy2026-budget",

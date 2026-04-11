@@ -102,36 +102,38 @@
   },
   {
     "id": "source:maff-rice-policy",
-    "label": "米の相対取引価格・数量、集荷・契約・販売状況、民間在庫の推移等",
-    "url": "https://www.maff.go.jp/j/seisan/keikaku/soukatu/aitaikakaku.html",
+    "label": "令和7年産米の相対取引価格・数量について（令和8年2月）",
+    "url": "https://www.maff.go.jp/j/press/nousan/kikaku/260313.html",
     "publisher": "農林水産省",
+    "published": "2026-03-13",
     "accessed": "2026-04-11",
-    "description": "相対取引価格、民間在庫、販売数量を CSV / Excel / PDF で公表する公式ページ。",
+    "description": "令和8年2月の相対取引価格は全銘柄平均35,056円/玄米60kgと公表した農林水産省の公式発表。",
     "official": true,
     "accessMode": "html",
-    "tier": "B"
+    "tier": "A"
   },
   {
     "id": "source:maff-rice-monthly-report",
-    "label": "米に関するマンスリーレポート",
-    "url": "https://www.maff.go.jp/j/press/nousan/kikaku/attach/pdf/241220_1-2.pdf",
+    "label": "令和8年2月の米穀流通の動向（集荷、販売、民間在庫）",
+    "url": "https://www.maff.go.jp/j/press/nousan/kikaku/260331.html",
     "publisher": "農林水産省",
+    "published": "2026-03-31",
     "accessed": "2026-04-11",
-    "description": "コメ需給、在庫、政策整理を補助する月次レポート。",
+    "description": "令和8年2月末の民間在庫量300万玄米トンなど、集荷・販売・在庫を公表した農林水産省の公式発表。",
     "official": true,
-    "accessMode": "pdf",
-    "tier": "C"
+    "accessMode": "html",
+    "tier": "A"
   },
   {
     "id": "source:mlit-drought-portal",
-    "label": "利根川水系ダム貯水状況",
-    "url": "https://www.ktr.mlit.go.jp/river/shihon/river_shihon00000111.html",
+    "label": "首都圏の水資源状況（リアルタイム）",
+    "url": "https://www.ktr.mlit.go.jp/river/shihon/river_shihon00000226.html",
     "publisher": "国土交通省 関東地方整備局",
     "accessed": "2026-04-11",
-    "description": "利根川上流ダムの貯水量・貯水率を掲載する公式ページ。",
+    "description": "令和8年4月10日時点の小河内ダムを含む上流ダム群の貯水量・貯水率を掲載する公式ページ。",
     "official": true,
     "accessMode": "html",
-    "tier": "B"
+    "tier": "A"
   },
   {
     "id": "source:jma-drought-spi",
@@ -146,14 +148,15 @@
   },
   {
     "id": "source:mod-fy2026-budget",
-    "label": "FY2026 Budget ~Major Projects~",
-    "url": "https://www.mod.go.jp/en/d_act/d_budget/pdf/fy2026_20251226a.pdf",
+    "label": "FY2026 Budget Major Projects",
+    "url": "https://www.mod.go.jp/en/d_act/d_budget/pdf/fy2026_20260302a.pdf",
     "publisher": "防衛省",
+    "published": "2026-03-02",
     "accessed": "2026-04-11",
-    "description": "FY2026 防衛予算と capability area の対応関係を示す公式資料。",
+    "description": "スタンド・オフ、防空・ミサイル防衛、無人アセットなど能力分野別の FY2026 予算額を示す防衛省の公式資料。",
     "official": true,
     "accessMode": "pdf",
-    "tier": "C"
+    "tier": "A"
   },
   {
     "id": "source:mof-fy2026-budget",

@@ -84,8 +84,36 @@
     "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
     "period": "FY2026",
     "summary": "A budget flow linking source materials, budget line, organization, and capability area.",
-    "magnitudeLabel": "Sample budget line",
+    "magnitudeLabel": "Approx. ¥973.3 billion",
     "riskLabel": "Public spending explanation"
+  },
+  {
+    "id": "flow:defense-budget-integrated-air-missile",
+    "theme": "defense",
+    "label": "FY2026 budget to integrated air and missile defense capability",
+    "originId": "org:mod",
+    "destinationId": "capability:integrated-air-missile",
+    "productId": "budget:fiscal-2026-integrated-air-missile-defense",
+    "routeIds": [],
+    "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
+    "period": "FY2026",
+    "summary": "A budget flow linking FY2026 air and missile defense allocations to the capability area they fund.",
+    "magnitudeLabel": "Approx. ¥509.1 billion",
+    "riskLabel": "Air-defense explanation"
+  },
+  {
+    "id": "flow:defense-budget-unmanned",
+    "theme": "defense",
+    "label": "FY2026 budget to unmanned defense capability",
+    "originId": "org:mod",
+    "destinationId": "capability:unmanned",
+    "productId": "budget:fiscal-2026-unmanned-defense",
+    "routeIds": [],
+    "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
+    "period": "FY2026",
+    "summary": "A budget flow linking FY2026 unmanned capability allocations to the capability area they fund.",
+    "magnitudeLabel": "Approx. ¥277.3 billion",
+    "riskLabel": "Autonomy and surveillance explanation"
   },
   {
     "id": "flow:taiwan-semiconductors-japan",
