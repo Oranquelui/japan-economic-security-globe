@@ -197,45 +197,42 @@ export function JapanMainMap({
         <MapControlButton label="⌖" ariaLabel="日本中心に戻す" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />
       </div>
 
-      <div className="absolute z-20" style={{ left: leftOffset, bottom: gridExpanded ? 300 : 94, maxWidth: 480 }}>
+      <div className="absolute z-20" style={{ left: leftOffset, bottom: gridExpanded ? 300 : 94, maxWidth: 420 }}>
         <div
-          className="rounded-xl border px-4 py-2.5 shadow-xl backdrop-blur-md"
+          className="rounded-xl border px-4 py-2 shadow-xl backdrop-blur-md"
           style={{
             background: themePalette.surfacePanel,
             borderColor: themePalette.borderSubtle
           }}
         >
           <div className="min-w-0">
-            <div className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-              選択中
+            <div className="font-mono text-[0.58rem] uppercase tracking-[0.24em]" style={{ color: themePalette.textMuted }}>
+              選択
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <div className="truncate text-sm font-semibold text-white">{localizeAnyLabel(detail.id, detail.label)}</div>
+            <div className="mt-1.5 flex flex-wrap items-center gap-2">
+              <div className="truncate text-[0.95rem] font-semibold text-white">{localizeAnyLabel(detail.id, detail.label)}</div>
               <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textMuted}>
                 {localizeKind(detail.kind)}
               </InfoChip>
               <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textMuted}>
                 {detail.sources.length} 出典
               </InfoChip>
-              <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textMuted}>
-                {detail.relatedEntities.length} 関連
-              </InfoChip>
             </div>
-            <div className="mt-2 truncate text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
+            <div className="mt-1.5 truncate text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
               {localizeSummary(detail.id, detail.summary)}
             </div>
           </div>
           {model.foreignWindow ? (
-            <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
               <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textPrimary}>
                 対外関係 {model.foreignWindow.entities.length}
               </InfoChip>
-              {model.foreignWindow.entities.map((entity) => (
+              {model.foreignWindow.entities.slice(0, 2).map((entity) => (
                 <button
                   key={entity.id}
                   type="button"
                   onClick={() => onSelect(entity.id)}
-                  className="rounded-full border px-3 py-1.5 text-xs transition hover:text-white"
+                  className="rounded-full border px-2.5 py-1 text-[0.68rem] transition hover:text-white"
                   style={{
                     borderColor: themePalette.borderSubtle,
                     background: themePalette.surfacePanelElevated,
@@ -246,6 +243,11 @@ export function JapanMainMap({
                     {entity.label}
                   </button>
               ))}
+              {model.foreignWindow.entities.length > 2 ? (
+                <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textMuted}>
+                  +{model.foreignWindow.entities.length - 2}
+                </InfoChip>
+              ) : null}
             </div>
           ) : null}
         </div>

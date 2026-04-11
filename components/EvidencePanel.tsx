@@ -37,7 +37,7 @@ export function EvidencePanel({
   themePalette,
   themeTitle
 }: EvidencePanelProps) {
-  const [tab, setTab] = useState<"summary" | "evidence" | "sparql">("summary");
+  const [tab, setTab] = useState<"summary" | "sources" | "sparql">("summary");
 
   if (collapsed) {
     return (
@@ -91,9 +91,12 @@ export function EvidencePanel({
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.36em]" style={{ color: themePalette.textMuted }}>
-            Evidence Drilldown
+            根拠
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">{themeTitle}</h2>
+          <h2 className="mt-2 text-xl font-semibold text-white">{localizeAnyLabel(detail.id, detail.label)}</h2>
+          <p className="mt-1 text-[0.72rem]" style={{ color: themePalette.textMuted }}>
+            {themeTitle}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -120,11 +123,11 @@ export function EvidencePanel({
       </div>
 
       <section
-      className="mt-6 rounded-xl border p-5"
-      style={{
-        borderColor: themePalette.borderSubtle,
-        background: themePalette.surfacePanelElevated
-      }}
+        className="mt-5 rounded-xl border p-4"
+        style={{
+          borderColor: themePalette.borderSubtle,
+          background: themePalette.surfacePanelElevated
+        }}
       >
         <div className="flex flex-wrap items-center gap-2">
           <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
@@ -137,15 +140,14 @@ export function EvidencePanel({
             {detail.relatedEntities.length} 関連
           </PanelChip>
         </div>
-        <h3 className="mt-3 text-2xl font-semibold leading-tight text-white">{localizeAnyLabel(detail.id, detail.label)}</h3>
-        <p className="mt-3 text-sm leading-6 text-slate-300">{localizeSummary(detail.id, detail.summary)}</p>
+        <p className="mt-3 text-[0.82rem] leading-6 text-slate-300">{localizeSummary(detail.id, detail.summary)}</p>
 
         <div className="mt-4 flex gap-2 border-t border-white/10 pt-4">
           <TabButton active={tab === "summary"} onClick={() => setTab("summary")} themePalette={themePalette}>
             概要
           </TabButton>
-          <TabButton active={tab === "evidence"} onClick={() => setTab("evidence")} themePalette={themePalette}>
-            根拠
+          <TabButton active={tab === "sources"} onClick={() => setTab("sources")} themePalette={themePalette}>
+            出典
           </TabButton>
           <TabButton active={tab === "sparql"} onClick={() => setTab("sparql")} themePalette={themePalette}>
             SPARQL
@@ -155,27 +157,15 @@ export function EvidencePanel({
         {tab === "summary" ? (
           <div className="mt-4 space-y-4">
             <FactRow label="日本にとっての意味" themePalette={themePalette} value={localizeWhyItMatters(detail.id, detail.whyItMatters)} />
-            <FactRow label="関連エンティティ" themePalette={themePalette} value={`${detail.relatedEntities.length}件`} />
-            <FactRow label="出典文書" themePalette={themePalette} value={`${detail.sources.length}件`} />
-            <FactRow
-              label="公式一次ソース"
-              themePalette={themePalette}
-              value={`${detail.sources.filter((source) => source.official !== false).length}件`}
-            />
-          </div>
-        ) : null}
-
-        {tab === "evidence" ? (
-          <div className="mt-4 space-y-4">
             <section
               className="rounded-xl border p-4"
               style={{
                 borderColor: themePalette.borderSubtle,
-                background: themePalette.surfacePanelElevated
+                background: themePalette.surfacePanel
               }}
             >
               <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
-                根拠グラフ
+                関係グラフ
               </div>
               <EvidenceGraph
                 graph={evidenceGraph}
@@ -185,12 +175,47 @@ export function EvidencePanel({
                 themePalette={themePalette}
               />
             </section>
+            {detail.relatedEntities.length ? (
+              <section
+                className="rounded-xl border p-4"
+                style={{
+                  borderColor: themePalette.borderSubtle,
+                  background: themePalette.surfacePanel
+                }}
+              >
+                <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
+                  関連エンティティ
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {detail.relatedEntities.slice(0, 8).map((entity) => (
+                    <button
+                      key={entity.id}
+                      type="button"
+                      onClick={() => onSelect(entity.id)}
+                      className="rounded-full border px-3 py-2 text-xs transition hover:text-white"
+                      style={{
+                        borderColor: themePalette.borderSubtle,
+                        background: themePalette.surfacePanelElevated,
+                        color: themePalette.textMuted
+                      }}
+                    >
+                      {entity.flagEmoji ? `${entity.flagEmoji} ` : ""}
+                      {localizeAnyLabel(entity.id, entity.label)}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+          </div>
+        ) : null}
 
+        {tab === "sources" ? (
+          <div className="mt-4 space-y-4">
             <section
               className="rounded-xl border p-4"
               style={{
                 borderColor: themePalette.borderSubtle,
-                background: themePalette.surfacePanelElevated
+                background: themePalette.surfacePanel
               }}
             >
               <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
@@ -252,7 +277,7 @@ export function EvidencePanel({
               className="rounded-xl border p-4"
               style={{
                 borderColor: themePalette.borderSubtle,
-                background: themePalette.surfacePanelElevated
+                background: themePalette.surfacePanel
               }}
             >
               <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
@@ -297,23 +322,6 @@ export function EvidencePanel({
             </section>
           </div>
         ) : null}
-      </section>
-
-      <section
-      className="mt-4 rounded-xl border p-4"
-      style={{
-        borderColor: themePalette.borderSubtle,
-        background: themePalette.surfacePanelElevated
-      }}
-      >
-        <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
-          読み取り方
-        </div>
-        <div className="mt-3 space-y-2 text-xs leading-5 text-slate-400">
-          <p>1. 地図で着地点を確認</p>
-          <p>2. 下の表で比較</p>
-          <p>3. 右側で根拠とSPARQLへ掘る</p>
-        </div>
       </section>
     </aside>
   );

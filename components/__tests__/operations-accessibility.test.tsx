@@ -130,7 +130,6 @@ describe("operations accessibility", () => {
       />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "根拠" }));
     const node = screen.getByRole("button", { name: "根拠ノード 日本" });
     fireEvent.keyDown(node, { key: "Enter" });
 

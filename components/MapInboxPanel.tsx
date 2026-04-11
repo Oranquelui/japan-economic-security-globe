@@ -3,7 +3,7 @@
 import type { ThemeView } from "../types/presentation";
 import type { ThemeId } from "../types/semantic";
 import type { ThemePalette } from "../lib/presentation/palette";
-import { getThemeLabel, getThemeQuestion } from "../lib/presentation/japanese";
+import { getThemeLabel } from "../lib/presentation/japanese";
 
 const THEME_ORDER: ThemeId[] = ["energy", "rice", "water", "defense", "semiconductors"];
 
@@ -24,8 +24,6 @@ export function MapInboxPanel({
   onToggleCollapsed,
   onThemeChange
 }: MapInboxPanelProps) {
-  const question = getThemeQuestion(themeId);
-
   if (collapsed) {
     return (
       <aside
@@ -118,7 +116,7 @@ export function MapInboxPanel({
             </button>
           </div>
           <p className="mt-3 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
-            {question}
+            {view.headline}
           </p>
         </div>
 
@@ -175,21 +173,12 @@ export function MapInboxPanel({
         </div>
 
         <div className="mt-auto pt-5">
-          <div
-            className="rounded-xl border p-3"
-            style={{
-              borderColor: `${themePalette.accent}33`,
-              background: themePalette.accentSoft
-            }}
-          >
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.24em]" style={{ color: themePalette.accentText }}>
-              現在の問い
+          <div className="rounded-xl border px-3 py-2.5" style={{ borderColor: themePalette.borderSubtle, background: themePalette.surfacePanelElevated }}>
+            <p className="font-mono text-[0.58rem] uppercase tracking-[0.24em]" style={{ color: themePalette.textMuted }}>
+              分析導線
             </p>
             <p className="mt-2 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
-              Phase 0 は日本向け。物流はチョークポイント、港湾、LNG受入基地、製油所まで。
-            </p>
-            <p className="mt-2 text-[0.68rem]" style={{ color: themePalette.accentText }}>
-              比較や絞り込みは下部の比較表で行う。
+              比較と絞り込みは下部の比較表、根拠確認は右側で行う。
             </p>
           </div>
         </div>
