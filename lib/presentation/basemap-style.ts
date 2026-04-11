@@ -40,6 +40,12 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       ],
       tileSize: 256,
       attribution: "Esri, HERE, Garmin"
+    },
+    "gsi-pale": {
+      type: "raster",
+      tiles: ["https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      attribution: "地理院タイル"
     }
   };
 
@@ -54,30 +60,11 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       }
     },
     {
-      id: "world-land-fill",
-      type: "fill",
-      source: "world-land",
-      paint: {
-        "fill-color": "#e3e8ec",
-        "fill-opacity": 1
-      }
-    },
-    {
-      id: "world-borders-line",
-      type: "line",
-      source: "world-borders",
-      paint: {
-        "line-color": "rgba(103, 116, 128, 0.32)",
-        "line-width": 0.7,
-        "line-opacity": 0.88
-      }
-    },
-    {
       id: "gray-canvas-base",
       type: "raster",
       source: "gray-canvas-base",
       paint: {
-        "raster-opacity": 0.96,
+        "raster-opacity": 0.88,
         "raster-fade-duration": 0
       }
     },
@@ -88,6 +75,35 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       paint: {
         "raster-opacity": 0.92,
         "raster-fade-duration": 0
+      }
+    },
+    {
+      id: "gsi-pale",
+      type: "raster",
+      source: "gsi-pale",
+      minzoom: 3.8,
+      paint: {
+        "raster-opacity": 0.95,
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      id: "world-land-fill",
+      type: "fill",
+      source: "world-land",
+      paint: {
+        "fill-color": "rgba(228,233,238,0.16)",
+        "fill-opacity": 1
+      }
+    },
+    {
+      id: "world-borders-line",
+      type: "line",
+      source: "world-borders",
+      paint: {
+        "line-color": "rgba(104, 115, 125, 0.48)",
+        "line-width": 0.9,
+        "line-opacity": 0.92
       }
     }
   ];

@@ -104,57 +104,24 @@ export function MapInboxPanel({
 
   return (
     <aside
-      className="grid h-full overflow-hidden rounded-2xl border shadow-2xl shadow-black/45 lg:grid-cols-[56px_1fr]"
+      className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border shadow-2xl shadow-black/25"
       style={{
         borderColor: themePalette.borderSubtle,
         background: themePalette.surfacePanel
       }}
     >
-      <div
-        className="hidden py-4 lg:flex lg:flex-col lg:items-center lg:gap-3"
-        style={{
-          borderRight: `1px solid ${themePalette.borderSubtle}`,
-          background: themePalette.surfacePanelElevated
-        }}
-      >
-        {THEME_ORDER.map((id) => {
-          const theme = getThemeLabel(id);
-          const isActive = id === themeId;
-
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => onThemeChange(id)}
-              className="grid h-10 w-10 place-items-center rounded-xl border text-[0.62rem] font-bold transition"
-              style={
-                isActive
-                  ? {
-                      borderColor: themePalette.accent,
-                      background: themePalette.accentSoft,
-                      color: themePalette.textPrimary
-                    }
-                  : {
-                      borderColor: themePalette.borderSubtle,
-                      background: themePalette.surfacePanelElevated,
-                      color: themePalette.textMuted
-                    }
-              }
-              title={theme.label}
-            >
-              {theme.label.slice(0, 1)}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="flex min-w-0 flex-col p-4">
+      <div className="flex min-w-0 flex-1 flex-col p-4">
         <div className="pb-4" style={{ borderBottom: `1px solid ${themePalette.borderSubtle}` }}>
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.36em]" style={{ color: themePalette.textMuted }}>
-            Navigation
+            Story Navigator
           </p>
           <div className="mt-2 flex items-center justify-between gap-3">
-            <h1 className="text-xl font-semibold leading-tight text-white">日本経済安全保障</h1>
+            <div>
+              <h2 className="text-base font-semibold leading-tight text-white">{getThemeLabel(themeId).label}</h2>
+              <p className="mt-1 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
+                {view.title}
+              </p>
+            </div>
             <div className="flex items-center gap-2">
               <span
                 className="rounded-full border px-2 py-1 text-[0.65rem]"
@@ -181,16 +148,22 @@ export function MapInboxPanel({
               </button>
             </div>
           </div>
-          <p className="mt-2 text-[0.7rem] leading-5" style={{ color: themePalette.textMuted }}>
+          <p className="mt-3 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
             {question}
           </p>
         </div>
 
         <div className="mt-4">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-            Story Presets
+            Presets
           </p>
-          <div className="mt-2 space-y-2">
+          <div
+            className="mt-2 overflow-hidden rounded-xl border"
+            style={{
+              borderColor: themePalette.borderSubtle,
+              background: themePalette.surfacePanelElevated
+            }}
+          >
             {THEME_ORDER.map((id) => {
               const theme = getThemeLabel(id);
               const isActive = id === themeId;
@@ -200,17 +173,19 @@ export function MapInboxPanel({
                   key={id}
                   type="button"
                   onClick={() => onThemeChange(id)}
-                  className="w-full rounded-xl border px-3 py-2 text-left transition"
+                  className="w-full border-b px-3 py-3 text-left transition last:border-b-0"
                   style={
                     isActive
                       ? {
-                          borderColor: themePalette.accent,
-                          background: themePalette.accentSoft,
+                          borderBottomColor: themePalette.borderSubtle,
+                          borderLeft: `2px solid ${themePalette.accent}`,
+                          background: "rgba(255,255,255,0.03)",
                           color: themePalette.textPrimary
                         }
                       : {
-                          borderColor: themePalette.borderSubtle,
-                          background: themePalette.surfacePanelElevated,
+                          borderBottomColor: themePalette.borderSubtle,
+                          borderLeft: "2px solid transparent",
+                          background: "transparent",
                           color: themePalette.textMuted
                         }
                   }
@@ -232,7 +207,7 @@ export function MapInboxPanel({
 
         <label className="mt-5 block">
           <span className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-            Search / Filter
+            Filters
           </span>
           <input
             value={query}
@@ -305,7 +280,7 @@ export function MapInboxPanel({
               color: themePalette.textMuted
             }}
           >
-            Signal Inbox
+            Inbox
           </div>
           <div className="max-h-[42vh] overflow-auto">
             {rows.slice(0, 12).map((row) => (
@@ -331,16 +306,13 @@ export function MapInboxPanel({
           }}
         >
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.24em]" style={{ color: themePalette.accentText }}>
-            Active Question
+            Current Lens
           </p>
           <p className="mt-2 text-xs leading-5" style={{ color: themePalette.textPrimary }}>
             {question}
           </p>
           <p className="mt-2 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
             Phase 0 は日本向け。物流はチョークポイント、港湾、LNG受入基地、製油所まで。
-          </p>
-          <p className="mt-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
-            現在のフォーカス: {view.title}
           </p>
         </div>
       </div>

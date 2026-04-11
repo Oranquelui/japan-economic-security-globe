@@ -54,10 +54,7 @@ describe("navigation shell", () => {
           onOpenEvidence={() => undefined}
           onOpenGrid={() => undefined}
           onOpenInbox={() => undefined}
-          resultCount={8}
-          selectedLabel="サウジ原油 → 日本"
           sharePath="/"
-          themeId="energy"
           themePalette={themePalette}
         />
         <JapanMainMap

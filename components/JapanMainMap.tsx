@@ -64,12 +64,11 @@ export function JapanMainMap({
       <div
         className="pointer-events-none absolute inset-0"
         style={{
-          background:
-            "radial-gradient(circle at 50% 8%, rgba(255,255,255,0.22), transparent 26%), linear-gradient(180deg, rgba(255,255,255,0.02), rgba(148,163,184,0.12))"
+          background: "linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))"
         }}
       />
 
-      <div className="absolute top-[184px] z-20" style={{ left: leftOffset + 12, right: rightOffset }}>
+      <div className="absolute top-[92px] z-20" style={{ left: leftOffset + 12, right: rightOffset + 16 }}>
         {metricsExpanded ? (
           <div className="grid gap-3 md:grid-cols-5">
             {metrics.map((metric) => {
@@ -142,7 +141,7 @@ export function JapanMainMap({
         <button
           type="button"
           onClick={onToggleMetrics}
-          className="absolute right-4 top-[184px] z-20 rounded-xl border px-3 py-2 text-xs transition"
+          className="absolute right-4 top-[92px] z-20 rounded-xl border px-3 py-2 text-xs transition"
           style={{
             borderColor: themePalette.borderSubtle,
             background: themePalette.surfacePanel,
@@ -153,9 +152,9 @@ export function JapanMainMap({
         </button>
       ) : null}
 
-      <div className="absolute right-4 top-[184px] z-20" style={{ right: rightOffset }}>
+      <div className="absolute right-4 top-[92px] z-20" style={{ right: rightOffset }}>
         <div
-          className="rounded-xl border px-3 py-3 shadow-2xl backdrop-blur-md"
+          className="rounded-xl border px-3 py-3 shadow-xl backdrop-blur-md"
           style={{
             borderColor: themePalette.borderSubtle,
             background: themePalette.surfacePanel
@@ -192,21 +191,21 @@ export function JapanMainMap({
         </div>
       </div>
 
-      <div className="absolute left-4 top-[184px] z-20 flex flex-col gap-2" style={{ left: leftOffset }}>
+      <div className="absolute left-4 top-[136px] z-20 flex flex-col gap-2" style={{ left: leftOffset }}>
         <MapControlButton label="+" ariaLabel="地図を拡大" onClick={() => setCommand({ nonce: Date.now(), type: "zoomIn" })} />
         <MapControlButton label="-" ariaLabel="地図を縮小" onClick={() => setCommand({ nonce: Date.now(), type: "zoomOut" })} />
         <MapControlButton label="⌖" ariaLabel="日本中心に戻す" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />
       </div>
 
-      <div className="absolute z-20" style={{ left: leftOffset, right: rightOffset, bottom: gridExpanded ? 312 : 88 }}>
+      <div className="absolute z-20" style={{ left: leftOffset, bottom: gridExpanded ? 300 : 94, maxWidth: 560 }}>
         <div
-          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 shadow-2xl backdrop-blur-md"
+          className="rounded-xl border px-4 py-3 shadow-xl backdrop-blur-md"
           style={{
             background: themePalette.surfacePanel,
             borderColor: themePalette.borderSubtle
           }}
         >
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0">
             <div className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
               選択中
             </div>
@@ -222,19 +221,15 @@ export function JapanMainMap({
                 {detail.relatedEntities.length} 関連
               </InfoChip>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {model.foreignWindow ? (
-              <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textPrimary}>
-                対外関係 {model.foreignWindow.entities.length}
-              </InfoChip>
-            ) : null}
-            <div className="max-w-[340px] text-right text-xs leading-5" style={{ color: themePalette.textMuted }}>
+            <div className="mt-3 text-xs leading-5" style={{ color: themePalette.textMuted }}>
               {localizeSummary(detail.id, detail.summary)}
             </div>
           </div>
           {model.foreignWindow ? (
-            <div className="mt-1 flex w-full flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textPrimary}>
+                対外関係 {model.foreignWindow.entities.length}
+              </InfoChip>
               {model.foreignWindow.entities.map((entity) => (
                 <button
                   key={entity.id}

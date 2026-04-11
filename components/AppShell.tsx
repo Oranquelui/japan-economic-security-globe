@@ -17,7 +17,6 @@ import {
   serializeOperationsUrlState,
   type OperationsUrlState
 } from "../lib/presentation/url-state";
-import { localizeAnyLabel } from "../lib/presentation/japanese";
 import { ActionBar } from "./ActionBar";
 import { EvidencePanel } from "./EvidencePanel";
 import { JapanMainMap } from "./JapanMainMap";
@@ -36,7 +35,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   const [selectedId, setSelectedId] = useState<string | null>(initialUrlState.selectedId);
   const [mapMode, setMapMode] = useState<OperationMapMode>(initialUrlState.mapMode);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isInboxOpen, setInboxOpen] = useState(false);
+  const [isInboxOpen, setInboxOpen] = useState(true);
   const [isEvidenceOpen, setEvidenceOpen] = useState(false);
   const [isGridOpen, setGridOpen] = useState(false);
   const [metricsExpanded, setMetricsExpanded] = useState(false);
@@ -72,9 +71,9 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
     "--ops-text-primary": themePalette.textPrimary,
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
-  const leftOffset = isInboxOpen ? 360 : 88;
+  const leftOffset = isInboxOpen ? 344 : 88;
   const rightOffset = isEvidenceOpen ? 380 : 88;
-  const panelTop = 108;
+  const panelTop = 88;
   const panelBottom = 16;
 
   useEffect(() => {
@@ -109,10 +108,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         onOpenEvidence={() => setEvidenceOpen(true)}
         onOpenGrid={() => setGridOpen(true)}
         onOpenInbox={() => setInboxOpen(true)}
-        resultCount={filteredOperationRows.length}
-        selectedLabel={localizeAnyLabel(detail.id, detail.label)}
         sharePath={sharePath}
-        themeId={themeId}
         themePalette={themePalette}
       />
 
@@ -134,7 +130,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         themePalette={themePalette}
       />
 
-      <div className="absolute left-4 z-30 hidden lg:block" style={{ top: panelTop, bottom: panelBottom, width: isInboxOpen ? 320 : 48 }}>
+      <div className="absolute left-4 z-30 hidden lg:block" style={{ top: panelTop, bottom: panelBottom, width: isInboxOpen ? 304 : 48 }}>
         <MapInboxPanel
           activeId={activeId}
           collapsed={!isInboxOpen}

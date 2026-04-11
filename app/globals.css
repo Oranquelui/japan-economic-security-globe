@@ -8,7 +8,7 @@
   --font-display: "Cormorant Garamond", "Times New Roman", serif;
   --font-body: "IBM Plex Sans", "Helvetica Neue", sans-serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", monospace;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 * {
@@ -22,8 +22,8 @@ body {
 
 body {
   margin: 0;
-  background: #030711;
-  color: #eef7ff;
+  background: #d7dde2;
+  color: #1f2937;
   font-family: var(--font-body);
 }
 

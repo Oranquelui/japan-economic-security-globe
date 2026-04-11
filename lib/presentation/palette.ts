@@ -25,12 +25,12 @@ export type SemanticTone = "accent" | "high" | "watch" | "normal" | "monitoring"
 
 const BASE_THEME: Omit<ThemePalette, "accent" | "accentSoft" | "accentText"> = {
   surfaceCanvas: "#d7dde2",
-  surfacePanel: "rgba(34, 40, 47, 0.88)",
-  surfacePanelElevated: "rgba(48, 56, 64, 0.82)",
-  borderSubtle: "rgba(88, 102, 116, 0.42)",
-  borderStrong: "rgba(75, 88, 100, 0.68)",
+  surfacePanel: "rgba(57, 63, 69, 0.84)",
+  surfacePanelElevated: "rgba(71, 79, 86, 0.78)",
+  borderSubtle: "rgba(98, 108, 118, 0.42)",
+  borderStrong: "rgba(78, 89, 99, 0.58)",
   textPrimary: "#f5f7fa",
-  textMuted: "#b4bec8"
+  textMuted: "#c4ccd5"
 };
 
 const THEME_PALETTES: Record<ThemeId, Pick<ThemePalette, "accent" | "accentSoft" | "accentText">> = {

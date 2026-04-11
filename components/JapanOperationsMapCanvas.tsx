@@ -22,7 +22,7 @@ interface JapanOperationsMapCanvasProps {
 }
 
 const INITIAL_CENTER: [number, number] = [138.45, 36.25];
-const INITIAL_ZOOM = 4.9;
+const INITIAL_ZOOM = 5.3;
 const GLOBAL_CONTEXT_MAX_ZOOM = 3.6;
 const DOMESTIC_CONTEXT_MIN_ZOOM = 3.2;
 
