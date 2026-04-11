@@ -197,9 +197,9 @@ export function JapanMainMap({
         <MapControlButton label="⌖" ariaLabel="日本中心に戻す" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />
       </div>
 
-      <div className="absolute z-20" style={{ left: leftOffset, bottom: gridExpanded ? 300 : 94, maxWidth: 560 }}>
+      <div className="absolute z-20" style={{ left: leftOffset, bottom: gridExpanded ? 300 : 94, maxWidth: 480 }}>
         <div
-          className="rounded-xl border px-4 py-3 shadow-xl backdrop-blur-md"
+          className="rounded-xl border px-4 py-2.5 shadow-xl backdrop-blur-md"
           style={{
             background: themePalette.surfacePanel,
             borderColor: themePalette.borderSubtle
@@ -210,7 +210,7 @@ export function JapanMainMap({
               選択中
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <div className="truncate text-base font-semibold text-white">{localizeAnyLabel(detail.id, detail.label)}</div>
+              <div className="truncate text-sm font-semibold text-white">{localizeAnyLabel(detail.id, detail.label)}</div>
               <InfoChip borderColor={themePalette.borderSubtle} fill={themePalette.surfacePanelElevated} textColor={themePalette.textMuted}>
                 {localizeKind(detail.kind)}
               </InfoChip>
@@ -221,7 +221,7 @@ export function JapanMainMap({
                 {detail.relatedEntities.length} 関連
               </InfoChip>
             </div>
-            <div className="mt-3 text-xs leading-5" style={{ color: themePalette.textMuted }}>
+            <div className="mt-2 truncate text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
               {localizeSummary(detail.id, detail.summary)}
             </div>
           </div>

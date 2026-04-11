@@ -76,7 +76,7 @@ describe("navigation shell", () => {
     expect(within(header).queryByRole("button", { name: "比較表" })).toBeNull();
     expect(within(header).queryByRole("button", { name: "根拠" })).toBeNull();
     expect(within(header).queryByRole("button", { name: "地点" })).toBeNull();
-    expect(within(header).getByText("運用地図")).toBeTruthy();
+    expect(within(header).queryByText("運用地図")).toBeNull();
     expect(screen.getByText("表示レイヤー")).toBeTruthy();
     expect(screen.getByRole("button", { name: "地点" })).toBeTruthy();
   });

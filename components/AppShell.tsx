@@ -71,7 +71,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
     "--ops-text-primary": themePalette.textPrimary,
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
-  const leftOffset = isInboxOpen ? 344 : 88;
+  const leftOffset = isInboxOpen ? 296 : 88;
   const rightOffset = isEvidenceOpen ? 380 : 88;
   const panelTop = 88;
   const panelBottom = 16;
@@ -124,18 +124,12 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         themePalette={themePalette}
       />
 
-      <div className="absolute left-4 z-30 hidden lg:block" style={{ top: panelTop, bottom: panelBottom, width: isInboxOpen ? 304 : 48 }}>
+      <div className="absolute left-4 z-30 hidden lg:block" style={{ top: panelTop, bottom: panelBottom, width: isInboxOpen ? 256 : 48 }}>
         <MapInboxPanel
-          activeId={activeId}
           collapsed={!isInboxOpen}
-          query={searchQuery}
-          rows={filteredOperationRows}
-          statusPalette={statusPalette}
           themePalette={themePalette}
           themeId={themeId}
           view={view}
-          onQueryChange={setSearchQuery}
-          onSelect={setSelectedId}
           onToggleCollapsed={() => setInboxOpen((value) => !value)}
           onThemeChange={handleThemeChange}
         />
@@ -160,25 +154,21 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
           activeId={activeId}
           collapsed={!isGridOpen}
           onSelect={setSelectedId}
+          query={searchQuery}
           rows={filteredOperationRows}
           statusPalette={statusPalette}
           themePalette={themePalette}
+          onQueryChange={setSearchQuery}
           onToggleCollapsed={() => setGridOpen((value) => !value)}
         />
       </div>
 
       <div className="absolute left-4 right-4 top-20 z-30 space-y-4 lg:hidden">
         <MapInboxPanel
-          activeId={activeId}
           collapsed={false}
-          query={searchQuery}
-          rows={filteredOperationRows}
-          statusPalette={statusPalette}
           themePalette={themePalette}
           themeId={themeId}
           view={view}
-          onQueryChange={setSearchQuery}
-          onSelect={setSelectedId}
           onToggleCollapsed={() => undefined}
           onThemeChange={handleThemeChange}
         />
@@ -186,9 +176,11 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
           activeId={activeId}
           collapsed={false}
           onSelect={setSelectedId}
+          query={searchQuery}
           rows={filteredOperationRows}
           statusPalette={statusPalette}
           themePalette={themePalette}
+          onQueryChange={setSearchQuery}
           onToggleCollapsed={() => undefined}
         />
         <EvidencePanel

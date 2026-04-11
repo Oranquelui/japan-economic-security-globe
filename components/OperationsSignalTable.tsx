@@ -9,9 +9,11 @@ interface OperationsSignalTableProps {
   collapsed: boolean;
   onSelect: (id: string) => void;
   onToggleCollapsed: () => void;
+  query: string;
   rows: OperationRow[];
   statusPalette: StatusPalette;
   themePalette: ThemePalette;
+  onQueryChange: (query: string) => void;
 }
 
 export function OperationsSignalTable({
@@ -19,9 +21,11 @@ export function OperationsSignalTable({
   collapsed,
   onSelect,
   onToggleCollapsed,
+  query,
   rows,
   statusPalette,
-  themePalette
+  themePalette,
+  onQueryChange
 }: OperationsSignalTableProps) {
   if (collapsed) {
     return (
@@ -35,7 +39,7 @@ export function OperationsSignalTable({
         <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div>
             <p className="font-mono text-[0.62rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
-              Operations Grid
+              比較表
             </p>
             <div className="mt-1 text-sm font-semibold text-white">日本向け依存シグナル {rows.length}件</div>
           </div>
@@ -73,11 +77,50 @@ export function OperationsSignalTable({
       >
         <div>
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
-            Operations Grid
+            比較表
           </p>
           <h2 className="mt-1 text-base font-semibold text-white">日本向け依存シグナル</h2>
         </div>
         <div className="flex items-center gap-2 font-mono text-[0.68rem] uppercase tracking-[0.2em]" style={{ color: themePalette.textMuted }}>
+          <input
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder="表内検索"
+            className="w-40 rounded border px-3 py-2 text-[0.72rem] normal-case tracking-normal outline-none transition placeholder:text-slate-500"
+            style={{
+              borderColor: themePalette.borderSubtle,
+              background: themePalette.surfacePanelElevated,
+              color: themePalette.textPrimary
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => onQueryChange("")}
+            className="rounded border px-3 py-2 text-[0.68rem] transition"
+            style={{
+              borderColor: themePalette.borderSubtle,
+              background: themePalette.surfacePanelElevated,
+              color: themePalette.textMuted
+            }}
+          >
+            全部
+          </button>
+          <button
+            type="button"
+            onClick={() => onQueryChange("高")}
+            className="rounded border px-3 py-2 text-[0.68rem] transition"
+            style={buildWidgetButtonStyle(statusPalette.high)}
+          >
+            高リスク
+          </button>
+          <button
+            type="button"
+            onClick={() => onQueryChange("監視中")}
+            className="rounded border px-3 py-2 text-[0.68rem] transition"
+            style={buildWidgetButtonStyle(statusPalette.monitoring)}
+          >
+            監視中
+          </button>
           <span
             className="rounded border px-3 py-2"
             style={{
@@ -190,6 +233,14 @@ export function OperationsSignalTable({
 }
 
 function buildBadgeStyle(color: string) {
+  return {
+    borderColor: `${color}55`,
+    background: `${color}14`,
+    color
+  };
+}
+
+function buildWidgetButtonStyle(color: string) {
   return {
     borderColor: `${color}55`,
     background: `${color}14`,

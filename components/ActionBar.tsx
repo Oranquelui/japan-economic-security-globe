@@ -36,16 +36,12 @@ export function ActionBar({
       }}
     >
       <div className="flex items-center justify-between gap-6 px-5 py-3">
-        <div className="min-w-0 flex items-center gap-6">
+        <div className="min-w-0">
           <div className="min-w-0">
             <div className="font-mono text-[0.58rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
-              Japan Civic Dependency Service
+              日本向け依存インテリジェンス
             </div>
             <h1 className="mt-1 text-base font-semibold text-white">日本経済安全保障</h1>
-          </div>
-          <div className="h-7 w-px" style={{ background: themePalette.borderSubtle }} />
-          <div className="text-sm font-medium" style={{ color: themePalette.textPrimary }}>
-            運用地図
           </div>
         </div>
 

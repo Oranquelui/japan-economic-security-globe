@@ -66,8 +66,9 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       id: "gray-canvas-reference",
       type: "raster",
       source: "gray-canvas-reference",
+      minzoom: 6.6,
       paint: {
-        "raster-opacity": 0.9,
+        "raster-opacity": 0.48,
         "raster-fade-duration": 0
       }
     },

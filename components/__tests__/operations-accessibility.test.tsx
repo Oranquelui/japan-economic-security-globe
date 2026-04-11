@@ -88,6 +88,7 @@ describe("operations accessibility", () => {
         collapsed={false}
         onSelect={onSelect}
         onToggleCollapsed={() => undefined}
+        query=""
         rows={[
           {
             id: "flow:saudi-oil-japan",
@@ -102,6 +103,7 @@ describe("operations accessibility", () => {
         ]}
         statusPalette={statusPalette}
         themePalette={themePalette}
+        onQueryChange={() => undefined}
       />
     );
 

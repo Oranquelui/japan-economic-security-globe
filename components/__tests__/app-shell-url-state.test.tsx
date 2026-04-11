@@ -18,20 +18,15 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("../MapInboxPanel", () => ({
   MapInboxPanel: ({
-    onSelect,
     onThemeChange,
     themeId
   }: {
-    onSelect: (id: string) => void;
     onThemeChange: (themeId: ThemeId) => void;
     themeId: ThemeId;
   }) => (
     <div data-testid="inbox" data-theme={themeId}>
       <button type="button" onClick={() => onThemeChange("rice")}>
         change-theme-rice
-      </button>
-      <button type="button" onClick={() => onSelect("observation:rice-price-signal-2026")}>
-        select-rice-observation
       </button>
     </div>
   )
@@ -63,7 +58,13 @@ vi.mock("../EvidencePanel", () => ({
 }));
 
 vi.mock("../OperationsSignalTable", () => ({
-  OperationsSignalTable: () => <div data-testid="grid" />
+  OperationsSignalTable: ({ onSelect }: { onSelect: (id: string) => void }) => (
+    <div data-testid="grid">
+      <button type="button" onClick={() => onSelect("observation:rice-price-signal-2026")}>
+        select-rice-observation
+      </button>
+    </div>
+  )
 }));
 
 import { AppShell } from "../AppShell";
