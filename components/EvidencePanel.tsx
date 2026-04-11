@@ -388,7 +388,20 @@ function EvidenceGraph({
         const isSelected = node.id === selectedId;
 
         return (
-          <g key={node.id} onClick={() => onSelect(node.id)} className="cursor-pointer">
+          <g
+            key={node.id}
+            onClick={() => onSelect(node.id)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect(node.id);
+              }
+            }}
+            className="cursor-pointer focus:outline-none"
+            role="button"
+            tabIndex={0}
+            aria-label={`根拠ノード ${localizeAnyLabel(node.id, node.label)}`}
+          >
             <circle
               cx={position.x}
               cy={position.y}

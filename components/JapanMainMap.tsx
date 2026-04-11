@@ -212,9 +212,9 @@ export function JapanMainMap({
       </div>
 
       <div className="absolute left-4 top-28 z-20 flex flex-col gap-2" style={{ left: leftOffset }}>
-        <MapControlButton label="+" onClick={() => setCommand({ nonce: Date.now(), type: "zoomIn" })} />
-        <MapControlButton label="-" onClick={() => setCommand({ nonce: Date.now(), type: "zoomOut" })} />
-        <MapControlButton label="⌖" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />
+        <MapControlButton label="+" ariaLabel="地図を拡大" onClick={() => setCommand({ nonce: Date.now(), type: "zoomIn" })} />
+        <MapControlButton label="-" ariaLabel="地図を縮小" onClick={() => setCommand({ nonce: Date.now(), type: "zoomOut" })} />
+        <MapControlButton label="⌖" ariaLabel="日本中心に戻す" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />
       </div>
 
       <div className="absolute z-20" style={{ left: leftOffset, right: rightOffset, bottom: gridExpanded ? 312 : 88 }}>
@@ -278,11 +278,12 @@ export function JapanMainMap({
   );
 }
 
-function MapControlButton({ label, onClick }: { label: string; onClick: () => void }) {
+function MapControlButton({ ariaLabel, label, onClick }: { ariaLabel: string; label: string; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-label={ariaLabel}
       className="grid h-12 w-12 place-items-center rounded-lg border bg-[#050b14]/92 text-xl text-slate-200 shadow-lg backdrop-blur-md transition hover:text-white"
       style={{ borderColor: "var(--ops-border-subtle)" }}
     >

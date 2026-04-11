@@ -109,7 +109,7 @@ const SUMMARY_LABELS: Record<string, string> = {
 const SOURCE_LABELS: Record<string, string> = {
   "source:cabinet-tsmc-2026": "首相官邸: TSMC会長との面会",
   "source:maff-rice-policy": "農林水産省: コメ政策・備蓄情報",
-  "source:meti-2026-energy-taskforce": "経済産業省: 中東エネルギー対応に関する大臣会見",
+  "source:meti-2026-energy-taskforce": "経済産業省: 中東情勢関連対策ポータル",
   "source:meti-semiconductor-frame": "経済産業省: AI・半導体産業基盤強化",
   "source:mlit-drought-portal": "国土交通省: 水資源・渇水情報",
   "source:mod-fy2026-budget": "防衛省: 2026年度予算資料",

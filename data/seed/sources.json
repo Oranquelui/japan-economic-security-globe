@@ -79,14 +79,14 @@
   },
   {
     "id": "source:meti-2026-energy-taskforce",
-    "label": "経産省・エネルギー安定供給関連公表資料",
-    "url": "https://www.meti.go.jp/",
-    "publisher": "経済産業省",
+    "label": "中東情勢関連対策ポータル",
+    "url": "https://www.kanto.meti.go.jp/press/20260402chuto_josei_press.html",
+    "publisher": "経済産業省 関東経済産業局",
     "accessed": "2026-04-11",
-    "description": "中東情勢、代替調達、備蓄対応などの政策説明の一次ソース群。",
+    "description": "中東情勢を受けた燃料油・石油由来製品の供給相談窓口と、資源エネルギー庁の対応資料へつなぐ公式ポータル。",
     "official": true,
     "accessMode": "html",
-    "tier": "C"
+    "tier": "B"
   },
   {
     "id": "source:tepco-2026-april-power",

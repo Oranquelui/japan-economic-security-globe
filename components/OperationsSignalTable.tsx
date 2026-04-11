@@ -135,11 +135,22 @@ export function OperationsSignalTable({
               <tr
                 key={row.id}
                 onClick={() => onSelect(row.id)}
-                className="cursor-pointer transition"
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelect(row.id);
+                  }
+                }}
+                className="cursor-pointer transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px]"
+                role="button"
+                tabIndex={0}
+                aria-label={row.label}
+                aria-pressed={activeId === row.id}
                 style={{
                   borderTop: "1px solid rgba(255,255,255,0.06)",
                   background: activeId === row.id ? themePalette.accentSoft : "transparent",
-                  color: activeId === row.id ? themePalette.textPrimary : "#cbd5e1"
+                  color: activeId === row.id ? themePalette.textPrimary : "#cbd5e1",
+                  outlineColor: themePalette.accent
                 }}
               >
                 <td className="whitespace-nowrap px-4 py-3 font-mono text-[0.68rem]" style={{ color: themePalette.textMuted }}>

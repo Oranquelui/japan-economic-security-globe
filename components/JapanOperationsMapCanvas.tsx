@@ -5,6 +5,7 @@ import { useEffect, useEffectEvent, useRef } from "react";
 import type { OperationMapMode } from "../lib/presentation/operations";
 import type { JapanMapCanvasModel, JapanMapPoint, JapanMapRegion, JapanMapRoute } from "../lib/presentation/map-canvas";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
+import { buildOperationsBasemapStyle } from "../lib/presentation/basemap-style";
 
 interface JapanOperationsMapCanvasProps {
   activeId: string;
@@ -59,29 +60,7 @@ export function JapanOperationsMapCanvas({
         maxZoom: 10.5,
         minZoom: 1.4,
         attributionControl: false,
-        style: {
-          version: 8,
-          glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
-          sources: {
-            carto: {
-              type: "raster",
-              tiles: [
-                "https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-                "https://b.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-                "https://c.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png"
-              ],
-              tileSize: 256,
-              attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
-            }
-          },
-          layers: [
-            {
-              id: "carto-base",
-              type: "raster",
-              source: "carto"
-            }
-          ]
-        }
+        style: buildOperationsBasemapStyle(themePalette)
       });
 
       mapRef.current = map;
@@ -410,6 +389,7 @@ export function JapanOperationsMapCanvas({
       return;
     }
 
+    map.setPaintProperty("ops-background", "background-color", themePalette.surfaceCanvas);
     map.setPaintProperty("global-route-line", "line-color", [
       "case",
       ["boolean", ["get", "selected"], false],

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition, type CSSProperties } from "react";
+import { useEffect, useRef, useState, useTransition, type CSSProperties } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 import type { ThemeView } from "../types/presentation";
 import type { SemanticGraph, ThemeId } from "../types/semantic";
@@ -11,6 +12,11 @@ import { getThemeView } from "../lib/semantic/selectors";
 import { buildEvidenceGraph } from "../lib/semantic/view-models";
 import { buildOperationRows, filterOperationRows, type OperationMapMode } from "../lib/presentation/operations";
 import { getStatusPalette, getThemePalette } from "../lib/presentation/palette";
+import {
+  DEFAULT_OPERATIONS_URL_STATE,
+  serializeOperationsUrlState,
+  type OperationsUrlState
+} from "../lib/presentation/url-state";
 import { EvidencePanel } from "./EvidencePanel";
 import { JapanMainMap } from "./JapanMainMap";
 import { MapInboxPanel } from "./MapInboxPanel";
@@ -18,23 +24,28 @@ import { OperationsSignalTable } from "./OperationsSignalTable";
 
 interface AppShellProps {
   graph: SemanticGraph;
+  initialUrlState?: OperationsUrlState;
 }
 
-export function AppShell({ graph }: AppShellProps) {
-  const [themeId, setThemeId] = useState<ThemeId>("energy");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [mapMode, setMapMode] = useState<OperationMapMode>("route");
+export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE }: AppShellProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [themeId, setThemeId] = useState<ThemeId>(initialUrlState.themeId);
+  const [selectedId, setSelectedId] = useState<string | null>(initialUrlState.selectedId);
+  const [mapMode, setMapMode] = useState<OperationMapMode>(initialUrlState.mapMode);
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(false);
   const [isEvidenceOpen, setEvidenceOpen] = useState(false);
   const [isGridOpen, setGridOpen] = useState(false);
   const [metricsExpanded, setMetricsExpanded] = useState(false);
   const [, startTransition] = useTransition();
+  const initialSerializedRef = useRef(serializeOperationsUrlState(initialUrlState));
   const view = getThemeView(graph, themeId);
   const evidenceGraph = buildEvidenceGraph(graph, themeId);
   const operationRows = buildOperationRows(view);
   const filteredOperationRows = filterOperationRows(operationRows, searchQuery);
-  const activeId = resolveActiveId(view, selectedId);
+  const validSelectedId = resolveSelectableId(view, selectedId);
+  const activeId = resolveActiveId(view, validSelectedId);
   const detail = getDetailView(graph, activeId);
   const mapModel = buildJapanMapCanvasModel(graph, view, activeId);
   const themePalette = getThemePalette(themeId);
@@ -54,6 +65,21 @@ export function AppShell({ graph }: AppShellProps) {
   } as CSSProperties;
   const leftOffset = isInboxOpen ? 360 : 88;
   const rightOffset = isEvidenceOpen ? 380 : 88;
+
+  useEffect(() => {
+    const serialized = serializeOperationsUrlState({
+      themeId,
+      mapMode,
+      selectedId: validSelectedId
+    });
+
+    if (serialized === initialSerializedRef.current) {
+      return;
+    }
+
+    initialSerializedRef.current = serialized;
+    router.replace(serialized ? `${pathname}?${serialized}` : pathname, { scroll: false });
+  }, [mapMode, pathname, router, themeId, validSelectedId]);
 
   function handleThemeChange(nextThemeId: ThemeId) {
     startTransition(() => {
@@ -96,9 +122,9 @@ export function AppShell({ graph }: AppShellProps) {
           view={view}
           onQueryChange={setSearchQuery}
           onSelect={setSelectedId}
-          onToggleCollapsed={() => setInboxOpen((value) => !value)}
-          onThemeChange={handleThemeChange}
-        />
+        onToggleCollapsed={() => setInboxOpen((value) => !value)}
+        onThemeChange={handleThemeChange}
+      />
       </div>
 
       <div className="absolute inset-y-4 right-4 z-30 hidden lg:block" style={{ width: isEvidenceOpen ? 360 : 48 }}>
@@ -179,4 +205,18 @@ function resolveActiveId(view: ThemeView, selectedId: string | null): string {
   }
 
   return view.flows[0]?.id ?? view.observations[0]?.id ?? view.entities[0]?.id ?? "country:japan";
+}
+
+function resolveSelectableId(view: ThemeView, selectedId: string | null) {
+  const candidateIds = new Set([
+    ...view.flows.map((flow) => flow.id),
+    ...view.observations.map((observation) => observation.id),
+    ...view.entities.map((entity) => entity.id)
+  ]);
+
+  if (selectedId && candidateIds.has(selectedId)) {
+    return selectedId;
+  }
+
+  return null;
 }

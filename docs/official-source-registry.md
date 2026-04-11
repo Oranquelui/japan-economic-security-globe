@@ -40,6 +40,9 @@
 - `関東地方整備局 利根川水系ダム貯水状況`
   - URL: https://www.ktr.mlit.go.jp/river/shihon/river_shihon00000111.html
   - 用途: ダム貯水率、渇水監視
+- `経済産業省 関東経済産業局 中東情勢関連対策ポータル`
+  - URL: https://www.kanto.meti.go.jp/press/20260402chuto_josei_press.html
+  - 用途: 中東情勢を受けた供給相談窓口、代替調達・備蓄対応の公式案内
 
 ### Tier C: 政策・予算・説明資料
 
@@ -61,7 +64,7 @@
 - エネルギー
   - `Trade Statistics of Japan`
   - `資源エネルギー庁 エネルギー動向`
-  - 経産省公表資料
+  - `中東情勢関連対策ポータル`
 - コメ
   - 農水省の価格・在庫ページ
   - 農水省マンスリーレポート
