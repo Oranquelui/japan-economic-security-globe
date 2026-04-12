@@ -8,6 +8,7 @@ import { getStatusPalette, getThemePalette } from "../../lib/presentation/palett
 import type { JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
 
 const addedLayers: Array<Record<string, unknown>> = [];
+const addedSources = new Map<string, unknown>();
 
 vi.mock("maplibre-gl", () => {
   class MockMap {
@@ -15,7 +16,9 @@ vi.mock("maplibre-gl", () => {
     touchZoomRotate = { disableRotation: vi.fn() };
 
     addControl = vi.fn();
-    addSource = vi.fn();
+    addSource = vi.fn((id: string, source: Record<string, unknown>) => {
+      addedSources.set(id, source.data);
+    });
     addLayer = vi.fn((layer: Record<string, unknown>) => {
       addedLayers.push(layer);
     });
@@ -51,6 +54,7 @@ vi.mock("maplibre-gl", () => {
 afterEach(() => {
   cleanup();
   addedLayers.length = 0;
+  addedSources.clear();
 });
 
 const model: JapanMapCanvasModel = {
@@ -61,10 +65,15 @@ const model: JapanMapCanvasModel = {
   regions: [],
   globalPoints: [
     { id: "country:saudi-arabia", kind: "Country", label: "サウジアラビア", lat: 23.88, lon: 45.07, tone: "watch" },
+    { id: "chokepoint:hormuz", kind: "Chokepoint", label: "ホルムズ海峡", lat: 26.56, lon: 56.25, tone: "critical" },
     { id: "country:japan", kind: "Country", label: "日本", lat: 36.2, lon: 138.25, tone: "watch" }
   ],
   globalRoutes: [
-    { id: "flow:saudi-oil-japan", label: "サウジ原油 → 日本", pointIds: ["country:saudi-arabia", "country:japan"] }
+    {
+      id: "flow:saudi-oil-japan",
+      label: "サウジ原油 → 日本",
+      pointIds: ["country:saudi-arabia", "chokepoint:hormuz", "country:japan"]
+    }
   ]
 };
 
@@ -120,5 +129,30 @@ describe("map canvas layer config", () => {
       ["interpolate", ["linear"], ["zoom"], 2, 0.96, 6, 0.92, 10, 0.88],
       ["interpolate", ["linear"], ["zoom"], 2, 0.8, 6, 0.68, 10, 0.58]
     ]);
+  });
+
+  test("marks global routes as selected when the active item is a chokepoint on that route", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="chokepoint:hormuz"
+        focusTargetId={null}
+        mapMode="route"
+        model={model}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("energy")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("global-routes")).toBe(true);
+    });
+
+    const globalRoutes = addedSources.get("global-routes") as {
+      features: Array<{ properties: { id: string; selected: boolean } }>;
+    };
+
+    expect(globalRoutes.features[0].properties.id).toBe("flow:saudi-oil-japan");
+    expect(globalRoutes.features[0].properties.selected).toBe(true);
   });
 });

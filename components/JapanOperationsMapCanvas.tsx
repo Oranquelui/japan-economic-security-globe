@@ -644,7 +644,7 @@ function routesToFeatureCollection(routes: JapanMapRoute[], points: JapanMapPoin
           properties: {
             id: route.id,
             label: route.label,
-            selected: route.id === activeId
+            selected: route.id === activeId || route.pointIds.includes(activeId)
           }
         };
       })
