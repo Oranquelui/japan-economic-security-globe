@@ -131,6 +131,7 @@ const SUMMARY_LABELS: Record<string, string> = {
 
 const SOURCE_LABELS: Record<string, string> = {
   "source:cabinet-tsmc-2026": "首相官邸: TSMC会長との面会",
+  "source:estat-lod-sparql": "統計LOD: 構造化データ接続",
   "source:maff-rice-policy": "農林水産省: 令和8年2月相対取引価格",
   "source:maff-rice-monthly-report": "農林水産省: 令和8年2月民間在庫",
   "source:meti-2026-energy-taskforce": "経済産業省: 中東情勢関連対策ポータル",

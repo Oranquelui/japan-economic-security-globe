@@ -2,6 +2,14 @@ import type { DetailViewModel } from "../../types/presentation";
 import type { DependencyFlow, Observation, SemanticEntity, SemanticGraph } from "../../types/semantic";
 import { getSourcesById } from "./provenance";
 import {
+  buildSignalNarrativeForEntity,
+  buildSignalNarrativeForFlow,
+  buildSignalNarrativeForObservation,
+  buildSourceHighlightsFromEntity,
+  buildSourceHighlightsFromFlow,
+  buildSourceHighlightsFromObservation
+} from "./signal-narrative";
+import {
   buildEntitySparqlPreview,
   buildFlowSparqlPreview,
   buildObservationSparqlPreview
@@ -36,13 +44,17 @@ function buildFlowDetail(graph: SemanticGraph, flow: DependencyFlow): DetailView
   ].filter(Boolean) as string[];
   const relatedEntities = getEntitiesById(graph, relatedEntityIds);
 
+  const sources = getSourcesById(graph, flow.sourceIds);
+
   return {
     id: flow.id,
     label: flow.label,
     kind: "DependencyFlow",
     summary: flow.summary,
     whyItMatters: summarizeWhyItMatters(relatedEntities),
-    sources: getSourcesById(graph, flow.sourceIds),
+    signal: buildSignalNarrativeForFlow(flow),
+    sources,
+    sourceHighlights: buildSourceHighlightsFromFlow(flow, sources),
     relatedEntities,
     linkedFlows: [flow],
     sparql: buildFlowSparqlPreview(flow)
@@ -66,13 +78,17 @@ function buildEntityDetail(graph: SemanticGraph, entity: SemanticEntity): Detail
     ...flow.routeIds
   ]);
 
+  const sources = getSourcesById(graph, [...(entity.sourceIds ?? []), ...entity.provenance]);
+
   return {
     id: entity.id,
     label: entity.label,
     kind: entity.kind,
     summary: entity.summary,
     whyItMatters: entity.whyItMatters,
-    sources: getSourcesById(graph, [...(entity.sourceIds ?? []), ...entity.provenance]),
+    signal: buildSignalNarrativeForEntity(entity),
+    sources,
+    sourceHighlights: buildSourceHighlightsFromEntity(entity, sources),
     relatedEntities: getEntitiesById(
       graph,
       relatedEntityIds.filter((relatedId): relatedId is string => Boolean(relatedId) && relatedId !== entity.id)
@@ -84,6 +100,7 @@ function buildEntityDetail(graph: SemanticGraph, entity: SemanticEntity): Detail
 
 function buildObservationDetail(graph: SemanticGraph, observation: Observation): DetailViewModel {
   const subject = graph.entities.find((entity) => entity.id === observation.subjectId);
+  const sources = getSourcesById(graph, observation.sourceIds);
 
   return {
     id: observation.id,
@@ -91,7 +108,9 @@ function buildObservationDetail(graph: SemanticGraph, observation: Observation):
     kind: observation.kind,
     summary: observation.summary,
     whyItMatters: subject?.whyItMatters ?? "This observation is a source-linked signal in Japan's dependency graph.",
-    sources: getSourcesById(graph, observation.sourceIds),
+    signal: buildSignalNarrativeForObservation(observation),
+    sources,
+    sourceHighlights: buildSourceHighlightsFromObservation(observation, sources),
     relatedEntities: subject ? [subject] : [],
     linkedFlows: graph.flows.filter(
       (flow) =>

@@ -23,11 +23,11 @@
   },
   {
     "id": "source:estat-lod-sparql",
-    "label": "統計LOD SPARQLエンドポイント",
+    "label": "統計LOD 構造化データ接続",
     "url": "https://data.e-stat.go.jp/lod/sparql/",
     "publisher": "総務省統計局 / 統計LOD",
     "accessed": "2026-04-11",
-    "description": "将来の semantic layer で直接参照する SPARQL エンドポイント。",
+    "description": "将来の semantic layer で直接参照する構造化データ接続先。",
     "official": true,
     "accessMode": "sparql",
     "tier": "A"

@@ -19,7 +19,7 @@ describe("operations presentation model", () => {
       ])
     );
     expect(rows.find((row) => row.id === "flow:qatar-lng-japan")).toMatchObject({
-      type: "依存ルート",
+      type: "海上ルート依存",
       urgency: "高",
       status: "監視中"
     });

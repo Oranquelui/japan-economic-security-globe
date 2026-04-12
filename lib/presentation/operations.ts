@@ -1,5 +1,6 @@
 import type { ThemeView } from "../../types/presentation";
 import type { DependencyFlow, Observation, SemanticEntity } from "../../types/semantic";
+import { buildSignalNarrativeForFlow, buildSignalNarrativeForObservation } from "../semantic/signal-narrative";
 import {
   localizeAnyLabel,
   localizeFlowLabel,
@@ -57,30 +58,32 @@ export function filterOperationRows(rows: OperationRow[], query: string): Operat
 
 function flowToRow(flow: DependencyFlow, entities: SemanticEntity[]): OperationRow {
   const subject = entities.find((entity) => entity.id === flow.resourceId || entity.id === flow.productId);
+  const signal = buildSignalNarrativeForFlow(flow);
 
   return {
     id: flow.id,
-    type: "依存ルート",
+    type: signal.category,
     label: localizeFlowLabel(flow.id, flow.label),
     subject: subject ? localizeAnyLabel(subject.id, subject.label) : "日本",
-    urgency: flowUrgency(flow.id),
-    status: "監視中",
-    action: "ルートと根拠を確認",
+    urgency: signal.severity,
+    status: signal.status,
+    action: signal.recommendedAction,
     period: localizePeriod(flow.period)
   };
 }
 
 function observationToRow(observation: Observation, entities: SemanticEntity[]): OperationRow {
   const subject = entities.find((entity) => entity.id === observation.subjectId);
+  const signal = buildSignalNarrativeForObservation(observation);
 
   return {
     id: observation.id,
-    type: localizeKind(observation.kind),
+    type: signal.category,
     label: localizeObservationLabel(observation.id, observation.label),
     subject: subject ? localizeAnyLabel(subject.id, subject.label) : "日本",
-    urgency: observationUrgency(observation.id),
-    status: "要確認",
-    action: "出典と政策文脈を確認",
+    urgency: signal.severity,
+    status: signal.status,
+    action: signal.recommendedAction,
     period: localizePeriod(observation.period)
   };
 }
@@ -96,26 +99,6 @@ function impactToRow(impact: SemanticEntity): OperationRow {
     action: "地図上の位置を確認",
     period: "第0段階"
   };
-}
-
-function flowUrgency(id: string): string {
-  if (id.includes("oil") || id.includes("lng")) {
-    return "高";
-  }
-
-  if (id.includes("rice") || id.includes("semiconductor")) {
-    return "中";
-  }
-
-  return "通常";
-}
-
-function observationUrgency(id: string): string {
-  if (id.includes("rice") || id.includes("lng") || id.includes("reservoir")) {
-    return "高";
-  }
-
-  return "中";
 }
 
 function localizePeriod(period: string): string {

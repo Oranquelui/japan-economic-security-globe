@@ -20,6 +20,13 @@ const detail: DetailViewModel = {
   label: "サウジ原油 → 日本",
   summary: "海上原油ルートの簡易フロー。",
   whyItMatters: "供給途絶が日本の電力・物流・物価に波及する。",
+  signal: {
+    category: "海上ルート依存",
+    severity: "高",
+    status: "監視中",
+    recommendedAction: "海上ルートと燃料供給の連動を確認",
+    watchpoints: ["ホルムズ海峡", "マラッカ海峡", "燃料価格"]
+  },
   linkedFlows: [],
   relatedEntities: [],
   sources: [
@@ -30,6 +37,12 @@ const detail: DetailViewModel = {
       publisher: "METI",
       accessed: "2026-04-11",
       official: true
+    }
+  ],
+  sourceHighlights: [
+    {
+      sourceId: "source:energy-whitepaper",
+      claim: "海上原油ルートの監視が必要。"
     }
   ],
   sparql: {
@@ -46,7 +59,7 @@ const evidenceGraph: EvidenceGraphViewModel = {
 };
 
 describe("evidence panel structure", () => {
-  test("uses semantic tabs instead of mixing evidence and reading instructions", () => {
+  test("uses public-facing tabs instead of exposing SPARQL to general users", () => {
     render(
       <EvidencePanel
         collapsed={false}
@@ -63,7 +76,8 @@ describe("evidence panel structure", () => {
 
     expect(screen.getByRole("button", { name: "概要" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "出典" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "SPARQL" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "関連" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "SPARQL" })).toBeNull();
     expect(screen.queryByRole("button", { name: "根拠" })).toBeNull();
     expect(screen.queryByText("読み取り方")).toBeNull();
   });

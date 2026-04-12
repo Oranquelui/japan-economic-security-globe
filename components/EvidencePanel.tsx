@@ -39,7 +39,7 @@ export function EvidencePanel({
   themePalette,
   themeTitle
 }: EvidencePanelProps) {
-  const [tab, setTab] = useState<"summary" | "sources" | "sparql">("summary");
+  const [tab, setTab] = useState<"summary" | "sources" | "related">("summary");
 
   if (collapsible && collapsed) {
     return (
@@ -134,6 +134,9 @@ export function EvidencePanel({
         }}
       >
         <div className="flex flex-wrap items-center gap-2">
+          <PanelChip borderColor={themePalette.accent} textColor={themePalette.textPrimary}>
+            {detail.signal.category}
+          </PanelChip>
           <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
             {localizeKind(detail.kind)}
           </PanelChip>
@@ -153,14 +156,16 @@ export function EvidencePanel({
           <TabButton active={tab === "sources"} onClick={() => setTab("sources")} themePalette={themePalette}>
             出典
           </TabButton>
-          <TabButton active={tab === "sparql"} onClick={() => setTab("sparql")} themePalette={themePalette}>
-            SPARQL
+          <TabButton active={tab === "related"} onClick={() => setTab("related")} themePalette={themePalette}>
+            関連
           </TabButton>
         </div>
 
         {tab === "summary" ? (
           <div className="mt-4 space-y-4">
             <FactRow label="日本にとっての意味" themePalette={themePalette} value={localizeWhyItMatters(detail.id, detail.whyItMatters)} />
+            <FactRow label="見るべき点" themePalette={themePalette} value={detail.signal.watchpoints.join(" / ")} />
+            <FactRow label="次に見ること" themePalette={themePalette} value={detail.signal.recommendedAction} />
             <section
               className="rounded-xl border p-4"
               style={{
@@ -268,6 +273,22 @@ export function EvidencePanel({
                         {source.description}
                       </div>
                     ) : null}
+                    {detail.sourceHighlights
+                      .filter((item) => item.sourceId === source.id)
+                      .slice(0, 2)
+                      .map((highlight) => (
+                        <div
+                          key={`${source.id}:${highlight.claim}`}
+                          className="mt-2 rounded-lg border px-3 py-2 text-[0.72rem] leading-5"
+                          style={{
+                            borderColor: themePalette.borderSubtle,
+                            background: themePalette.surfacePanelElevated,
+                            color: themePalette.textPrimary
+                          }}
+                        >
+                          {highlight.claim}
+                        </div>
+                      ))}
                   </a>
                 ))}
               </div>
@@ -275,7 +296,7 @@ export function EvidencePanel({
           </div>
         ) : null}
 
-        {tab === "sparql" ? (
+        {tab === "related" ? (
           <div className="mt-4 space-y-4">
             <section
               className="rounded-xl border p-4"
@@ -285,14 +306,15 @@ export function EvidencePanel({
               }}
             >
               <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
-                SPARQL クエリ案
+                関係グラフ
               </div>
-              <pre
-                className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-xl p-4 font-mono text-[0.68rem] leading-5"
-                style={{ background: "rgba(24, 28, 33, 0.92)", color: "#d8e5ee" }}
-              >
-                {detail.sparql.query}
-              </pre>
+              <EvidenceGraph
+                graph={evidenceGraph}
+                onSelect={onSelect}
+                selectedId={selectedId}
+                statusPalette={statusPalette}
+                themePalette={themePalette}
+              />
             </section>
 
             <section
@@ -322,6 +344,24 @@ export function EvidencePanel({
                     {localizeAnyLabel(entity.id, entity.label)}
                   </button>
                 ))}
+                {detail.linkedFlows
+                  .filter((flow) => flow.id !== detail.id)
+                  .slice(0, 4)
+                  .map((flow) => (
+                    <button
+                      key={flow.id}
+                      type="button"
+                      onClick={() => onSelect(flow.id)}
+                      className="rounded-full border px-3 py-2 text-xs transition hover:text-white"
+                      style={{
+                        borderColor: themePalette.borderSubtle,
+                        background: themePalette.surfacePanel,
+                        color: themePalette.textMuted
+                      }}
+                    >
+                      {localizeAnyLabel(flow.id, flow.label)}
+                    </button>
+                  ))}
               </div>
             </section>
           </div>
@@ -336,7 +376,7 @@ function getSourceModeLabel(mode: "api" | "sparql" | "csv" | "excel" | "pdf" | "
     case "api":
       return "API";
     case "sparql":
-      return "SPARQL";
+      return "データ接続";
     case "csv":
       return "CSV";
     case "excel":

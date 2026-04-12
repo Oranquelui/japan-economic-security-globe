@@ -16,7 +16,7 @@ describe("operations metrics", () => {
     expect(metrics).toEqual([
       expect.objectContaining({ id: "displayed", value: 8 }),
       expect.objectContaining({ id: "high-risk", value: 3 }),
-      expect.objectContaining({ id: "monitoring", value: 3 }),
+      expect.objectContaining({ id: "monitoring", value: 4 }),
       expect.objectContaining({ id: "domestic-impacts", value: 4 }),
       expect.objectContaining({ id: "sources", value: 4 })
     ]);

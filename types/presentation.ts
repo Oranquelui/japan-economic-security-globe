@@ -60,13 +60,28 @@ export interface SparqlPreviewViewModel {
   query: string;
 }
 
+export interface SignalNarrativeViewModel {
+  category: string;
+  severity: "高" | "中" | "通常";
+  status: "監視中" | "要確認" | "表示対象";
+  recommendedAction: string;
+  watchpoints: string[];
+}
+
+export interface DetailSourceHighlightViewModel {
+  sourceId: string;
+  claim: string;
+}
+
 export interface DetailViewModel {
   id: string;
   label: string;
   kind: string;
   summary: string;
   whyItMatters: string;
+  signal: SignalNarrativeViewModel;
   sources: SourceDocument[];
+  sourceHighlights: DetailSourceHighlightViewModel[];
   relatedEntities: SemanticEntity[];
   linkedFlows: DependencyFlow[];
   sparql: SparqlPreviewViewModel;
