@@ -2,28 +2,22 @@ import type {
   BackgroundLayerSpecification,
   FillLayerSpecification,
   GeoJSONSourceSpecification,
-  LineLayerSpecification,
   RasterLayerSpecification,
   RasterSourceSpecification,
   StyleSpecification
 } from "maplibre-gl";
-import { feature, mesh } from "topojson-client";
+import { feature } from "topojson-client";
 import countries110m from "world-atlas/countries-110m.json";
 
 import type { ThemePalette } from "./palette";
 
 const landFeature = feature(countries110m as any, (countries110m as any).objects.land);
-const borderMesh = mesh(countries110m as any, (countries110m as any).objects.countries, (a: unknown, b: unknown) => a !== b);
 
 export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
   const sources: Record<string, GeoJSONSourceSpecification | RasterSourceSpecification> = {
     "world-land": {
       type: "geojson",
       data: landFeature
-    },
-    "world-borders": {
-      type: "geojson",
-      data: borderMesh
     },
     "gray-canvas-base": {
       type: "raster",
@@ -44,7 +38,7 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
   };
 
   const layers: Array<
-    BackgroundLayerSpecification | FillLayerSpecification | LineLayerSpecification | RasterLayerSpecification
+    BackgroundLayerSpecification | FillLayerSpecification | RasterLayerSpecification
   > = [
     {
       id: "ops-background",
@@ -79,16 +73,6 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       paint: {
         "fill-color": "rgba(232,236,240,0.12)",
         "fill-opacity": 1
-      }
-    },
-    {
-      id: "world-borders-line",
-      type: "line",
-      source: "world-borders",
-      paint: {
-        "line-color": "rgba(104, 115, 125, 0.48)",
-        "line-width": 0.9,
-        "line-opacity": 0.92
       }
     }
   ];
