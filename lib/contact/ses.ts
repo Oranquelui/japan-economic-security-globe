@@ -9,7 +9,7 @@ interface SesRequest {
 
 const encoder = new TextEncoder();
 
-function toHex(buffer: ArrayBuffer): string {
+function toHex(buffer: ArrayBufferLike): string {
   return [...new Uint8Array(buffer)].map((value) => value.toString(16).padStart(2, "0")).join("");
 }
 
@@ -19,7 +19,7 @@ async function sha256Hex(value: string): Promise<string> {
 }
 
 async function hmacSha256(key: Uint8Array, value: string): Promise<Uint8Array> {
-  const cryptoKey = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const cryptoKey = await crypto.subtle.importKey("raw", Uint8Array.from(key), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const signature = await crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(value));
   return new Uint8Array(signature);
 }
