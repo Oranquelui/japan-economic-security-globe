@@ -551,9 +551,7 @@ export function JapanOperationsMapCanvas({
 
 function applyModeVisibility(map: any, mapMode: OperationMapMode) {
   const visibility = (show: boolean) => (show ? "visible" : "none");
-  const showPoints = mapMode === "point" || mapMode === "route" || mapMode === "static";
-  const showRoutes = mapMode === "route";
-  const showRegions = mapMode === "choropleth" || mapMode === "static";
+  const { showClusters, showPoints, showRegions, showRoutes } = getModeVisibilityState(mapMode);
 
   map.setLayoutProperty("global-point-circle", "visibility", visibility(showPoints));
   map.setLayoutProperty("global-point-label", "visibility", visibility(showPoints));
@@ -566,8 +564,17 @@ function applyModeVisibility(map: any, mapMode: OperationMapMode) {
   map.setLayoutProperty("jp-route-direction", "visibility", visibility(showRoutes));
   map.setLayoutProperty("jp-region-fill", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-region-outline", "visibility", visibility(showRegions));
-  map.setLayoutProperty("jp-cluster-circle", "visibility", visibility(mapMode === "cluster"));
-  map.setLayoutProperty("jp-cluster-count", "visibility", visibility(mapMode === "cluster"));
+  map.setLayoutProperty("jp-cluster-circle", "visibility", visibility(showClusters));
+  map.setLayoutProperty("jp-cluster-count", "visibility", visibility(showClusters));
+}
+
+export function getModeVisibilityState(mapMode: OperationMapMode) {
+  return {
+    showPoints: mapMode === "point" || mapMode === "route" || mapMode === "static",
+    showRoutes: mapMode === "point" || mapMode === "route",
+    showRegions: mapMode === "choropleth" || mapMode === "static",
+    showClusters: mapMode === "cluster"
+  };
 }
 
 function selectFeatureId(event: any, onSelect: (id: string) => void) {
