@@ -132,6 +132,29 @@ Phase 0 から `Cloudflare Workers + OpenNext adapter` を前提にします。
 
 Phase 2 で institutional / paid product に入る時点では、この運用を最終形とみなさず、public site と private runtime を分ける前提で再設計します。
 
+## Sources / License / 問い合わせ
+
+公開サイトでは、アプリ右上のメニューから `共有` `Sources/License` `問い合わせ` を開けます。
+
+- `Sources/License`
+  - 出典ソース一覧
+  - このサイトの利用方針
+  - 権利処理の考え方
+- `問い合わせ`
+  - 開発依頼
+  - データ修正/追加
+  - 不具合・エラー
+  - 取材・引用/連携
+  - その他
+
+問い合わせは公開フォームから受け付け、送信先は `ai@quadrillion-ai.com` です。返信先メールアドレスは必須で、機微な個人情報や秘密情報は送信しない前提にします。
+
+## ライセンスとデータ方針
+
+コードのライセンスはリポジトリ直下の `LICENSE` に従います。現時点では `Apache-2.0` を採用しています。
+
+一方で `data/seed/` の出典付きデータは、コードと同じ意味で一括再ライセンスしていません。政府・公的機関ソースと民間ソースが混在するため、ソース別条件に従って扱います。詳細は `DATA-SOURCES.md` と `Sources/License` ページを参照してください。
+
 ## ディレクトリ構成
 
 ```text
