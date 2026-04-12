@@ -139,11 +139,9 @@ describe("operations accessibility", () => {
     render(
       <JapanMainMap
         activeId="flow:saudi-oil-japan"
-        detail={detail}
         focusTargetId={null}
         mapMode="route"
         model={mapModel}
-        onMapModeChange={() => undefined}
         onSelect={() => undefined}
         statusPalette={statusPalette}
         themePalette={themePalette}

@@ -50,19 +50,14 @@ vi.mock("../JapanMainMap", () => ({
   JapanMainMap: ({
     activeId,
     focusTargetId,
-    mapMode,
-    onMapModeChange
+    mapMode
   }: {
     activeId: string;
     focusTargetId: string | null;
     mapMode: OperationMapMode;
-    onMapModeChange: (mode: OperationMapMode) => void;
   }) => (
     <div data-testid="map" data-active={activeId} data-focus={focusTargetId ?? ""} data-mode={mapMode}>
       mocked-map
-      <button type="button" onClick={() => onMapModeChange("cluster")}>
-        change-mode-cluster
-      </button>
     </div>
   )
 }));
@@ -101,7 +96,7 @@ describe("AppShell url sync", () => {
     expect(screen.getByTestId("layout-map-section")).toBeTruthy();
     expect(screen.getByTestId("layout-compare-overlay")).toBeTruthy();
     expect(screen.getByTestId("layout-evidence-overlay")).toBeTruthy();
-    expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("yes");
+    expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("no");
     expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
   });
 
@@ -140,7 +135,7 @@ describe("AppShell url sync", () => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice", { scroll: false });
     });
 
-    fireEvent.click(screen.getAllByText("change-mode-cluster")[0]);
+    fireEvent.click(screen.getByRole("button", { name: "集約" }));
     await waitFor(() => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice&mode=cluster", { scroll: false });
     });

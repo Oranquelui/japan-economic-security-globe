@@ -59,9 +59,9 @@ export function EvidencePanel({
             background: themePalette.accentSoft,
             color: themePalette.textPrimary
           }}
-          aria-label="Evidence Drilldown を開く"
+          aria-label="詳細パネルを開く"
         >
-          根
+          詳細
         </button>
         <div
           className="mt-3 h-2.5 w-2.5 rounded-full"

@@ -16,7 +16,7 @@ import {
   serializeOperationsUrlState,
   type OperationsUrlState
 } from "../lib/presentation/url-state";
-import { getThemeLabel } from "../lib/presentation/japanese";
+import { getThemeLabel, localizeAnyLabel, localizeKind } from "../lib/presentation/japanese";
 import { ActionBar } from "./ActionBar";
 import { EvidencePanel } from "./EvidencePanel";
 import { JapanMainMap } from "./JapanMainMap";
@@ -37,7 +37,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   const [mapMode, setMapMode] = useState<OperationMapMode>(initialUrlState.mapMode);
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(true);
-  const [isEvidenceOpen, setEvidenceOpen] = useState(false);
+  const [isEvidenceOpen, setEvidenceOpen] = useState(true);
   const [, startTransition] = useTransition();
   const initialSerializedRef = useRef(serializeOperationsUrlState(initialUrlState));
   const view = getThemeView(graph, themeId);
@@ -108,8 +108,12 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   return (
     <main className="grid h-screen min-h-screen grid-rows-[56px,minmax(0,1fr)] overflow-hidden text-slate-100" style={shellStyle}>
       <ActionBar
+        mapMode={mapMode}
         onClearFilters={() => setSearchQuery("")}
+        onMapModeChange={setMapMode}
         queryActive={searchQuery.length > 0}
+        selectedKindLabel={localizeKind(detail.kind)}
+        selectedLabel={localizeAnyLabel(detail.id, detail.label)}
         sharePath={sharePath}
         themeLabel={themeLabel}
         themePalette={themePalette}
@@ -120,12 +124,10 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
           <section data-testid="layout-map-section" className="absolute inset-0 min-h-0">
             <JapanMainMap
               activeId={activeId}
-              detail={detail}
               focusTargetId={focusTargetId}
               mapMode={mapMode}
               model={mapModel}
               overlayInsets={mapOverlayInsets}
-              onMapModeChange={setMapMode}
               onSelect={setSelectedId}
               statusPalette={statusPalette}
               themePalette={themePalette}
@@ -187,11 +189,11 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
                 collapsed={!isEvidenceOpen}
                 detail={detail}
                 evidenceGraph={evidenceGraph}
-                onSelect={setSelectedId}
-                selectedId={activeId}
-                statusPalette={statusPalette}
-                themePalette={themePalette}
-                themeTitle={view.title}
+              onSelect={setSelectedId}
+              selectedId={activeId}
+              statusPalette={statusPalette}
+              themePalette={themePalette}
+              themeTitle={view.title}
                 onToggleCollapsed={() => setEvidenceOpen((value) => !value)}
               />
             </div>
@@ -224,7 +226,6 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
           <section className="h-[50vh] min-h-[280px]">
             <JapanMainMap
               activeId={activeId}
-              detail={detail}
               focusTargetId={focusTargetId}
               mapMode={mapMode}
               model={mapModel}
@@ -234,7 +235,6 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
                 right: 16,
                 bottom: 16
               }}
-              onMapModeChange={setMapMode}
               onSelect={setSelectedId}
               statusPalette={statusPalette}
               themePalette={themePalette}
