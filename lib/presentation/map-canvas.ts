@@ -1,6 +1,7 @@
 import type { ThemeView } from "../../types/presentation";
 import type { DependencyFlow, SemanticEntity, SemanticGraph } from "../../types/semantic";
 import { localizeAnyLabel } from "./japanese";
+import { isRenderableMapRoute } from "./route-status";
 
 export type JapanMapPoint = {
   id: string;
@@ -231,10 +232,6 @@ function isRouteSelectableEntity(kind: SemanticEntity["kind"]) {
     "Route",
     "SeaLane"
   ].includes(kind);
-}
-
-function isRenderableMapRoute(flow: DependencyFlow) {
-  return flow.routeIds.length > 0 && flow.mapLineKind !== "bridge";
 }
 
 function resolveDomesticSequence(

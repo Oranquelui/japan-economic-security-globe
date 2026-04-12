@@ -81,4 +81,33 @@ describe("evidence panel structure", () => {
     expect(screen.queryByRole("button", { name: "根拠" })).toBeNull();
     expect(screen.queryByText("読み取り方")).toBeNull();
   });
+
+  test("explains when a selected item is a domestic-only hub without overseas route data", () => {
+    const domesticDetail: DetailViewModel = {
+      ...detail,
+      id: "refinery:oita",
+      kind: "Refinery",
+      label: "大分製油所エリア",
+      linkedFlows: [],
+      summary: "九州の精製拠点として、西日本の石油製品供給を支える。"
+    };
+
+    render(
+      <EvidencePanel
+        collapsed={false}
+        detail={domesticDetail}
+        evidenceGraph={evidenceGraph}
+        onSelect={vi.fn()}
+        onToggleCollapsed={vi.fn()}
+        selectedId="refinery:oita"
+        statusPalette={statusPalette}
+        themePalette={themePalette}
+        themeTitle="エネルギー"
+      />
+    );
+
+    expect(screen.getByText("国内拠点")).toBeTruthy();
+    expect(screen.getByText("ルート表示")).toBeTruthy();
+    expect(screen.getByText(/海外連携ルート/)).toBeTruthy();
+  });
 });

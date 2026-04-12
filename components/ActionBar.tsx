@@ -13,6 +13,7 @@ interface ActionBarProps {
   queryActive: boolean;
   selectedKindLabel: string;
   selectedLabel: string;
+  routeStatusLabel?: string | null;
   sharePath: string;
   themeLabel: string;
   themePalette: ThemePalette;
@@ -25,6 +26,7 @@ export function ActionBar({
   queryActive,
   selectedKindLabel,
   selectedLabel,
+  routeStatusLabel,
   sharePath,
   themeLabel,
   themePalette
@@ -122,6 +124,17 @@ export function ActionBar({
             >
               {selectedKindLabel}
             </span>
+            {routeStatusLabel ? (
+              <span
+                className="rounded-full border px-2 py-0.5 text-[0.6rem]"
+                style={{
+                  borderColor: themePalette.borderSubtle,
+                  color: themePalette.textMuted
+                }}
+              >
+                {routeStatusLabel}
+              </span>
+            ) : null}
             <span className="truncate text-[0.78rem] font-medium text-white">{selectedLabel}</span>
           </div>
         </div>

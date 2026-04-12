@@ -17,6 +17,7 @@ import {
   type OperationsUrlState
 } from "../lib/presentation/url-state";
 import { getThemeLabel, localizeAnyLabel, localizeKind } from "../lib/presentation/japanese";
+import { getRouteStatus } from "../lib/presentation/route-status";
 import { ActionBar } from "./ActionBar";
 import { EvidencePanel } from "./EvidencePanel";
 import { JapanMainMap } from "./JapanMainMap";
@@ -48,6 +49,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   const activeId = resolveActiveId(view, validSelectedId);
   const focusTargetId = validSelectedId;
   const detail = getDetailView(graph, activeId);
+  const routeStatus = getRouteStatus(detail);
   const mapModel = buildJapanMapCanvasModel(graph, view, activeId);
   const themePalette = getThemePalette(themeId);
   const statusPalette = getStatusPalette();
@@ -112,6 +114,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
         onClearFilters={() => setSearchQuery("")}
         onMapModeChange={setMapMode}
         queryActive={searchQuery.length > 0}
+        routeStatusLabel={routeStatus?.chipLabel ?? null}
         selectedKindLabel={localizeKind(detail.kind)}
         selectedLabel={localizeAnyLabel(detail.id, detail.label)}
         sharePath={sharePath}

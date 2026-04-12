@@ -12,6 +12,7 @@ import {
   localizeSummary,
   localizeWhyItMatters
 } from "../lib/presentation/japanese";
+import { getRouteStatus } from "../lib/presentation/route-status";
 import { toStableSvgNumber } from "../lib/presentation/svg";
 
 interface EvidencePanelProps {
@@ -40,6 +41,7 @@ export function EvidencePanel({
   themeTitle
 }: EvidencePanelProps) {
   const [tab, setTab] = useState<"summary" | "sources" | "related">("summary");
+  const routeStatus = getRouteStatus(detail);
 
   if (collapsible && collapsed) {
     return (
@@ -137,6 +139,11 @@ export function EvidencePanel({
           <PanelChip borderColor={themePalette.accent} textColor={themePalette.textPrimary}>
             {detail.signal.category}
           </PanelChip>
+          {routeStatus ? (
+            <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+              {routeStatus.chipLabel}
+            </PanelChip>
+          ) : null}
           <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
             {localizeKind(detail.kind)}
           </PanelChip>
@@ -163,6 +170,9 @@ export function EvidencePanel({
 
         {tab === "summary" ? (
           <div className="mt-4 space-y-4">
+            {routeStatus ? (
+              <FactRow label="ルート表示" themePalette={themePalette} value={routeStatus.description} />
+            ) : null}
             <FactRow label="日本にとっての意味" themePalette={themePalette} value={localizeWhyItMatters(detail.id, detail.whyItMatters)} />
             <FactRow label="見るべき点" themePalette={themePalette} value={detail.signal.watchpoints.join(" / ")} />
             <FactRow label="次に見ること" themePalette={themePalette} value={detail.signal.recommendedAction} />
