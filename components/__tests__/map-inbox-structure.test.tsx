@@ -38,7 +38,7 @@ describe("map inbox structure", () => {
     expect(screen.getByText("監視インボックス")).toBeTruthy();
     expect(screen.getByText("検索")).toBeTruthy();
     expect(screen.getByText("絞り込み")).toBeTruthy();
-    expect(screen.getByText("シグナル")).toBeTruthy();
+    expect(screen.getByText("優先監視")).toBeTruthy();
     expect(screen.getByRole("textbox")).toBeTruthy();
     expect(screen.getByRole("button", { name: "全部" })).toBeTruthy();
     expect(screen.queryByText("文脈")).toBeNull();

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 
+import { buildInboxSections } from "../lib/presentation/inbox";
 import type { OperationRow } from "../lib/presentation/operations";
 import type { ThemePalette } from "../lib/presentation/palette";
 
@@ -24,6 +25,8 @@ export function MapInboxPanel({
   themeLabel,
   themePalette
 }: MapInboxPanelProps) {
+  const sections = buildInboxSections(rows).filter((section) => section.rows.length > 0);
+
   return (
     <aside
       className="flex h-full min-w-0 flex-col overflow-hidden"
@@ -99,58 +102,70 @@ export function MapInboxPanel({
         </section>
 
         <section className="min-h-0 flex-1 px-4 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-              シグナル
-            </div>
-            <div className="text-[0.68rem]" style={{ color: themePalette.textMuted }}>
-              上位 {Math.min(rows.length, 6)} 件
-            </div>
-          </div>
           <div
-            className="mt-2 h-full overflow-auto border"
+            className="h-full overflow-auto border"
             style={{
               borderColor: themePalette.borderSubtle,
               background: themePalette.surfacePanelElevated
             }}
           >
-            {rows.slice(0, 6).map((row) => {
-              const isActive = row.id === activeId;
-
-              return (
-                <button
-                  key={row.id}
-                  type="button"
-                  onClick={() => onSelect(row.id)}
-                  className="w-full border-b px-3 py-3 text-left transition last:border-b-0"
-                  style={
-                    isActive
-                      ? {
-                          borderBottomColor: themePalette.borderSubtle,
-                          borderLeft: `2px solid ${themePalette.accent}`,
-                          background: themePalette.surfacePanel,
-                          color: themePalette.textPrimary
-                        }
-                      : {
-                          borderBottomColor: themePalette.borderSubtle,
-                          borderLeft: "2px solid transparent",
-                          background: "transparent",
-                          color: themePalette.textMuted
-                        }
-                  }
-                >
+            <div className="space-y-4 p-3">
+              {sections.map((section) => (
+                <section key={section.id}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="truncate text-sm font-semibold">{row.label}</div>
-                      <div className="mt-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
-                        {row.subject} / {row.status}
+                      <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+                        {section.label}
                       </div>
+                      <p className="mt-1 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
+                        {section.description}
+                      </p>
                     </div>
-                    <PaneBadge themePalette={themePalette}>{row.urgency}</PaneBadge>
+                    <PaneBadge themePalette={themePalette}>{section.rows.length}件</PaneBadge>
                   </div>
-                </button>
-              );
-            })}
+
+                  <div className="mt-2 overflow-hidden rounded-xl border" style={{ borderColor: themePalette.borderSubtle }}>
+                    {section.rows.slice(0, 4).map((row) => {
+                      const isActive = row.id === activeId;
+
+                      return (
+                        <button
+                          key={`${section.id}-${row.id}`}
+                          type="button"
+                          onClick={() => onSelect(row.id)}
+                          className="w-full border-b px-3 py-3 text-left transition last:border-b-0"
+                          style={
+                            isActive
+                              ? {
+                                  borderBottomColor: themePalette.borderSubtle,
+                                  borderLeft: `2px solid ${themePalette.accent}`,
+                                  background: themePalette.surfacePanel,
+                                  color: themePalette.textPrimary
+                                }
+                              : {
+                                  borderBottomColor: themePalette.borderSubtle,
+                                  borderLeft: "2px solid transparent",
+                                  background: "transparent",
+                                  color: themePalette.textMuted
+                                }
+                          }
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-semibold">{row.label}</div>
+                              <div className="mt-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                                {row.subject} / {row.status}
+                              </div>
+                            </div>
+                            <PaneBadge themePalette={themePalette}>{row.urgency}</PaneBadge>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
+            </div>
           </div>
         </section>
       </div>
