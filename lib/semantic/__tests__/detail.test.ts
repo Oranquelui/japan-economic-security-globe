@@ -29,7 +29,7 @@ describe("getDetailView", () => {
       ])
     );
     expect(detail.signal.category).toBe("海上ルート依存");
-    expect(detail.signal.watchpoints).toEqual(expect.arrayContaining(["ホルムズ海峡", "マラッカ海峡", "電気料金"]));
+    expect(detail.signal.watchpoints).toEqual(expect.arrayContaining(["ホルムズ海峡", "マラッカ海峡", "燃料費調整", "国内着地点"]));
     expect(detail.sourceHighlights.length).toBeGreaterThan(0);
     expect(detail.sparql.title).toBe("SPARQL preview for Qatar LNG to Japan");
     expect(detail.sparql.query).toContain("prov:wasDerivedFrom");

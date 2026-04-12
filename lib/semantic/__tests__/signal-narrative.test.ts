@@ -4,7 +4,8 @@ import { loadSeedGraph } from "../../data/seed-loader";
 import {
   buildSignalNarrativeForFlow,
   buildSignalNarrativeForObservation,
-  buildSourceHighlightsFromFlow
+  buildSourceHighlightsFromFlow,
+  buildSourceHighlightsFromObservation
 } from "../signal-narrative";
 
 describe("signal narratives", () => {
@@ -17,8 +18,8 @@ describe("signal narratives", () => {
     const narrative = buildSignalNarrativeForObservation(observation!);
 
     expect(narrative.category).toBe("価格圧力");
-    expect(narrative.recommendedAction).toContain("価格");
-    expect(narrative.watchpoints).toEqual(expect.arrayContaining(["次月価格", "民間在庫", "政策介入"]));
+    expect(narrative.recommendedAction).toContain("35,056円");
+    expect(narrative.watchpoints).toEqual(expect.arrayContaining(["次月価格", "民間在庫", "家計負担", "政策介入"]));
   });
 
   test("turns LNG route data into a route-dependency signal", () => {
@@ -31,7 +32,7 @@ describe("signal narratives", () => {
 
     expect(narrative.category).toBe("海上ルート依存");
     expect(narrative.recommendedAction).toContain("LNG");
-    expect(narrative.watchpoints).toEqual(expect.arrayContaining(["ホルムズ海峡", "マラッカ海峡", "電気料金"]));
+    expect(narrative.watchpoints).toEqual(expect.arrayContaining(["ホルムズ海峡", "マラッカ海峡", "燃料費調整", "国内着地点"]));
   });
 
   test("turns rice input data into an input-cost pass-through signal", () => {
@@ -43,8 +44,8 @@ describe("signal narratives", () => {
     const narrative = buildSignalNarrativeForFlow(flow!);
 
     expect(narrative.category).toBe("投入コスト波及");
-    expect(narrative.recommendedAction).toContain("相対取引価格");
-    expect(narrative.watchpoints).toEqual(expect.arrayContaining(["肥料原料", "相対取引価格", "民間在庫"]));
+    expect(narrative.recommendedAction).toContain("主産地");
+    expect(narrative.watchpoints).toEqual(expect.arrayContaining(["肥料原料", "相対取引価格", "民間在庫", "主産地"]));
   });
 
   test("turns defense budget data into a capability-priority signal", () => {
@@ -84,7 +85,30 @@ describe("signal narratives", () => {
     const narrative = buildSignalNarrativeForObservation(observation!);
 
     expect(narrative.category).toBe("産業基盤政策");
-    expect(narrative.recommendedAction).toContain("政策");
-    expect(narrative.watchpoints).toEqual(expect.arrayContaining(["設備投資", "政策文書", "貿易統計"]));
+    expect(narrative.recommendedAction).toContain("首相官邸");
+    expect(narrative.watchpoints).toEqual(expect.arrayContaining(["設備投資", "政策文書", "貿易統計", "経済安全保障"]));
+  });
+
+  test("adds source-specific highlights for qatar LNG and rice price signals", () => {
+    const graph = loadSeedGraph();
+    const qatarFlow = graph.flows.find((item) => item.id === "flow:qatar-lng-japan");
+    const ricePrice = graph.observations.find((item) => item.id === "observation:rice-price-signal-2026");
+
+    expect(qatarFlow).toBeDefined();
+    expect(ricePrice).toBeDefined();
+
+    const flowHighlights = buildSourceHighlightsFromFlow(
+      qatarFlow!,
+      graph.sources.filter((source) => qatarFlow!.sourceIds.includes(source.id))
+    );
+    const observationHighlights = buildSourceHighlightsFromObservation(
+      ricePrice!,
+      graph.sources.filter((source) => ricePrice!.sourceIds.includes(source.id))
+    );
+
+    expect(flowHighlights.some((item) => item.sourceId === "source:tepco-2026-april-power" && item.claim.includes("燃料費調整"))).toBe(true);
+    expect(flowHighlights.some((item) => item.sourceId === "source:customs-trade-statistics" && item.claim.includes("国別輸入構成"))).toBe(true);
+    expect(observationHighlights.some((item) => item.sourceId === "source:maff-rice-policy" && item.claim.includes("35,056円"))).toBe(true);
+    expect(observationHighlights.some((item) => item.sourceId === "source:maff-rice-monthly-report" && item.claim.includes("在庫"))).toBe(true);
   });
 });

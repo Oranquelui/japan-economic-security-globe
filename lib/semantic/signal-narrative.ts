@@ -1,6 +1,8 @@
 import type { SignalNarrativeViewModel } from "../../types/presentation";
 import type { DependencyFlow, Observation, SemanticEntity, SourceDocument } from "../../types/semantic";
 
+type SourceHighlight = { sourceId: string; claim: string };
+
 export function buildSignalNarrativeForFlow(flow: DependencyFlow): SignalNarrativeViewModel {
   if (flow.theme === "energy") {
     if (flow.id.includes("qatar") || flow.id.includes("saudi") || flow.routeIds.some((id) => id.includes("hormuz") || id.includes("malacca"))) {
@@ -8,11 +10,14 @@ export function buildSignalNarrativeForFlow(flow: DependencyFlow): SignalNarrati
         category: "海上ルート依存",
         severity: "高",
         status: "監視中",
-        recommendedAction: flow.resourceId === "resource:lng" ? "LNG調達と電気料金の連動を確認" : "海上ルートと燃料供給の連動を確認",
+        recommendedAction:
+          flow.resourceId === "resource:lng"
+            ? "LNG調達、燃料費調整、国内受入基地のつながりを確認"
+            : "湾岸航路、燃料価格、国内製油所のつながりを確認",
         watchpoints: dedupeWatchpoints([
           flow.routeIds.includes("chokepoint:hormuz") ? "ホルムズ海峡" : null,
           flow.routeIds.includes("chokepoint:malacca") ? "マラッカ海峡" : null,
-          flow.resourceId === "resource:lng" ? "電気料金" : "燃料価格",
+          flow.resourceId === "resource:lng" ? "燃料費調整" : "燃料価格",
           "国内着地点"
         ])
       };
@@ -22,8 +27,8 @@ export function buildSignalNarrativeForFlow(flow: DependencyFlow): SignalNarrati
       category: "供給集中",
       severity: "中",
       status: "監視中",
-      recommendedAction: "石炭調達の偏りと国内着地点の代替余地を確認",
-      watchpoints: ["調達先集中", "国内着地点", "代替供給"]
+      recommendedAction: "豪州偏重と国内港湾での受け止め方を確認",
+      watchpoints: ["調達先集中", "国内着地点", "代替調達"]
     };
   }
 
@@ -32,8 +37,8 @@ export function buildSignalNarrativeForFlow(flow: DependencyFlow): SignalNarrati
       category: "投入コスト波及",
       severity: "高",
       status: "要確認",
-      recommendedAction: "肥料原料と燃料価格が相対取引価格へどう波及するか確認",
-      watchpoints: ["肥料原料", "相対取引価格", "民間在庫"]
+      recommendedAction: "燃料・肥料コストが新潟など主産地の価格へどう波及するか確認",
+      watchpoints: ["肥料原料", "相対取引価格", "民間在庫", "主産地"]
     };
   }
 
@@ -118,6 +123,16 @@ export function buildSignalNarrativeForFlow(flow: DependencyFlow): SignalNarrati
       };
     }
 
+    if (flow.id === "flow:korea-semiconductors-japan") {
+      return {
+        category: "近隣供給網",
+        severity: "中",
+        status: "監視中",
+        recommendedAction: "韓国との近隣供給網依存と代替調達余地を確認",
+        watchpoints: ["近隣供給網", "代替調達", "対日供給"]
+      };
+    }
+
     return {
       category: "供給網依存",
       severity: "中",
@@ -142,8 +157,8 @@ export function buildSignalNarrativeForObservation(observation: Observation): Si
       category: "価格圧力",
       severity: "高",
       status: "要確認",
-      recommendedAction: "価格の持続性と家計への波及を確認",
-      watchpoints: ["次月価格", "民間在庫", "政策介入"]
+      recommendedAction: "35,056円/60kgの高止まりが次月も続くかを確認",
+      watchpoints: ["次月価格", "民間在庫", "家計負担", "政策介入"]
     };
   }
 
@@ -152,8 +167,8 @@ export function buildSignalNarrativeForObservation(observation: Observation): Si
       category: "在庫圧力",
       severity: "高",
       status: "要確認",
-      recommendedAction: "在庫水準と放出判断を確認",
-      watchpoints: ["民間在庫", "備蓄米", "流通量"]
+      recommendedAction: "300万玄米トンの在庫水準と放出判断を確認",
+      watchpoints: ["民間在庫", "備蓄米", "流通量", "前年比"]
     };
   }
 
@@ -162,8 +177,8 @@ export function buildSignalNarrativeForObservation(observation: Observation): Si
       category: "備蓄政策注目",
       severity: "中",
       status: "要確認",
-      recommendedAction: "備蓄政策と市場介入の条件を確認",
-      watchpoints: ["備蓄放出", "制度改正", "流通量"]
+      recommendedAction: "備蓄放出の条件と制度根拠を確認",
+      watchpoints: ["備蓄放出", "制度根拠", "流通量"]
     };
   }
 
@@ -172,8 +187,8 @@ export function buildSignalNarrativeForObservation(observation: Observation): Si
       category: "貯水逼迫",
       severity: "高",
       status: "要確認",
-      recommendedAction: "貯水率34%と節水局面への移行条件を確認",
-      watchpoints: ["貯水率", "降水状況", "節水要請"]
+      recommendedAction: "小河内ダム34%から取水制限へ進む条件を確認",
+      watchpoints: ["貯水率", "降水状況", "取水制限", "節水要請"]
     };
   }
 
@@ -182,8 +197,38 @@ export function buildSignalNarrativeForObservation(observation: Observation): Si
       category: "家計コスト圧力",
       severity: "高",
       status: "監視中",
-      recommendedAction: "LNG市況と電気料金の連動を確認",
-      watchpoints: ["LNG調達", "電気料金", "燃料費調整"]
+      recommendedAction: "LNG市況が電気料金へどう波及するかを確認",
+      watchpoints: ["LNG調達", "電気料金", "燃料費調整", "家計負担"]
+    };
+  }
+
+  if (observation.id === "observation:defense-budget-standoff-fy2026") {
+    return {
+      category: "能力予算観測",
+      severity: "中",
+      status: "要確認",
+      recommendedAction: "スタンド・オフ能力へ配分された973.3億円規模の重みを確認",
+      watchpoints: ["予算額", "スタンド・オフ能力", "継続性"]
+    };
+  }
+
+  if (observation.id === "observation:defense-budget-iamd-fy2026") {
+    return {
+      category: "能力予算観測",
+      severity: "中",
+      status: "要確認",
+      recommendedAction: "一体防空・ミサイル防衛の重点配分を確認",
+      watchpoints: ["予算額", "防空ミサイル防衛", "継続性"]
+    };
+  }
+
+  if (observation.id === "observation:defense-budget-unmanned-fy2026") {
+    return {
+      category: "能力予算観測",
+      severity: "中",
+      status: "要確認",
+      recommendedAction: "無人防衛能力への重点配分と用途を確認",
+      watchpoints: ["予算額", "無人能力", "継続性"]
     };
   }
 
@@ -202,8 +247,8 @@ export function buildSignalNarrativeForObservation(observation: Observation): Si
       category: "産業基盤政策",
       severity: "中",
       status: "要確認",
-      recommendedAction: "設備投資と政策文書、貿易統計の接続を確認",
-      watchpoints: ["設備投資", "政策文書", "貿易統計"]
+      recommendedAction: "設備投資、首相官邸の政策発信、貿易統計の接続を確認",
+      watchpoints: ["設備投資", "政策文書", "貿易統計", "経済安全保障"]
     };
   }
 
@@ -277,21 +322,22 @@ export function buildSignalNarrativeForEntity(entity: SemanticEntity): SignalNar
 }
 
 export function buildSourceHighlightsFromObservation(observation: Observation, sources: SourceDocument[]) {
+  const generatedClaims = sources.flatMap((source) => buildObservationClaimsForSource(observation, source));
+
   const provenanceClaims = observation.provenance
     .filter((item) => item.claim)
     .map((item) => ({ sourceId: item.sourceId, claim: item.claim! }));
 
-  if (provenanceClaims.length > 0) {
-    return provenanceClaims;
-  }
-
-  return sources
-    .filter((source) => source.description)
-    .map((source) => ({ sourceId: source.id, claim: source.description! }));
+  return dedupeClaims([
+    ...generatedClaims,
+    ...provenanceClaims,
+    ...sources.filter((source) => source.description).map((source) => ({ sourceId: source.id, claim: source.description! }))
+  ]);
 }
 
 export function buildSourceHighlightsFromFlow(flow: DependencyFlow, sources: SourceDocument[]) {
   const highlights = [
+    ...sources.flatMap((source) => buildFlowClaimsForSource(flow, source)),
     buildFlowClaim(flow),
     flow.magnitudeLabel ? { sourceId: flow.sourceIds[0] ?? "source:unknown", claim: `規模の見立て: ${flow.magnitudeLabel}` } : null,
     flow.riskLabel ? { sourceId: flow.sourceIds[0] ?? "source:unknown", claim: `主なリスク: ${flow.riskLabel}` } : null,
@@ -355,5 +401,222 @@ function buildFlowClaim(flow: DependencyFlow) {
       return { sourceId, claim: "米国との政策協調は国内投資と供給網再構築の前提になる。"};
     default:
       return null;
+  }
+}
+
+function buildFlowClaimsForSource(flow: DependencyFlow, source: SourceDocument): SourceHighlight[] {
+  switch (flow.id) {
+    case "flow:qatar-lng-japan":
+      return buildQatarLngClaims(source.id);
+    case "flow:saudi-oil-japan":
+      return buildSaudiOilClaims(source.id);
+    case "flow:australia-coal-japan":
+      return buildAustraliaCoalClaims(source.id);
+    case "flow:energy-inputs-rice":
+      return buildRiceInputClaims(source.id);
+    case "flow:defense-budget-standoff":
+      return buildDefenseFlowClaims(source.id, "スタンド・オフ能力", "約9,733億円");
+    case "flow:defense-budget-integrated-air-missile":
+      return buildDefenseFlowClaims(source.id, "一体防空・ミサイル防衛", "約5,091億円");
+    case "flow:defense-budget-unmanned":
+      return buildDefenseFlowClaims(source.id, "無人防衛能力", "約2,773億円");
+    case "flow:taiwan-semiconductors-japan":
+      return buildSemiconductorFlowClaims(source.id, "台湾", "先端製造");
+    case "flow:korea-semiconductors-japan":
+      return buildSemiconductorFlowClaims(source.id, "韓国", "近隣供給網");
+    case "flow:netherlands-equipment-japan":
+      return buildSemiconductorFlowClaims(source.id, "オランダ", "装置供給");
+    case "flow:us-semiconductor-policy-japan":
+      return buildSemiconductorFlowClaims(source.id, "米国", "政策協調");
+    case "flow:china-semiconductor-risk-japan":
+      return buildSemiconductorFlowClaims(source.id, "中国", "供給網露出");
+    default:
+      return [];
+  }
+}
+
+function buildObservationClaimsForSource(observation: Observation, source: SourceDocument): SourceHighlight[] {
+  switch (observation.id) {
+    case "observation:lng-electricity-april-2026":
+      return buildLngElectricityClaims(source.id);
+    case "observation:rice-price-signal-2026":
+      return buildRicePriceClaims(source.id);
+    case "observation:rice-private-inventory-feb-2026":
+      return buildRiceInventoryClaims(source.id);
+    case "observation:rice-stockpile-policy-2026":
+      return buildRicePolicyClaims(source.id);
+    case "observation:ogochi-reservoir-stress":
+      return buildWaterStressClaims(source.id);
+    case "observation:defense-budget-standoff-fy2026":
+      return buildDefenseObservationClaims(source.id, "スタンド・オフ能力", "約9,733億円");
+    case "observation:defense-budget-iamd-fy2026":
+      return buildDefenseObservationClaims(source.id, "一体防空・ミサイル防衛", "約5,091億円");
+    case "observation:defense-budget-unmanned-fy2026":
+      return buildDefenseObservationClaims(source.id, "無人防衛能力", "約2,773億円");
+    case "observation:semiconductor-policy-signal-2026":
+      return buildSemiconductorPolicyClaims(source.id);
+    default:
+      return [];
+  }
+}
+
+function buildQatarLngClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:customs-trade-statistics":
+      return [{ sourceId, claim: "財務省貿易統計でLNGの国別輸入構成を確認する入口になる。" }];
+    case "source:enecho-energy-trends":
+      return [{ sourceId, claim: "資源エネルギー庁資料は中東依存とLNG調達の全体像を示す。" }];
+    case "source:meti-2026-energy-taskforce":
+      return [{ sourceId, claim: "中東情勢対策ポータルは供給不安時の相談窓口と対応動線を示す。" }];
+    case "source:tepco-2026-april-power":
+      return [{ sourceId, claim: "東京電力EP資料は燃料費調整を通じた電気料金への波及を見る補助資料になる。" }];
+    default:
+      return [];
+  }
+}
+
+function buildSaudiOilClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:customs-trade-statistics":
+      return [{ sourceId, claim: "財務省貿易統計で原油の国別輸入構成を追跡できる。" }];
+    case "source:enecho-energy-trends":
+      return [{ sourceId, claim: "資源エネルギー庁資料は原油の中東依存と備蓄文脈を示す。" }];
+    case "source:meti-2026-energy-taskforce":
+      return [{ sourceId, claim: "中東情勢ポータルは燃料油供給への対応窓口を示す。" }];
+    default:
+      return [];
+  }
+}
+
+function buildAustraliaCoalClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:customs-trade-statistics":
+      return [{ sourceId, claim: "財務省貿易統計で石炭の豪州依存を国別に確認できる。" }];
+    case "source:enecho-energy-trends":
+      return [{ sourceId, claim: "資源エネルギー庁資料は石炭も含む燃料調達の全体像を補う。" }];
+    case "source:meti-2026-energy-taskforce":
+      return [{ sourceId, claim: "国内供給相談窓口の有無で豪州依存が国内影響へ変わる導線を確認できる。" }];
+    default:
+      return [];
+  }
+}
+
+function buildRiceInputClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:maff-rice-policy":
+      return [{ sourceId, claim: "農水省の価格資料はコメ価格側の結果を示す。" }];
+    case "source:maff-rice-monthly-report":
+      return [{ sourceId, claim: "農水省の流通資料は在庫・流通量の面から価格の背景を補う。" }];
+    case "source:enecho-energy-trends":
+      return [{ sourceId, claim: "資源エネルギー庁資料は燃料側の調達文脈を示す。" }];
+    case "source:meti-2026-energy-taskforce":
+      return [{ sourceId, claim: "中東情勢対策ポータルは燃料供給不安が国内コストへ波及する局面を示す。" }];
+    default:
+      return [];
+  }
+}
+
+function buildDefenseFlowClaims(sourceId: string, capability: string, amount: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:mod-fy2026-budget":
+      return [{ sourceId, claim: `防衛省資料は${capability}へ${amount}規模の配分を示す。` }];
+    case "source:mof-fy2026-budget":
+      return [{ sourceId, claim: `${capability}の配分を財政文書側から照合する一次資料になる。` }];
+    default:
+      return [];
+  }
+}
+
+function buildSemiconductorFlowClaims(sourceId: string, countryLabel: string, focus: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:meti-semiconductor-frame":
+      return [{ sourceId, claim: `経産省資料は${countryLabel}との${focus}を日本の産業基盤政策の文脈で位置付ける。` }];
+    case "source:cabinet-tsmc-2026":
+      return countryLabel === "台湾"
+        ? [{ sourceId, claim: "首相官邸資料はTSMCとの接点を経済安全保障の文脈で示す。" }]
+        : [];
+    case "source:customs-trade-statistics":
+      return [{ sourceId, claim: `${countryLabel}に関わる装置・部材の国別依存を貿易統計で追跡できる。` }];
+    default:
+      return [];
+  }
+}
+
+function buildLngElectricityClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:enecho-energy-trends":
+      return [{ sourceId, claim: "資源エネルギー庁資料はLNG調達が家計コストへつながる背景を示す。" }];
+    case "source:tepco-2026-april-power":
+      return [{ sourceId, claim: "東京電力EP資料は燃料費調整を通じた電気料金の公表資料になる。" }];
+    default:
+      return [];
+  }
+}
+
+function buildRicePriceClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:maff-rice-policy":
+      return [{ sourceId, claim: "農水省は令和8年2月の相対取引価格を35,056円/玄米60kgと公表した。" }];
+    case "source:maff-rice-monthly-report":
+      return [{ sourceId, claim: "流通資料を併せて見ると、価格だけでなく在庫と集荷の背景も確認できる。" }];
+    default:
+      return [];
+  }
+}
+
+function buildRiceInventoryClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:maff-rice-monthly-report":
+      return [{ sourceId, claim: "農水省は令和8年2月末の民間在庫量を300万玄米トンと公表した。" }];
+    default:
+      return [];
+  }
+}
+
+function buildRicePolicyClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:maff-rice-policy":
+      return [{ sourceId, claim: "価格資料は備蓄放出や政策介入が議論される前提の市場状況を示す。" }];
+    case "source:maff-rice-monthly-report":
+      return [{ sourceId, claim: "流通・在庫資料で政策議論の背景となる需給状況を確認できる。" }];
+    case "source:egov-law-search":
+      return [{ sourceId, claim: "制度根拠を確認する際の法令検索入口として使う。" }];
+    default:
+      return [];
+  }
+}
+
+function buildWaterStressClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:mlit-drought-portal":
+      return [{ sourceId, claim: "国交省関東地方整備局は2026-04-10時点で小河内ダムの貯水率34%を掲載した。" }];
+    case "source:jma-drought-spi":
+      return [{ sourceId, claim: "気象庁資料は少雨・干ばつをどう評価するかの公式な見方を補う。" }];
+    default:
+      return [];
+  }
+}
+
+function buildDefenseObservationClaims(sourceId: string, capability: string, amount: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:mod-fy2026-budget":
+      return [{ sourceId, claim: `防衛省資料は${capability}に${amount}規模を配分している。` }];
+    case "source:mof-fy2026-budget":
+      return [{ sourceId, claim: `${capability}の予算を財務省の歳出明細側で確認できる。` }];
+    default:
+      return [];
+  }
+}
+
+function buildSemiconductorPolicyClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:meti-semiconductor-frame":
+      return [{ sourceId, claim: "経産省資料は半導体産業基盤の強化を政策枠組みとして示す。" }];
+    case "source:cabinet-tsmc-2026":
+      return [{ sourceId, claim: "首相官邸資料はTSMCとの接点を経済安全保障の文脈で示す。" }];
+    case "source:customs-trade-statistics":
+      return [{ sourceId, claim: "財務省貿易統計は装置や部材の国別依存を数量化する入口になる。" }];
+    default:
+      return [];
   }
 }
