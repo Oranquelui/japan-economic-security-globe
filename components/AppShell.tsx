@@ -7,7 +7,6 @@ import type { ThemeView } from "../types/presentation";
 import type { SemanticGraph, ThemeId } from "../types/semantic";
 import { getDetailView } from "../lib/semantic/detail";
 import { buildJapanMapCanvasModel } from "../lib/presentation/map-canvas";
-import { buildOperationsMetrics } from "../lib/presentation/metrics";
 import { getThemeView } from "../lib/semantic/selectors";
 import { buildEvidenceGraph } from "../lib/semantic/view-models";
 import { buildOperationRows, filterOperationRows, type OperationMapMode } from "../lib/presentation/operations";
@@ -52,10 +51,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   const mapModel = buildJapanMapCanvasModel(graph, view, activeId);
   const themePalette = getThemePalette(themeId);
   const statusPalette = getStatusPalette();
-  const metrics = buildOperationsMetrics(view, filteredOperationRows);
   const themeLabel = getThemeLabel(themeId).label;
-  const highRiskCount = filteredOperationRows.filter((row) => row.urgency === "高").length;
-  const monitoringCount = filteredOperationRows.filter((row) => row.status === "監視中").length;
   const serializedState = serializeOperationsUrlState({
     themeId,
     mapMode,
@@ -79,6 +75,12 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   const visiblePaneWidth = isInboxOpen ? paneWidth : 0;
   const compareHeight = 264;
   const evidenceWidth = isEvidenceOpen ? 360 : 52;
+  const mapOverlayInsets = {
+    top: 16,
+    left: railWidth + visiblePaneWidth + 16,
+    right: evidenceWidth + 16,
+    bottom: compareHeight + 16
+  };
 
   useEffect(() => {
     const serialized = serializeOperationsUrlState({
@@ -106,7 +108,6 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   return (
     <main className="grid h-screen min-h-screen grid-rows-[56px,minmax(0,1fr)] overflow-hidden text-slate-100" style={shellStyle}>
       <ActionBar
-        metrics={metrics}
         onClearFilters={() => setSearchQuery("")}
         queryActive={searchQuery.length > 0}
         sharePath={sharePath}
@@ -123,6 +124,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
               focusTargetId={focusTargetId}
               mapMode={mapMode}
               model={mapModel}
+              overlayInsets={mapOverlayInsets}
               onMapModeChange={setMapMode}
               onSelect={setSelectedId}
               statusPalette={statusPalette}
@@ -161,8 +163,6 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
           >
             <MapInboxPanel
               activeId={activeId}
-              highRiskCount={highRiskCount}
-              monitoringCount={monitoringCount}
               onQueryChange={setSearchQuery}
               onSelect={setSelectedId}
               query={searchQuery}
@@ -228,6 +228,12 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
               focusTargetId={focusTargetId}
               mapMode={mapMode}
               model={mapModel}
+              overlayInsets={{
+                top: 16,
+                left: 16,
+                right: 16,
+                bottom: 16
+              }}
               onMapModeChange={setMapMode}
               onSelect={setSelectedId}
               statusPalette={statusPalette}
@@ -266,8 +272,6 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
           </section>
           <MapInboxPanel
             activeId={activeId}
-            highRiskCount={highRiskCount}
-            monitoringCount={monitoringCount}
             onQueryChange={setSearchQuery}
             onSelect={setSelectedId}
             query={searchQuery}

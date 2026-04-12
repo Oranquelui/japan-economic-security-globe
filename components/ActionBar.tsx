@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 
-import type { OperationMetric } from "../lib/presentation/metrics";
 import type { ThemePalette } from "../lib/presentation/palette";
 
 interface ActionBarProps {
-  metrics: OperationMetric[];
   onClearFilters: () => void;
   queryActive: boolean;
   sharePath: string;
@@ -14,14 +12,7 @@ interface ActionBarProps {
   themePalette: ThemePalette;
 }
 
-export function ActionBar({
-  metrics,
-  onClearFilters,
-  queryActive,
-  sharePath,
-  themeLabel,
-  themePalette
-}: ActionBarProps) {
+export function ActionBar({ onClearFilters, queryActive, sharePath, themeLabel, themePalette }: ActionBarProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopyLink() {
@@ -63,21 +54,7 @@ export function ActionBar({
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-1 items-center justify-center gap-2 overflow-hidden">
-        {metrics.slice(0, 4).map((metric) => (
-          <span
-            key={metric.id}
-            className="truncate rounded-full border px-2.5 py-1 text-[0.68rem]"
-            style={{
-              borderColor: themePalette.borderSubtle,
-              background: themePalette.surfacePanelElevated,
-              color: themePalette.textMuted
-            }}
-          >
-            {metric.label} {metric.value}
-          </span>
-        ))}
-      </div>
+      <div className="flex-1" />
 
       <div className="flex items-center gap-2">
         <button

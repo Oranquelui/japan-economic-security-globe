@@ -16,6 +16,12 @@ interface JapanMainMapProps {
   focusTargetId: string | null;
   mapMode: OperationMapMode;
   model: JapanMapCanvasModel;
+  overlayInsets?: {
+    bottom: number;
+    left: number;
+    right: number;
+    top: number;
+  };
   onMapModeChange: (mode: OperationMapMode) => void;
   onSelect: (id: string) => void;
   statusPalette: StatusPalette;
@@ -28,6 +34,12 @@ export function JapanMainMap({
   focusTargetId,
   mapMode,
   model,
+  overlayInsets = {
+    top: 16,
+    right: 16,
+    bottom: 16,
+    left: 16
+  },
   onMapModeChange,
   onSelect,
   statusPalette,
@@ -59,7 +71,13 @@ export function JapanMainMap({
         }}
       />
 
-      <div className="absolute right-4 top-4 z-20">
+      <div
+        className="absolute z-20"
+        style={{
+          right: overlayInsets.right,
+          top: overlayInsets.top
+        }}
+      >
         <div
           className="border px-3 py-2.5 shadow-lg backdrop-blur-md"
           style={{
@@ -98,13 +116,25 @@ export function JapanMainMap({
         </div>
       </div>
 
-      <div className="absolute left-4 top-4 z-20 flex flex-col gap-2">
+      <div
+        className="absolute z-20 flex flex-col gap-2"
+        style={{
+          left: overlayInsets.left,
+          top: overlayInsets.top
+        }}
+      >
         <MapControlButton label="+" ariaLabel="地図を拡大" onClick={() => setCommand({ nonce: Date.now(), type: "zoomIn" })} />
         <MapControlButton label="-" ariaLabel="地図を縮小" onClick={() => setCommand({ nonce: Date.now(), type: "zoomOut" })} />
         <MapControlButton label="⌖" ariaLabel="日本中心に戻す" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />
       </div>
 
-      <div className="absolute bottom-4 left-4 z-20 max-w-[440px]">
+      <div
+        className="absolute z-20 max-w-[440px]"
+        style={{
+          bottom: overlayInsets.bottom,
+          left: overlayInsets.left
+        }}
+      >
         <div
           className="border px-3.5 py-2.5 shadow-lg backdrop-blur-md"
           style={{

@@ -7,8 +7,6 @@ import type { ThemePalette } from "../lib/presentation/palette";
 
 interface MapInboxPanelProps {
   activeId: string;
-  highRiskCount: number;
-  monitoringCount: number;
   onQueryChange: (query: string) => void;
   onSelect: (id: string) => void;
   query: string;
@@ -19,8 +17,6 @@ interface MapInboxPanelProps {
 
 export function MapInboxPanel({
   activeId,
-  highRiskCount,
-  monitoringCount,
   onQueryChange,
   onSelect,
   query,
@@ -43,14 +39,6 @@ export function MapInboxPanel({
           </div>
           <PaneBadge themePalette={themePalette}>{rows.length}件</PaneBadge>
         </div>
-
-        <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
-          <div className="grid grid-cols-3 gap-2">
-            <MetricCell label="表示" value={rows.length} themePalette={themePalette} />
-            <MetricCell label="高リスク" value={highRiskCount} themePalette={themePalette} />
-            <MetricCell label="監視中" value={monitoringCount} themePalette={themePalette} />
-          </div>
-        </section>
 
         <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
           <label className="block">
@@ -188,30 +176,5 @@ function PaneBadge({
     >
       {children}
     </span>
-  );
-}
-
-function MetricCell({
-  label,
-  value,
-  themePalette
-}: {
-  label: string;
-  value: number;
-  themePalette: ThemePalette;
-}) {
-  return (
-    <div
-      className="border px-3 py-2"
-      style={{
-        borderColor: themePalette.borderSubtle,
-        background: themePalette.surfacePanelElevated
-      }}
-    >
-      <div className="font-mono text-[0.55rem] uppercase tracking-[0.24em]" style={{ color: themePalette.textMuted }}>
-        {label}
-      </div>
-      <div className="mt-1 text-lg font-semibold text-white">{value}</div>
-    </div>
   );
 }

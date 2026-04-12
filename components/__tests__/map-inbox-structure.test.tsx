@@ -15,8 +15,6 @@ describe("map inbox structure", () => {
     render(
       <MapInboxPanel
         activeId="flow:saudi-oil-japan"
-        highRiskCount={2}
-        monitoringCount={3}
         onQueryChange={vi.fn()}
         onSelect={vi.fn()}
         query=""
