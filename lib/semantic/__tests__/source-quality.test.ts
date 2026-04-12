@@ -16,10 +16,12 @@ describe("source quality", () => {
     const graph = loadSeedGraph();
     const ricePriceSource = graph.sources.find((item) => item.id === "source:maff-rice-policy");
     const riceInventorySource = graph.sources.find((item) => item.id === "source:maff-rice-monthly-report");
+    const ricePrefectureSource = graph.sources.find((item) => item.id === "source:estat-rice-prefecture-harvest-r5");
     const waterSource = graph.sources.find((item) => item.id === "source:mlit-drought-portal");
 
     expect(ricePriceSource?.url).toBe("https://www.maff.go.jp/j/press/nousan/kikaku/260313.html");
     expect(riceInventorySource?.url).toBe("https://www.maff.go.jp/j/press/nousan/kikaku/260331.html");
+    expect(ricePrefectureSource?.url).toBe("https://www.e-stat.go.jp/dbview?sid=0002114508");
     expect(waterSource?.url).toBe("https://www.ktr.mlit.go.jp/river/shihon/river_shihon00000226.html");
   });
 });

@@ -30,6 +30,7 @@ describe("map inbox structure", () => {
             period: "2026"
           }
         ]}
+        themeId="energy"
         themeLabel="エネルギー"
         themePalette={getThemePalette("energy")}
       />
@@ -62,6 +63,7 @@ describe("map inbox structure", () => {
           { id: "row-4", type: "価格圧力", label: "行4", subject: "コメ", urgency: "高", status: "要確認", action: "確認", period: "2026" },
           { id: "row-5", type: "価格圧力", label: "行5", subject: "コメ", urgency: "高", status: "要確認", action: "確認", period: "2026" }
         ]}
+        themeId="rice"
         themeLabel="コメ"
         themePalette={getThemePalette("rice")}
       />

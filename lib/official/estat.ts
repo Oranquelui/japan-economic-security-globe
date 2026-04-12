@@ -13,6 +13,7 @@ type EstatTextNode = string | number | { $?: string | number } | undefined;
 
 type EstatTableInf = {
   ID?: string;
+  "@id"?: string;
   STAT_NAME?: EstatTextNode;
   GOV_ORG?: EstatTextNode;
   STATISTICS_NAME?: EstatTextNode;
@@ -24,6 +25,7 @@ type EstatTableInf = {
 
 type EstatClassEntryNode = {
   "@code"?: string;
+  "@name"?: string;
   $?: string | number;
 };
 
@@ -54,6 +56,12 @@ type EstatStatsListPayload = {
 type EstatMetaInfoPayload = {
   GET_META_INFO?: {
     RESULT?: EstatResultNode;
+    METADATA_INF?: {
+      TABLE_INF?: EstatTableInf;
+      CLASS_INF?: {
+        CLASS_OBJ?: EstatClassObjectNode | EstatClassObjectNode[];
+      };
+    };
     META_INFO?: {
       TABLE_INF?: EstatTableInf;
       CLASS_INF?: {
@@ -182,7 +190,7 @@ export function normalizeEstatStatsListResponse(payload: EstatStatsListPayload):
 
 export function normalizeEstatMetaInfoResponse(payload: EstatMetaInfoPayload): EstatMetaInfoResult {
   const section = payload.GET_META_INFO;
-  const metaInfo = section?.META_INFO;
+  const metaInfo = section?.META_INFO ?? section?.METADATA_INF;
 
   return {
     status: toNumber(section?.RESULT?.STATUS),
@@ -256,7 +264,7 @@ async function fetchEstatJson(
 
 function normalizeEstatTableSummary(table: EstatTableInf): EstatTableSummary {
   return {
-    statsDataId: table.ID,
+    statsDataId: table.ID ?? table["@id"],
     statName: readText(table.STAT_NAME),
     govOrg: readText(table.GOV_ORG),
     statisticsName: readText(table.STATISTICS_NAME),
@@ -273,7 +281,7 @@ function normalizeEstatClassObjects(classObjects?: EstatClassObjectNode | EstatC
     name: classObject["@name"],
     entries: toArray(classObject.CLASS).map((entry) => ({
       code: entry["@code"],
-      label: toOptionalString(entry.$)
+      label: toOptionalString(entry.$) ?? entry["@name"]
     }))
   }));
 }

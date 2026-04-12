@@ -58,7 +58,7 @@ const rows: OperationRow[] = [
 
 describe("inbox sections", () => {
   test("groups rows into user-facing monitoring sections", () => {
-    const sections = buildInboxSections(rows);
+    const sections = buildInboxSections("energy", rows);
 
     expect(sections.map((section) => section.id)).toEqual(["priority", "watch", "domestic"]);
     expect(sections[0].rows.map((row) => row.id)).toEqual([
@@ -71,5 +71,17 @@ describe("inbox sections", () => {
       "terminal:sodegaura-lng",
       "prefecture:niigata"
     ]);
+  });
+
+  test("uses rice-specific domestic section copy", () => {
+    const sections = buildInboxSections("rice", rows);
+
+    expect(sections[2]).toEqual(
+      expect.objectContaining({
+        id: "domestic",
+        label: "国内主要地域",
+        description: "コメ生産や供給の中心となる都道府県・拠点"
+      })
+    );
   });
 });

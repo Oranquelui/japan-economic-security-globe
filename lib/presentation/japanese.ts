@@ -64,8 +64,12 @@ const ENTITY_LABELS: Record<string, string> = {
   "org:mod": "防衛省",
   "policy:semiconductor-industrial-base": "AI・半導体産業基盤フレーム",
   "port:yokohama": "横浜港",
+  "prefecture:akita": "秋田県",
+  "prefecture:hokkaido": "北海道",
+  "prefecture:miyagi": "宮城県",
   "prefecture:niigata": "新潟県",
   "prefecture:tokyo": "東京都",
+  "prefecture:yamagata": "山形県",
   "product:advanced-semiconductors": "先端半導体",
   "product:fertilizer-inputs": "肥料原料",
   "product:rice": "コメ",
@@ -131,6 +135,7 @@ const SUMMARY_LABELS: Record<string, string> = {
 
 const SOURCE_LABELS: Record<string, string> = {
   "source:cabinet-tsmc-2026": "首相官邸: TSMC会長との面会",
+  "source:estat-rice-prefecture-harvest-r5": "e-Stat: 令和5年産 水稲収穫量（都道府県別）",
   "source:estat-lod-sparql": "統計LOD: 構造化データ接続",
   "source:maff-rice-policy": "農林水産省: 令和8年2月相対取引価格",
   "source:maff-rice-monthly-report": "農林水産省: 令和8年2月民間在庫",

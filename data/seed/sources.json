@@ -125,6 +125,18 @@
     "tier": "A"
   },
   {
+    "id": "source:estat-rice-prefecture-harvest-r5",
+    "label": "e-Stat: 令和5年産 米 水陸稲の収穫量 水稲（全国農業地域別・都道府県別）",
+    "url": "https://www.e-stat.go.jp/dbview?sid=0002114508",
+    "publisher": "e-Stat / 農林水産省",
+    "published": "2025-02-28",
+    "accessed": "2026-04-12",
+    "description": "e-Stat API で取得できる令和5年産の都道府県別水稲収穫量。主食用収穫量の上位は新潟514,100t、北海道475,900t、秋田385,800t、宮城323,800t、山形308,600t。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "A"
+  },
+  {
     "id": "source:mlit-drought-portal",
     "label": "首都圏の水資源状況（リアルタイム）",
     "url": "https://www.ktr.mlit.go.jp/river/shihon/river_shihon00000226.html",

@@ -1,6 +1,7 @@
 import type { ThemeView } from "../../types/presentation";
 import type { SemanticTone } from "./palette";
 import type { OperationRow } from "./operations";
+import { getDomesticImpactCopy } from "./domestic-copy";
 
 export type OperationMetric = {
   id: string;
@@ -11,6 +12,8 @@ export type OperationMetric = {
 };
 
 export function buildOperationsMetrics(view: ThemeView, rows: OperationRow[]): OperationMetric[] {
+  const domesticCopy = getDomesticImpactCopy(view.id);
+
   return [
     {
       id: "displayed",
@@ -35,10 +38,10 @@ export function buildOperationsMetrics(view: ThemeView, rows: OperationRow[]): O
     },
     {
       id: "domestic-impacts",
-      label: "国内着地点",
+      label: domesticCopy.label,
       value: view.japanImpacts.length,
       tone: "watch",
-      description: "日本国内で位置を持つ港湾・基地・地域シグナル"
+      description: domesticCopy.description
     },
     {
       id: "sources",

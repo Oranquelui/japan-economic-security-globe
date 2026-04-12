@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { buildInboxSections } from "../lib/presentation/inbox";
 import type { OperationRow } from "../lib/presentation/operations";
 import type { ThemePalette } from "../lib/presentation/palette";
+import type { ThemeId } from "../types/semantic";
 
 interface MapInboxPanelProps {
   activeId: string;
@@ -12,6 +13,7 @@ interface MapInboxPanelProps {
   onSelect: (id: string) => void;
   query: string;
   rows: OperationRow[];
+  themeId: ThemeId;
   themeLabel: string;
   themePalette: ThemePalette;
 }
@@ -22,10 +24,11 @@ export function MapInboxPanel({
   onSelect,
   query,
   rows,
+  themeId,
   themeLabel,
   themePalette
 }: MapInboxPanelProps) {
-  const sections = buildInboxSections(rows).filter((section) => section.rows.length > 0);
+  const sections = buildInboxSections(themeId, rows).filter((section) => section.rows.length > 0);
 
   return (
     <aside

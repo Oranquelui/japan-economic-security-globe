@@ -24,4 +24,22 @@ describe("japan map canvas model", () => {
     expect(model.foreignWindow?.entities.map((entity) => entity.id)).toContain("country:qatar");
     expect(model.routes.some((route) => route.pointIds.includes("terminal:sodegaura-lng"))).toBe(true);
   });
+
+  test("expands rice domestic points beyond the original two using prefectural production anchors", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+
+    const model = buildJapanMapCanvasModel(graph, view, "observation:rice-price-signal-2026");
+
+    expect(model.points.map((point) => point.id)).toEqual(
+      expect.arrayContaining([
+        "refinery:keihin",
+        "prefecture:niigata",
+        "prefecture:hokkaido",
+        "prefecture:akita",
+        "prefecture:miyagi",
+        "prefecture:yamagata"
+      ])
+    );
+  });
 });

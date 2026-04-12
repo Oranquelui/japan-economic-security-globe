@@ -21,4 +21,18 @@ describe("operations metrics", () => {
       expect.objectContaining({ id: "sources", value: 4 })
     ]);
   });
+
+  test("uses rice-specific domestic copy and more than two domestic regions", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+    const rows = buildOperationRows(view);
+
+    const metrics = buildOperationsMetrics(view, rows);
+
+    expect(metrics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "domestic-impacts", label: "国内主要地域", value: 6 })
+      ])
+    );
+  });
 });

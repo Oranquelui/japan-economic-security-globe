@@ -67,6 +67,35 @@ const sampleMetaInfoPayload = {
   }
 };
 
+const sampleLiveLikeMetaInfoPayload = {
+  GET_META_INFO: {
+    RESULT: {
+      STATUS: 0,
+      ERROR_MSG: ""
+    },
+    METADATA_INF: {
+      TABLE_INF: {
+        "@id": "0002114508",
+        TITLE: { $: "米 水陸稲の収穫量 水稲（全国農業地域別・都道府県別）" }
+      },
+      CLASS_INF: {
+        CLASS_OBJ: [
+          {
+            "@id": "cat01",
+            "@name": "(F002-05-2-001)全国農業地域・都道府県",
+            CLASS: [
+              {
+                "@code": "1013",
+                "@name": "(都道府県)_北海道"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+};
+
 const sampleStatsDataPayload = {
   GET_STATS_DATA: {
     RESULT_INF: {
@@ -185,6 +214,29 @@ describe("estat official adapter", () => {
             {
               code: "2025010000",
               label: "2025年1月"
+            }
+          ]
+        }
+      ]
+    });
+  });
+
+  test("normalizes live-like meta info payloads from METADATA_INF and @name fields", () => {
+    expect(normalizeEstatMetaInfoResponse(sampleLiveLikeMetaInfoPayload)).toEqual({
+      status: 0,
+      errorMessage: "",
+      table: {
+        statsDataId: "0002114508",
+        title: "米 水陸稲の収穫量 水稲（全国農業地域別・都道府県別）"
+      },
+      classes: [
+        {
+          id: "cat01",
+          name: "(F002-05-2-001)全国農業地域・都道府県",
+          entries: [
+            {
+              code: "1013",
+              label: "(都道府県)_北海道"
             }
           ]
         }

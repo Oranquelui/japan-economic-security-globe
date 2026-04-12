@@ -1,4 +1,6 @@
+import type { ThemeId } from "../../types/semantic";
 import type { OperationRow } from "./operations";
+import { getDomesticImpactCopy } from "./domestic-copy";
 
 export type InboxSection = {
   id: "priority" | "watch" | "domestic";
@@ -7,7 +9,8 @@ export type InboxSection = {
   rows: OperationRow[];
 };
 
-export function buildInboxSections(rows: OperationRow[]): InboxSection[] {
+export function buildInboxSections(themeId: ThemeId, rows: OperationRow[]): InboxSection[] {
+  const domesticCopy = getDomesticImpactCopy(themeId);
   const priorityRows = sortRows(rows.filter((row) => row.urgency === "高" || row.status === "要確認"), "priority");
   const claimedIds = new Set(priorityRows.map((row) => row.id));
 
@@ -46,8 +49,8 @@ export function buildInboxSections(rows: OperationRow[]): InboxSection[] {
     },
     {
       id: "domestic",
-      label: "国内着地点",
-      description: "日本国内で着地する港湾・基地・地域シグナル",
+      label: domesticCopy.label,
+      description: domesticCopy.description,
       rows: domesticRows
     }
   ];

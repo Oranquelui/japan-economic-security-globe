@@ -46,4 +46,21 @@ describe("getDetailView", () => {
     expect(detail.sourceHighlights.some((item) => item.sourceId === "source:enecho-energy-trends" && item.claim.includes("ホルムズ海峡"))).toBe(true);
     expect(detail.sourceHighlights.some((item) => item.sourceId === "source:customs-trade-statistics" && item.claim.includes("国別依存"))).toBe(true);
   });
+
+  test("builds e-Stat-backed claims for rice production prefectures", () => {
+    const graph = loadSeedGraph();
+
+    const detail = getDetailView(graph, "prefecture:niigata");
+
+    expect(detail.kind).toBe("Prefecture");
+    expect(detail.signal.category).toBe("国内主要地域");
+    expect(
+      detail.sourceHighlights.some(
+        (item) =>
+          item.sourceId === "source:estat-rice-prefecture-harvest-r5" &&
+          item.claim.includes("514,100") &&
+          item.claim.includes("新潟県")
+      )
+    ).toBe(true);
+  });
 });

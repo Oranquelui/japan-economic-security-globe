@@ -169,6 +169,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
               onSelect={setSelectedId}
               query={searchQuery}
               rows={filteredOperationRows}
+              themeId={themeId}
               themeLabel={themeLabel}
               themePalette={themePalette}
             />
@@ -276,6 +277,7 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
             onSelect={setSelectedId}
             query={searchQuery}
             rows={filteredOperationRows}
+            themeId={themeId}
             themeLabel={themeLabel}
             themePalette={themePalette}
           />

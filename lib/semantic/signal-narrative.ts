@@ -312,6 +312,16 @@ export function buildSignalNarrativeForEntity(entity: SemanticEntity): SignalNar
     };
   }
 
+  if (entity.kind === "Prefecture" && entity.themes.includes("rice")) {
+    return {
+      category: "国内主要地域",
+      severity: "通常",
+      status: "表示対象",
+      recommendedAction: "生産量と在庫・価格のつながりを確認",
+      watchpoints: ["主産地", "収穫量", "在庫", "価格"]
+    };
+  }
+
   return {
     category: "関連主体",
     severity: "通常",
@@ -623,6 +633,11 @@ function buildSemiconductorPolicyClaims(sourceId: string): SourceHighlight[] {
 }
 
 function buildEntityClaimsForSource(entity: SemanticEntity, source: SourceDocument): SourceHighlight[] {
+  const riceHarvestClaim = buildRicePrefectureClaims(entity, source.id);
+  if (riceHarvestClaim.length > 0) {
+    return riceHarvestClaim;
+  }
+
   switch (entity.id) {
     case "country:qatar":
       return source.id === "source:customs-trade-statistics"
@@ -719,4 +734,34 @@ function buildEntityClaimsForSource(entity: SemanticEntity, source: SourceDocume
     default:
       return [];
   }
+}
+
+function buildRicePrefectureClaims(entity: SemanticEntity, sourceId: string): SourceHighlight[] {
+  if (entity.kind !== "Prefecture" || !entity.themes.includes("rice")) {
+    return [];
+  }
+
+  const harvestTons = typeof entity.properties?.riceMainUseHarvestTonsR5 === "number"
+    ? entity.properties.riceMainUseHarvestTonsR5
+    : undefined;
+
+  if (sourceId === "source:estat-rice-prefecture-harvest-r5" && harvestTons) {
+    return [
+      {
+        sourceId,
+        claim: `e-Stat の令和5年産水稲収穫量では、${entity.labelJa ?? entity.label}の主食用収穫量は ${harvestTons.toLocaleString("ja-JP")} トンだった。`
+      }
+    ];
+  }
+
+  if (sourceId === "source:maff-rice-monthly-report") {
+    return [
+      {
+        sourceId,
+        claim: `${entity.labelJa ?? entity.label}のような主産地を見ると、在庫や流通の数字を地域供給の文脈で読みやすい。`
+      }
+    ];
+  }
+
+  return [];
 }

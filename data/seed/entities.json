@@ -197,11 +197,80 @@
     "kind": "Prefecture",
     "label": "Niigata",
     "labelJa": "新潟県",
-    "summary": "A rice-producing region used to connect national rice concerns to regional production.",
-    "whyItMatters": "Rice becomes clearer when global inputs and domestic producing regions are shown together.",
+    "summary": "e-Stat の令和5年産水稲収穫量では、新潟県の主食用収穫量は 514,100 トンで全国最多だった。",
+    "whyItMatters": "コメの国内主要地域を 1 県だけでなく複数県で見ると、供給基盤の集中と地域差が見えやすくなる。",
     "themes": ["rice", "water"],
     "coordinates": { "lat": 37.9026, "lon": 139.0232 },
-    "provenance": ["source:maff-rice-policy", "source:maff-rice-monthly-report"]
+    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 514100,
+      "estatStatsDataId": "0002114508"
+    },
+    "provenance": ["source:estat-rice-prefecture-harvest-r5", "source:maff-rice-policy", "source:maff-rice-monthly-report"]
+  },
+  {
+    "id": "prefecture:hokkaido",
+    "kind": "Prefecture",
+    "label": "Hokkaido",
+    "labelJa": "北海道",
+    "summary": "e-Stat の令和5年産水稲収穫量では、北海道の主食用収穫量は 475,900 トンだった。",
+    "whyItMatters": "北海道は大規模産地として、コメ供給の地域分散と代替余地を考える基礎になる。",
+    "themes": ["rice"],
+    "coordinates": { "lat": 43.0642, "lon": 141.3469 },
+    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 475900,
+      "estatStatsDataId": "0002114508"
+    },
+    "provenance": ["source:estat-rice-prefecture-harvest-r5"]
+  },
+  {
+    "id": "prefecture:akita",
+    "kind": "Prefecture",
+    "label": "Akita",
+    "labelJa": "秋田県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、秋田県の主食用収穫量は 385,800 トンだった。",
+    "whyItMatters": "秋田県は東北の主産地として、コメ価格や在庫を地域生産と結び付けて読む起点になる。",
+    "themes": ["rice"],
+    "coordinates": { "lat": 39.7186, "lon": 140.1024 },
+    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 385800,
+      "estatStatsDataId": "0002114508"
+    },
+    "provenance": ["source:estat-rice-prefecture-harvest-r5"]
+  },
+  {
+    "id": "prefecture:miyagi",
+    "kind": "Prefecture",
+    "label": "Miyagi",
+    "labelJa": "宮城県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、宮城県の主食用収穫量は 323,800 トンだった。",
+    "whyItMatters": "宮城県を加えると、コメ供給の国内基盤が東北に広く分布していることが見えてくる。",
+    "themes": ["rice"],
+    "coordinates": { "lat": 38.2688, "lon": 140.8721 },
+    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 323800,
+      "estatStatsDataId": "0002114508"
+    },
+    "provenance": ["source:estat-rice-prefecture-harvest-r5"]
+  },
+  {
+    "id": "prefecture:yamagata",
+    "kind": "Prefecture",
+    "label": "Yamagata",
+    "labelJa": "山形県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、山形県の主食用収穫量は 308,600 トンだった。",
+    "whyItMatters": "山形県まで見ると、主産地が新潟県だけではないことをユーザーに明確に示せる。",
+    "themes": ["rice"],
+    "coordinates": { "lat": 38.2404, "lon": 140.3633 },
+    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 308600,
+      "estatStatsDataId": "0002114508"
+    },
+    "provenance": ["source:estat-rice-prefecture-harvest-r5"]
   },
   {
     "id": "product:rice",
@@ -210,7 +279,8 @@
     "summary": "Japan's staple food and the key domestic bridge from dependency to household impact.",
     "whyItMatters": "Rice turns abstract dependency into a daily-life issue for people in Japan.",
     "themes": ["rice"],
-    "provenance": ["source:maff-rice-policy", "source:maff-rice-monthly-report"]
+    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
+    "provenance": ["source:maff-rice-policy", "source:maff-rice-monthly-report", "source:estat-rice-prefecture-harvest-r5"]
   },
   {
     "id": "resource:lng",

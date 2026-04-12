@@ -1,6 +1,7 @@
 import type { ThemeView } from "../../types/presentation";
 import type { DependencyFlow, Observation, SemanticEntity } from "../../types/semantic";
 import { buildSignalNarrativeForFlow, buildSignalNarrativeForObservation } from "../semantic/signal-narrative";
+import { getDomesticImpactCopy } from "./domestic-copy";
 import {
   localizeAnyLabel,
   localizeFlowLabel,
@@ -37,7 +38,7 @@ export function buildOperationRows(view: ThemeView): OperationRow[] {
   return [
     ...view.flows.map((flow) => flowToRow(flow, view.entities)),
     ...view.observations.map((observation) => observationToRow(observation, view.entities)),
-    ...view.japanImpacts.map((impact) => impactToRow(impact))
+    ...view.japanImpacts.map((impact) => impactToRow(impact, view.id))
   ];
 }
 
@@ -88,15 +89,17 @@ function observationToRow(observation: Observation, entities: SemanticEntity[]):
   };
 }
 
-function impactToRow(impact: SemanticEntity): OperationRow {
+function impactToRow(impact: SemanticEntity, themeId: ThemeView["id"]): OperationRow {
+  const domesticCopy = getDomesticImpactCopy(themeId);
+
   return {
     id: impact.id,
     type: localizeKind(impact.kind),
     label: localizeAnyLabel(impact.id, impact.label),
-    subject: "国内着地点",
+    subject: domesticCopy.subject,
     urgency: "通常",
     status: "表示対象",
-    action: "地図上の位置を確認",
+    action: domesticCopy.action,
     period: "第0段階"
   };
 }
