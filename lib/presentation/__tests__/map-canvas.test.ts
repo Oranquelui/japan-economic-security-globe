@@ -22,7 +22,7 @@ describe("japan map canvas model", () => {
       expect.arrayContaining(["country:qatar", "chokepoint:hormuz", "terminal:sodegaura-lng"])
     );
     expect(model.foreignWindow?.entities.map((entity) => entity.id)).toContain("country:qatar");
-    expect(model.routes.some((route) => route.pointIds.includes("terminal:sodegaura-lng"))).toBe(true);
+    expect(model.routes).toHaveLength(0);
   });
 
   test("expands rice domestic points beyond the original two using prefectural production anchors", () => {
@@ -57,6 +57,17 @@ describe("japan map canvas model", () => {
     const view = getThemeView(graph, "rice");
 
     const model = buildJapanMapCanvasModel(graph, view, "observation:rice-stockpile-policy-2026");
+
+    expect(model.routes).toHaveLength(0);
+    expect(model.globalRoutes).toHaveLength(0);
+    expect(model.foreignWindow).toBeUndefined();
+  });
+
+  test("does not render conceptual rice bridge flows as map routes even when the flow itself is selected", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+
+    const model = buildJapanMapCanvasModel(graph, view, "flow:energy-inputs-rice");
 
     expect(model.routes).toHaveLength(0);
     expect(model.globalRoutes).toHaveLength(0);

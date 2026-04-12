@@ -7,6 +7,7 @@
     "destinationId": "country:japan",
     "resourceId": "resource:crude-oil",
     "routeIds": ["route:gulf-to-japan", "chokepoint:hormuz", "chokepoint:malacca", "refinery:keihin"],
+    "mapLineKind": "route",
     "sourceIds": [
       "source:customs-trade-statistics",
       "source:enecho-energy-trends",
@@ -25,6 +26,7 @@
     "destinationId": "country:japan",
     "resourceId": "resource:lng",
     "routeIds": ["route:gulf-to-japan", "chokepoint:hormuz", "chokepoint:malacca", "terminal:sodegaura-lng"],
+    "mapLineKind": "route",
     "sourceIds": [
       "source:customs-trade-statistics",
       "source:enecho-energy-trends",
@@ -44,6 +46,7 @@
     "destinationId": "country:japan",
     "resourceId": "resource:coal",
     "routeIds": ["port:yokohama"],
+    "mapLineKind": "route",
     "sourceIds": [
       "source:customs-trade-statistics",
       "source:enecho-energy-trends",
@@ -62,6 +65,7 @@
     "destinationId": "product:rice",
     "productId": "product:fertilizer-inputs",
     "routeIds": ["refinery:keihin", "prefecture:niigata"],
+    "mapLineKind": "bridge",
     "sourceIds": [
       "source:maff-rice-policy",
       "source:maff-rice-monthly-report",

@@ -64,7 +64,7 @@ export function buildJapanMapCanvasModel(
 
   const routes = routeScopedFlows
     .map((flow) => {
-      const domesticSequence = resolveDomesticSequence(graph, flow.routeIds, view.japanImpacts);
+      const domesticSequence = resolveDomesticSequence(graph, flow.routeIds);
 
       if (domesticSequence.length < 2) {
         return null;
@@ -95,7 +95,7 @@ export function buildJapanMapCanvasModel(
     value: normalizedMetrics[index]
   }));
 
-  const globalPoints = buildGlobalPoints(graph, view, japanEntity);
+  const globalPoints = buildGlobalPoints(routeScopedFlows, graph, japanEntity);
   const globalRoutes = buildGlobalRoutes(routeScopedFlows, graph, globalPoints, japanEntity);
 
   return {
@@ -111,7 +111,7 @@ export function buildJapanMapCanvasModel(
 function getRouteScopedFlows(graph: SemanticGraph, view: ThemeView, activeId: string): DependencyFlow[] {
   const activeFlow = view.flows.find((flow) => flow.id === activeId);
   if (activeFlow) {
-    return [activeFlow];
+    return isRenderableMapRoute(activeFlow) ? [activeFlow] : [];
   }
 
   const activeEntity = graph.entities.find((entity) => entity.id === activeId);
@@ -121,19 +121,20 @@ function getRouteScopedFlows(graph: SemanticGraph, view: ThemeView, activeId: st
 
   return view.flows.filter(
     (flow) =>
-      flow.originId === activeId ||
-      flow.destinationId === activeId ||
-      flow.routeIds.includes(activeId)
+      isRenderableMapRoute(flow) &&
+      (flow.originId === activeId ||
+        flow.destinationId === activeId ||
+        flow.routeIds.includes(activeId))
   );
 }
 
 function buildGlobalPoints(
+  routeScopedFlows: DependencyFlow[],
   graph: SemanticGraph,
-  view: ThemeView,
   japanEntity?: SemanticEntity
 ): JapanMapPoint[] {
   const globalEntities = dedupeById(
-    view.flows
+    routeScopedFlows
       .flatMap((flow) => [flow.originId, flow.destinationId, ...flow.routeIds])
       .map((id) => graph.entities.find((entity) => entity.id === id))
       .filter((entity): entity is SemanticEntity => Boolean(entity))
@@ -232,10 +233,13 @@ function isRouteSelectableEntity(kind: SemanticEntity["kind"]) {
   ].includes(kind);
 }
 
+function isRenderableMapRoute(flow: DependencyFlow) {
+  return flow.routeIds.length > 0 && flow.mapLineKind !== "bridge";
+}
+
 function resolveDomesticSequence(
   graph: SemanticGraph,
-  routeIds: string[],
-  japanImpacts: SemanticEntity[]
+  routeIds: string[]
 ): SemanticEntity[] {
   const domesticRouteEntities = routeIds
     .map((id) => graph.entities.find((entity) => entity.id === id))
@@ -244,16 +248,6 @@ function resolveDomesticSequence(
 
   if (domesticRouteEntities.length >= 2) {
     return domesticRouteEntities;
-  }
-
-  if (domesticRouteEntities.length === 1) {
-    const anchor =
-      japanImpacts.find((entity) => entity.kind === "Prefecture" && entity.id !== domesticRouteEntities[0].id) ??
-      japanImpacts.find((entity) => entity.id !== domesticRouteEntities[0].id);
-
-    if (anchor?.coordinates) {
-      return [domesticRouteEntities[0], anchor];
-    }
   }
 
   return [];

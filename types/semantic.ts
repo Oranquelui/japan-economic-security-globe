@@ -73,6 +73,7 @@ export interface DependencyFlow {
   resourceId?: string;
   productId?: string;
   routeIds: string[];
+  mapLineKind?: "route" | "bridge";
   sourceIds: string[];
   period: string;
   summary: string;
