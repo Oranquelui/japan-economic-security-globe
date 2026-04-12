@@ -126,7 +126,7 @@ export function MapInboxPanel({
                   </div>
 
                   <div className="mt-2 overflow-hidden rounded-xl border" style={{ borderColor: themePalette.borderSubtle }}>
-                    {section.rows.slice(0, 4).map((row) => {
+                    {section.rows.map((row) => {
                       const isActive = row.id === activeId;
 
                       return (

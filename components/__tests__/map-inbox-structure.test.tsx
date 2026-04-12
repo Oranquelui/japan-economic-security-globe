@@ -47,4 +47,26 @@ describe("map inbox structure", () => {
     expect(screen.queryByText("テーマ")).toBeNull();
     expect(screen.queryByText("コメ")).toBeNull();
   });
+
+  test("shows all priority rows instead of truncating them to four items", () => {
+    render(
+      <MapInboxPanel
+        activeId="row-1"
+        onQueryChange={vi.fn()}
+        onSelect={vi.fn()}
+        query=""
+        rows={[
+          { id: "row-1", type: "価格圧力", label: "行1", subject: "コメ", urgency: "高", status: "要確認", action: "確認", period: "2026" },
+          { id: "row-2", type: "価格圧力", label: "行2", subject: "コメ", urgency: "高", status: "要確認", action: "確認", period: "2026" },
+          { id: "row-3", type: "価格圧力", label: "行3", subject: "コメ", urgency: "高", status: "要確認", action: "確認", period: "2026" },
+          { id: "row-4", type: "価格圧力", label: "行4", subject: "コメ", urgency: "高", status: "要確認", action: "確認", period: "2026" },
+          { id: "row-5", type: "価格圧力", label: "行5", subject: "コメ", urgency: "高", status: "要確認", action: "確認", period: "2026" }
+        ]}
+        themeLabel="コメ"
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    expect(screen.getByText("行5")).toBeTruthy();
+  });
 });

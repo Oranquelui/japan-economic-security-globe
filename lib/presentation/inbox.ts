@@ -8,11 +8,12 @@ export type InboxSection = {
 };
 
 export function buildInboxSections(rows: OperationRow[]): InboxSection[] {
-  const priorityRows = sortRows(rows.filter((row) => row.urgency === "高" || row.status === "要確認"));
+  const priorityRows = sortRows(rows.filter((row) => row.urgency === "高" || row.status === "要確認"), "priority");
   const claimedIds = new Set(priorityRows.map((row) => row.id));
 
   const watchRows = sortRows(
-    rows.filter((row) => row.status === "監視中" && !claimedIds.has(row.id))
+    rows.filter((row) => row.status === "監視中" && !claimedIds.has(row.id)),
+    "watch"
   );
   for (const row of watchRows) {
     claimedIds.add(row.id);
@@ -26,7 +27,8 @@ export function buildInboxSections(rows: OperationRow[]): InboxSection[] {
           row.type.includes("国内") ||
           row.type.includes("拠点") ||
           row.subject.includes("国内"))
-    )
+    ),
+    "domestic"
   );
 
   return [
@@ -51,7 +53,7 @@ export function buildInboxSections(rows: OperationRow[]): InboxSection[] {
   ];
 }
 
-function sortRows(rows: OperationRow[]) {
+function sortRows(rows: OperationRow[], sectionId: InboxSection["id"]) {
   const severityScore = (value: string) => {
     if (value === "高") return 3;
     if (value === "中") return 2;
@@ -64,7 +66,32 @@ function sortRows(rows: OperationRow[]) {
     return 1;
   };
 
+  const domesticScore = (row: OperationRow) => {
+    const normalized = `${row.type} ${row.label}`;
+
+    if (/(港湾|受入基地|基地|製油所|国内着地点|ターミナル)/.test(normalized)) {
+      return 3;
+    }
+
+    if (/(貯水池|ダム|リザーバー)/.test(normalized)) {
+      return 2;
+    }
+
+    if (/(都道府県|地域|県|府|道)/.test(normalized)) {
+      return 1;
+    }
+
+    return 0;
+  };
+
   return [...rows].sort((left, right) => {
+    if (sectionId === "domestic") {
+      const domesticDiff = domesticScore(right) - domesticScore(left);
+      if (domesticDiff !== 0) {
+        return domesticDiff;
+      }
+    }
+
     const severityDiff = severityScore(right.urgency) - severityScore(left.urgency);
     if (severityDiff !== 0) {
       return severityDiff;

@@ -35,6 +35,16 @@ const rows: OperationRow[] = [
     period: "第0段階"
   },
   {
+    id: "prefecture:niigata",
+    type: "都道府県",
+    label: "新潟県",
+    subject: "国内着地点",
+    urgency: "通常",
+    status: "表示対象",
+    action: "地域影響を確認",
+    period: "第0段階"
+  },
+  {
     id: "observation:semiconductor-policy-signal-2026",
     type: "産業基盤政策",
     label: "半導体産業基盤の政策シグナル",
@@ -57,6 +67,9 @@ describe("inbox sections", () => {
       "observation:semiconductor-policy-signal-2026"
     ]);
     expect(sections[1].rows.map((row) => row.id)).toEqual([]);
-    expect(sections[2].rows.map((row) => row.id)).toEqual(["terminal:sodegaura-lng"]);
+    expect(sections[2].rows.map((row) => row.id)).toEqual([
+      "terminal:sodegaura-lng",
+      "prefecture:niigata"
+    ]);
   });
 });
