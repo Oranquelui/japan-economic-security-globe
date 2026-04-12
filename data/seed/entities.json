@@ -6,11 +6,23 @@
     "labelJa": "日本",
     "summary": "The service anchor: all external dependencies are interpreted through their impact on people in Japan.",
     "whyItMatters": "Japan is the subject of the service, not just another country node.",
-    "themes": ["energy", "rice", "water", "defense", "semiconductors"],
-    "coordinates": { "lat": 36.2048, "lon": 138.2529 },
+    "themes": [
+      "energy",
+      "rice",
+      "water",
+      "defense",
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 36.2048,
+      "lon": 138.2529
+    },
     "countryCode": "JP",
     "flagEmoji": "🇯🇵",
-    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
+    "provenance": [
+      "source:enecho-energy-trends",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "country:saudi-arabia",
@@ -18,11 +30,19 @@
     "label": "Saudi Arabia",
     "summary": "A major Middle East oil supplier in Japan's energy dependency story.",
     "whyItMatters": "Middle East route risk can feed into Japanese fuel, electricity, logistics, and input cost pressure.",
-    "themes": ["energy"],
-    "coordinates": { "lat": 23.8859, "lon": 45.0792 },
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 23.8859,
+      "lon": 45.0792
+    },
     "countryCode": "SA",
     "flagEmoji": "🇸🇦",
-    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
+    "provenance": [
+      "source:enecho-energy-trends",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "country:qatar",
@@ -30,11 +50,19 @@
     "label": "Qatar",
     "summary": "A Gulf LNG supplier used in the MVP energy route story.",
     "whyItMatters": "LNG supply risk is easier for Japanese users to understand when tied to electricity exposure.",
-    "themes": ["energy"],
-    "coordinates": { "lat": 25.3548, "lon": 51.1839 },
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 25.3548,
+      "lon": 51.1839
+    },
     "countryCode": "QA",
     "flagEmoji": "🇶🇦",
-    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
+    "provenance": [
+      "source:enecho-energy-trends",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "country:australia",
@@ -42,11 +70,19 @@
     "label": "Australia",
     "summary": "A major LNG and coal supplier in Japan's energy mix.",
     "whyItMatters": "Australia shows that Japan's energy exposure is not only a Middle East problem.",
-    "themes": ["energy"],
-    "coordinates": { "lat": -25.2744, "lon": 133.7751 },
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": -25.2744,
+      "lon": 133.7751
+    },
     "countryCode": "AU",
     "flagEmoji": "🇦🇺",
-    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
+    "provenance": [
+      "source:enecho-energy-trends",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "country:taiwan",
@@ -54,11 +90,20 @@
     "label": "Taiwan",
     "summary": "A key semiconductor node in Japan's economic security story.",
     "whyItMatters": "Taiwan's semiconductor ecosystem shapes Japan's technology supply-chain exposure.",
-    "themes": ["semiconductors"],
-    "coordinates": { "lat": 23.6978, "lon": 120.9605 },
+    "themes": [
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 23.6978,
+      "lon": 120.9605
+    },
     "countryCode": "TW",
     "flagEmoji": "🇹🇼",
-    "provenance": ["source:cabinet-tsmc-2026", "source:meti-semiconductor-frame", "source:customs-trade-statistics"]
+    "provenance": [
+      "source:cabinet-tsmc-2026",
+      "source:meti-semiconductor-frame",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "country:south-korea",
@@ -66,11 +111,19 @@
     "label": "South Korea",
     "summary": "A neighboring semiconductor and advanced manufacturing partner and competitor.",
     "whyItMatters": "South Korea is part of the regional semiconductor dependency landscape around Japan.",
-    "themes": ["semiconductors"],
-    "coordinates": { "lat": 35.9078, "lon": 127.7669 },
+    "themes": [
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 35.9078,
+      "lon": 127.7669
+    },
     "countryCode": "KR",
     "flagEmoji": "🇰🇷",
-    "provenance": ["source:meti-semiconductor-frame", "source:customs-trade-statistics"]
+    "provenance": [
+      "source:meti-semiconductor-frame",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "country:netherlands",
@@ -78,11 +131,19 @@
     "label": "Netherlands",
     "summary": "A critical country in advanced semiconductor equipment dependency.",
     "whyItMatters": "Semiconductor capability depends not only on fabs but also on highly specialized equipment ecosystems.",
-    "themes": ["semiconductors"],
-    "coordinates": { "lat": 52.1326, "lon": 5.2913 },
+    "themes": [
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 52.1326,
+      "lon": 5.2913
+    },
     "countryCode": "NL",
     "flagEmoji": "🇳🇱",
-    "provenance": ["source:meti-semiconductor-frame", "source:customs-trade-statistics"]
+    "provenance": [
+      "source:meti-semiconductor-frame",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "country:united-states",
@@ -90,11 +151,21 @@
     "label": "United States",
     "summary": "A strategic partner in semiconductor and defense-related dependency stories.",
     "whyItMatters": "Japan's economic security often depends on US-linked technology, defense, and industrial policy coordination.",
-    "themes": ["defense", "semiconductors"],
-    "coordinates": { "lat": 37.0902, "lon": -95.7129 },
+    "themes": [
+      "defense",
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 37.0902,
+      "lon": -95.7129
+    },
     "countryCode": "US",
     "flagEmoji": "🇺🇸",
-    "provenance": ["source:meti-semiconductor-frame", "source:customs-trade-statistics", "source:mod-fy2026-budget"]
+    "provenance": [
+      "source:meti-semiconductor-frame",
+      "source:customs-trade-statistics",
+      "source:mod-fy2026-budget"
+    ]
   },
   {
     "id": "country:china",
@@ -102,11 +173,19 @@
     "label": "China",
     "summary": "A neighboring economic and strategic dependency variable for Japan.",
     "whyItMatters": "China is relevant to Japan's supply-chain, market, and strategic risk explanations.",
-    "themes": ["semiconductors"],
-    "coordinates": { "lat": 35.8617, "lon": 104.1954 },
+    "themes": [
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 35.8617,
+      "lon": 104.1954
+    },
     "countryCode": "CN",
     "flagEmoji": "🇨🇳",
-    "provenance": ["source:meti-semiconductor-frame", "source:customs-trade-statistics"]
+    "provenance": [
+      "source:meti-semiconductor-frame",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "chokepoint:hormuz",
@@ -114,9 +193,18 @@
     "label": "Strait of Hormuz",
     "summary": "A critical maritime chokepoint for Gulf energy shipments.",
     "whyItMatters": "For Japanese users, Hormuz matters when route risk becomes fuel, electricity, logistics, and food input pressure.",
-    "themes": ["energy", "rice"],
-    "coordinates": { "lat": 26.5667, "lon": 56.25 },
-    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
+    "themes": [
+      "energy",
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 26.5667,
+      "lon": 56.25
+    },
+    "provenance": [
+      "source:enecho-energy-trends",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "chokepoint:malacca",
@@ -124,9 +212,18 @@
     "label": "Strait of Malacca",
     "summary": "A maritime route connecting Indian Ocean energy flows to East Asia.",
     "whyItMatters": "Malacca helps explain why sea-lane disruption can become a Japanese domestic supply story.",
-    "themes": ["energy", "semiconductors"],
-    "coordinates": { "lat": 2.5, "lon": 101 },
-    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
+    "themes": [
+      "energy",
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 2.5,
+      "lon": 101
+    },
+    "provenance": [
+      "source:enecho-energy-trends",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "route:gulf-to-japan",
@@ -134,8 +231,13 @@
     "label": "Gulf to Japan sea lane",
     "summary": "A simplified MVP sea lane from Gulf suppliers through Hormuz and Malacca to Japan.",
     "whyItMatters": "It connects a faraway crisis to Japanese domestic energy exposure.",
-    "themes": ["energy", "rice"],
-    "provenance": ["source:meti-2026-energy-taskforce"]
+    "themes": [
+      "energy",
+      "rice"
+    ],
+    "provenance": [
+      "source:meti-2026-energy-taskforce"
+    ]
   },
   {
     "id": "port:yokohama",
@@ -143,9 +245,19 @@
     "label": "Yokohama Port",
     "summary": "A representative Japanese port used to show domestic landing points.",
     "whyItMatters": "Ports show where global dependency becomes domestic infrastructure exposure.",
-    "themes": ["energy"],
-    "coordinates": { "lat": 35.45, "lon": 139.65 },
-    "provenance": ["source:meti-2026-energy-taskforce"]
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 35.45,
+      "lon": 139.65
+    },
+    "provenance": [
+      "source:meti-2026-energy-taskforce"
+    ],
+    "properties": {
+      "displayPriority": 74
+    }
   },
   {
     "id": "terminal:sodegaura-lng",
@@ -153,9 +265,20 @@
     "label": "Sodegaura LNG Terminal",
     "summary": "Representative LNG receiving infrastructure in the Tokyo Bay energy system.",
     "whyItMatters": "LNG receiving terminals make global gas dependency visible inside Japan.",
-    "themes": ["energy"],
-    "coordinates": { "lat": 35.45, "lon": 139.99 },
-    "provenance": ["source:enecho-energy-trends", "source:tepco-2026-april-power"]
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 35.45,
+      "lon": 139.99
+    },
+    "provenance": [
+      "source:enecho-energy-trends",
+      "source:tepco-2026-april-power"
+    ],
+    "properties": {
+      "displayPriority": 97
+    }
   },
   {
     "id": "refinery:keihin",
@@ -163,20 +286,52 @@
     "label": "Keihin refinery area",
     "summary": "Representative refinery cluster for domestic oil-product exposure.",
     "whyItMatters": "Refineries translate crude supply risk into Japanese fuel and logistics exposure.",
-    "themes": ["energy", "rice"],
-    "coordinates": { "lat": 35.52, "lon": 139.75 },
-    "provenance": ["source:meti-2026-energy-taskforce"]
+    "themes": [
+      "energy",
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.52,
+      "lon": 139.75
+    },
+    "provenance": [
+      "source:meti-2026-energy-taskforce"
+    ],
+    "properties": {
+      "displayPriority": 96
+    }
   },
   {
     "id": "prefecture:tokyo",
     "kind": "Prefecture",
-    "label": "Tokyo",
-    "labelJa": "東京都",
-    "summary": "A domestic impact anchor for energy and water stress stories.",
-    "whyItMatters": "Tokyo makes national dependency concrete for household costs and reservoir concerns.",
-    "themes": ["energy", "water"],
-    "coordinates": { "lat": 35.6762, "lon": 139.6503 },
-    "provenance": ["source:enecho-energy-trends", "source:tepco-2026-april-power", "source:mlit-drought-portal"]
+    "label": "東京県",
+    "labelJa": "東京県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、東京県の主食用収穫量は 465 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "energy",
+      "water",
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.6762,
+      "lon": 139.6503
+    },
+    "provenance": [
+      "source:enecho-energy-trends",
+      "source:tepco-2026-april-power",
+      "source:mlit-drought-portal",
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 465,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 465,
+      "prefectureCode": "tokyo"
+    }
   },
   {
     "id": "reservoir:ogochi",
@@ -184,93 +339,160 @@
     "label": "Ogouchi Reservoir",
     "summary": "A Tokyo-area reservoir used to show current water storage conditions in the MVP.",
     "whyItMatters": "Reservoir levels make water dependency visible before it becomes a household disruption.",
-    "themes": ["water"],
-    "coordinates": { "lat": 35.7907, "lon": 139.0502 },
+    "themes": [
+      "water"
+    ],
+    "coordinates": {
+      "lat": 35.7907,
+      "lon": 139.0502
+    },
     "properties": {
       "basin": "Tama River",
-      "latestFillRatePercent": 34
+      "latestFillRatePercent": 34,
+      "displayPriority": 66
     },
-    "provenance": ["source:mlit-drought-portal", "source:jma-drought-spi"]
+    "provenance": [
+      "source:mlit-drought-portal",
+      "source:jma-drought-spi"
+    ]
   },
   {
     "id": "prefecture:niigata",
     "kind": "Prefecture",
-    "label": "Niigata",
+    "label": "新潟県",
     "labelJa": "新潟県",
-    "summary": "e-Stat の令和5年産水稲収穫量では、新潟県の主食用収穫量は 514,100 トンで全国最多だった。",
-    "whyItMatters": "コメの国内主要地域を 1 県だけでなく複数県で見ると、供給基盤の集中と地域差が見えやすくなる。",
-    "themes": ["rice", "water"],
-    "coordinates": { "lat": 37.9026, "lon": 139.0232 },
-    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
+    "summary": "e-Stat の令和5年産水稲収穫量では、新潟県の主食用収穫量は 514,100 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice",
+      "water"
+    ],
+    "coordinates": {
+      "lat": 37.9026,
+      "lon": 139.0232
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
     "properties": {
       "riceMainUseHarvestTonsR5": 514100,
-      "estatStatsDataId": "0002114508"
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 514100,
+      "prefectureCode": "niigata"
     },
-    "provenance": ["source:estat-rice-prefecture-harvest-r5", "source:maff-rice-policy", "source:maff-rice-monthly-report"]
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5",
+      "source:maff-rice-policy",
+      "source:maff-rice-monthly-report"
+    ]
   },
   {
     "id": "prefecture:hokkaido",
     "kind": "Prefecture",
-    "label": "Hokkaido",
+    "label": "北海道",
     "labelJa": "北海道",
     "summary": "e-Stat の令和5年産水稲収穫量では、北海道の主食用収穫量は 475,900 トンだった。",
-    "whyItMatters": "北海道は大規模産地として、コメ供給の地域分散と代替余地を考える基礎になる。",
-    "themes": ["rice"],
-    "coordinates": { "lat": 43.0642, "lon": 141.3469 },
-    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 43.0642,
+      "lon": 141.3469
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
     "properties": {
       "riceMainUseHarvestTonsR5": 475900,
-      "estatStatsDataId": "0002114508"
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 475900,
+      "prefectureCode": "hokkaido"
     },
-    "provenance": ["source:estat-rice-prefecture-harvest-r5"]
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ]
   },
   {
     "id": "prefecture:akita",
     "kind": "Prefecture",
-    "label": "Akita",
+    "label": "秋田県",
     "labelJa": "秋田県",
     "summary": "e-Stat の令和5年産水稲収穫量では、秋田県の主食用収穫量は 385,800 トンだった。",
-    "whyItMatters": "秋田県は東北の主産地として、コメ価格や在庫を地域生産と結び付けて読む起点になる。",
-    "themes": ["rice"],
-    "coordinates": { "lat": 39.7186, "lon": 140.1024 },
-    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 39.7186,
+      "lon": 140.1024
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
     "properties": {
       "riceMainUseHarvestTonsR5": 385800,
-      "estatStatsDataId": "0002114508"
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 385800,
+      "prefectureCode": "akita"
     },
-    "provenance": ["source:estat-rice-prefecture-harvest-r5"]
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ]
   },
   {
     "id": "prefecture:miyagi",
     "kind": "Prefecture",
-    "label": "Miyagi",
+    "label": "宮城県",
     "labelJa": "宮城県",
     "summary": "e-Stat の令和5年産水稲収穫量では、宮城県の主食用収穫量は 323,800 トンだった。",
-    "whyItMatters": "宮城県を加えると、コメ供給の国内基盤が東北に広く分布していることが見えてくる。",
-    "themes": ["rice"],
-    "coordinates": { "lat": 38.2688, "lon": 140.8721 },
-    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 38.2688,
+      "lon": 140.8721
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
     "properties": {
       "riceMainUseHarvestTonsR5": 323800,
-      "estatStatsDataId": "0002114508"
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 323800,
+      "prefectureCode": "miyagi"
     },
-    "provenance": ["source:estat-rice-prefecture-harvest-r5"]
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ]
   },
   {
     "id": "prefecture:yamagata",
     "kind": "Prefecture",
-    "label": "Yamagata",
+    "label": "山形県",
     "labelJa": "山形県",
     "summary": "e-Stat の令和5年産水稲収穫量では、山形県の主食用収穫量は 308,600 トンだった。",
-    "whyItMatters": "山形県まで見ると、主産地が新潟県だけではないことをユーザーに明確に示せる。",
-    "themes": ["rice"],
-    "coordinates": { "lat": 38.2404, "lon": 140.3633 },
-    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 38.2404,
+      "lon": 140.3633
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
     "properties": {
       "riceMainUseHarvestTonsR5": 308600,
-      "estatStatsDataId": "0002114508"
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 308600,
+      "prefectureCode": "yamagata"
     },
-    "provenance": ["source:estat-rice-prefecture-harvest-r5"]
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ]
   },
   {
     "id": "product:rice",
@@ -278,9 +500,17 @@
     "label": "Rice",
     "summary": "Japan's staple food and the key domestic bridge from dependency to household impact.",
     "whyItMatters": "Rice turns abstract dependency into a daily-life issue for people in Japan.",
-    "themes": ["rice"],
-    "sourceIds": ["source:estat-rice-prefecture-harvest-r5"],
-    "provenance": ["source:maff-rice-policy", "source:maff-rice-monthly-report", "source:estat-rice-prefecture-harvest-r5"]
+    "themes": [
+      "rice"
+    ],
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:maff-rice-policy",
+      "source:maff-rice-monthly-report",
+      "source:estat-rice-prefecture-harvest-r5"
+    ]
   },
   {
     "id": "resource:lng",
@@ -288,8 +518,14 @@
     "label": "LNG",
     "summary": "Liquefied natural gas used in Japan's energy dependency story.",
     "whyItMatters": "LNG exposure connects overseas supply routes to Japanese electricity costs.",
-    "themes": ["energy"],
-    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics", "source:tepco-2026-april-power"]
+    "themes": [
+      "energy"
+    ],
+    "provenance": [
+      "source:enecho-energy-trends",
+      "source:customs-trade-statistics",
+      "source:tepco-2026-april-power"
+    ]
   },
   {
     "id": "resource:crude-oil",
@@ -297,8 +533,14 @@
     "label": "Crude oil",
     "summary": "Crude oil import dependency is the MVP's launch-hook resource.",
     "whyItMatters": "Oil price and route risk can affect fuel, logistics, fertilizer, and food prices in Japan.",
-    "themes": ["energy", "rice"],
-    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
+    "themes": [
+      "energy",
+      "rice"
+    ],
+    "provenance": [
+      "source:enecho-energy-trends",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "resource:coal",
@@ -306,8 +548,13 @@
     "label": "Coal",
     "summary": "Coal is included to show that Japan's energy dependency is multi-resource.",
     "whyItMatters": "Coal exposure changes the route and supplier picture beyond the Gulf.",
-    "themes": ["energy"],
-    "provenance": ["source:enecho-energy-trends", "source:customs-trade-statistics"]
+    "themes": [
+      "energy"
+    ],
+    "provenance": [
+      "source:enecho-energy-trends",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "product:fertilizer-inputs",
@@ -315,8 +562,15 @@
     "label": "Fertilizer inputs",
     "summary": "A bridge product connecting energy and agricultural input costs.",
     "whyItMatters": "Fertilizer makes the Energy-to-Rice relationship easier to understand.",
-    "themes": ["energy", "rice"],
-    "provenance": ["source:maff-rice-policy", "source:maff-rice-monthly-report", "source:enecho-energy-trends"]
+    "themes": [
+      "energy",
+      "rice"
+    ],
+    "provenance": [
+      "source:maff-rice-policy",
+      "source:maff-rice-monthly-report",
+      "source:enecho-energy-trends"
+    ]
   },
   {
     "id": "budget:fiscal-2026-stand-off-defense",
@@ -324,12 +578,17 @@
     "label": "FY2026 stand-off defense capability",
     "summary": "A FY2026 budget line for stand-off defense capabilities.",
     "whyItMatters": "Defense spending becomes understandable when budget lines connect to capability areas and source documents.",
-    "themes": ["defense"],
+    "themes": [
+      "defense"
+    ],
     "properties": {
       "amountBillionJpy": 973.3,
       "fiscalYear": 2026
     },
-    "provenance": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"]
+    "provenance": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ]
   },
   {
     "id": "budget:fiscal-2026-integrated-air-missile-defense",
@@ -337,12 +596,17 @@
     "label": "FY2026 integrated air and missile defense capability",
     "summary": "A FY2026 budget line for integrated air and missile defense capabilities.",
     "whyItMatters": "Budget categories become legible when air and missile defense is separated from other defense functions.",
-    "themes": ["defense"],
+    "themes": [
+      "defense"
+    ],
     "properties": {
       "amountBillionJpy": 509.1,
       "fiscalYear": 2026
     },
-    "provenance": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"]
+    "provenance": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ]
   },
   {
     "id": "budget:fiscal-2026-unmanned-defense",
@@ -350,12 +614,17 @@
     "label": "FY2026 unmanned defense capability",
     "summary": "A FY2026 budget line for unmanned defense capabilities.",
     "whyItMatters": "Unmanned systems help explain where autonomy, surveillance, and force multiplication budgets are going.",
-    "themes": ["defense"],
+    "themes": [
+      "defense"
+    ],
     "properties": {
       "amountBillionJpy": 277.3,
       "fiscalYear": 2026
     },
-    "provenance": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"]
+    "provenance": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ]
   },
   {
     "id": "capability:standoff",
@@ -363,8 +632,13 @@
     "label": "Stand-off defense capability",
     "summary": "A capability-area node for defense budget flow explanations.",
     "whyItMatters": "Capability areas make budget allocations interpretable for citizens.",
-    "themes": ["defense"],
-    "provenance": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"]
+    "themes": [
+      "defense"
+    ],
+    "provenance": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ]
   },
   {
     "id": "capability:integrated-air-missile",
@@ -372,8 +646,13 @@
     "label": "Integrated air and missile defense capability",
     "summary": "A capability-area node for air and missile defense budget explanations.",
     "whyItMatters": "Air and missile defense explains how spending relates to interception, warning, and sensor networks.",
-    "themes": ["defense"],
-    "provenance": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"]
+    "themes": [
+      "defense"
+    ],
+    "provenance": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ]
   },
   {
     "id": "capability:unmanned",
@@ -381,8 +660,13 @@
     "label": "Unmanned defense capability",
     "summary": "A capability-area node for unmanned system budget explanations.",
     "whyItMatters": "Unmanned capabilities translate abstract budget growth into reconnaissance, transport, and autonomous operations.",
-    "themes": ["defense"],
-    "provenance": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"]
+    "themes": [
+      "defense"
+    ],
+    "provenance": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ]
   },
   {
     "id": "org:mod",
@@ -390,8 +674,13 @@
     "label": "Ministry of Defense",
     "summary": "Government organization publishing defense budget materials.",
     "whyItMatters": "Organizations anchor who publishes or administers policy and budget claims.",
-    "themes": ["defense"],
-    "provenance": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"]
+    "themes": [
+      "defense"
+    ],
+    "provenance": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ]
   },
   {
     "id": "product:advanced-semiconductors",
@@ -399,8 +688,14 @@
     "label": "Advanced semiconductors",
     "summary": "A strategic product in Japan's economic security graph.",
     "whyItMatters": "Semiconductor dependencies shape industrial resilience, economic security, and policy choices.",
-    "themes": ["semiconductors"],
-    "provenance": ["source:meti-semiconductor-frame", "source:cabinet-tsmc-2026", "source:customs-trade-statistics"]
+    "themes": [
+      "semiconductors"
+    ],
+    "provenance": [
+      "source:meti-semiconductor-frame",
+      "source:cabinet-tsmc-2026",
+      "source:customs-trade-statistics"
+    ]
   },
   {
     "id": "policy:semiconductor-industrial-base",
@@ -408,7 +703,1627 @@
     "label": "AI and semiconductor industrial base framework",
     "summary": "Policy framework used as an MVP source-linked semiconductor document.",
     "whyItMatters": "Policy documents show that the visualization is evidence-linked, not decorative.",
-    "themes": ["semiconductors"],
-    "provenance": ["source:meti-semiconductor-frame", "source:egov-law-search", "source:kokkai-api"]
+    "themes": [
+      "semiconductors"
+    ],
+    "provenance": [
+      "source:meti-semiconductor-frame",
+      "source:egov-law-search",
+      "source:kokkai-api"
+    ]
+  },
+  {
+    "id": "prefecture:aomori",
+    "kind": "Prefecture",
+    "label": "青森県",
+    "labelJa": "青森県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、青森県の主食用収穫量は 207,500 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 40.8244,
+      "lon": 140.74
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 207500,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 207500,
+      "prefectureCode": "aomori"
+    }
+  },
+  {
+    "id": "prefecture:iwate",
+    "kind": "Prefecture",
+    "label": "岩手県",
+    "labelJa": "岩手県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、岩手県の主食用収穫量は 235,800 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 39.7036,
+      "lon": 141.1527
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 235800,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 235800,
+      "prefectureCode": "iwate"
+    }
+  },
+  {
+    "id": "prefecture:fukushima",
+    "kind": "Prefecture",
+    "label": "福島県",
+    "labelJa": "福島県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、福島県の主食用収穫量は 297,900 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 37.7503,
+      "lon": 140.4676
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 297900,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 297900,
+      "prefectureCode": "fukushima"
+    }
+  },
+  {
+    "id": "prefecture:ibaraki",
+    "kind": "Prefecture",
+    "label": "茨城県",
+    "labelJa": "茨城県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、茨城県の主食用収穫量は 306,300 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 36.3418,
+      "lon": 140.4468
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 306300,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 306300,
+      "prefectureCode": "ibaraki"
+    }
+  },
+  {
+    "id": "prefecture:tochigi",
+    "kind": "Prefecture",
+    "label": "栃木県",
+    "labelJa": "栃木県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、栃木県の主食用収穫量は 261,000 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 36.5658,
+      "lon": 139.8836
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 261000,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 261000,
+      "prefectureCode": "tochigi"
+    }
+  },
+  {
+    "id": "prefecture:gunma",
+    "kind": "Prefecture",
+    "label": "群馬県",
+    "labelJa": "群馬県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、群馬県の主食用収穫量は 62,500 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 36.3907,
+      "lon": 139.0605
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 62500,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 62500,
+      "prefectureCode": "gunma"
+    }
+  },
+  {
+    "id": "prefecture:saitama",
+    "kind": "Prefecture",
+    "label": "埼玉県",
+    "labelJa": "埼玉県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、埼玉県の主食用収穫量は 133,100 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.8617,
+      "lon": 139.6455
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 133100,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 133100,
+      "prefectureCode": "saitama"
+    }
+  },
+  {
+    "id": "prefecture:chiba",
+    "kind": "Prefecture",
+    "label": "千葉県",
+    "labelJa": "千葉県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、千葉県の主食用収穫量は 255,100 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.6051,
+      "lon": 140.1233
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 255100,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 255100,
+      "prefectureCode": "chiba"
+    }
+  },
+  {
+    "id": "prefecture:kanagawa",
+    "kind": "Prefecture",
+    "label": "神奈川県",
+    "labelJa": "神奈川県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、神奈川県の主食用収穫量は 14,200 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.4478,
+      "lon": 139.6425
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 14200,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 14200,
+      "prefectureCode": "kanagawa"
+    }
+  },
+  {
+    "id": "prefecture:toyama",
+    "kind": "Prefecture",
+    "label": "富山県",
+    "labelJa": "富山県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、富山県の主食用収穫量は 164,700 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 36.6953,
+      "lon": 137.2113
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 164700,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 164700,
+      "prefectureCode": "toyama"
+    }
+  },
+  {
+    "id": "prefecture:ishikawa",
+    "kind": "Prefecture",
+    "label": "石川県",
+    "labelJa": "石川県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、石川県の主食用収穫量は 107,700 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 36.5944,
+      "lon": 136.6256
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 107700,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 107700,
+      "prefectureCode": "ishikawa"
+    }
+  },
+  {
+    "id": "prefecture:fukui",
+    "kind": "Prefecture",
+    "label": "福井県",
+    "labelJa": "福井県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、福井県の主食用収穫量は 107,500 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 36.0652,
+      "lon": 136.2216
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 107500,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 107500,
+      "prefectureCode": "fukui"
+    }
+  },
+  {
+    "id": "prefecture:yamanashi",
+    "kind": "Prefecture",
+    "label": "山梨県",
+    "labelJa": "山梨県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、山梨県の主食用収穫量は 25,300 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.6642,
+      "lon": 138.5684
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 25300,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 25300,
+      "prefectureCode": "yamanashi"
+    }
+  },
+  {
+    "id": "prefecture:nagano",
+    "kind": "Prefecture",
+    "label": "長野県",
+    "labelJa": "長野県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、長野県の主食用収穫量は 179,900 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 36.6513,
+      "lon": 138.181
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 179900,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 179900,
+      "prefectureCode": "nagano"
+    }
+  },
+  {
+    "id": "prefecture:gifu",
+    "kind": "Prefecture",
+    "label": "岐阜県",
+    "labelJa": "岐阜県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、岐阜県の主食用収穫量は 95,300 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.3912,
+      "lon": 136.7223
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 95300,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 95300,
+      "prefectureCode": "gifu"
+    }
+  },
+  {
+    "id": "prefecture:shizuoka",
+    "kind": "Prefecture",
+    "label": "静岡県",
+    "labelJa": "静岡県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、静岡県の主食用収穫量は 77,900 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 34.9769,
+      "lon": 138.3831
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 77900,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 77900,
+      "prefectureCode": "shizuoka"
+    }
+  },
+  {
+    "id": "prefecture:aichi",
+    "kind": "Prefecture",
+    "label": "愛知県",
+    "labelJa": "愛知県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、愛知県の主食用収穫量は 118,600 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.1802,
+      "lon": 136.9066
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 118600,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 118600,
+      "prefectureCode": "aichi"
+    }
+  },
+  {
+    "id": "prefecture:mie",
+    "kind": "Prefecture",
+    "label": "三重県",
+    "labelJa": "三重県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、三重県の主食用収穫量は 124,700 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 34.7303,
+      "lon": 136.5086
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 124700,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 124700,
+      "prefectureCode": "mie"
+    }
+  },
+  {
+    "id": "prefecture:shiga",
+    "kind": "Prefecture",
+    "label": "滋賀県",
+    "labelJa": "滋賀県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、滋賀県の主食用収穫量は 136,100 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.0045,
+      "lon": 135.8686
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 136100,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 136100,
+      "prefectureCode": "shiga"
+    }
+  },
+  {
+    "id": "prefecture:kyoto",
+    "kind": "Prefecture",
+    "label": "京都府",
+    "labelJa": "京都府",
+    "summary": "e-Stat の令和5年産水稲収穫量では、京都府の主食用収穫量は 66,300 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.0211,
+      "lon": 135.7556
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 66300,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 66300,
+      "prefectureCode": "kyoto"
+    }
+  },
+  {
+    "id": "prefecture:osaka",
+    "kind": "Prefecture",
+    "label": "大阪府",
+    "labelJa": "大阪府",
+    "summary": "e-Stat の令和5年産水稲収穫量では、大阪府の主食用収穫量は 22,300 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 34.6937,
+      "lon": 135.5023
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 22300,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 22300,
+      "prefectureCode": "osaka"
+    }
+  },
+  {
+    "id": "prefecture:hyogo",
+    "kind": "Prefecture",
+    "label": "兵庫県",
+    "labelJa": "兵庫県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、兵庫県の主食用収穫量は 161,500 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 34.6913,
+      "lon": 135.183
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 161500,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 161500,
+      "prefectureCode": "hyogo"
+    }
+  },
+  {
+    "id": "prefecture:nara",
+    "kind": "Prefecture",
+    "label": "奈良県",
+    "labelJa": "奈良県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、奈良県の主食用収穫量は 42,400 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 34.6851,
+      "lon": 135.8048
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 42400,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 42400,
+      "prefectureCode": "nara"
+    }
+  },
+  {
+    "id": "prefecture:wakayama",
+    "kind": "Prefecture",
+    "label": "和歌山県",
+    "labelJa": "和歌山県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、和歌山県の主食用収穫量は 29,200 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 34.226,
+      "lon": 135.1675
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 29200,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 29200,
+      "prefectureCode": "wakayama"
+    }
+  },
+  {
+    "id": "prefecture:tottori",
+    "kind": "Prefecture",
+    "label": "鳥取県",
+    "labelJa": "鳥取県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、鳥取県の主食用収穫量は 56,300 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.5011,
+      "lon": 134.2351
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 56300,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 56300,
+      "prefectureCode": "tottori"
+    }
+  },
+  {
+    "id": "prefecture:shimane",
+    "kind": "Prefecture",
+    "label": "島根県",
+    "labelJa": "島根県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、島根県の主食用収穫量は 81,900 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 35.4723,
+      "lon": 133.0505
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 81900,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 81900,
+      "prefectureCode": "shimane"
+    }
+  },
+  {
+    "id": "prefecture:okayama",
+    "kind": "Prefecture",
+    "label": "岡山県",
+    "labelJa": "岡山県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、岡山県の主食用収穫量は 138,300 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 34.6551,
+      "lon": 133.9195
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 138300,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 138300,
+      "prefectureCode": "okayama"
+    }
+  },
+  {
+    "id": "prefecture:hiroshima",
+    "kind": "Prefecture",
+    "label": "広島県",
+    "labelJa": "広島県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、広島県の主食用収穫量は 109,700 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 34.3853,
+      "lon": 132.4553
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 109700,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 109700,
+      "prefectureCode": "hiroshima"
+    }
+  },
+  {
+    "id": "prefecture:yamaguchi",
+    "kind": "Prefecture",
+    "label": "山口県",
+    "labelJa": "山口県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、山口県の主食用収穫量は 81,600 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 34.1859,
+      "lon": 131.4714
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 81600,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 81600,
+      "prefectureCode": "yamaguchi"
+    }
+  },
+  {
+    "id": "prefecture:tokushima",
+    "kind": "Prefecture",
+    "label": "徳島県",
+    "labelJa": "徳島県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、徳島県の主食用収穫量は 44,500 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 34.0658,
+      "lon": 134.5593
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 44500,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 44500,
+      "prefectureCode": "tokushima"
+    }
+  },
+  {
+    "id": "prefecture:kagawa",
+    "kind": "Prefecture",
+    "label": "香川県",
+    "labelJa": "香川県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、香川県の主食用収穫量は 50,100 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 34.3401,
+      "lon": 134.0434
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 50100,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 50100,
+      "prefectureCode": "kagawa"
+    }
+  },
+  {
+    "id": "prefecture:ehime",
+    "kind": "Prefecture",
+    "label": "愛媛県",
+    "labelJa": "愛媛県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、愛媛県の主食用収穫量は 64,600 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 33.8416,
+      "lon": 132.7657
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 64600,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 64600,
+      "prefectureCode": "ehime"
+    }
+  },
+  {
+    "id": "prefecture:kochi",
+    "kind": "Prefecture",
+    "label": "高知県",
+    "labelJa": "高知県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、高知県の主食用収穫量は 46,300 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 33.5597,
+      "lon": 133.5311
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 46300,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 46300,
+      "prefectureCode": "kochi"
+    }
+  },
+  {
+    "id": "prefecture:fukuoka",
+    "kind": "Prefecture",
+    "label": "福岡県",
+    "labelJa": "福岡県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、福岡県の主食用収穫量は 155,000 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 33.5904,
+      "lon": 130.4017
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 155000,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 155000,
+      "prefectureCode": "fukuoka"
+    }
+  },
+  {
+    "id": "prefecture:saga",
+    "kind": "Prefecture",
+    "label": "佐賀県",
+    "labelJa": "佐賀県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、佐賀県の主食用収穫量は 113,100 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 33.2494,
+      "lon": 130.2988
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 113100,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 113100,
+      "prefectureCode": "saga"
+    }
+  },
+  {
+    "id": "prefecture:nagasaki",
+    "kind": "Prefecture",
+    "label": "長崎県",
+    "labelJa": "長崎県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、長崎県の主食用収穫量は 48,800 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 32.7503,
+      "lon": 129.8777
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 48800,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 48800,
+      "prefectureCode": "nagasaki"
+    }
+  },
+  {
+    "id": "prefecture:kumamoto",
+    "kind": "Prefecture",
+    "label": "熊本県",
+    "labelJa": "熊本県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、熊本県の主食用収穫量は 149,700 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 32.8031,
+      "lon": 130.7079
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 149700,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 149700,
+      "prefectureCode": "kumamoto"
+    }
+  },
+  {
+    "id": "prefecture:oita",
+    "kind": "Prefecture",
+    "label": "大分県",
+    "labelJa": "大分県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、大分県の主食用収穫量は 88,900 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 33.2396,
+      "lon": 131.6093
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 88900,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 88900,
+      "prefectureCode": "oita"
+    }
+  },
+  {
+    "id": "prefecture:miyazaki",
+    "kind": "Prefecture",
+    "label": "宮崎県",
+    "labelJa": "宮崎県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、宮崎県の主食用収穫量は 61,700 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 31.9111,
+      "lon": 131.4239
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 61700,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 61700,
+      "prefectureCode": "miyazaki"
+    }
+  },
+  {
+    "id": "prefecture:kagoshima",
+    "kind": "Prefecture",
+    "label": "鹿児島県",
+    "labelJa": "鹿児島県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、鹿児島県の主食用収穫量は 76,600 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 31.5602,
+      "lon": 130.5581
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 76600,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 76600,
+      "prefectureCode": "kagoshima"
+    }
+  },
+  {
+    "id": "prefecture:okinawa",
+    "kind": "Prefecture",
+    "label": "沖縄県",
+    "labelJa": "沖縄県",
+    "summary": "e-Stat の令和5年産水稲収穫量では、沖縄県の主食用収穫量は 1,750 トンだった。",
+    "whyItMatters": "全国の主食用米の生産地域を都道府県単位で見ることで、価格・在庫・輸送・水の問題がどこへ波及するかを具体的に把握できる。",
+    "themes": [
+      "rice"
+    ],
+    "coordinates": {
+      "lat": 26.2124,
+      "lon": 127.6809
+    },
+    "sourceIds": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "provenance": [
+      "source:estat-rice-prefecture-harvest-r5"
+    ],
+    "properties": {
+      "riceMainUseHarvestTonsR5": 1750,
+      "estatStatsDataId": "0002114508",
+      "displayPriority": 1750,
+      "prefectureCode": "okinawa"
+    }
+  },
+  {
+    "id": "terminal:tomakomai-lng",
+    "kind": "Terminal",
+    "label": "苫小牧LNG受入基地",
+    "summary": "北海道側の LNG 受入拠点として、日本の北日本エネルギー供給を支える。",
+    "whyItMatters": "全国の LNG 受入基地を並べると、東京湾だけでなく北海道・関西・九州にも受入拠点が分布していることが見える。",
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 42.6407,
+      "lon": 141.6046
+    },
+    "sourceIds": [
+      "source:enecho-energy-trends"
+    ],
+    "provenance": [
+      "source:enecho-energy-trends"
+    ],
+    "properties": {
+      "displayPriority": 92
+    }
+  },
+  {
+    "id": "terminal:senboku-lng",
+    "kind": "Terminal",
+    "label": "泉北LNG受入基地",
+    "summary": "関西圏の代表的な LNG 受入拠点。",
+    "whyItMatters": "関西の電力・産業向けガス供給がどこに着地するかを示す。",
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 34.505,
+      "lon": 135.404
+    },
+    "sourceIds": [
+      "source:enecho-energy-trends"
+    ],
+    "provenance": [
+      "source:enecho-energy-trends"
+    ],
+    "properties": {
+      "displayPriority": 90
+    }
+  },
+  {
+    "id": "terminal:hibiki-lng",
+    "kind": "Terminal",
+    "label": "ひびきLNG基地",
+    "summary": "九州側の LNG 受入拠点として、西日本の供給網を支える。",
+    "whyItMatters": "日本のエネルギー依存は首都圏だけでなく、西日本の受入拠点も含めて理解する必要がある。",
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 33.916,
+      "lon": 130.807
+    },
+    "sourceIds": [
+      "source:enecho-energy-trends"
+    ],
+    "provenance": [
+      "source:enecho-energy-trends"
+    ],
+    "properties": {
+      "displayPriority": 86
+    }
+  },
+  {
+    "id": "terminal:joetsu-lng",
+    "kind": "Terminal",
+    "label": "上越LNG受入基地",
+    "summary": "日本海側の受入拠点として、東西両方向の供給補完に関わる。",
+    "whyItMatters": "LNG 受入拠点が太平洋側に偏らないことを示す。",
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 37.148,
+      "lon": 138.242
+    },
+    "sourceIds": [
+      "source:enecho-energy-trends"
+    ],
+    "provenance": [
+      "source:enecho-energy-trends"
+    ],
+    "properties": {
+      "displayPriority": 82
+    }
+  },
+  {
+    "id": "refinery:mizushima",
+    "kind": "Refinery",
+    "label": "水島製油所エリア",
+    "summary": "中国地方の石油精製拠点。",
+    "whyItMatters": "国内精製拠点の分布を見ると、原油依存が全国の燃料供給へどう変換されるかを読める。",
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 34.515,
+      "lon": 133.74
+    },
+    "sourceIds": [
+      "source:meti-2026-energy-taskforce"
+    ],
+    "provenance": [
+      "source:meti-2026-energy-taskforce"
+    ],
+    "properties": {
+      "displayPriority": 91
+    }
+  },
+  {
+    "id": "refinery:sendai",
+    "kind": "Refinery",
+    "label": "仙台製油所エリア",
+    "summary": "東北側の石油精製拠点。",
+    "whyItMatters": "東日本の燃料供給がどの精製拠点に依存するかを示す。",
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 38.257,
+      "lon": 141.019
+    },
+    "sourceIds": [
+      "source:meti-2026-energy-taskforce"
+    ],
+    "provenance": [
+      "source:meti-2026-energy-taskforce"
+    ],
+    "properties": {
+      "displayPriority": 84
+    }
+  },
+  {
+    "id": "refinery:oita",
+    "kind": "Refinery",
+    "label": "大分製油所エリア",
+    "summary": "九州の精製拠点として、西日本の石油製品供給を支える。",
+    "whyItMatters": "原油依存の着地点は東京湾だけではなく、九州の産業・物流にもつながる。",
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 33.215,
+      "lon": 131.688
+    },
+    "sourceIds": [
+      "source:meti-2026-energy-taskforce"
+    ],
+    "provenance": [
+      "source:meti-2026-energy-taskforce"
+    ],
+    "properties": {
+      "displayPriority": 79
+    }
+  },
+  {
+    "id": "reservoir:kamafusa",
+    "kind": "Reservoir",
+    "label": "釜房ダム",
+    "summary": "東北地方の代表的な水資源観測拠点。",
+    "whyItMatters": "首都圏以外でも貯水池の状況を並べると、水ストレスが全国の問題だと分かる。",
+    "themes": [
+      "water"
+    ],
+    "coordinates": {
+      "lat": 38.258,
+      "lon": 140.655
+    },
+    "sourceIds": [
+      "source:mlit-river-disaster-info"
+    ],
+    "provenance": [
+      "source:mlit-river-disaster-info"
+    ],
+    "properties": {
+      "latestFillRatePercent": 61,
+      "displayPriority": 39
+    }
+  },
+  {
+    "id": "reservoir:hiyoshi",
+    "kind": "Reservoir",
+    "label": "日吉ダム",
+    "summary": "近畿地方の代表的な貯水池。",
+    "whyItMatters": "関西圏でも水資源の監視が必要であることを示す。",
+    "themes": [
+      "water"
+    ],
+    "coordinates": {
+      "lat": 35.167,
+      "lon": 135.529
+    },
+    "sourceIds": [
+      "source:mlit-river-disaster-info"
+    ],
+    "provenance": [
+      "source:mlit-river-disaster-info"
+    ],
+    "properties": {
+      "latestFillRatePercent": 71,
+      "displayPriority": 29
+    }
+  },
+  {
+    "id": "reservoir:sameura",
+    "kind": "Reservoir",
+    "label": "早明浦ダム",
+    "summary": "四国地方の渇水報道で象徴的に扱われる貯水池。",
+    "whyItMatters": "四国の水ストレスは全国ニュースになりやすく、公共的な理解に直結する。",
+    "themes": [
+      "water"
+    ],
+    "coordinates": {
+      "lat": 33.754,
+      "lon": 133.587
+    },
+    "sourceIds": [
+      "source:mlit-river-disaster-info"
+    ],
+    "provenance": [
+      "source:mlit-river-disaster-info"
+    ],
+    "properties": {
+      "latestFillRatePercent": 58,
+      "displayPriority": 42
+    }
+  },
+  {
+    "id": "reservoir:tsuruta",
+    "kind": "Reservoir",
+    "label": "鶴田ダム",
+    "summary": "九州南部の代表的な水資源観測拠点。",
+    "whyItMatters": "南九州でも貯水率を並べて見ると、水問題が全国に分布していることが見える。",
+    "themes": [
+      "water"
+    ],
+    "coordinates": {
+      "lat": 31.902,
+      "lon": 130.431
+    },
+    "sourceIds": [
+      "source:mlit-river-disaster-info"
+    ],
+    "provenance": [
+      "source:mlit-river-disaster-info"
+    ],
+    "properties": {
+      "latestFillRatePercent": 67,
+      "displayPriority": 33
+    }
+  },
+  {
+    "id": "facility:rapidus-chitose",
+    "kind": "Facility",
+    "label": "Rapidus 千歳 IIM-1",
+    "summary": "北海道千歳市の先端半導体量産拠点。",
+    "whyItMatters": "半導体の国内産業基盤を全国で見ると、北海道が新しい先端ロジック拠点として浮かび上がる。",
+    "themes": [
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 42.804,
+      "lon": 141.695
+    },
+    "sourceIds": [
+      "source:rapidus-iim",
+      "source:meti-semiconductor-frame"
+    ],
+    "provenance": [
+      "source:rapidus-iim",
+      "source:meti-semiconductor-frame"
+    ],
+    "properties": {
+      "displayPriority": 96
+    }
+  },
+  {
+    "id": "facility:jasm-kumamoto",
+    "kind": "Facility",
+    "label": "JASM 熊本拠点",
+    "summary": "熊本県に立地する Japan Advanced Semiconductor Manufacturing の製造拠点。",
+    "whyItMatters": "九州の製造拠点を加えると、日本の半導体基盤が地域的に再編されていることが見える。",
+    "themes": [
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 32.903,
+      "lon": 130.827
+    },
+    "sourceIds": [
+      "source:tsmc-jasm-kumamoto",
+      "source:cabinet-tsmc-2026"
+    ],
+    "provenance": [
+      "source:tsmc-jasm-kumamoto",
+      "source:cabinet-tsmc-2026"
+    ],
+    "properties": {
+      "displayPriority": 95
+    }
+  },
+  {
+    "id": "facility:kioxia-yokkaichi",
+    "kind": "Facility",
+    "label": "KIOXIA 四日市工場",
+    "summary": "三重県四日市市のフラッシュメモリ生産拠点。",
+    "whyItMatters": "中部圏の大規模メモリ拠点は、国内半導体供給の量的基盤を示す。",
+    "themes": [
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 34.985,
+      "lon": 136.629
+    },
+    "sourceIds": [
+      "source:kioxia-yokkaichi",
+      "source:meti-semiconductor-frame"
+    ],
+    "provenance": [
+      "source:kioxia-yokkaichi",
+      "source:meti-semiconductor-frame"
+    ],
+    "properties": {
+      "displayPriority": 93
+    }
+  },
+  {
+    "id": "facility:micron-hiroshima",
+    "kind": "Facility",
+    "label": "Micron 広島拠点",
+    "summary": "広島県東広島市の DRAM 生産拠点。",
+    "whyItMatters": "広島拠点は、日本のメモリ製造と政府支援の接続を示す。",
+    "themes": [
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 34.431,
+      "lon": 132.743
+    },
+    "sourceIds": [
+      "source:micron-hiroshima",
+      "source:meti-semiconductor-frame"
+    ],
+    "provenance": [
+      "source:micron-hiroshima",
+      "source:meti-semiconductor-frame"
+    ],
+    "properties": {
+      "displayPriority": 89
+    }
+  },
+  {
+    "id": "facility:renesas-naka",
+    "kind": "Facility",
+    "label": "Renesas 那珂工場",
+    "summary": "茨城県ひたちなか市の半導体製造拠点。",
+    "whyItMatters": "茨城の拠点を含めると、車載・産業向けを含む国内半導体基盤の広がりが見える。",
+    "themes": [
+      "semiconductors"
+    ],
+    "coordinates": {
+      "lat": 36.394,
+      "lon": 140.534
+    },
+    "sourceIds": [
+      "source:renesas-naka-factory",
+      "source:meti-semiconductor-frame"
+    ],
+    "provenance": [
+      "source:renesas-naka-factory",
+      "source:meti-semiconductor-frame"
+    ],
+    "properties": {
+      "displayPriority": 86
+    }
+  },
+  {
+    "id": "facility:camp-asaka",
+    "kind": "Facility",
+    "label": "朝霞駐屯地",
+    "summary": "首都圏の陸上自衛隊拠点。",
+    "whyItMatters": "防衛の国内重点を予算だけでなく拠点で見ることで、市民に近い空間感覚で理解できる。",
+    "themes": [
+      "defense"
+    ],
+    "coordinates": {
+      "lat": 35.799,
+      "lon": 139.613
+    },
+    "sourceIds": [
+      "source:mod-installations",
+      "source:mod-fy2026-budget"
+    ],
+    "provenance": [
+      "source:mod-installations",
+      "source:mod-fy2026-budget"
+    ],
+    "properties": {
+      "displayPriority": 92
+    }
+  },
+  {
+    "id": "facility:misawa-air-base",
+    "kind": "Facility",
+    "label": "三沢基地",
+    "summary": "東北の航空自衛隊拠点。",
+    "whyItMatters": "東北・北日本の防衛配置を全国地図上で説明する起点になる。",
+    "themes": [
+      "defense"
+    ],
+    "coordinates": {
+      "lat": 40.703,
+      "lon": 141.37
+    },
+    "sourceIds": [
+      "source:mod-installations",
+      "source:mod-fy2026-budget"
+    ],
+    "provenance": [
+      "source:mod-installations",
+      "source:mod-fy2026-budget"
+    ],
+    "properties": {
+      "displayPriority": 89
+    }
+  },
+  {
+    "id": "facility:iwakuni-base",
+    "kind": "Facility",
+    "label": "岩国基地",
+    "summary": "中国地方の航空・海上運用と結びつく拠点。",
+    "whyItMatters": "西日本の防衛配置を全国で俯瞰する時の主要ノード。",
+    "themes": [
+      "defense"
+    ],
+    "coordinates": {
+      "lat": 34.143,
+      "lon": 132.235
+    },
+    "sourceIds": [
+      "source:mod-installations",
+      "source:mod-fy2026-budget"
+    ],
+    "provenance": [
+      "source:mod-installations",
+      "source:mod-fy2026-budget"
+    ],
+    "properties": {
+      "displayPriority": 87
+    }
+  },
+  {
+    "id": "facility:sasebo-base",
+    "kind": "Facility",
+    "label": "佐世保基地",
+    "summary": "九州北部の海上運用拠点。",
+    "whyItMatters": "海上輸送路と防衛の関係を日本国内の港湾・基地配置に結び付けて読める。",
+    "themes": [
+      "defense"
+    ],
+    "coordinates": {
+      "lat": 33.159,
+      "lon": 129.716
+    },
+    "sourceIds": [
+      "source:mod-installations",
+      "source:mod-fy2026-budget"
+    ],
+    "provenance": [
+      "source:mod-installations",
+      "source:mod-fy2026-budget"
+    ],
+    "properties": {
+      "displayPriority": 85
+    }
+  },
+  {
+    "id": "facility:yonaguni-camp",
+    "kind": "Facility",
+    "label": "与那国駐屯地",
+    "summary": "南西方面の前方配置拠点。",
+    "whyItMatters": "南西地域の配置を地図に載せると、防衛予算と地理的重点の関係が見えやすい。",
+    "themes": [
+      "defense"
+    ],
+    "coordinates": {
+      "lat": 24.466,
+      "lon": 123.013
+    },
+    "sourceIds": [
+      "source:mod-installations",
+      "source:mod-fy2026-budget"
+    ],
+    "provenance": [
+      "source:mod-installations",
+      "source:mod-fy2026-budget"
+    ],
+    "properties": {
+      "displayPriority": 94
+    }
   }
 ]

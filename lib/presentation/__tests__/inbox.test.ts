@@ -80,8 +80,29 @@ describe("inbox sections", () => {
       expect.objectContaining({
         id: "domestic",
         label: "国内主要地域",
-        description: "コメ生産や供給の中心となる都道府県・拠点"
+        description: "e-Stat の主食用収穫量と供給拠点で見る、コメの国内基盤"
       })
     );
+  });
+
+  test("orders domestic rows by strategic anchor before prefectural regions", () => {
+    const sections = buildInboxSections("energy", [
+      ...rows,
+      {
+        id: "refinery:mizushima",
+        type: "製油所",
+        label: "水島製油所",
+        subject: "国内着地点",
+        urgency: "通常",
+        status: "表示対象",
+        action: "国内精製の偏りを確認",
+        period: "第0段階"
+      }
+    ]);
+
+    expect(sections[2].rows.slice(0, 2).map((row) => row.id)).toEqual([
+      "refinery:mizushima",
+      "terminal:sodegaura-lng"
+    ]);
   });
 });

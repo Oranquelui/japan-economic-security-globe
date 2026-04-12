@@ -40,4 +40,17 @@ describe("operations presentation model", () => {
     expect(filtered.length).toBeGreaterThan(0);
     expect(filtered.every((row) => `${row.label} ${row.subject} ${row.type}`.includes("LNG"))).toBe(true);
   });
+
+  test("keeps national rice prefectures as operation rows with official production context", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+    const rows = buildOperationRows(view);
+
+    expect(rows.find((row) => row.id === "prefecture:hyogo")).toMatchObject({
+      subject: "国内主要地域",
+      status: "表示対象"
+    });
+    expect(rows.find((row) => row.id === "prefecture:hiroshima")).toBeTruthy();
+    expect(rows.find((row) => row.id === "prefecture:fukuoka")).toBeTruthy();
+  });
 });

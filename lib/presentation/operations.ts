@@ -20,6 +20,7 @@ export type OperationRow = {
   status: string;
   action: string;
   period: string;
+  sortValue?: number;
 };
 
 const OPERATION_MODE_LABELS: Record<OperationMapMode, string> = {
@@ -100,8 +101,21 @@ function impactToRow(impact: SemanticEntity, themeId: ThemeView["id"]): Operatio
     urgency: "通常",
     status: "表示対象",
     action: domesticCopy.action,
-    period: "第0段階"
+    period: "第0段階",
+    sortValue: getImpactSortValue(impact)
   };
+}
+
+function getImpactSortValue(impact: SemanticEntity): number | undefined {
+  const properties = impact.properties ?? {};
+
+  return toNumber(properties.displayPriority)
+    ?? toNumber(properties.riceMainUseHarvestTonsR5)
+    ?? toNumber(properties.latestFillRatePercent);
+}
+
+function toNumber(value: string | number | boolean | undefined): number | undefined {
+  return typeof value === "number" ? value : undefined;
 }
 
 function localizePeriod(period: string): string {

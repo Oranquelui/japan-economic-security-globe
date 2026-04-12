@@ -13,13 +13,15 @@ describe("operations metrics", () => {
 
     const metrics = buildOperationsMetrics(view, rows);
 
-    expect(metrics).toEqual([
-      expect.objectContaining({ id: "displayed", value: 8 }),
-      expect.objectContaining({ id: "high-risk", value: 3 }),
-      expect.objectContaining({ id: "monitoring", value: 4 }),
-      expect.objectContaining({ id: "domestic-impacts", value: 4 }),
-      expect.objectContaining({ id: "sources", value: 4 })
-    ]);
+    expect(metrics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "displayed", value: 15 }),
+        expect.objectContaining({ id: "high-risk", value: 3 }),
+        expect.objectContaining({ id: "monitoring", value: 4 }),
+        expect.objectContaining({ id: "domestic-impacts", label: "国内エネルギー拠点", value: 11 }),
+        expect.objectContaining({ id: "sources", value: 4 })
+      ])
+    );
   });
 
   test("uses rice-specific domestic copy and more than two domestic regions", () => {
@@ -31,7 +33,12 @@ describe("operations metrics", () => {
 
     expect(metrics).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: "domestic-impacts", label: "国内主要地域", value: 6 })
+        expect.objectContaining({
+          id: "domestic-impacts",
+          label: "国内主要地域",
+          description: "e-Stat の主食用収穫量と供給拠点で見る、コメの国内基盤",
+          value: 48
+        })
       ])
     );
   });

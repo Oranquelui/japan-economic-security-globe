@@ -131,7 +131,7 @@
     "publisher": "e-Stat / 農林水産省",
     "published": "2025-02-28",
     "accessed": "2026-04-12",
-    "description": "e-Stat API で取得できる令和5年産の都道府県別水稲収穫量。主食用収穫量の上位は新潟514,100t、北海道475,900t、秋田385,800t、宮城323,800t、山形308,600t。",
+    "description": "e-Stat API で取得できる令和5年産の都道府県別水稲収穫量。全国47都道府県の主食用収穫量を rice テーマの国内主要地域として反映する。",
     "official": true,
     "accessMode": "html",
     "tier": "A"
@@ -203,5 +203,83 @@
     "official": true,
     "accessMode": "html",
     "tier": "C"
+  },
+  {
+    "id": "source:mlit-river-disaster-info",
+    "label": "国土交通省 川の防災情報",
+    "url": "https://www.river.go.jp/",
+    "publisher": "国土交通省",
+    "accessed": "2026-04-12",
+    "description": "全国の河川・ダム・観測所情報を確認できる公式ポータル。全国の貯水池拠点 seed の根拠として使う。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:mod-installations",
+    "label": "防衛省 自衛隊の組織・部隊・機関",
+    "url": "https://www.mod.go.jp/j/profile/mod_sdf/",
+    "publisher": "防衛省",
+    "accessed": "2026-04-12",
+    "description": "陸海空自衛隊の部隊・基地・駐屯地情報をまとめた公式入口。国内防衛拠点 seed の根拠として使う。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:rapidus-iim",
+    "label": "Rapidus IIM 半導体製造拠点",
+    "url": "https://www.rapidus.inc/en/iim",
+    "publisher": "Rapidus株式会社",
+    "accessed": "2026-04-12",
+    "description": "北海道千歳市の IIM-1 量産拠点を示す公式ページ。",
+    "official": false,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:tsmc-jasm-kumamoto",
+    "label": "TSMC / JASM 熊本拠点",
+    "url": "https://pr.tsmc.com/japanese/news/3113",
+    "publisher": "TSMC",
+    "published": "2024-02-24",
+    "accessed": "2026-04-12",
+    "description": "JASM 熊本拠点の開所と拡張計画を示す公式発表。",
+    "official": false,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:kioxia-yokkaichi",
+    "label": "KIOXIA 四日市工場",
+    "url": "https://www.kioxia.com/en-jp/about/yokkaichi/about.html",
+    "publisher": "KIOXIA株式会社",
+    "accessed": "2026-04-12",
+    "description": "三重県四日市市の KIOXIA 四日市工場の公式概要。",
+    "official": false,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:micron-hiroshima",
+    "label": "Micron 広島拠点",
+    "url": "https://jp.micron.com/about/press/news/micron-memory-japan-set-to-receive-grant-from-meti",
+    "publisher": "Micron Technology",
+    "accessed": "2026-04-12",
+    "description": "広島県東広島市の生産拠点強化に関する公式発表。",
+    "official": false,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:renesas-naka-factory",
+    "label": "Renesas Naka Factory",
+    "url": "https://www.renesas.com/us/en/about/profile/global/rsmc",
+    "publisher": "Renesas Electronics Corporation",
+    "accessed": "2026-04-12",
+    "description": "茨城県ひたちなか市の Naka Factory を含む Renesas Semiconductor Manufacturing の公式情報。",
+    "official": false,
+    "accessMode": "html",
+    "tier": "B"
   }
 ]

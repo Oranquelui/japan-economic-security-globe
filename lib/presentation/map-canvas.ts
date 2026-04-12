@@ -78,15 +78,21 @@ export function buildJapanMapCanvasModel(
     })
     .filter((route): route is JapanMapRoute => route !== null);
 
-  const regions = view.japanImpacts
+  const regionCandidates = view.japanImpacts
     .filter((entity) => entity.coordinates && (entity.kind === "Prefecture" || entity.kind === "Reservoir"))
-    .map((entity, index) => ({
-      id: entity.id,
-      label: localizeAnyLabel(entity.id, entity.label),
-      lat: entity.coordinates!.lat,
-      lon: entity.coordinates!.lon,
-      value: 55 + index * 15
-    }));
+    .map((entity) => ({
+      entity,
+      metric: getRegionalMetric(entity, view.id)
+    }))
+    .filter((candidate): candidate is { entity: SemanticEntity; metric: number } => candidate.metric !== undefined);
+  const normalizedMetrics = normalizeRegionalMetrics(regionCandidates.map((candidate) => candidate.metric), view.id);
+  const regions = regionCandidates.map((candidate, index) => ({
+    id: candidate.entity.id,
+    label: localizeAnyLabel(candidate.entity.id, candidate.entity.label),
+    lat: candidate.entity.coordinates!.lat,
+    lon: candidate.entity.coordinates!.lon,
+    value: normalizedMetrics[index]
+  }));
 
   const globalPoints = buildGlobalPoints(graph, view, japanEntity);
   const globalRoutes = buildGlobalRoutes(graph, view, globalPoints, japanEntity);
@@ -258,6 +264,36 @@ function classifyDomesticTone(entity: SemanticEntity): JapanMapPoint["tone"] {
   }
 
   return "normal";
+}
+
+function getRegionalMetric(entity: SemanticEntity, themeId: ThemeView["id"]): number | undefined {
+  const properties = entity.properties ?? {};
+
+  if (themeId === "rice" && entity.kind === "Prefecture" && typeof properties.riceMainUseHarvestTonsR5 === "number") {
+    return properties.riceMainUseHarvestTonsR5;
+  }
+
+  if (themeId === "water" && entity.kind === "Reservoir" && typeof properties.latestFillRatePercent === "number") {
+    return properties.latestFillRatePercent;
+  }
+
+  return undefined;
+}
+
+function normalizeRegionalMetrics(metrics: number[], themeId: ThemeView["id"]): number[] {
+  if (metrics.length === 0) {
+    return [];
+  }
+
+  const transformed = metrics.map((metric) => (themeId === "rice" ? Math.log10(metric + 1) : metric));
+  const min = Math.min(...transformed);
+  const max = Math.max(...transformed);
+
+  if (min === max) {
+    return transformed.map(() => 65);
+  }
+
+  return transformed.map((metric) => 35 + ((metric - min) / (max - min)) * 65);
 }
 
 function classifyGlobalTone(entity: SemanticEntity): JapanMapPoint["tone"] {

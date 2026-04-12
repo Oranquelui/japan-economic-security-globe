@@ -30,6 +30,7 @@ describe("japan map canvas model", () => {
     const view = getThemeView(graph, "rice");
 
     const model = buildJapanMapCanvasModel(graph, view, "observation:rice-price-signal-2026");
+    const ricePrefecturePoints = model.points.filter((point) => point.id.startsWith("prefecture:"));
 
     expect(model.points.map((point) => point.id)).toEqual(
       expect.arrayContaining([
@@ -38,8 +39,16 @@ describe("japan map canvas model", () => {
         "prefecture:hokkaido",
         "prefecture:akita",
         "prefecture:miyagi",
-        "prefecture:yamagata"
+        "prefecture:yamagata",
+        "prefecture:hyogo",
+        "prefecture:okayama",
+        "prefecture:hiroshima",
+        "prefecture:fukuoka"
       ])
+    );
+    expect(ricePrefecturePoints.length).toBeGreaterThanOrEqual(47);
+    expect(model.regions.find((region) => region.id === "prefecture:niigata")?.value).toBeGreaterThan(
+      model.regions.find((region) => region.id === "prefecture:osaka")?.value ?? 0
     );
   });
 });

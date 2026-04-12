@@ -93,6 +93,11 @@ function sortRows(rows: OperationRow[], sectionId: InboxSection["id"]) {
       if (domesticDiff !== 0) {
         return domesticDiff;
       }
+
+      const sortValueDiff = (right.sortValue ?? 0) - (left.sortValue ?? 0);
+      if (sortValueDiff !== 0) {
+        return sortValueDiff;
+      }
     }
 
     const severityDiff = severityScore(right.urgency) - severityScore(left.urgency);
