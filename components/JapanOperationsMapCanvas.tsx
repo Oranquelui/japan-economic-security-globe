@@ -113,25 +113,7 @@ export function JapanOperationsMapCanvas({
           type: "line",
           source: "global-routes",
           paint: {
-            "line-color": [
-              "case",
-              ["boolean", ["get", "selected"], false],
-              statusPalette.selected,
-              themePalette.accent
-            ],
-            "line-width": [
-              "case",
-              ["boolean", ["get", "selected"], false],
-              ["interpolate", ["linear"], ["zoom"], 2, 3.4, 6, 2.8, 10, 2.2],
-              ["interpolate", ["linear"], ["zoom"], 2, 2.2, 6, 1.8, 10, 1.3]
-            ],
-            "line-opacity": [
-              "case",
-              ["boolean", ["get", "selected"], false],
-              ["interpolate", ["linear"], ["zoom"], 2, 0.94, 6, 0.9, 10, 0.84],
-              ["interpolate", ["linear"], ["zoom"], 2, 0.52, 6, 0.42, 10, 0.3]
-            ],
-            "line-dasharray": [1.1, 1.6]
+            ...getGlobalRoutePaint(themePalette, statusPalette, mapMode)
           }
         });
 
@@ -153,7 +135,7 @@ export function JapanOperationsMapCanvas({
               statusPalette.selected,
               themePalette.accent
             ],
-            "text-opacity": 0.74
+            "text-opacity": mapMode === "route" ? 0.88 : 0.74
           }
         });
 
@@ -239,24 +221,7 @@ export function JapanOperationsMapCanvas({
           source: "jp-routes",
           minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
           paint: {
-            "line-color": [
-              "case",
-              ["boolean", ["get", "selected"], false],
-              statusPalette.selected,
-              themePalette.accent
-            ],
-            "line-width": [
-              "case",
-              ["boolean", ["get", "selected"], false],
-              4,
-              2.2
-            ],
-            "line-opacity": [
-              "case",
-              ["boolean", ["get", "selected"], false],
-              0.96,
-              0.62
-            ]
+            ...getDomesticRoutePaint(themePalette, statusPalette, mapMode)
           }
         });
 
@@ -442,17 +407,18 @@ export function JapanOperationsMapCanvas({
 
     map.setPaintProperty("ops-background", "background-color", themePalette.surfaceCanvas);
     map.setPaintProperty("global-route-line", "line-color", [
-      "case",
-      ["boolean", ["get", "selected"], false],
-      statusPalette.selected,
-      themePalette.accent
+      ...(getGlobalRoutePaint(themePalette, statusPalette, mapMode)["line-color"] as unknown[])
     ]);
+    map.setPaintProperty("global-route-line", "line-width", getGlobalRoutePaint(themePalette, statusPalette, mapMode)["line-width"]);
+    map.setPaintProperty("global-route-line", "line-opacity", getGlobalRoutePaint(themePalette, statusPalette, mapMode)["line-opacity"]);
+    map.setPaintProperty("global-route-line", "line-dasharray", getGlobalRoutePaint(themePalette, statusPalette, mapMode)["line-dasharray"]);
     map.setPaintProperty("global-route-direction", "text-color", [
       "case",
       ["boolean", ["get", "selected"], false],
       statusPalette.selected,
       themePalette.accent
     ]);
+    map.setPaintProperty("global-route-direction", "text-opacity", mapMode === "route" ? 0.88 : 0.74);
     map.setPaintProperty("global-point-circle", "circle-color", [
       "match",
       ["get", "tone"],
@@ -469,17 +435,17 @@ export function JapanOperationsMapCanvas({
       themePalette.accent
     ]);
     map.setPaintProperty("jp-route-line", "line-color", [
-      "case",
-      ["boolean", ["get", "selected"], false],
-      statusPalette.selected,
-      themePalette.accent
+      ...(getDomesticRoutePaint(themePalette, statusPalette, mapMode)["line-color"] as unknown[])
     ]);
+    map.setPaintProperty("jp-route-line", "line-width", getDomesticRoutePaint(themePalette, statusPalette, mapMode)["line-width"]);
+    map.setPaintProperty("jp-route-line", "line-opacity", getDomesticRoutePaint(themePalette, statusPalette, mapMode)["line-opacity"]);
     map.setPaintProperty("jp-route-direction", "text-color", [
       "case",
       ["boolean", ["get", "selected"], false],
       statusPalette.selected,
       themePalette.accent
     ]);
+    map.setPaintProperty("jp-route-direction", "text-opacity", mapMode === "route" ? 0.9 : 0.82);
     map.setPaintProperty("jp-point-circle", "circle-color", [
       "match",
       ["get", "tone"],
@@ -570,6 +536,57 @@ export function getModeVisibilityState(mapMode: OperationMapMode) {
     showRoutes: mapMode === "point" || mapMode === "route",
     showRegions: mapMode === "choropleth" || mapMode === "static",
     showClusters: mapMode === "cluster"
+  };
+}
+
+function getGlobalRoutePaint(themePalette: ThemePalette, statusPalette: StatusPalette, mapMode: OperationMapMode): any {
+  const routeFocused = mapMode === "route";
+
+  return {
+    "line-color": [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      statusPalette.selected,
+      themePalette.accent
+    ],
+    "line-width": [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      ["interpolate", ["linear"], ["zoom"], 2, routeFocused ? 4.4 : 3.4, 6, routeFocused ? 3.8 : 2.8, 10, routeFocused ? 3.1 : 2.2],
+      ["interpolate", ["linear"], ["zoom"], 2, routeFocused ? 3 : 2.2, 6, routeFocused ? 2.4 : 1.8, 10, routeFocused ? 1.8 : 1.3]
+    ],
+    "line-opacity": [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      ["interpolate", ["linear"], ["zoom"], 2, 0.96, 6, 0.92, 10, 0.88],
+      ["interpolate", ["linear"], ["zoom"], 2, routeFocused ? 0.8 : 0.52, 6, routeFocused ? 0.68 : 0.42, 10, routeFocused ? 0.58 : 0.3]
+    ],
+    "line-dasharray": routeFocused ? [1, 1.15] : [1.1, 1.6]
+  };
+}
+
+function getDomesticRoutePaint(themePalette: ThemePalette, statusPalette: StatusPalette, mapMode: OperationMapMode): any {
+  const routeFocused = mapMode === "route";
+
+  return {
+    "line-color": [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      statusPalette.selected,
+      themePalette.accent
+    ],
+    "line-width": [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      routeFocused ? 4.8 : 4,
+      routeFocused ? 3 : 2.2
+    ],
+    "line-opacity": [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      0.98,
+      routeFocused ? 0.82 : 0.62
+    ]
   };
 }
 

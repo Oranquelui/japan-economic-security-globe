@@ -94,4 +94,31 @@ describe("map canvas layer config", () => {
     expect(pointLayer).toBeTruthy();
     expect(pointLayer).not.toHaveProperty("maxzoom");
   });
+
+  test("strengthens non-selected global routes in route mode so they stay legible", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="observation:lng-electricity-april-2026"
+        focusTargetId={null}
+        mapMode="route"
+        model={model}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("energy")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedLayers.length).toBeGreaterThan(0);
+    });
+
+    const routeLayer = addedLayers.find((layer) => layer.id === "global-route-line") as any;
+    expect(routeLayer).toBeTruthy();
+    expect(routeLayer.paint["line-opacity"]).toEqual([
+      "case",
+      ["boolean", ["get", "selected"], false],
+      ["interpolate", ["linear"], ["zoom"], 2, 0.96, 6, 0.92, 10, 0.88],
+      ["interpolate", ["linear"], ["zoom"], 2, 0.8, 6, 0.68, 10, 0.58]
+    ]);
+  });
 });

@@ -32,7 +32,7 @@ export function MapInboxPanel({
       className="flex h-full min-w-0 flex-col overflow-hidden"
       style={{ background: themePalette.surfacePanel }}
     >
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between gap-3 border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
           <div>
             <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
@@ -101,9 +101,10 @@ export function MapInboxPanel({
           </div>
         </section>
 
-        <section className="min-h-0 flex-1 px-4 py-4">
+        <section className="min-h-0 flex-1 overflow-hidden px-4 py-4">
           <div
-            className="h-full overflow-auto border"
+            data-testid="monitoring-inbox-scroll"
+            className="h-full overflow-y-auto overscroll-contain border"
             style={{
               borderColor: themePalette.borderSubtle,
               background: themePalette.surfacePanelElevated
