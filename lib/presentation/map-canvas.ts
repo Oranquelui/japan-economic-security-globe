@@ -15,6 +15,7 @@ export type JapanMapRoute = {
   id: string;
   label: string;
   pointIds: string[];
+  relatedIds: string[];
 };
 
 export type JapanMapRegion = {
@@ -71,7 +72,8 @@ export function buildJapanMapCanvasModel(
       return {
         id: flow.id,
         label: localizeAnyLabel(flow.id, flow.label),
-        pointIds: domesticSequence.map((entity) => entity.id)
+        pointIds: domesticSequence.map((entity) => entity.id),
+        relatedIds: [flow.id, flow.originId, flow.destinationId, ...flow.routeIds]
       };
     })
     .filter((route): route is JapanMapRoute => route !== null);
@@ -148,7 +150,8 @@ function buildGlobalRoutes(
       return {
         id: flow.id,
         label: localizeAnyLabel(flow.id, flow.label),
-        pointIds: globalSequence
+        pointIds: globalSequence,
+        relatedIds: [flow.id, flow.originId, flow.destinationId, ...flow.routeIds]
       };
     })
     .filter((route): route is JapanMapRoute => route !== null);

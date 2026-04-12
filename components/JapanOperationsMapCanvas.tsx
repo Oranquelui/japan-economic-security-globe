@@ -118,6 +118,16 @@ export function JapanOperationsMapCanvas({
         });
 
         map.addLayer({
+          id: "global-route-highlight",
+          type: "line",
+          source: "global-routes",
+          filter: ["boolean", ["get", "selected"], false],
+          paint: {
+            ...getGlobalRouteHighlightPaint(statusPalette, mapMode)
+          }
+        });
+
+        map.addLayer({
           id: "global-route-direction",
           type: "symbol",
           source: "global-routes",
@@ -412,6 +422,16 @@ export function JapanOperationsMapCanvas({
     map.setPaintProperty("global-route-line", "line-width", getGlobalRoutePaint(themePalette, statusPalette, mapMode)["line-width"]);
     map.setPaintProperty("global-route-line", "line-opacity", getGlobalRoutePaint(themePalette, statusPalette, mapMode)["line-opacity"]);
     map.setPaintProperty("global-route-line", "line-dasharray", getGlobalRoutePaint(themePalette, statusPalette, mapMode)["line-dasharray"]);
+    map.setPaintProperty(
+      "global-route-highlight",
+      "line-width",
+      getGlobalRouteHighlightPaint(statusPalette, mapMode)["line-width"]
+    );
+    map.setPaintProperty(
+      "global-route-highlight",
+      "line-opacity",
+      getGlobalRouteHighlightPaint(statusPalette, mapMode)["line-opacity"]
+    );
     map.setPaintProperty("global-route-direction", "text-color", [
       "case",
       ["boolean", ["get", "selected"], false],
@@ -518,6 +538,7 @@ function applyModeVisibility(map: any, mapMode: OperationMapMode) {
   map.setLayoutProperty("global-point-circle", "visibility", visibility(showPoints));
   map.setLayoutProperty("global-point-label", "visibility", visibility(showPoints));
   map.setLayoutProperty("global-route-line", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("global-route-highlight", "visibility", visibility(showRoutes));
   map.setLayoutProperty("global-route-direction", "visibility", visibility(showRoutes));
 
   map.setLayoutProperty("jp-point-circle", "visibility", visibility(showPoints));
@@ -562,6 +583,16 @@ function getGlobalRoutePaint(themePalette: ThemePalette, statusPalette: StatusPa
       ["interpolate", ["linear"], ["zoom"], 2, routeFocused ? 0.8 : 0.52, 6, routeFocused ? 0.68 : 0.42, 10, routeFocused ? 0.58 : 0.3]
     ],
     "line-dasharray": routeFocused ? [1, 1.15] : [1.1, 1.6]
+  };
+}
+
+function getGlobalRouteHighlightPaint(statusPalette: StatusPalette, mapMode: OperationMapMode): any {
+  const routeFocused = mapMode === "route";
+
+  return {
+    "line-color": statusPalette.selected,
+    "line-width": ["interpolate", ["linear"], ["zoom"], 2, routeFocused ? 6.8 : 5.8, 6, routeFocused ? 5.8 : 4.8, 10, routeFocused ? 4.9 : 4.1],
+    "line-opacity": ["interpolate", ["linear"], ["zoom"], 2, 0.44, 6, 0.36, 10, 0.28]
   };
 }
 
@@ -644,7 +675,10 @@ function routesToFeatureCollection(routes: JapanMapRoute[], points: JapanMapPoin
           properties: {
             id: route.id,
             label: route.label,
-            selected: route.id === activeId || route.pointIds.includes(activeId)
+            selected:
+              route.id === activeId ||
+              route.pointIds.includes(activeId) ||
+              Boolean(route.relatedIds?.includes(activeId))
           }
         };
       })
@@ -700,10 +734,10 @@ function focusMapOnSelection(
   mapMode: OperationMapMode,
   currentZoom: number
 ) {
-  const activeRoute = model.routes.find((route) => route.id === activeId);
+  const activeRoute = model.routes.find((route) => routeMatchesSelection(route, activeId));
   const activePoint = model.points.find((point) => point.id === activeId);
   const activeRegion = model.regions.find((region) => region.id === activeId);
-  const activeGlobalRoute = model.globalRoutes.find((route) => route.id === activeId);
+  const activeGlobalRoute = model.globalRoutes.find((route) => routeMatchesSelection(route, activeId));
   const activeGlobalPoint = model.globalPoints.find((point) => point.id === activeId);
   const globalRoutePoints = activeGlobalRoute
     ? activeGlobalRoute.pointIds
@@ -774,6 +808,10 @@ function focusMapOnSelection(
     maxZoom: prefersGlobal ? 4.4 : mapMode === "route" ? 8.4 : 7.6,
     duration: 700
   });
+}
+
+function routeMatchesSelection(route: JapanMapRoute, activeId: string) {
+  return route.id === activeId || route.pointIds.includes(activeId) || route.relatedIds.includes(activeId);
 }
 
 function resolveDomesticFocusPoints(

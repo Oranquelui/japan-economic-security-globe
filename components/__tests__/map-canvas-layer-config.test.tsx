@@ -72,7 +72,8 @@ const model: JapanMapCanvasModel = {
     {
       id: "flow:saudi-oil-japan",
       label: "サウジ原油 → 日本",
-      pointIds: ["country:saudi-arabia", "chokepoint:hormuz", "country:japan"]
+      pointIds: ["country:saudi-arabia", "chokepoint:hormuz", "country:japan"],
+      relatedIds: ["flow:saudi-oil-japan", "route:gulf-to-japan", "chokepoint:hormuz", "country:saudi-arabia", "country:japan"]
     }
   ]
 };
@@ -137,6 +138,31 @@ describe("map canvas layer config", () => {
         activeId="chokepoint:hormuz"
         focusTargetId={null}
         mapMode="route"
+        model={model}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("energy")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("global-routes")).toBe(true);
+    });
+
+    const globalRoutes = addedSources.get("global-routes") as {
+      features: Array<{ properties: { id: string; selected: boolean } }>;
+    };
+
+    expect(globalRoutes.features[0].properties.id).toBe("flow:saudi-oil-japan");
+    expect(globalRoutes.features[0].properties.selected).toBe(true);
+  });
+
+  test("marks global routes as selected when the active item is the sealanes entity behind that route", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="route:gulf-to-japan"
+        focusTargetId={null}
+        mapMode="point"
         model={model}
         onSelect={vi.fn()}
         statusPalette={getStatusPalette()}
