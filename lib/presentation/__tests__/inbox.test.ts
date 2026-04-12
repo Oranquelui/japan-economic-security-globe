@@ -56,7 +56,7 @@ describe("inbox sections", () => {
       "flow:qatar-lng-japan",
       "observation:semiconductor-policy-signal-2026"
     ]);
-    expect(sections[1].rows.map((row) => row.id)).toEqual(["flow:qatar-lng-japan"]);
+    expect(sections[1].rows.map((row) => row.id)).toEqual([]);
     expect(sections[2].rows.map((row) => row.id)).toEqual(["terminal:sodegaura-lng"]);
   });
 });

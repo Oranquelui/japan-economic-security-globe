@@ -8,19 +8,24 @@ export type InboxSection = {
 };
 
 export function buildInboxSections(rows: OperationRow[]): InboxSection[] {
-  const priorityRows = sortRows(
-    rows.filter((row) => row.urgency === "高" || row.status === "要確認")
-  );
+  const priorityRows = sortRows(rows.filter((row) => row.urgency === "高" || row.status === "要確認"));
+  const claimedIds = new Set(priorityRows.map((row) => row.id));
+
   const watchRows = sortRows(
-    rows.filter((row) => row.status === "監視中")
+    rows.filter((row) => row.status === "監視中" && !claimedIds.has(row.id))
   );
+  for (const row of watchRows) {
+    claimedIds.add(row.id);
+  }
+
   const domesticRows = sortRows(
     rows.filter(
       (row) =>
-        row.status === "表示対象" ||
-        row.type.includes("国内") ||
-        row.type.includes("拠点") ||
-        row.subject.includes("国内")
+        !claimedIds.has(row.id) &&
+        (row.status === "表示対象" ||
+          row.type.includes("国内") ||
+          row.type.includes("拠点") ||
+          row.subject.includes("国内"))
     )
   );
 

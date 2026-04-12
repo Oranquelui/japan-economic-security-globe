@@ -112,7 +112,6 @@ export function JapanOperationsMapCanvas({
           id: "global-route-line",
           type: "line",
           source: "global-routes",
-          maxzoom: GLOBAL_CONTEXT_MAX_ZOOM,
           paint: {
             "line-color": [
               "case",
@@ -123,14 +122,14 @@ export function JapanOperationsMapCanvas({
             "line-width": [
               "case",
               ["boolean", ["get", "selected"], false],
-              3.2,
-              2
+              ["interpolate", ["linear"], ["zoom"], 2, 3.4, 6, 2.8, 10, 2.2],
+              ["interpolate", ["linear"], ["zoom"], 2, 2.2, 6, 1.8, 10, 1.3]
             ],
             "line-opacity": [
               "case",
               ["boolean", ["get", "selected"], false],
-              0.94,
-              0.52
+              ["interpolate", ["linear"], ["zoom"], 2, 0.94, 6, 0.9, 10, 0.84],
+              ["interpolate", ["linear"], ["zoom"], 2, 0.52, 6, 0.42, 10, 0.3]
             ],
             "line-dasharray": [1.1, 1.6]
           }
@@ -140,7 +139,6 @@ export function JapanOperationsMapCanvas({
           id: "global-route-direction",
           type: "symbol",
           source: "global-routes",
-          maxzoom: GLOBAL_CONTEXT_MAX_ZOOM,
           layout: {
             "symbol-placement": "line",
             "text-field": "▶",
@@ -163,7 +161,6 @@ export function JapanOperationsMapCanvas({
           id: "global-point-circle",
           type: "circle",
           source: "global-points",
-          maxzoom: GLOBAL_CONTEXT_MAX_ZOOM,
           paint: {
             "circle-color": [
               "match",
@@ -184,8 +181,8 @@ export function JapanOperationsMapCanvas({
             "circle-radius": [
               "case",
               ["boolean", ["get", "selected"], false],
-              7.5,
-              5.5
+              ["interpolate", ["linear"], ["zoom"], 2, 7.5, 6, 6.5, 10, 5.4],
+              ["interpolate", ["linear"], ["zoom"], 2, 5.5, 6, 4.8, 10, 4.1]
             ],
             "circle-opacity": 0.92
           }
@@ -195,7 +192,6 @@ export function JapanOperationsMapCanvas({
           id: "global-point-label",
           type: "symbol",
           source: "global-points",
-          maxzoom: GLOBAL_CONTEXT_MAX_ZOOM,
           layout: {
             "text-field": ["get", "label"],
             "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
