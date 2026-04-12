@@ -51,6 +51,7 @@ export function buildJapanMapCanvasModel(
   activeId: string
 ): JapanMapCanvasModel {
   const japanEntity = graph.entities.find((entity) => entity.id === "country:japan");
+  const routeScopedFlows = getRouteScopedFlows(graph, view, activeId);
   const domesticPoints = dedupeById(
     view.japanImpacts
       .filter((entity) => entity.coordinates)
@@ -61,7 +62,7 @@ export function buildJapanMapCanvasModel(
       ? domesticPoints
       : [toPoint(japanEntity, "watch")];
 
-  const routes = view.flows
+  const routes = routeScopedFlows
     .map((flow) => {
       const domesticSequence = resolveDomesticSequence(graph, flow.routeIds, view.japanImpacts);
 
@@ -95,7 +96,7 @@ export function buildJapanMapCanvasModel(
   }));
 
   const globalPoints = buildGlobalPoints(graph, view, japanEntity);
-  const globalRoutes = buildGlobalRoutes(graph, view, globalPoints, japanEntity);
+  const globalRoutes = buildGlobalRoutes(routeScopedFlows, graph, globalPoints, japanEntity);
 
   return {
     points: visiblePoints,
@@ -103,8 +104,27 @@ export function buildJapanMapCanvasModel(
     regions,
     globalPoints,
     globalRoutes,
-    foreignWindow: buildForeignWindow(graph, view, activeId)
+    foreignWindow: buildForeignWindow(graph, routeScopedFlows, activeId)
   };
+}
+
+function getRouteScopedFlows(graph: SemanticGraph, view: ThemeView, activeId: string): DependencyFlow[] {
+  const activeFlow = view.flows.find((flow) => flow.id === activeId);
+  if (activeFlow) {
+    return [activeFlow];
+  }
+
+  const activeEntity = graph.entities.find((entity) => entity.id === activeId);
+  if (!activeEntity || !isRouteSelectableEntity(activeEntity.kind)) {
+    return [];
+  }
+
+  return view.flows.filter(
+    (flow) =>
+      flow.originId === activeId ||
+      flow.destinationId === activeId ||
+      flow.routeIds.includes(activeId)
+  );
 }
 
 function buildGlobalPoints(
@@ -136,14 +156,14 @@ function buildGlobalPoints(
 }
 
 function buildGlobalRoutes(
+  routeScopedFlows: DependencyFlow[],
   graph: SemanticGraph,
-  view: ThemeView,
   globalPoints: JapanMapPoint[],
   japanEntity?: SemanticEntity
 ): JapanMapRoute[] {
   const pointIds = new Set(globalPoints.map((point) => point.id));
 
-  return view.flows
+  return routeScopedFlows
     .map((flow) => {
       const globalSequence = resolveGlobalSequence(graph, flow, japanEntity)
         .filter((entity) => pointIds.has(entity.id))
@@ -163,8 +183,12 @@ function buildGlobalRoutes(
     .filter((route): route is JapanMapRoute => route !== null);
 }
 
-function buildForeignWindow(graph: SemanticGraph, view: ThemeView, activeId: string): JapanMapCanvasModel["foreignWindow"] {
-  const activeFlow = view.flows.find((flow) => flow.id === activeId) ?? view.flows[0];
+function buildForeignWindow(
+  graph: SemanticGraph,
+  routeScopedFlows: DependencyFlow[],
+  activeId: string
+): JapanMapCanvasModel["foreignWindow"] {
+  const activeFlow = routeScopedFlows.find((flow) => flow.id === activeId) ?? routeScopedFlows[0];
 
   if (!activeFlow) {
     return undefined;
@@ -191,6 +215,21 @@ function buildForeignWindow(graph: SemanticGraph, view: ThemeView, activeId: str
     title: localizeAnyLabel(activeFlow.id, activeFlow.label),
     entities: foreignEntities
   };
+}
+
+function isRouteSelectableEntity(kind: SemanticEntity["kind"]) {
+  return [
+    "Country",
+    "Chokepoint",
+    "Port",
+    "Terminal",
+    "Refinery",
+    "Prefecture",
+    "Facility",
+    "Reservoir",
+    "Route",
+    "SeaLane"
+  ].includes(kind);
 }
 
 function resolveDomesticSequence(

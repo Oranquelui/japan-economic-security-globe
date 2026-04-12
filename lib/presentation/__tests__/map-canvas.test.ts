@@ -51,4 +51,15 @@ describe("japan map canvas model", () => {
       model.regions.find((region) => region.id === "prefecture:osaka")?.value ?? 0
     );
   });
+
+  test("does not surface rice route overlays for policy or price observations", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+
+    const model = buildJapanMapCanvasModel(graph, view, "observation:rice-stockpile-policy-2026");
+
+    expect(model.routes).toHaveLength(0);
+    expect(model.globalRoutes).toHaveLength(0);
+    expect(model.foreignWindow).toBeUndefined();
+  });
 });
