@@ -16,6 +16,8 @@ const INITIAL_VALUES: ContactPayload = {
 export function ContactForm() {
   const [values, setValues] = useState<ContactPayload>(INITIAL_VALUES);
   const [errors, setErrors] = useState<Partial<Record<keyof ContactPayload, string>>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   function updateValue<Key extends keyof ContactPayload>(key: Key, value: ContactPayload[Key]) {
     setValues((current) => ({
@@ -24,10 +26,43 @@ export function ContactForm() {
     }));
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const result = validateContactPayload(values);
     setErrors(result.errors);
+
+    if (!result.ok) {
+      setStatusMessage(null);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatusMessage(null);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(values)
+      });
+      const body = (await response.json()) as { errors?: Partial<Record<keyof ContactPayload, string>>; message?: string };
+
+      if (!response.ok) {
+        setErrors(body.errors ?? {});
+        setStatusMessage(body.message ?? "送信に失敗しました。");
+        return;
+      }
+
+      setErrors({});
+      setStatusMessage(body.message ?? "問い合わせを送信しました。");
+      setValues(INITIAL_VALUES);
+    } catch {
+      setStatusMessage("送信に失敗しました。");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -109,11 +144,14 @@ export function ContactForm() {
         問い合わせ対応のため返信先メールアドレスは必須です。機微な個人情報や秘密情報は送信しないでください。
       </p>
 
+      {statusMessage ? <p className="text-sm text-slate-300">{statusMessage}</p> : null}
+
       <button
         type="submit"
+        disabled={isSubmitting}
         className="rounded-2xl border border-[#b67a45] bg-[#b67a45]/10 px-5 py-3 text-sm font-medium text-white transition hover:bg-[#b67a45]/20"
       >
-        送信する
+        {isSubmitting ? "送信中..." : "送信する"}
       </button>
     </form>
   );
