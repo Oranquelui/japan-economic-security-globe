@@ -231,7 +231,12 @@ export function EvidencePanel({
                 出典文書
               </div>
               <div className="mt-3 space-y-3">
-                {detail.sources.map((source) => (
+                {detail.sources.map((source) => {
+                  const highlights = detail.sourceHighlights
+                    .filter((item) => item.sourceId === source.id)
+                    .slice(0, 2);
+
+                  return (
                   <a
                     key={source.id}
                     href={source.url}
@@ -268,15 +273,12 @@ export function EvidencePanel({
                     <div className="mt-1 text-xs" style={{ color: themePalette.textMuted }}>
                       {localizePublisher(source.publisher)}
                     </div>
-                    {source.description ? (
+                    {!highlights.length && source.description ? (
                       <div className="mt-2 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
                         {source.description}
                       </div>
                     ) : null}
-                    {detail.sourceHighlights
-                      .filter((item) => item.sourceId === source.id)
-                      .slice(0, 2)
-                      .map((highlight) => (
+                    {highlights.map((highlight) => (
                         <div
                           key={`${source.id}:${highlight.claim}`}
                           className="mt-2 rounded-lg border px-3 py-2 text-[0.72rem] leading-5"
@@ -288,9 +290,10 @@ export function EvidencePanel({
                         >
                           {highlight.claim}
                         </div>
-                      ))}
+                    ))}
                   </a>
-                ))}
+                  );
+                })}
               </div>
             </section>
           </div>

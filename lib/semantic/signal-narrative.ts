@@ -349,6 +349,7 @@ export function buildSourceHighlightsFromFlow(flow: DependencyFlow, sources: Sou
 
 export function buildSourceHighlightsFromEntity(entity: SemanticEntity, sources: SourceDocument[]) {
   const highlights = [
+    ...sources.flatMap((source) => buildEntityClaimsForSource(entity, source)),
     entity.whyItMatters ? { sourceId: entity.sourceIds?.[0] ?? entity.provenance[0] ?? "source:unknown", claim: entity.whyItMatters } : null,
     ...sources.filter((source) => source.description).map((source) => ({ sourceId: source.id, claim: source.description! }))
   ].filter(Boolean) as Array<{ sourceId: string; claim: string }>;
@@ -616,6 +617,105 @@ function buildSemiconductorPolicyClaims(sourceId: string): SourceHighlight[] {
       return [{ sourceId, claim: "首相官邸資料はTSMCとの接点を経済安全保障の文脈で示す。" }];
     case "source:customs-trade-statistics":
       return [{ sourceId, claim: "財務省貿易統計は装置や部材の国別依存を数量化する入口になる。" }];
+    default:
+      return [];
+  }
+}
+
+function buildEntityClaimsForSource(entity: SemanticEntity, source: SourceDocument): SourceHighlight[] {
+  switch (entity.id) {
+    case "country:qatar":
+      return source.id === "source:customs-trade-statistics"
+        ? [{ sourceId: source.id, claim: "財務省貿易統計でカタール由来LNGの国別依存を確認する入口になる。" }]
+        : source.id === "source:enecho-energy-trends"
+          ? [{ sourceId: source.id, claim: "資源エネルギー庁資料はLNGの中東依存と調達構造を示す。" }]
+          : [];
+    case "country:saudi-arabia":
+      return source.id === "source:customs-trade-statistics"
+        ? [{ sourceId: source.id, claim: "財務省貿易統計でサウジ原油の国別依存を追跡できる。" }]
+        : source.id === "source:enecho-energy-trends"
+          ? [{ sourceId: source.id, claim: "資源エネルギー庁資料は原油の中東依存と備蓄文脈を補う。" }]
+          : [];
+    case "country:australia":
+      return source.id === "source:customs-trade-statistics"
+        ? [{ sourceId: source.id, claim: "財務省貿易統計で豪州由来の石炭・LNG依存を確認できる。" }]
+        : source.id === "source:enecho-energy-trends"
+          ? [{ sourceId: source.id, claim: "資源エネルギー庁資料は豪州が湾岸以外の供給先であることを補う。" }]
+          : [];
+    case "country:taiwan":
+      return source.id === "source:cabinet-tsmc-2026"
+        ? [{ sourceId: source.id, claim: "首相官邸資料はTSMCを経済安全保障の文脈で扱っている。" }]
+        : source.id === "source:meti-semiconductor-frame"
+          ? [{ sourceId: source.id, claim: "経産省資料は台湾の先端製造を産業基盤の要として位置付ける。" }]
+          : [];
+    case "country:netherlands":
+      return source.id === "source:meti-semiconductor-frame"
+        ? [{ sourceId: source.id, claim: "経産省資料はオランダ装置供給への依存を先端半導体基盤の一部として示す。" }]
+        : source.id === "source:customs-trade-statistics"
+          ? [{ sourceId: source.id, claim: "財務省貿易統計で装置・部材の対オランダ依存を確認できる。" }]
+          : [];
+    case "country:china":
+      return source.id === "source:customs-trade-statistics"
+        ? [{ sourceId: source.id, claim: "財務省貿易統計で中国関連の供給網露出を数量的に確認できる。" }]
+        : source.id === "source:meti-semiconductor-frame"
+          ? [{ sourceId: source.id, claim: "経産省資料は中国関連の供給網リスクを政策文脈に乗せる。" }]
+          : [];
+    case "chokepoint:hormuz":
+      return source.id === "source:enecho-energy-trends"
+        ? [{ sourceId: source.id, claim: "資源エネルギー庁資料はホルムズ海峡を通る中東依存の重さを示す。" }]
+        : source.id === "source:customs-trade-statistics"
+          ? [{ sourceId: source.id, claim: "貿易統計と組み合わせると、ホルムズ通航リスクがどの国別依存に効くかを追える。" }]
+          : [];
+    case "chokepoint:malacca":
+      return source.id === "source:enecho-energy-trends"
+        ? [{ sourceId: source.id, claim: "資源エネルギー庁資料は日本向け海上輸送がマラッカ海峡を経由する文脈を補う。" }]
+        : source.id === "source:customs-trade-statistics"
+          ? [{ sourceId: source.id, claim: "貿易統計と合わせると、マラッカ通航障害がどの調達先に効くかを読める。" }]
+          : [];
+    case "route:gulf-to-japan":
+      return source.id === "source:meti-2026-energy-taskforce"
+        ? [{ sourceId: source.id, claim: "中東情勢対策ポータルは湾岸危機を国内燃料供給の問題として扱う入口になる。" }]
+        : [];
+    case "terminal:sodegaura-lng":
+      return source.id === "source:tepco-2026-april-power"
+        ? [{ sourceId: source.id, claim: "東京電力EP資料はLNG受入基地と電気料金の関係を読む補助資料になる。" }]
+        : source.id === "source:enecho-energy-trends"
+          ? [{ sourceId: source.id, claim: "資源エネルギー庁資料はLNG受入インフラが国内着地点であることを補う。" }]
+          : [];
+    case "refinery:keihin":
+      return source.id === "source:meti-2026-energy-taskforce"
+        ? [{ sourceId: source.id, claim: "中東情勢ポータルは製油所エリアが国内供給へつながる位置であることを示す。" }]
+        : [];
+    case "reservoir:ogochi":
+      return source.id === "source:mlit-drought-portal"
+        ? [{ sourceId: source.id, claim: "国交省関東地方整備局は小河内ダムの貯水率34%を掲載した。" }]
+        : source.id === "source:jma-drought-spi"
+          ? [{ sourceId: source.id, claim: "気象庁資料は少雨・干ばつを評価する公式指標の見方を示す。" }]
+          : [];
+    case "prefecture:niigata":
+      return source.id === "source:maff-rice-policy"
+        ? [{ sourceId: source.id, claim: "農水省価格資料と組み合わせると主産地の価格影響を読みやすい。" }]
+        : source.id === "source:maff-rice-monthly-report"
+          ? [{ sourceId: source.id, claim: "農水省流通資料は新潟のような主産地と在庫・流通を結び付けて読める。" }]
+          : [];
+    case "product:rice":
+      return source.id === "source:maff-rice-policy"
+        ? [{ sourceId: source.id, claim: "農水省は令和8年2月の相対取引価格を35,056円/玄米60kgと公表した。" }]
+        : source.id === "source:maff-rice-monthly-report"
+          ? [{ sourceId: source.id, claim: "農水省は令和8年2月末の民間在庫量300万玄米トンを公表した。" }]
+          : [];
+    case "resource:lng":
+      return source.id === "source:enecho-energy-trends"
+        ? [{ sourceId: source.id, claim: "資源エネルギー庁資料はLNG調達の全体像と中東依存を示す。" }]
+        : source.id === "source:tepco-2026-april-power"
+          ? [{ sourceId: source.id, claim: "東京電力EP資料はLNG市況が家計の電気料金へ波及する面を補う。" }]
+          : [];
+    case "resource:crude-oil":
+      return source.id === "source:enecho-energy-trends"
+        ? [{ sourceId: source.id, claim: "資源エネルギー庁資料は原油の中東依存と備蓄日数を補う。" }]
+        : source.id === "source:customs-trade-statistics"
+          ? [{ sourceId: source.id, claim: "財務省貿易統計で原油の国別依存を確認できる。" }]
+          : [];
     default:
       return [];
   }

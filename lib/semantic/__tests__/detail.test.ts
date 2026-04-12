@@ -36,4 +36,14 @@ describe("getDetailView", () => {
     expect(detail.sparql.query).toContain("<https://data.jp-strategic-dependency-graph.org/id/flow/qatar-lng-japan>");
     expect(detail.sparql.query).toContain("jpsdg:transitsVia");
   });
+
+  test("builds source-specific claims for important energy entities", () => {
+    const graph = loadSeedGraph();
+
+    const detail = getDetailView(graph, "chokepoint:hormuz");
+
+    expect(detail.kind).toBe("Chokepoint");
+    expect(detail.sourceHighlights.some((item) => item.sourceId === "source:enecho-energy-trends" && item.claim.includes("ホルムズ海峡"))).toBe(true);
+    expect(detail.sourceHighlights.some((item) => item.sourceId === "source:customs-trade-statistics" && item.claim.includes("国別依存"))).toBe(true);
+  });
 });
