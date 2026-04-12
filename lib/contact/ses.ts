@@ -1,3 +1,5 @@
+import "server-only";
+
 import type { ContactPayload } from "../../types/contact";
 import type { ContactConfig } from "./config";
 

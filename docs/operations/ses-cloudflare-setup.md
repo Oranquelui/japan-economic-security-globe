@@ -89,6 +89,13 @@ Set these values for local preview and production deployment:
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 
+Rules:
+
+- keep real values only in ignored local files such as `.env.local`
+- never commit `.env.local` or any `.env.*.local` file
+- never expose these values through `NEXT_PUBLIC_*`
+- for deployed Workers, prefer `wrangler secret put` over plaintext vars
+
 For Cloudflare Workers, set secrets with `wrangler secret put`:
 
 ```bash
