@@ -32,16 +32,19 @@ export function ShellMenu({ sharePath, themePalette }: ShellMenuProps) {
         type="button"
         aria-expanded={isOpen}
         aria-haspopup="menu"
-        aria-label="メニュー"
+        aria-label={copied ? "URL コピー済み" : "メニュー"}
         onClick={() => setIsOpen((value) => !value)}
-        className="rounded-lg border px-3 py-2 text-[0.72rem] transition"
+        className="rounded-lg border px-3 py-2 transition"
         style={{
           borderColor: isOpen ? themePalette.accent : themePalette.borderSubtle,
           background: isOpen ? themePalette.accentSoft : themePalette.surfacePanelElevated,
           color: isOpen ? themePalette.textPrimary : themePalette.textMuted
         }}
       >
-        {copied ? "コピー済み" : "メニュー"}
+        <span className="sr-only">{copied ? "URL コピー済み" : "メニュー"}</span>
+        <span aria-hidden="true" className="block h-[2px] w-4 rounded-full bg-current" />
+        <span aria-hidden="true" className="mt-1 block h-[2px] w-4 rounded-full bg-current" />
+        <span aria-hidden="true" className="mt-1 block h-[2px] w-4 rounded-full bg-current" />
       </button>
 
       {isOpen ? (

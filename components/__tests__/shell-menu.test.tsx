@@ -16,13 +16,16 @@ beforeEach(() => {
 });
 
 describe("ShellMenu", () => {
-  test("opens a menu with share, sources/license, and contact actions", async () => {
+  test("renders a hamburger trigger and opens a menu with share, sources/license, and contact actions", async () => {
     const user = userEvent.setup();
 
     render(<ShellMenu sharePath="/?theme=rice" themePalette={getThemePalette("energy")} />);
 
-    expect(screen.getByRole("button", { name: "メニュー" })).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "メニュー" }));
+    const button = screen.getByRole("button", { name: "メニュー" });
+
+    expect(button.querySelectorAll("span[aria-hidden='true']").length).toBe(3);
+
+    await user.click(button);
 
     expect(screen.getByRole("menuitem", { name: "共有" })).toBeTruthy();
     expect(screen.getByRole("menuitem", { name: "Sources/License" }).getAttribute("href")).toBe("/sources-license");
