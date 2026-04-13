@@ -1,0 +1,51 @@
+name: 機能提案
+description: 改善案、新機能、公開導線や情報設計の提案を送ります。
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        目的と期待する利用シーンが分かると、優先度判断がしやすくなります。
+  - type: input
+    id: problem
+    attributes:
+      label: 解決したい課題
+      description: 現状で何が足りないか、何が不便かを一文で記入してください。
+      placeholder: "例: Defense テーマの比較導線が弱く、変化が読み取りづらい"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案内容
+      description: 欲しい機能や改善案を具体的に記入してください。
+    validations:
+      required: true
+  - type: textarea
+    id: use_case
+    attributes:
+      label: 想定利用シーン
+      description: 誰が、どの場面で使う想定かを記入してください。
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 関連領域
+      options:
+        - UI / UX
+        - データ
+        - 出典 / ライセンス
+        - 地図 / 可視化
+        - 検索 / フィルタ
+        - 問い合わせ / 公開導線
+        - その他
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: 参考情報
+      description: 参考サイト、画面キャプチャ、関連 issue などがあれば記入してください。

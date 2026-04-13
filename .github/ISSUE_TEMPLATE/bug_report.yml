@@ -1,0 +1,76 @@
+name: 不具合報告
+description: 表示崩れ、エラー、期待通りに動かない挙動を報告します。
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        不具合の内容を確認しやすくするため、再現手順と発生環境をできるだけ具体的に記入してください。
+  - type: input
+    id: summary
+    attributes:
+      label: 概要
+      description: 何が起きているかを一文で記入してください。
+      placeholder: "例: Sources/License ページのフッターがモバイルで崩れる"
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: 対象ページ / 画面
+      description: URL または画面名を記入してください。
+      placeholder: "例: https://economic-security.quadrillionaaa.com/sources-license"
+    validations:
+      required: true
+  - type: dropdown
+    id: theme
+    attributes:
+      label: 関連テーマ
+      options:
+        - Energy
+        - Rice
+        - Water
+        - Defense
+        - Semiconductors
+        - Sources/License
+        - Contact
+        - その他 / 不明
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 1. 2. 3. の順で再現できるように記入してください。
+      placeholder: |
+        1. トップページを開く
+        2. 右上のメニューを開く
+        3. Sources/License を開く
+        4. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待していた結果
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際に起きた結果
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 利用環境
+      description: ブラウザ、OS、端末など
+      placeholder: "例: Safari 17 / macOS 14 / iPhone 15 Pro"
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 補足情報
+      description: スクリーンショット、エラーメッセージ、コンソールログなどがあれば記入してください。
