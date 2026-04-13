@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe("SourcesLicensePage", () => {
-  test("renders the approved sections and source groups", () => {
+  test("renders the approved sections, source groups, and page-specific footer navigation", () => {
     render(<SourcesLicensePage sources={loadSeedGraph().sources} />);
 
     expect(screen.getByRole("heading", { name: "このサイトの利用方針" })).toBeTruthy();
@@ -19,5 +19,12 @@ describe("SourcesLicensePage", () => {
     expect(screen.getByRole("heading", { name: "ライセンス / 権利処理" })).toBeTruthy();
     expect(screen.getByText("政府・公的機関ソース")).toBeTruthy();
     expect(screen.getByText("民間企業ソース")).toBeTruthy();
+
+    expect(screen.getByRole("contentinfo")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Main (App)" }).getAttribute("href")).toBe("/");
+    expect(screen.getByRole("button", { name: "共有" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Sources/License" }).getAttribute("href")).toBe("/sources-license");
+    expect(screen.getByRole("link", { name: "問い合わせ" }).getAttribute("href")).toBe("/contact");
+    expect(screen.getByRole("link", { name: "X" }).getAttribute("href")).toBe("https://x.com/quadrillionboss");
   });
 });
