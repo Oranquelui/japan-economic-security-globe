@@ -22,6 +22,7 @@
     "next": "^16.2.3",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "server-only": "^0.0.1",
     "three": "^0.175.0",
     "topojson-client": "^3.1.0",
     "world-atlas": "^2.0.2"

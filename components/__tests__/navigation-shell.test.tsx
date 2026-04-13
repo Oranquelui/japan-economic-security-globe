@@ -59,6 +59,7 @@ describe("navigation shell", () => {
     expect(within(header).queryByRole("button", { name: "受信トレイ" })).toBeNull();
     expect(within(header).queryByRole("button", { name: "比較表" })).toBeNull();
     expect(within(header).queryByRole("button", { name: "根拠" })).toBeNull();
+    expect(within(header).getByRole("button", { name: "メニュー" })).toBeTruthy();
     expect(within(header).getByRole("button", { name: "地点" })).toBeTruthy();
     expect(within(header).queryByText("運用地図")).toBeNull();
     expect(within(header).getByText("表示レイヤー")).toBeTruthy();

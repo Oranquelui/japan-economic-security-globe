@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
-
 import type { OperationMapMode } from "../lib/presentation/operations";
 import type { ThemePalette } from "../lib/presentation/palette";
 import { getOperationModeLabel } from "../lib/presentation/operations";
+import { ShellMenu } from "./ShellMenu";
 
 interface ActionBarProps {
   mapMode: OperationMapMode;
@@ -31,20 +30,6 @@ export function ActionBar({
   themeLabel,
   themePalette
 }: ActionBarProps) {
-  const [copied, setCopied] = useState(false);
-
-  async function handleCopyLink() {
-    const url = typeof window === "undefined" ? sharePath : new URL(sharePath, window.location.origin).toString();
-
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1400);
-    } catch {
-      setCopied(false);
-    }
-  }
-
   return (
     <header
       className="hidden items-center justify-between gap-4 border-b px-4 py-3 lg:flex"
@@ -154,18 +139,7 @@ export function ActionBar({
         >
           フィルター解除
         </button>
-        <button
-          type="button"
-          onClick={handleCopyLink}
-          className="rounded-lg border px-3 py-2 text-[0.72rem] transition"
-          style={{
-            borderColor: copied ? themePalette.accent : themePalette.borderSubtle,
-            background: copied ? themePalette.accentSoft : themePalette.surfacePanelElevated,
-            color: copied ? themePalette.textPrimary : themePalette.textMuted
-          }}
-        >
-          {copied ? "URL コピー済み" : "共有"}
-        </button>
+        <ShellMenu sharePath={sharePath} themePalette={themePalette} />
       </div>
     </header>
   );

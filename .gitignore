@@ -2,6 +2,9 @@ node_modules
 .next
 out
 dist
+# Local secrets must never be committed.
+.env.local
+.env.*.local
 .env*
 !.env.example
 .dev.vars*
@@ -10,3 +13,4 @@ dist
 .DS_Store
 coverage
 *.tsbuildinfo
+.worktrees
