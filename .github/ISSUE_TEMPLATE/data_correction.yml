@@ -1,0 +1,57 @@
+name: データ修正・出典修正
+description: データの誤り、出典の不足、記述の改善提案を報告します。
+title: "[Data] "
+labels:
+  - data
+body:
+  - type: markdown
+    attributes:
+      value: |
+        このフォームは、数値・出典・説明文の修正提案向けです。
+        可能であれば一次ソース URL を添えてください。
+  - type: input
+    id: subject
+    attributes:
+      label: 対象エンティティ / 画面
+      description: どのテーマ、項目、ページに関する修正か記入してください。
+      placeholder: "例: Rice テーマ / 新潟県の収穫量"
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: 修正カテゴリ
+      options:
+        - 数値の誤り
+        - 出典リンクの誤り
+        - 出典不足
+        - 説明文の誤り
+        - 権利処理 / ライセンス
+        - その他
+    validations:
+      required: true
+  - type: textarea
+    id: current_state
+    attributes:
+      label: 現在の表示内容
+      description: 現在どう表示されているかを記入してください。
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_change
+    attributes:
+      label: 修正提案
+      description: どう直すべきかを具体的に記入してください。
+    validations:
+      required: true
+  - type: input
+    id: source_url
+    attributes:
+      label: 根拠 URL
+      description: 一次ソースまたは信頼できる根拠 URL を記入してください。
+      placeholder: "例: https://www.e-stat.go.jp/..."
+  - type: textarea
+    id: notes
+    attributes:
+      label: 補足
+      description: 追記事項や関連文脈があれば記入してください。
