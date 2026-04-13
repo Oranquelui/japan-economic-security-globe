@@ -21,7 +21,9 @@ describe("SourcesLicensePage", () => {
     expect(screen.getByText("民間企業ソース")).toBeTruthy();
 
     expect(screen.getByRole("contentinfo")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Main (App)" }).getAttribute("href")).toBe("/");
+    const mainLink = screen.getByRole("link", { name: "Main (App)" });
+    expect(mainLink.getAttribute("href")).toBe("/");
+    expect(mainLink.querySelector("svg")).toBeTruthy();
     expect(screen.getByRole("button", { name: "共有" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Sources/License" }).getAttribute("href")).toBe("/sources-license");
     expect(screen.getByRole("link", { name: "問い合わせ" }).getAttribute("href")).toBe("/contact");
