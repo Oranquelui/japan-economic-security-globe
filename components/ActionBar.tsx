@@ -102,6 +102,9 @@ export function ActionBar({
             </div>
             <div
               data-testid="selected-scroll"
+              tabIndex={0}
+              role="region"
+              aria-label="選択中の選択内容"
               className="mt-1 flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap pr-8"
             >
               <span
