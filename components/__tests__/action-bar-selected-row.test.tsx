@@ -26,6 +26,9 @@ describe("ActionBar selected row", () => {
     );
 
     const scroll = screen.getByTestId("selected-scroll");
+    expect(scroll.tabIndex).toBe(0);
+    expect(scroll.getAttribute("role")).toBe("region");
+    expect(scroll.getAttribute("aria-label")).toBe("選択中の選択内容");
     expect(scroll.className).toContain("overflow-x-auto");
     expect(scroll.className).toContain("whitespace-nowrap");
 
