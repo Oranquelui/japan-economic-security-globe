@@ -96,31 +96,43 @@ export function ActionBar({
             background: themePalette.surfacePanelElevated
           }}
         >
-          <div className="font-mono text-[0.55rem] uppercase tracking-[0.22em]" style={{ color: themePalette.textMuted }}>
-            選択中
-          </div>
-          <div className="mt-1 flex min-w-0 items-center gap-2">
-            <span
-              className="rounded-full border px-2 py-0.5 text-[0.6rem]"
-              style={{
-                borderColor: themePalette.borderSubtle,
-                color: themePalette.textMuted
-              }}
+          <div className="relative">
+            <div className="font-mono text-[0.55rem] uppercase tracking-[0.22em]" style={{ color: themePalette.textMuted }}>
+              選択中
+            </div>
+            <div
+              data-testid="selected-scroll"
+              className="mt-1 flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap pr-8"
             >
-              {selectedKindLabel}
-            </span>
-            {routeStatusLabel ? (
               <span
-                className="rounded-full border px-2 py-0.5 text-[0.6rem]"
+                className="shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[0.6rem]"
                 style={{
                   borderColor: themePalette.borderSubtle,
                   color: themePalette.textMuted
                 }}
               >
-                {routeStatusLabel}
+                {selectedKindLabel}
               </span>
-            ) : null}
-            <span className="truncate text-[0.78rem] font-medium text-white">{selectedLabel}</span>
+              {routeStatusLabel ? (
+                <span
+                  className="shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[0.6rem]"
+                  style={{
+                    borderColor: themePalette.borderSubtle,
+                    color: themePalette.textMuted
+                  }}
+                >
+                  {routeStatusLabel}
+                </span>
+              ) : null}
+              <span className="shrink-0 whitespace-nowrap text-[0.78rem] font-medium text-white">{selectedLabel}</span>
+            </div>
+            <div
+              data-testid="selected-fade"
+              className="pointer-events-none absolute right-0 top-0 h-full w-8"
+              style={{
+                background: `linear-gradient(to right, transparent, ${themePalette.surfacePanelElevated})`
+              }}
+            />
           </div>
         </div>
       </div>
