@@ -35,19 +35,27 @@ vi.mock("../MapInboxPanel", () => ({
 vi.mock("../NavigationRail", () => ({
   NavigationRail: ({
     isInboxOpen,
+    onCloseInbox,
+    onOpenInbox,
     onThemeChange,
-    onToggleInbox,
     themeId
   }: {
     isInboxOpen: boolean;
+    onCloseInbox: () => void;
+    onOpenInbox: () => void;
     onThemeChange: (themeId: ThemeId) => void;
-    onToggleInbox: () => void;
     themeId: ThemeId;
   }) => (
     <div data-testid="nav-rail" data-theme={themeId}>
-      <button type="button" aria-label={isInboxOpen ? "監視インボックスを閉じる" : "監視インボックスを開く"} onClick={onToggleInbox}>
-        toggle-inbox
-      </button>
+      {isInboxOpen ? (
+        <button type="button" aria-label="監視インボックスを閉じる" onClick={onCloseInbox}>
+          close-inbox
+        </button>
+      ) : (
+        <button type="button" aria-label="監視インボックスを開く" onClick={onOpenInbox}>
+          open-inbox
+        </button>
+      )}
       <button type="button" onClick={() => onThemeChange("rice")}>
         change-theme-rice
       </button>

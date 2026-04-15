@@ -158,8 +158,9 @@ export function AppShell({
           >
             <NavigationRail
               isInboxOpen={isInboxOpen}
+              onCloseInbox={() => setInboxOpen(false)}
+              onOpenInbox={() => setInboxOpen(true)}
               onThemeChange={handleThemeChange}
-              onToggleInbox={() => setInboxOpen((value) => !value)}
               themeId={themeId}
               themePalette={themePalette}
             />

@@ -8,16 +8,18 @@ const THEME_ORDER: ThemeId[] = ["energy", "rice", "water", "defense", "semicondu
 
 interface NavigationRailProps {
   isInboxOpen: boolean;
+  onCloseInbox: () => void;
+  onOpenInbox: () => void;
   onThemeChange: (themeId: ThemeId) => void;
-  onToggleInbox: () => void;
   themeId: ThemeId;
   themePalette: ThemePalette;
 }
 
 export function NavigationRail({
   isInboxOpen,
+  onCloseInbox,
+  onOpenInbox,
   onThemeChange,
-  onToggleInbox,
   themeId,
   themePalette
 }: NavigationRailProps) {
@@ -29,19 +31,37 @@ export function NavigationRail({
         background: themePalette.surfacePanel
       }}
     >
-      <button
-        type="button"
-        onClick={onToggleInbox}
-        className="grid h-10 w-10 place-items-center rounded-md border text-lg transition"
-        style={{
-          borderColor: isInboxOpen ? themePalette.accent : themePalette.borderSubtle,
-          background: isInboxOpen ? themePalette.accentSoft : themePalette.surfacePanelElevated,
-          color: isInboxOpen ? themePalette.textPrimary : themePalette.textMuted
-        }}
-        aria-label={isInboxOpen ? "監視インボックスを閉じる" : "監視インボックスを開く"}
-      >
-        ≡
-      </button>
+      {isInboxOpen ? (
+        <button
+          key="close-inbox"
+          type="button"
+          onClick={onCloseInbox}
+          className="grid h-10 w-10 place-items-center rounded-md border text-lg transition"
+          style={{
+            borderColor: themePalette.accent,
+            background: themePalette.accentSoft,
+            color: themePalette.textPrimary
+          }}
+          aria-label="監視インボックスを閉じる"
+        >
+          ≡
+        </button>
+      ) : (
+        <button
+          key="open-inbox"
+          type="button"
+          onClick={onOpenInbox}
+          className="grid h-10 w-10 place-items-center rounded-md border text-lg transition"
+          style={{
+            borderColor: themePalette.borderSubtle,
+            background: themePalette.surfacePanelElevated,
+            color: themePalette.textMuted
+          }}
+          aria-label="監視インボックスを開く"
+        >
+          ≡
+        </button>
+      )}
 
       <div className="mt-4 flex flex-col items-center gap-2">
         {THEME_ORDER.map((id) => {
