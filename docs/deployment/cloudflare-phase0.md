@@ -36,6 +36,30 @@ Once monetization starts in Phase 2, this should be re-evaluated. At that point 
 
 This hostname should be attached as a Workers custom domain. Cloudflare's custom domains require an active Cloudflare zone, so the domain needs to be managed from Cloudflare DNS if this route is used directly.
 
+## Deploy Command
+
+The current production deploy entrypoint is:
+
+```bash
+npm run deploy
+```
+
+This runs `opennextjs-cloudflare build && opennextjs-cloudflare deploy`.
+
+## Required Cloudflare Auth Shape
+
+Local or CI deploys should use `CLOUDFLARE_API_TOKEN`, and preferably `CLOUDFLARE_ACCOUNT_ID`, instead of interactive login.
+
+The token should be a **user token** with at least:
+
+- User: `User Details (read)`
+- User: `Memberships (read)`
+- Account: `Account Settings (read)`
+- Account: `Workers Scripts (edit)`
+- Zone: `Workers Routes (edit)`
+
+If `wrangler whoami` works but deploy fails against `/memberships` or `/workers/services/...`, treat that as an auth-scope problem first, not as an app build problem.
+
 ## Why Not RDS Yet
 
 RDS is the wrong default for this phase because the main uncertainty is not transactional persistence. The main uncertainty is whether the public framing, semantic model, source provenance, and visual interface earn attention.

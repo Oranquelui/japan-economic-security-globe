@@ -98,6 +98,16 @@ Cloudflare Workers へのデプロイ:
 npm run deploy
 ```
 
+Cloudflare への deploy は、`CLOUDFLARE_API_TOKEN` に **ユーザートークン** を使う前提です。最低限必要なのは次です。
+
+- User: `User Details (read)`
+- User: `Memberships (read)`
+- Account: `Account Settings (read)`
+- Account: `Workers Scripts (edit)`
+- Zone: `Workers Routes (edit)`
+
+CI/CD やローカルの非対話 deploy では、必要に応じて `CLOUDFLARE_ACCOUNT_ID` も渡します。
+
 UI の表示自体は外部環境変数なしで動きます。  
 ただし、今後 `e-Stat API` を live で叩く場合は `.env.local` に次を追加します。
 
@@ -123,6 +133,7 @@ Phase 0 から `Cloudflare Workers + OpenNext adapter` を前提にします。
 - つまり `economic-security.quadrillionaaa.com` を Worker に直結するなら、`quadrillionaaa.com` は Cloudflare 側で管理されている必要があります。
 - Route53 を authoritative DNS のまま維持したい場合は、Workers custom domain より Pages 側の方が簡単です。
 - 今回は将来の server-side fetch、secret、scheduled ingestion を見越して Workers を採用しています。
+- `npm run deploy` が `/memberships` や `/workers/services/...` で `Authentication failed` になる場合は、CLI バージョンだけでなく API token の権限不足を疑ってください。
 
 この運用は、**収益化前の Phase 0 / Phase 1 までの公開運用**として扱います。
 
