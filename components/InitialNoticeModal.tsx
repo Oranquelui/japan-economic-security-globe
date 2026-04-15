@@ -95,16 +95,13 @@ export function InitialNoticeModal({ homepageMode, locale }: InitialNoticeModalP
         >
           ×
         </button>
-        <div
-          aria-hidden="true"
-          className="mx-auto mt-1 flex h-12 w-12 items-center justify-center rounded-full border text-xs font-semibold tracking-[0.18em]"
-          style={{
-            borderColor: "rgba(148, 163, 184, 0.55)",
-            color: "var(--ops-text-primary, #e2e8f0)"
-          }}
-        >
-          NSC
-        </div>
+        <img
+          alt="Homepage notice seal"
+          className="mx-auto mt-1 h-12 w-12 rounded-full object-cover"
+          height={48}
+          src="/brand/homepage-notice-seal.webp"
+          width={48}
+        />
         <div className="mt-4 space-y-1 text-sm leading-6">
           <p id="homepage-notice-title">MVP/テスト運用中</p>
           <p>無料公開中</p>
