@@ -98,7 +98,7 @@ Cloudflare Workers への手動デプロイ:
 npm run deploy
 ```
 
-このコマンドは **手動 fallback** です。現在の本番運用は `main` への commit & push を起点に、Cloudflare Workers Builds の Git integration で自動反映する前提です。
+このコマンドは **手動 fallback** です。現在の本番運用は `main` への commit & push を起点に、GitHub Actions の deploy job で自動反映する前提です。
 
 Cloudflare への手動 deploy は、`CLOUDFLARE_API_TOKEN` に **ユーザートークン** を使う前提です。最低限必要なのは次です。
 
@@ -135,12 +135,12 @@ Phase 0 から `Cloudflare Workers + OpenNext adapter` を前提にします。
 
 - GitHub の `main` が source of truth
 - `main` への commit & push
-- Cloudflare Workers Builds の Git integration が build / deploy
+- GitHub Actions の `CI` workflow が `verify -> deploy` を実行
 - 本番 host は `economic-security.quadrillionaaa.com`
 
 つまり、通常運用では `commit & push = deploy` です。
 
-`npm run deploy` は、Cloudflare 側の Git integration が使えない時の **手動 fallback** としてだけ扱います。
+`npm run deploy` は、GitHub Actions が使えない時の **手動 fallback** としてだけ扱います。
 
 注意点:
 
@@ -148,8 +148,9 @@ Phase 0 から `Cloudflare Workers + OpenNext adapter` を前提にします。
 - つまり `economic-security.quadrillionaaa.com` を Worker に直結するなら、`quadrillionaaa.com` は Cloudflare 側で管理されている必要があります。
 - Route53 を authoritative DNS のまま維持したい場合は、Workers custom domain より Pages 側の方が簡単です。
 - 今回は将来の server-side fetch、secret、scheduled ingestion を見越して Workers を採用しています。
-- `npm run deploy` が `/memberships` や `/workers/services/...` で `Authentication failed` になる場合は、CLI バージョンだけでなく API token の権限不足を疑ってください。
-- repo 内の GitHub Actions は現状 `CI` のみで、deploy job は持っていません。自動 deploy は Cloudflare ダッシュボード側の Git integration 設定に依存します。
+- GitHub repository secrets に `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` を設定してください。
+- `npm run deploy` や GitHub Actions deploy が `/memberships` や `/workers/services/...` で `Authentication failed` になる場合は、CLI バージョンだけでなく API token の権限不足を疑ってください。
+- Cloudflare ダッシュボード側の Git integration は不要です。残っていてもかまいませんが、repo 側の workflow を正とみなします。
 
 この運用は、**収益化前の Phase 0 / Phase 1 までの公開運用**として扱います。
 

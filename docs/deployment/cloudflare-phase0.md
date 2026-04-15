@@ -18,7 +18,7 @@ This keeps the public launch cheap, easy to fork, and easy to verify, while stil
 The current deployment and operations model is only for the pre-monetization period.
 
 - GitHub public repository as the main source of truth
-- `main` branch push and Cloudflare Workers Builds deployment for the public site
+- `main` branch push and GitHub Actions deployment for the public site
 - single public hostname for the civic product
 - no separation between public delivery runtime and institutional runtime
 
@@ -42,7 +42,7 @@ The normal production path is:
 
 - commit to `main`
 - push to GitHub
-- Cloudflare Workers Builds Git integration runs build and deploy
+- GitHub Actions `CI` workflow runs `verify` and then `deploy`
 
 This is the intended day-to-day operating model.
 
@@ -56,7 +56,7 @@ npm run deploy
 
 This runs `opennextjs-cloudflare build && opennextjs-cloudflare deploy`.
 
-Use this only when the Cloudflare-side Git integration is unavailable or needs a one-off fallback.
+Use this only when GitHub Actions is unavailable or needs a one-off fallback.
 
 ## Required Cloudflare Auth Shape
 
@@ -76,16 +76,16 @@ If `wrangler whoami` works but deploy fails against `/memberships` or `/workers/
 
 Inside this repository:
 
-- `.github/workflows/ci.yml` verifies lint, test, and build
+- `.github/workflows/ci.yml` verifies lint, test, build, and deploy on pushes to `main`
 - `wrangler.jsonc` defines the Worker and custom domain
 - `npm run deploy` exists as a manual fallback
 
 Outside this repository:
 
-- Cloudflare Workers Builds Git integration decides whether `commit & push` auto-deploys
-- the GitHub repository connection lives in Cloudflare dashboard configuration
+- Cloudflare account secrets and route configuration decide whether deploy succeeds
+- the Worker custom domain still lives in Cloudflare dashboard configuration
 
-So `commit & push = deploy` is a valid operating rule only if that Cloudflare-side integration remains enabled.
+So `commit & push = deploy` is a valid operating rule only if the repository secrets remain set and the workflow stays enabled.
 
 ## Why Not RDS Yet
 
