@@ -54,5 +54,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate Cloudflare deploy secrets
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID"
+            exit 1
+          fi
+
       - name: Deploy to Cloudflare Workers
         run: npm run deploy

@@ -14,6 +14,8 @@ describe("deploy workflow", () => {
     expect(workflow).toContain("github.ref == 'refs/heads/main'");
     expect(workflow).toContain("CLOUDFLARE_API_TOKEN");
     expect(workflow).toContain("CLOUDFLARE_ACCOUNT_ID");
+    expect(workflow).toContain("Validate Cloudflare deploy secrets");
+    expect(workflow).toContain("Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID");
     expect(workflow).toContain("npm run deploy");
   });
 });
