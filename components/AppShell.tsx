@@ -150,7 +150,7 @@ export function AppShell({
 
           <aside
             data-testid="layout-navigation-rail"
-            className="absolute left-0 top-0 z-30"
+            className="absolute left-0 top-0 z-40"
             style={{
               width: railWidth,
               bottom: 0
@@ -167,11 +167,14 @@ export function AppShell({
 
           <aside
             data-testid="layout-left-nav"
-            className="absolute left-14 top-0 z-30 min-h-0 overflow-hidden border-r transition-[transform,opacity] duration-200 ease-out"
+            aria-hidden={isInboxOpen ? "false" : "true"}
+            className="absolute left-14 top-0 z-20 min-h-0 overflow-hidden border-r transition-[transform,opacity,visibility] duration-200 ease-out"
             style={{
               width: paneWidth,
               opacity: isInboxOpen ? 1 : 0,
-              transform: isInboxOpen ? "translateX(0)" : "translateX(-100%)",
+              transform: isInboxOpen ? "translateX(0)" : "translateX(calc(-100% - 12px))",
+              visibility: isInboxOpen ? "visible" : "hidden",
+              pointerEvents: isInboxOpen ? "auto" : "none",
               bottom: 0,
               borderColor: themePalette.borderSubtle,
               background: themePalette.surfacePanel

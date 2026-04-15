@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { loadSeedGraph } from "../../lib/data/seed-loader";
@@ -33,13 +34,20 @@ vi.mock("../MapInboxPanel", () => ({
 
 vi.mock("../NavigationRail", () => ({
   NavigationRail: ({
+    isInboxOpen,
     onThemeChange,
+    onToggleInbox,
     themeId
   }: {
+    isInboxOpen: boolean;
     onThemeChange: (themeId: ThemeId) => void;
+    onToggleInbox: () => void;
     themeId: ThemeId;
   }) => (
     <div data-testid="nav-rail" data-theme={themeId}>
+      <button type="button" aria-label={isInboxOpen ? "監視インボックスを閉じる" : "監視インボックスを開く"} onClick={onToggleInbox}>
+        toggle-inbox
+      </button>
       <button type="button" onClick={() => onThemeChange("rice")}>
         change-theme-rice
       </button>
@@ -145,6 +153,26 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("point");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("flow:saudi-oil-japan");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
+  });
+
+  test("disables pointer hits on the closed inbox pane and reopens it from the rail toggle", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    const pane = screen.getByTestId("layout-left-nav");
+    expect(pane.getAttribute("aria-hidden")).toBe("false");
+    expect(pane.style.pointerEvents).toBe("auto");
+
+    await user.click(screen.getByRole("button", { name: "監視インボックスを閉じる" }));
+
+    expect(pane.getAttribute("aria-hidden")).toBe("true");
+    expect(pane.style.pointerEvents).toBe("none");
+
+    await user.click(screen.getByRole("button", { name: "監視インボックスを開く" }));
+
+    expect(pane.getAttribute("aria-hidden")).toBe("false");
+    expect(pane.style.pointerEvents).toBe("auto");
   });
 
   test("replaces the URL when theme, map mode, and selection change", async () => {
