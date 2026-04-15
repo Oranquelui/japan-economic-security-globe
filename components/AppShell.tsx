@@ -165,32 +165,30 @@ export function AppShell({
             />
           </aside>
 
-          <aside
-            data-testid="layout-left-nav"
-            aria-hidden={isInboxOpen ? "false" : "true"}
-            className="absolute left-14 top-0 z-20 min-h-0 overflow-hidden border-r transition-[transform,opacity,visibility] duration-200 ease-out"
-            style={{
-              width: paneWidth,
-              opacity: isInboxOpen ? 1 : 0,
-              transform: isInboxOpen ? "translateX(0)" : "translateX(calc(-100% - 12px))",
-              visibility: isInboxOpen ? "visible" : "hidden",
-              pointerEvents: isInboxOpen ? "auto" : "none",
-              bottom: 0,
-              borderColor: themePalette.borderSubtle,
-              background: themePalette.surfacePanel
-            }}
-          >
-            <MapInboxPanel
-              activeId={activeId}
-              onQueryChange={setSearchQuery}
-              onSelect={setSelectedId}
-              query={searchQuery}
-              rows={filteredOperationRows}
-              themeId={themeId}
-              themeLabel={themeLabel}
-              themePalette={themePalette}
-            />
-          </aside>
+          {isInboxOpen ? (
+            <aside
+              data-testid="layout-left-nav"
+              aria-hidden="false"
+              className="absolute left-14 top-0 z-20 min-h-0 overflow-hidden border-r"
+              style={{
+                width: paneWidth,
+                bottom: 0,
+                borderColor: themePalette.borderSubtle,
+                background: themePalette.surfacePanel
+              }}
+            >
+              <MapInboxPanel
+                activeId={activeId}
+                onQueryChange={setSearchQuery}
+                onSelect={setSelectedId}
+                query={searchQuery}
+                rows={filteredOperationRows}
+                themeId={themeId}
+                themeLabel={themeLabel}
+                themePalette={themePalette}
+              />
+            </aside>
+          ) : null}
 
           <div
             data-testid="layout-evidence-overlay"

@@ -160,19 +160,15 @@ describe("AppShell url sync", () => {
 
     render(<AppShell graph={loadSeedGraph()} />);
 
-    const pane = screen.getByTestId("layout-left-nav");
-    expect(pane.getAttribute("aria-hidden")).toBe("false");
-    expect(pane.style.pointerEvents).toBe("auto");
+    expect(screen.getByTestId("layout-left-nav")).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: "監視インボックスを閉じる" }));
 
-    expect(pane.getAttribute("aria-hidden")).toBe("true");
-    expect(pane.style.pointerEvents).toBe("none");
+    expect(screen.queryByTestId("layout-left-nav")).toBeNull();
 
     await user.click(screen.getByRole("button", { name: "監視インボックスを開く" }));
 
-    expect(pane.getAttribute("aria-hidden")).toBe("false");
-    expect(pane.style.pointerEvents).toBe("auto");
+    expect(screen.getByTestId("layout-left-nav")).toBeTruthy();
   });
 
   test("replaces the URL when theme, map mode, and selection change", async () => {
