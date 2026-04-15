@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { loadSeedGraph } from "../../lib/data/seed-loader";
 import type { ThemeId } from "../../types/semantic";
 import type { OperationMapMode } from "../../lib/presentation/operations";
+import { HOMEPAGE_NOTICE_STORAGE_KEY } from "../InitialNoticeModal";
 
 const replaceMock = vi.fn();
 
@@ -84,6 +85,7 @@ afterEach(() => {
 
 beforeEach(() => {
   replaceMock.mockReset();
+  window.localStorage.clear();
 });
 
 describe("AppShell url sync", () => {
@@ -98,6 +100,24 @@ describe("AppShell url sync", () => {
     expect(screen.getByTestId("layout-evidence-overlay")).toBeTruthy();
     expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("no");
     expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  test("shows the initial notice only when homepage mode is app", async () => {
+    render(<AppShell graph={loadSeedGraph()} homepageMode="app" locale="ja" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("dialog")).toBeTruthy();
+    });
+
+    expect(screen.getByText("MVP/テスト運用中")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "お知らせを閉じる" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+
+    expect(window.localStorage.getItem(HOMEPAGE_NOTICE_STORAGE_KEY)).toBe("dismissed");
   });
 
   test("hydrates initial state from the provided url state", () => {

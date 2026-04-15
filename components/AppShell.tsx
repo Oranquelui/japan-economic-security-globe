@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition, type CSSProperties } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
+import type { HomepageMode } from "../lib/config/homepage-mode";
 import type { ThemeView } from "../types/presentation";
 import type { SemanticGraph, ThemeId } from "../types/semantic";
 import { getDetailView } from "../lib/semantic/detail";
@@ -20,6 +21,7 @@ import { getThemeLabel, localizeAnyLabel, localizeKind } from "../lib/presentati
 import { getRouteStatus } from "../lib/presentation/route-status";
 import { ActionBar } from "./ActionBar";
 import { EvidencePanel } from "./EvidencePanel";
+import { InitialNoticeModal } from "./InitialNoticeModal";
 import { JapanMainMap } from "./JapanMainMap";
 import { MapInboxPanel } from "./MapInboxPanel";
 import { NavigationRail } from "./NavigationRail";
@@ -27,10 +29,17 @@ import { OperationsSignalTable } from "./OperationsSignalTable";
 
 interface AppShellProps {
   graph: SemanticGraph;
+  homepageMode?: HomepageMode;
   initialUrlState?: OperationsUrlState;
+  locale?: string;
 }
 
-export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE }: AppShellProps) {
+export function AppShell({
+  graph,
+  homepageMode = "default",
+  initialUrlState = DEFAULT_OPERATIONS_URL_STATE,
+  locale = "ja"
+}: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [themeId, setThemeId] = useState<ThemeId>(initialUrlState.themeId);
@@ -108,7 +117,9 @@ export function AppShell({ graph, initialUrlState = DEFAULT_OPERATIONS_URL_STATE
   }
 
   return (
-    <main className="grid h-screen min-h-screen grid-rows-[56px,minmax(0,1fr)] overflow-hidden text-slate-100" style={shellStyle}>
+    <main className="relative grid h-screen min-h-screen grid-rows-[56px,minmax(0,1fr)] overflow-hidden text-slate-100" style={shellStyle}>
+      <InitialNoticeModal homepageMode={homepageMode} locale={locale} />
+
       <ActionBar
         mapMode={mapMode}
         onClearFilters={() => setSearchQuery("")}
