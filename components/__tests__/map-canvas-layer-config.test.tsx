@@ -125,11 +125,41 @@ describe("map canvas layer config", () => {
     const routeLayer = addedLayers.find((layer) => layer.id === "global-route-line") as any;
     expect(routeLayer).toBeTruthy();
     expect(routeLayer.paint["line-opacity"]).toEqual([
-      "case",
-      ["boolean", ["get", "selected"], false],
-      ["interpolate", ["linear"], ["zoom"], 2, 0.96, 6, 0.92, 10, 0.88],
-      ["interpolate", ["linear"], ["zoom"], 2, 0.8, 6, 0.68, 10, 0.58]
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      2,
+      ["case", ["boolean", ["get", "selected"], false], 0.96, 0.8],
+      6,
+      ["case", ["boolean", ["get", "selected"], false], 0.92, 0.68],
+      10,
+      ["case", ["boolean", ["get", "selected"], false], 0.88, 0.58]
     ]);
+  });
+
+  test("uses zoom expressions that MapLibre accepts for global route styling", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="flow:saudi-oil-japan"
+        focusTargetId={null}
+        mapMode="route"
+        model={model}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("energy")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedLayers.length).toBeGreaterThan(0);
+    });
+
+    const routeLayer = addedLayers.find((layer) => layer.id === "global-route-line") as any;
+    const pointLayer = addedLayers.find((layer) => layer.id === "global-point-circle") as any;
+
+    expect(routeLayer.paint["line-width"][0]).toBe("interpolate");
+    expect(routeLayer.paint["line-opacity"][0]).toBe("interpolate");
+    expect(pointLayer.paint["circle-radius"][0]).toBe("interpolate");
   });
 
   test("marks global routes as selected when the active item is a chokepoint on that route", async () => {

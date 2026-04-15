@@ -171,10 +171,15 @@ export function JapanOperationsMapCanvas({
               0.7
             ],
             "circle-radius": [
-              "case",
-              ["boolean", ["get", "selected"], false],
-              ["interpolate", ["linear"], ["zoom"], 2, 7.5, 6, 6.5, 10, 5.4],
-              ["interpolate", ["linear"], ["zoom"], 2, 5.5, 6, 4.8, 10, 4.1]
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              2,
+              ["case", ["boolean", ["get", "selected"], false], 7.5, 5.5],
+              6,
+              ["case", ["boolean", ["get", "selected"], false], 6.5, 4.8],
+              10,
+              ["case", ["boolean", ["get", "selected"], false], 5.4, 4.1]
             ],
             "circle-opacity": 0.92
           }
@@ -571,16 +576,26 @@ function getGlobalRoutePaint(themePalette: ThemePalette, statusPalette: StatusPa
       themePalette.accent
     ],
     "line-width": [
-      "case",
-      ["boolean", ["get", "selected"], false],
-      ["interpolate", ["linear"], ["zoom"], 2, routeFocused ? 4.4 : 3.4, 6, routeFocused ? 3.8 : 2.8, 10, routeFocused ? 3.1 : 2.2],
-      ["interpolate", ["linear"], ["zoom"], 2, routeFocused ? 3 : 2.2, 6, routeFocused ? 2.4 : 1.8, 10, routeFocused ? 1.8 : 1.3]
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      2,
+      ["case", ["boolean", ["get", "selected"], false], routeFocused ? 4.4 : 3.4, routeFocused ? 3 : 2.2],
+      6,
+      ["case", ["boolean", ["get", "selected"], false], routeFocused ? 3.8 : 2.8, routeFocused ? 2.4 : 1.8],
+      10,
+      ["case", ["boolean", ["get", "selected"], false], routeFocused ? 3.1 : 2.2, routeFocused ? 1.8 : 1.3]
     ],
     "line-opacity": [
-      "case",
-      ["boolean", ["get", "selected"], false],
-      ["interpolate", ["linear"], ["zoom"], 2, 0.96, 6, 0.92, 10, 0.88],
-      ["interpolate", ["linear"], ["zoom"], 2, routeFocused ? 0.8 : 0.52, 6, routeFocused ? 0.68 : 0.42, 10, routeFocused ? 0.58 : 0.3]
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      2,
+      ["case", ["boolean", ["get", "selected"], false], 0.96, routeFocused ? 0.8 : 0.52],
+      6,
+      ["case", ["boolean", ["get", "selected"], false], 0.92, routeFocused ? 0.68 : 0.42],
+      10,
+      ["case", ["boolean", ["get", "selected"], false], 0.88, routeFocused ? 0.58 : 0.3]
     ],
     "line-dasharray": routeFocused ? [1, 1.15] : [1.1, 1.6]
   };
