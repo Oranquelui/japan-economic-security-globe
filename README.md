@@ -92,13 +92,15 @@ Cloudflare Workers 実行環境に近いプレビュー:
 npm run preview
 ```
 
-Cloudflare Workers へのデプロイ:
+Cloudflare Workers への手動デプロイ:
 
 ```bash
 npm run deploy
 ```
 
-Cloudflare への deploy は、`CLOUDFLARE_API_TOKEN` に **ユーザートークン** を使う前提です。最低限必要なのは次です。
+このコマンドは **手動 fallback** です。現在の本番運用は `main` への commit & push を起点に、Cloudflare Workers Builds の Git integration で自動反映する前提です。
+
+Cloudflare への手動 deploy は、`CLOUDFLARE_API_TOKEN` に **ユーザートークン** を使う前提です。最低限必要なのは次です。
 
 - User: `User Details (read)`
 - User: `Memberships (read)`
@@ -127,6 +129,19 @@ Phase 0 から `Cloudflare Workers + OpenNext adapter` を前提にします。
 - config: [wrangler.jsonc](/Users/louistoyozaki/Documents/GitHub/jp-strategic-dependency-graph/wrangler.jsonc)
 - OpenNext: [open-next.config.ts](/Users/louistoyozaki/Documents/GitHub/jp-strategic-dependency-graph/open-next.config.ts)
 
+## 現在のデプロイ仕様
+
+現在の本番更新ルートは次です。
+
+- GitHub の `main` が source of truth
+- `main` への commit & push
+- Cloudflare Workers Builds の Git integration が build / deploy
+- 本番 host は `economic-security.quadrillionaaa.com`
+
+つまり、通常運用では `commit & push = deploy` です。
+
+`npm run deploy` は、Cloudflare 側の Git integration が使えない時の **手動 fallback** としてだけ扱います。
+
 注意点:
 
 - Cloudflare Workers の custom domain は **active Cloudflare zone** が前提です。
@@ -134,6 +149,7 @@ Phase 0 から `Cloudflare Workers + OpenNext adapter` を前提にします。
 - Route53 を authoritative DNS のまま維持したい場合は、Workers custom domain より Pages 側の方が簡単です。
 - 今回は将来の server-side fetch、secret、scheduled ingestion を見越して Workers を採用しています。
 - `npm run deploy` が `/memberships` や `/workers/services/...` で `Authentication failed` になる場合は、CLI バージョンだけでなく API token の権限不足を疑ってください。
+- repo 内の GitHub Actions は現状 `CI` のみで、deploy job は持っていません。自動 deploy は Cloudflare ダッシュボード側の Git integration 設定に依存します。
 
 この運用は、**収益化前の Phase 0 / Phase 1 までの公開運用**として扱います。
 

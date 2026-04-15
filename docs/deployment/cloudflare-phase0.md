@@ -18,7 +18,7 @@ This keeps the public launch cheap, easy to fork, and easy to verify, while stil
 The current deployment and operations model is only for the pre-monetization period.
 
 - GitHub public repository as the main source of truth
-- `main` branch push and Cloudflare Workers deployment for the public site
+- `main` branch push and Cloudflare Workers Builds deployment for the public site
 - single public hostname for the civic product
 - no separation between public delivery runtime and institutional runtime
 
@@ -36,9 +36,19 @@ Once monetization starts in Phase 2, this should be re-evaluated. At that point 
 
 This hostname should be attached as a Workers custom domain. Cloudflare's custom domains require an active Cloudflare zone, so the domain needs to be managed from Cloudflare DNS if this route is used directly.
 
-## Deploy Command
+## Primary Deploy Path
 
-The current production deploy entrypoint is:
+The normal production path is:
+
+- commit to `main`
+- push to GitHub
+- Cloudflare Workers Builds Git integration runs build and deploy
+
+This is the intended day-to-day operating model.
+
+## Manual Fallback Deploy
+
+The manual production deploy entrypoint is:
 
 ```bash
 npm run deploy
@@ -46,9 +56,11 @@ npm run deploy
 
 This runs `opennextjs-cloudflare build && opennextjs-cloudflare deploy`.
 
+Use this only when the Cloudflare-side Git integration is unavailable or needs a one-off fallback.
+
 ## Required Cloudflare Auth Shape
 
-Local or CI deploys should use `CLOUDFLARE_API_TOKEN`, and preferably `CLOUDFLARE_ACCOUNT_ID`, instead of interactive login.
+Local or CI fallback deploys should use `CLOUDFLARE_API_TOKEN`, and preferably `CLOUDFLARE_ACCOUNT_ID`, instead of interactive login.
 
 The token should be a **user token** with at least:
 
@@ -59,6 +71,21 @@ The token should be a **user token** with at least:
 - Zone: `Workers Routes (edit)`
 
 If `wrangler whoami` works but deploy fails against `/memberships` or `/workers/services/...`, treat that as an auth-scope problem first, not as an app build problem.
+
+## What Is Defined In Repo vs Cloudflare
+
+Inside this repository:
+
+- `.github/workflows/ci.yml` verifies lint, test, and build
+- `wrangler.jsonc` defines the Worker and custom domain
+- `npm run deploy` exists as a manual fallback
+
+Outside this repository:
+
+- Cloudflare Workers Builds Git integration decides whether `commit & push` auto-deploys
+- the GitHub repository connection lives in Cloudflare dashboard configuration
+
+So `commit & push = deploy` is a valid operating rule only if that Cloudflare-side integration remains enabled.
 
 ## Why Not RDS Yet
 
