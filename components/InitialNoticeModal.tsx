@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { HomepageMode } from "../lib/config/homepage-mode";
 
-export const HOMEPAGE_NOTICE_STORAGE_KEY = "jp-sdg:homepage-notice:v1";
+export const HOMEPAGE_NOTICE_STORAGE_KEY = "jp-sdg:homepage-notice:v2";
 
 interface InitialNoticeModalProps {
   homepageMode: HomepageMode;
@@ -105,6 +105,7 @@ export function InitialNoticeModal({ homepageMode, locale }: InitialNoticeModalP
         <div className="mt-4 space-y-1 text-sm leading-6">
           <p id="homepage-notice-title">MVP/テスト運用中</p>
           <p>無料公開中</p>
+          <p>更新: 監視インボックスの開閉操作を修正しました</p>
           <p>仕様は予告なく変更される場合があります</p>
         </div>
       </div>

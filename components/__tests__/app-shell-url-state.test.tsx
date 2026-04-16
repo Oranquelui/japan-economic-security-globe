@@ -127,6 +127,7 @@ describe("AppShell url sync", () => {
     });
 
     expect(screen.getByText("MVP/テスト運用中")).toBeTruthy();
+    expect(screen.getByText("更新: 監視インボックスの開閉操作を修正しました")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "お知らせを閉じる" }));
 
     await waitFor(() => {

@@ -70,11 +70,11 @@ describe("app page routes", () => {
     expect(result.props.locale).toBe("en");
   });
 
-  test("renders the shared app shell with normalized locale and default homepage mode", async () => {
+  test("renders the shared app shell with normalized locale and app homepage mode by default", async () => {
     render(await AppPage({ locale: "bogus", searchParams: Promise.resolve({ theme: "rice" }) }));
 
     expect(screen.getByTestId("app-shell").getAttribute("data-locale")).toBe("ja");
-    expect(screen.getByTestId("app-shell").getAttribute("data-homepage-mode")).toBe("default");
+    expect(screen.getByTestId("app-shell").getAttribute("data-homepage-mode")).toBe("app");
     expect(loadSeedGraphMock).toHaveBeenCalledTimes(1);
     expect(parseOperationsUrlStateMock).toHaveBeenCalledWith({ theme: "rice" });
   });
