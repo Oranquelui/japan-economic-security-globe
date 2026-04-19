@@ -20,6 +20,7 @@ coverage
 .claude/
 .superpowers/
 .taskmaster/
+docs/operations/
 docs/review/
 docs/superpowers/
 test-results/
