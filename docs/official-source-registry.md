@@ -1,90 +1,92 @@
-# 公式ソース台帳
+# Official Source Registry
 
-最終更新: 2026-04-11
+English | [日本語](official-source-registry.ja.md)
 
-このプロジェクトは、`日本の日本人のための dependency intelligence layer` を前提にしています。  
-そのため、一次ソースは原則として `政府機関・公的機関の公式 API / SPARQL / CSV / Excel / PDF / 公表ページ` を優先し、民間資料は家計影響などの補助的文脈に限定します。
+Last updated: 2026-04-11
 
-## 取り込み方針
+This project assumes a Japan-first dependency-intelligence layer for people living in Japan.
+Accordingly, primary sources should prioritize official government and public-institution APIs, SPARQL endpoints, CSV or Excel files, PDFs, and publication pages. Private-sector materials should remain limited to supporting context such as household impact or supply-chain framing.
 
-### Tier A: 直接接続する機械可読ソース
+## Ingestion Policy
 
-- `e-Gov法令検索`
+### Tier A: machine-readable sources to connect directly
+
+- `e-Gov Laws and Regulations Search`
   - URL: https://elaws.e-gov.go.jp/
-  - 用途: Law / PolicyDocument / legal provenance
+  - Use: law, policy-document, and legal provenance
 - `e-Stat API 3.0`
   - URL: https://www.e-stat.go.jp/api/api-info/e-stat-manual3-0
-  - 用途: 統計表、メタデータ、地域別データ
-  - 実装メモ: `appId` 必須。開発時は `.env.local` の `ESTAT_APP_ID` から受ける。
-- `統計LOD SPARQL`
+  - Use: statistical tables, metadata, and regional data
+  - Implementation note: requires `appId`; in development it should come from `ESTAT_APP_ID` in `.env.local`
+- `Statistics LOD SPARQL`
   - URL: https://data.e-stat.go.jp/lod/sparql/
-  - 用途: RDF / SPARQL 接続の phase 1 基盤
-- `国会会議録検索システム API`
+  - Use: Phase 1 foundation for RDF and SPARQL access
+- `National Diet Library Proceedings Search API`
   - URL: https://kokkai.ndl.go.jp/api.html
-  - 用途: 政策発言、審議、法令・予算との evidence graph
+  - Use: policy statements, deliberation history, and evidence links into laws and budgets
 - `BOJ Time-Series Data Search API`
   - URL: https://www.stat-search.boj.or.jp/info/api_manual_en.pdf
-  - 用途: 価格、為替、マクロ時系列の補助文脈
+  - Use: prices, FX, and macro time-series context
 
-### Tier B: 公開統計・公開データファイル
+### Tier B: public statistics and published data files
 
 - `Trade Statistics of Japan`
   - URL: https://www.customs.go.jp/toukei/srch/index.htm
-  - 用途: 国別輸入依存、エネルギー・半導体フロー
-- `資源エネルギー庁 エネルギー動向`
+  - Use: country-level import dependency and energy or semiconductor flows
+- `Agency for Natural Resources and Energy - Energy Trends`
   - URL: https://www.enecho.meti.go.jp/about/energytrends/202506/pdf/energytrends_all.pdf
-  - 用途: 原油輸入先、中東依存、備蓄日数
-- `農水省 米の相対取引価格・数量、民間在庫`
+  - Use: crude import origins, Middle East dependency, strategic-stockpile days
+- `MAFF rice relative transaction prices and volumes, private inventories`
   - URL: https://www.maff.go.jp/j/press/nousan/kikaku/260313.html
-  - 用途: コメ価格、相対取引数量
-- `農水省 米穀流通の動向（集荷、販売、民間在庫）`
+  - Use: rice prices and transaction volume
+- `MAFF rice distribution trends`
   - URL: https://www.maff.go.jp/j/press/nousan/kikaku/260331.html
-  - 用途: 民間在庫、販売数量、政府備蓄米の市場反映
-- `関東地方整備局 首都圏の水資源状況（リアルタイム）`
+  - Use: private inventories, sales volume, and market impact of government stock releases
+- `Kanto Regional Development Bureau - real-time capital-region water resources`
   - URL: https://www.ktr.mlit.go.jp/river/shihon/river_shihon00000226.html
-  - 用途: ダム貯水率、渇水監視、小河内ダムなどの当日値
-- `経済産業省 関東経済産業局 中東情勢関連対策ポータル`
+  - Use: dam reservoir ratios, drought monitoring, and same-day values such as Ogochi Dam
+- `METI Kanto Bureau - Middle East situation response portal`
   - URL: https://www.kanto.meti.go.jp/press/20260402chuto_josei_press.html
-  - 用途: 中東情勢を受けた供給相談窓口、代替調達・備蓄対応の公式案内
+  - Use: official guidance on supply consultation, substitution, and stockpile response under Middle East disruption
 
-### Tier C: 政策・予算・説明資料
+### Tier C: policy, budget, and explanatory materials
 
-- `防衛省 FY2026 Budget Major Projects`
+- `Ministry of Defense FY2026 Budget Major Projects`
   - URL: https://www.mod.go.jp/en/d_act/d_budget/pdf/fy2026_20260302a.pdf
-  - 用途: BudgetLine / CapabilityArea / capability別予算額
-- `財務省 令和8年度一般会計歳出予算各目明細書`
+  - Use: budget lines, capability areas, and capability-level budget amounts
+- `Ministry of Finance FY2026 General Account detailed expenditure statement`
   - URL: https://www.mof.go.jp/about_mof/mof_budget/budget/fy2026/ippan2026.pdf
-  - 用途: 予算明細、財政 provenance
-- `首相官邸 TSMC 表敬`
+  - Use: detailed budget items and fiscal provenance
+- `Prime Minister's Office TSMC courtesy visit`
   - URL: https://www.kantei.go.jp/jp/104/actions/202602/05hyoukei.html
-  - 用途: 半導体・経済安全保障の政策接続
-- `気象庁 標準化降水指数に関する資料`
+  - Use: policy linkage around semiconductors and economic security
+- `Japan Meteorological Agency material on the standardized precipitation index`
   - URL: https://www.jma.go.jp/jma/press/1903/19a/droughtinf20190319.pdf
-  - 用途: 干ばつ・少雨シグナルの指標説明
+  - Use: explanation of drought and low-rainfall signal methodology
 
-## MVPへの反映
+## Current MVP Mapping
 
-- エネルギー
+- Energy
   - `Trade Statistics of Japan`
-  - `資源エネルギー庁 エネルギー動向`
-  - `中東情勢関連対策ポータル`
-- コメ
-  - 農水省の令和8年2月相対取引価格
-  - 農水省の令和8年2月民間在庫
-- 水
-  - 国交省のリアルタイム水資源ページ
-  - 気象庁の干ばつ監視資料
-- 防衛
-  - 防衛省 FY2026 予算資料
-  - 財務省 FY2026 予算明細
-- 半導体
-  - 経産省の半導体関連資料
-  - 首相官邸資料
-  - 財務省貿易統計
+  - `Agency for Natural Resources and Energy - Energy Trends`
+  - `Middle East situation response portal`
+- Rice
+  - MAFF February 2026 relative rice transaction prices
+  - MAFF February 2026 private rice inventories
+- Water
+  - MLIT real-time water-resources page
+  - JMA drought-monitoring material
+- Defense
+  - Ministry of Defense FY2026 budget material
+  - Ministry of Finance FY2026 detailed budget statement
+- Semiconductors
+  - METI semiconductor-related materials
+  - Prime Minister's Office material
+  - Ministry of Finance trade statistics
 
-## 実装ルール
+## Implementation Rules
 
-- すべての seed item は `sourceIds` と `provenance` を持つ。
-- UI に表示する出典は、将来 `prov:wasDerivedFrom` にそのまま写せる粒度で保つ。
-- 機械可読ソースがある場合は `API / SPARQL / CSV` を優先し、PDF は補助説明または budget / policy の一次根拠に限定する。
-- 「すべてを即時 ingest」ではなく、`official-first registry -> adapter 実装 -> seed 置換` の順で拡張する。
+- Every seed item must include `sourceIds` and `provenance`.
+- Sources shown in the UI should stay at a granularity that can later map directly into `prov:wasDerivedFrom`.
+- When machine-readable sources exist, prefer `API`, `SPARQL`, or `CSV` before relying on PDFs.
+- Do not try to ingest everything at once; expand in the order `official-first registry -> adapter implementation -> seed replacement`.

@@ -46,4 +46,6 @@ The public site should explain that:
 
 - `data/seed/sources.json`
 - `docs/official-source-registry.md`
-- `docs/superpowers/specs/2026-04-13-sources-license-contact-design.md`
+- `docs/official-source-registry.ja.md`
+- `README.md`
+- `README.ja.md`
