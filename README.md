@@ -189,7 +189,7 @@ Phase 2 で institutional / paid product に入る時点では、この運用を
 app/                    Next.js App Router の入口
 components/             日本運用マップ、国際補助レイヤー、オペレーション表、根拠ドロワー、アプリ外枠
 data/seed/              Phase 0 用のローカル semantic seed data
-docs/superpowers/       企画、ロードマップ、実装計画メモ
+docs/                   公開向けの deployment、source registry、operations ドキュメント
 lib/data/               seed graph の読み込み処理
 lib/semantic/           selector、detail view、provenance、SPARQL、表示用 model
 ontology/               初期 Turtle ontology stub

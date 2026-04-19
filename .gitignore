@@ -2,6 +2,7 @@ node_modules
 .next
 out
 dist
+
 # Local secrets must never be committed.
 .env.local
 .env.*.local
@@ -14,3 +15,11 @@ dist
 coverage
 *.tsbuildinfo
 .worktrees
+
+# Local agent / planning state should stay out of the public repo.
+.claude/
+.superpowers/
+.taskmaster/
+docs/review/
+docs/superpowers/
+test-results/
