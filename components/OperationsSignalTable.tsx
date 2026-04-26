@@ -135,11 +135,13 @@ export function OperationsSignalTable({
             }}
           >
             <tr>
+              <th className="px-4 py-3 font-medium">優先</th>
               <th className="px-4 py-3 font-medium">種別</th>
               <th className="px-4 py-3 font-medium">シグナル</th>
               <th className="px-4 py-3 font-medium">対象</th>
               <th className="px-4 py-3 font-medium">緊急度</th>
               <th className="px-4 py-3 font-medium">状態</th>
+              <th className="px-4 py-3 font-medium">理由</th>
               <th className="px-4 py-3 font-medium">必要アクション</th>
               <th className="px-4 py-3 font-medium">期間</th>
             </tr>
@@ -167,6 +169,29 @@ export function OperationsSignalTable({
                   outlineColor: themePalette.accent
                 }}
               >
+                <td className="whitespace-nowrap px-4 py-3">
+                  {row.ranking ? (
+                    <div className="flex min-w-24 flex-col gap-1">
+                      <span
+                        className="w-fit rounded-full border px-2.5 py-1 text-[0.68rem] font-semibold"
+                        style={{
+                          borderColor: themePalette.accent,
+                          background: themePalette.accentSoft,
+                          color: themePalette.textPrimary
+                        }}
+                      >
+                        #{row.ranking.rank}
+                      </span>
+                      <span className="text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                        {row.ranking.primaryAxisLabel}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                      -
+                    </span>
+                  )}
+                </td>
                 <td className="whitespace-nowrap px-4 py-3 font-mono text-[0.68rem]" style={{ color: themePalette.textMuted }}>
                   {row.type}
                 </td>
@@ -189,6 +214,9 @@ export function OperationsSignalTable({
                   >
                     {row.status}
                   </span>
+                </td>
+                <td className="min-w-56 px-4 py-3 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
+                  {row.ranking?.whyRanked ?? "-"}
                 </td>
                 <td className="min-w-40 px-4 py-3 text-slate-300">{row.action}</td>
                 <td className="whitespace-nowrap px-4 py-3 font-mono text-xs" style={{ color: themePalette.textMuted }}>

@@ -88,6 +88,13 @@ function sortRows(rows: OperationRow[], sectionId: InboxSection["id"]) {
   };
 
   return [...rows].sort((left, right) => {
+    const leftRank = left.ranking?.rank ?? Number.POSITIVE_INFINITY;
+    const rightRank = right.ranking?.rank ?? Number.POSITIVE_INFINITY;
+
+    if (leftRank !== rightRank) {
+      return leftRank - rightRank;
+    }
+
     if (sectionId === "domestic") {
       const domesticDiff = domesticScore(right) - domesticScore(left);
       if (domesticDiff !== 0) {

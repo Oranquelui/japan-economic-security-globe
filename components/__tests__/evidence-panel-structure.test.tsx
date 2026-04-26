@@ -1,14 +1,24 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { EvidencePanel } from "../EvidencePanel";
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
 import type { DetailViewModel, EvidenceGraphViewModel } from "../../types/presentation";
+import type { RankingExplanationViewModel } from "../../lib/ranking/explain";
 
 afterEach(() => {
   cleanup();
+});
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-04-18T09:00:00+09:00"));
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 const themePalette = getThemePalette("energy");
@@ -56,6 +66,64 @@ const evidenceGraph: EvidenceGraphViewModel = {
     { id: "country:japan", kind: "Country", label: "日本" }
   ],
   links: []
+};
+
+const rankingExplanation: RankingExplanationViewModel = {
+  signalId: "ranking-signal:energy-middle-east-route",
+  rankLabel: "#1",
+  summary: "国家的重要度が高く、日本向けの監視優先度が高い。",
+  finalScoreLabel: "0.95",
+  priorityTierLabel: "Critical",
+  primaryAxis: {
+    id: "energy",
+    label: "エネルギー"
+  },
+  topComponent: {
+    id: "nationalImportance",
+    label: "国家的重要度",
+    contributionPercent: 49,
+    valuePercent: 98,
+    weightPercent: 50
+  },
+  confidence: {
+    label: "高信頼",
+    valuePercent: 90,
+    tone: "high"
+  },
+  freshness: {
+    label: "1日前取得",
+    tone: "fresh"
+  },
+  publicAttention: {
+    label: "公的関心 45%",
+    valuePercent: 45
+  },
+  components: [
+    {
+      id: "nationalImportance",
+      label: "国家的重要度",
+      contributionPercent: 49,
+      valuePercent: 98,
+      weightPercent: 50
+    },
+    {
+      id: "disruptionDepth",
+      label: "波及深度",
+      contributionPercent: 22,
+      valuePercent: 88,
+      weightPercent: 25
+    }
+  ],
+  canonicalRefs: [
+    { kind: "flow", id: "flow:saudi-oil-japan" },
+    { kind: "entity", id: "chokepoint:hormuz" }
+  ],
+  override: {
+    reason: "Cabinet watch floor",
+    explanation: "Keep visible during cross-ministry monitoring.",
+    expiresLabel: "2026-04-28まで",
+    remainingLabel: "あと2日"
+  }
 };
 
 describe("evidence panel structure", () => {
@@ -109,5 +177,52 @@ describe("evidence panel structure", () => {
     expect(screen.getByText("国内拠点")).toBeTruthy();
     expect(screen.getByText("ルート表示")).toBeTruthy();
     expect(screen.getByText(/海外連携ルート/)).toBeTruthy();
+  });
+
+  test("shows source freshness based on the accessed date", () => {
+    render(
+      <EvidencePanel
+        collapsed={false}
+        detail={detail}
+        evidenceGraph={evidenceGraph}
+        onSelect={vi.fn()}
+        onToggleCollapsed={vi.fn()}
+        selectedId="flow:saudi-oil-japan"
+        statusPalette={statusPalette}
+        themePalette={themePalette}
+        themeTitle="エネルギー"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "出典" }));
+
+    expect(screen.getByText("7日前確認")).toBeTruthy();
+    expect(screen.getByText("確認日 2026-04-11")).toBeTruthy();
+  });
+
+  test("shows a why-ranked section when ranking context is available", () => {
+    render(
+      <EvidencePanel
+        collapsed={false}
+        detail={detail}
+        evidenceGraph={evidenceGraph}
+        onSelect={vi.fn()}
+        onToggleCollapsed={vi.fn()}
+        rankingExplanation={rankingExplanation}
+        selectedId="flow:saudi-oil-japan"
+        statusPalette={statusPalette}
+        themePalette={themePalette}
+        themeTitle="エネルギー"
+      />
+    );
+
+    expect(screen.getByText("Why Ranked")).toBeTruthy();
+    expect(screen.getByText("#1")).toBeTruthy();
+    expect(screen.getByText("高信頼")).toBeTruthy();
+    expect(screen.getByText("1日前取得")).toBeTruthy();
+    expect(screen.getByText("国家的重要度")).toBeTruthy();
+    expect(screen.getByText("国家的重要度が高く、日本向けの監視優先度が高い。")).toBeTruthy();
+    expect(screen.getByText("ホルムズ海峡")).toBeTruthy();
+    expect(screen.getByText("あと2日")).toBeTruthy();
   });
 });

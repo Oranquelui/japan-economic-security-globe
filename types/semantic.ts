@@ -1,9 +1,12 @@
-export type ThemeId =
-  | "energy"
-  | "rice"
-  | "water"
-  | "defense"
-  | "semiconductors";
+export const THEME_IDS = [
+  "energy",
+  "rice",
+  "water",
+  "defense",
+  "semiconductors"
+] as const;
+
+export type ThemeId = (typeof THEME_IDS)[number];
 
 export type EntityKind =
   | "Country"

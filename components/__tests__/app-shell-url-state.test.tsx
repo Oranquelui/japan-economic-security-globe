@@ -8,6 +8,7 @@ import { loadSeedGraph } from "../../lib/data/seed-loader";
 import type { ThemeId } from "../../types/semantic";
 import type { OperationMapMode } from "../../lib/presentation/operations";
 import { HOMEPAGE_NOTICE_STORAGE_KEY } from "../InitialNoticeModal";
+import type { RankingSignal } from "../../types/ranking";
 
 const replaceMock = vi.fn();
 
@@ -80,7 +81,19 @@ vi.mock("../JapanMainMap", () => ({
 }));
 
 vi.mock("../EvidencePanel", () => ({
-  EvidencePanel: ({ collapsed }: { collapsed: boolean }) => <div data-testid="evidence" data-collapsed={collapsed ? "yes" : "no"} />
+  EvidencePanel: ({
+    collapsed,
+    rankingExplanation
+  }: {
+    collapsed: boolean;
+    rankingExplanation?: { rankLabel?: string } | null;
+  }) => (
+    <div
+      data-testid="evidence"
+      data-collapsed={collapsed ? "yes" : "no"}
+      data-ranking={rankingExplanation?.rankLabel ?? ""}
+    />
+  )
 }));
 
 vi.mock("../OperationsSignalTable", () => ({
@@ -178,6 +191,63 @@ describe("AppShell url sync", () => {
     await user.click(screen.getByRole("button", { name: "監視インボックスを開く" }));
 
     expect(screen.getByTestId("layout-left-nav")).toBeTruthy();
+  });
+
+  test("uses the homepage ranking lead when the URL did not explicitly pin a theme", () => {
+    const rankingSignals: RankingSignal[] = [
+      {
+        id: "ranking-signal:rice-lead",
+        label: "Rice lead",
+        importanceAxes: ["food", "household_cost"],
+        canonicalRefs: [{ kind: "observation", id: "observation:rice-price-signal-2026" }],
+        sourceIds: ["source:maff-rice-policy"],
+        componentInputs: {
+          nationalImportance: 0.99,
+          disruptionDepth: 0.88,
+          sourceConfidence: 0.95,
+          publicAttention: 0.4
+        },
+        retrievedAt: "2026-04-25T00:00:00.000Z"
+      }
+    ];
+
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState={false}
+        rankingSignals={rankingSignals}
+      />
+    );
+
+    expect(screen.getAllByTestId("nav-rail")[0].getAttribute("data-theme")).toBe("rice");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("observation:rice-price-signal-2026");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("observation:rice-price-signal-2026");
+  });
+
+  test("passes ranking explanation to the evidence panel for the selected ranked item", () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        rankingSignals={[
+          {
+            id: "ranking-signal:energy-middle-east-route",
+            label: "Energy lead",
+            importanceAxes: ["energy"],
+            canonicalRefs: [{ kind: "flow", id: "flow:saudi-oil-japan" }],
+            sourceIds: ["source:enecho-energy-trends"],
+            componentInputs: {
+              nationalImportance: 0.98,
+              disruptionDepth: 0.88,
+              sourceConfidence: 0.9,
+              publicAttention: 0.45
+            },
+            retrievedAt: "2026-04-25T00:00:00.000Z"
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getAllByTestId("evidence")[0].getAttribute("data-ranking")).toBe("#1");
   });
 
   test("replaces the URL when theme, map mode, and selection change", async () => {

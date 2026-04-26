@@ -1,4 +1,5 @@
 import type { ThemeView } from "../../types/presentation";
+import type { ImportanceAxis, RankingScoreComponentId } from "../../types/ranking";
 import type { DependencyFlow, Observation, SemanticEntity } from "../../types/semantic";
 import { buildSignalNarrativeForFlow, buildSignalNarrativeForObservation } from "../semantic/signal-narrative";
 import { getDomesticImpactCopy } from "./domestic-copy";
@@ -11,6 +12,18 @@ import {
 
 export type OperationMapMode = "point" | "cluster" | "choropleth" | "route" | "static";
 
+export interface OperationRowRanking {
+  finalScore: number;
+  overrideId?: string;
+  primaryAxis: ImportanceAxis;
+  primaryAxisLabel: string;
+  priorityTier: "critical" | "high" | "watch" | "baseline";
+  rank: number;
+  signalId: string;
+  topComponentId: RankingScoreComponentId;
+  whyRanked: string;
+}
+
 export type OperationRow = {
   id: string;
   type: string;
@@ -20,6 +33,7 @@ export type OperationRow = {
   status: string;
   action: string;
   period: string;
+  ranking?: OperationRowRanking;
   sortValue?: number;
 };
 

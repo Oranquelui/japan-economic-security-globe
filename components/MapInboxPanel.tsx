@@ -131,6 +131,7 @@ export function MapInboxPanel({
                   <div className="mt-2 overflow-hidden rounded-xl border" style={{ borderColor: themePalette.borderSubtle }}>
                     {section.rows.map((row) => {
                       const isActive = row.id === activeId;
+                      const ranking = row.ranking;
 
                       return (
                         <button
@@ -156,10 +157,39 @@ export function MapInboxPanel({
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
+                              {ranking ? (
+                                <div className="mb-2 flex flex-wrap items-center gap-2">
+                                  <span
+                                    className="rounded-full border px-2 py-1 text-[0.62rem] font-semibold"
+                                    style={{
+                                      borderColor: themePalette.accent,
+                                      background: themePalette.accentSoft,
+                                      color: themePalette.textPrimary
+                                    }}
+                                  >
+                                    #{ranking.rank}
+                                  </span>
+                                  <span
+                                    className="rounded-full border px-2 py-1 text-[0.62rem]"
+                                    style={{
+                                      borderColor: themePalette.borderSubtle,
+                                      background: themePalette.surfacePanelElevated,
+                                      color: themePalette.textMuted
+                                    }}
+                                  >
+                                    {ranking.primaryAxisLabel}
+                                  </span>
+                                </div>
+                              ) : null}
                               <div className="truncate text-sm font-semibold">{row.label}</div>
                               <div className="mt-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
                                 {row.subject} / {row.status}
                               </div>
+                              {ranking ? (
+                                <p className="mt-2 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
+                                  {ranking.whyRanked}
+                                </p>
+                              ) : null}
                             </div>
                             <PaneBadge themePalette={themePalette}>{row.urgency}</PaneBadge>
                           </div>

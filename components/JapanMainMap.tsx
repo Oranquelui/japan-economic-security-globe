@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { JapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import type { OperationMapMode } from "../lib/presentation/operations";
@@ -39,6 +39,17 @@ export function JapanMainMap({
   themePalette
 }: JapanMainMapProps) {
   const [command, setCommand] = useState<{ nonce: number; type: "recenter" | "zoomIn" | "zoomOut" }>();
+  const [isMapMounted, setMapMounted] = useState(false);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setMapMounted(true);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
 
   return (
     <section
@@ -47,16 +58,36 @@ export function JapanMainMap({
         background: themePalette.surfaceCanvas
       }}
     >
-      <JapanOperationsMapCanvas
-        activeId={activeId}
-        command={command}
-        focusTargetId={focusTargetId}
-        mapMode={mapMode}
-        model={model}
-        onSelect={onSelect}
-        statusPalette={statusPalette}
-        themePalette={themePalette}
-      />
+      {isMapMounted ? (
+        <JapanOperationsMapCanvas
+          activeId={activeId}
+          command={command}
+          focusTargetId={focusTargetId}
+          mapMode={mapMode}
+          model={model}
+          onSelect={onSelect}
+          statusPalette={statusPalette}
+          themePalette={themePalette}
+        />
+      ) : (
+        <div
+          className="absolute inset-0 grid place-items-center"
+          style={{
+            background: "linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))"
+          }}
+        >
+          <div
+            className="rounded-full border px-4 py-2 text-xs tracking-[0.2em]"
+            style={{
+              borderColor: themePalette.borderSubtle,
+              background: themePalette.surfacePanel,
+              color: themePalette.textMuted
+            }}
+          >
+            地図を準備中
+          </div>
+        </div>
+      )}
       <div
         className="pointer-events-none absolute inset-0"
         style={{

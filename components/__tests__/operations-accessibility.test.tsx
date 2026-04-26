@@ -125,6 +125,47 @@ describe("operations accessibility", () => {
     expect(onSelect).toHaveBeenCalledWith("flow:saudi-oil-japan");
   });
 
+  test("shows ranking context inside the operations grid when present", () => {
+    render(
+      <OperationsSignalTable
+        activeId=""
+        collapsed={false}
+        onSelect={() => undefined}
+        onToggleCollapsed={() => undefined}
+        query=""
+        rows={[
+          {
+            id: "flow:saudi-oil-japan",
+            type: "依存ルート",
+            label: "サウジ原油 → 日本",
+            subject: "原油",
+            urgency: "高",
+            status: "監視中",
+            action: "ルートと根拠を確認",
+            period: "2026",
+            ranking: {
+              finalScore: 0.93,
+              primaryAxis: "energy",
+              primaryAxisLabel: "エネルギー",
+              priorityTier: "critical",
+              rank: 1,
+              signalId: "ranking-signal:energy-middle-east-route",
+              topComponentId: "nationalImportance",
+              whyRanked: "国家的重要度が高く、日本向けの監視優先度が高い。"
+            }
+          }
+        ]}
+        statusPalette={statusPalette}
+        themePalette={themePalette}
+      />
+    );
+
+    expect(screen.getByText("優先")).toBeTruthy();
+    expect(screen.getByText("理由")).toBeTruthy();
+    expect(screen.getByText("#1")).toBeTruthy();
+    expect(screen.getByText("国家的重要度が高く、日本向けの監視優先度が高い。")).toBeTruthy();
+  });
+
   test("supports keyboard selection in the evidence graph", () => {
     const onSelect = vi.fn();
 

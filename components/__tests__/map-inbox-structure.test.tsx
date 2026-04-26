@@ -71,4 +71,44 @@ describe("map inbox structure", () => {
 
     expect(screen.getByText("行5")).toBeTruthy();
   });
+
+  test("shows ranking context for rows that were promoted by the national-importance layer", () => {
+    render(
+      <MapInboxPanel
+        activeId="flow:saudi-oil-japan"
+        onQueryChange={vi.fn()}
+        onSelect={vi.fn()}
+        query=""
+        rows={[
+          {
+            id: "flow:saudi-oil-japan",
+            type: "海上ルート依存",
+            label: "サウジ原油 → 日本",
+            subject: "原油",
+            urgency: "高",
+            status: "監視中",
+            action: "確認",
+            period: "2026",
+            ranking: {
+              finalScore: 0.93,
+              primaryAxis: "energy",
+              primaryAxisLabel: "エネルギー",
+              priorityTier: "critical",
+              rank: 1,
+              signalId: "ranking-signal:energy-middle-east-route",
+              topComponentId: "nationalImportance",
+              whyRanked: "国家的重要度が高く、日本向けの監視優先度が高い。"
+            }
+          }
+        ] as never[]}
+        themeId="energy"
+        themeLabel="エネルギー"
+        themePalette={getThemePalette("energy")}
+      />
+    );
+
+    expect(screen.getByText("#1")).toBeTruthy();
+    expect(screen.getAllByText("エネルギー").length).toBeGreaterThan(1);
+    expect(screen.getByText("国家的重要度が高く、日本向けの監視優先度が高い。")).toBeTruthy();
+  });
 });

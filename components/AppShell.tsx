@@ -5,13 +5,21 @@ import { usePathname, useRouter } from "next/navigation";
 
 import type { HomepageMode } from "../lib/config/homepage-mode";
 import type { ThemeView } from "../types/presentation";
-import type { SemanticGraph, ThemeId } from "../types/semantic";
+import type { RankingSignal } from "../types/ranking";
+import { THEME_IDS, type SemanticGraph, type ThemeId } from "../types/semantic";
+import { buildRankingDecision } from "../lib/ranking/decision";
 import { getDetailView } from "../lib/semantic/detail";
 import { buildJapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import { getThemeView } from "../lib/semantic/selectors";
 import { buildEvidenceGraph } from "../lib/semantic/view-models";
 import { buildOperationRows, filterOperationRows, type OperationMapMode } from "../lib/presentation/operations";
 import { getStatusPalette, getThemePalette } from "../lib/presentation/palette";
+import {
+  applyRankingToOperationRows,
+  buildHomepageLeadSelection,
+  buildPresetRailThemeOrder,
+  buildSelectedRankingExplanation
+} from "../lib/presentation/ranking";
 import {
   DEFAULT_OPERATIONS_URL_STATE,
   serializeOperationsUrlState,
@@ -29,33 +37,77 @@ import { OperationsSignalTable } from "./OperationsSignalTable";
 
 interface AppShellProps {
   graph: SemanticGraph;
+  hasExplicitUrlState?: boolean;
   homepageMode?: HomepageMode;
   initialUrlState?: OperationsUrlState;
   locale?: string;
+  rankingSignals?: RankingSignal[];
 }
 
 export function AppShell({
   graph,
+  hasExplicitUrlState = false,
   homepageMode = "default",
   initialUrlState = DEFAULT_OPERATIONS_URL_STATE,
-  locale = "ja"
+  locale = "ja",
+  rankingSignals = []
 }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [themeId, setThemeId] = useState<ThemeId>(initialUrlState.themeId);
-  const [selectedId, setSelectedId] = useState<string | null>(initialUrlState.selectedId);
-  const [mapMode, setMapMode] = useState<OperationMapMode>(initialUrlState.mapMode);
+  const rankingNowRef = useRef(new Date().toISOString());
+  const homepageDecision = rankingSignals.length
+    ? buildRankingDecision({
+        surfaceId: "homepage",
+        signals: rankingSignals,
+        now: rankingNowRef.current
+      })
+    : null;
+  const homepageLead = !hasExplicitUrlState && homepageDecision
+    ? buildHomepageLeadSelection(graph, rankingSignals, homepageDecision)
+    : null;
+  const resolvedInitialState: OperationsUrlState = {
+    themeId: homepageLead?.themeId ?? initialUrlState.themeId,
+    mapMode: initialUrlState.mapMode,
+    selectedId:
+      initialUrlState.selectedId
+      ?? (homepageLead && homepageLead.themeId !== initialUrlState.themeId ? homepageLead.selectedId : null)
+  };
+  const [themeId, setThemeId] = useState<ThemeId>(resolvedInitialState.themeId);
+  const [selectedId, setSelectedId] = useState<string | null>(resolvedInitialState.selectedId);
+  const [mapMode, setMapMode] = useState<OperationMapMode>(resolvedInitialState.mapMode);
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(true);
   const [isEvidenceOpen, setEvidenceOpen] = useState(true);
   const [, startTransition] = useTransition();
-  const initialSerializedRef = useRef(serializeOperationsUrlState(initialUrlState));
+  const initialSerializedRef = useRef(serializeOperationsUrlState(resolvedInitialState));
   const view = getThemeView(graph, themeId);
   const evidenceGraph = buildEvidenceGraph(graph, themeId);
-  const operationRows = buildOperationRows(view);
+  const inboxDecision = rankingSignals.length
+    ? buildRankingDecision({
+        surfaceId: "inbox",
+        signals: rankingSignals,
+        now: rankingNowRef.current
+      })
+    : null;
+  const presetRailDecision = rankingSignals.length
+    ? buildRankingDecision({
+        surfaceId: "preset-rail",
+        signals: rankingSignals,
+        now: rankingNowRef.current
+      })
+    : null;
+  const operationRows = inboxDecision
+    ? applyRankingToOperationRows(buildOperationRows(view), rankingSignals, inboxDecision)
+    : buildOperationRows(view);
+  const orderedThemeIds = presetRailDecision
+    ? buildPresetRailThemeOrder(THEME_IDS, graph, rankingSignals, presetRailDecision)
+    : THEME_IDS;
   const filteredOperationRows = filterOperationRows(operationRows, searchQuery);
   const validSelectedId = resolveSelectableId(view, selectedId);
   const activeId = resolveActiveId(view, validSelectedId);
+  const rankingExplanation = inboxDecision
+    ? buildSelectedRankingExplanation(activeId, rankingSignals, inboxDecision, rankingNowRef.current)
+    : null;
   const focusTargetId = validSelectedId;
   const detail = getDetailView(graph, activeId);
   const routeStatus = getRouteStatus(detail);
@@ -162,6 +214,7 @@ export function AppShell({
               onOpenInbox={() => setInboxOpen(true)}
               onThemeChange={handleThemeChange}
               themeId={themeId}
+              themeIds={orderedThemeIds}
               themePalette={themePalette}
             />
           </aside>
@@ -206,12 +259,13 @@ export function AppShell({
                 collapsed={!isEvidenceOpen}
                 detail={detail}
                 evidenceGraph={evidenceGraph}
-              onSelect={setSelectedId}
-              selectedId={activeId}
-              statusPalette={statusPalette}
-              themePalette={themePalette}
-              themeTitle={view.title}
+                onSelect={setSelectedId}
                 onToggleCollapsed={() => setEvidenceOpen((value) => !value)}
+                rankingExplanation={rankingExplanation}
+                selectedId={activeId}
+                statusPalette={statusPalette}
+                themePalette={themePalette}
+                themeTitle={view.title}
               />
             </div>
           </div>
@@ -258,7 +312,7 @@ export function AppShell({
             />
           </section>
           <section className="flex gap-2 overflow-auto px-4">
-            {(["energy", "rice", "water", "defense", "semiconductors"] as ThemeId[]).map((id) => {
+            {THEME_IDS.map((id) => {
               const theme = getThemeLabel(id);
               const isActive = id === themeId;
 
@@ -314,6 +368,7 @@ export function AppShell({
             detail={detail}
             evidenceGraph={evidenceGraph}
             onSelect={setSelectedId}
+            rankingExplanation={rankingExplanation}
             selectedId={activeId}
             statusPalette={statusPalette}
             themePalette={themePalette}

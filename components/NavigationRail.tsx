@@ -1,10 +1,8 @@
 "use client";
 
-import type { ThemeId } from "../types/semantic";
+import { THEME_IDS, type ThemeId } from "../types/semantic";
 import type { ThemePalette } from "../lib/presentation/palette";
 import { getThemeLabel } from "../lib/presentation/japanese";
-
-const THEME_ORDER: ThemeId[] = ["energy", "rice", "water", "defense", "semiconductors"];
 
 interface NavigationRailProps {
   isInboxOpen: boolean;
@@ -12,6 +10,7 @@ interface NavigationRailProps {
   onOpenInbox: () => void;
   onThemeChange: (themeId: ThemeId) => void;
   themeId: ThemeId;
+  themeIds?: readonly ThemeId[];
   themePalette: ThemePalette;
 }
 
@@ -21,6 +20,7 @@ export function NavigationRail({
   onOpenInbox,
   onThemeChange,
   themeId,
+  themeIds = THEME_IDS,
   themePalette
 }: NavigationRailProps) {
   return (
@@ -64,7 +64,7 @@ export function NavigationRail({
       )}
 
       <div className="mt-4 flex flex-col items-center gap-2">
-        {THEME_ORDER.map((id) => {
+        {themeIds.map((id) => {
           const theme = getThemeLabel(id);
           const isActive = id === themeId;
 

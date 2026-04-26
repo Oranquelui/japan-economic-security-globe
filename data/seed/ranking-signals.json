@@ -1,0 +1,104 @@
+[
+  {
+    "id": "ranking-signal:energy-middle-east-route",
+    "label": "中東エネルギー輸送路の圧力",
+    "importanceAxes": ["energy", "logistics"],
+    "canonicalRefs": [
+      { "kind": "flow", "id": "flow:saudi-oil-japan" },
+      { "kind": "entity", "id": "chokepoint:hormuz" }
+    ],
+    "sourceIds": ["source:enecho-energy-trends", "source:meti-2026-energy-taskforce"],
+    "componentInputs": {
+      "nationalImportance": 0.98,
+      "disruptionDepth": 0.88,
+      "sourceConfidence": 0.9,
+      "publicAttention": 0.45
+    },
+    "retrievedAt": "2026-04-25T00:00:00.000Z"
+  },
+  {
+    "id": "ranking-signal:energy-lng-terminal-exposure",
+    "label": "LNG受入基地の国内露出",
+    "importanceAxes": ["energy", "household_cost"],
+    "canonicalRefs": [
+      { "kind": "flow", "id": "flow:qatar-lng-japan" },
+      { "kind": "entity", "id": "terminal:sodegaura-lng" }
+    ],
+    "sourceIds": ["source:enecho-energy-trends", "source:tepco-2026-april-power"],
+    "componentInputs": {
+      "nationalImportance": 0.86,
+      "disruptionDepth": 0.72,
+      "sourceConfidence": 0.82,
+      "publicAttention": 0.3
+    },
+    "retrievedAt": "2026-04-25T00:00:00.000Z"
+  },
+  {
+    "id": "ranking-signal:food-rice-price-pressure",
+    "label": "コメ価格の家計圧力",
+    "importanceAxes": ["food", "household_cost"],
+    "canonicalRefs": [
+      { "kind": "observation", "id": "observation:rice-price-signal-2026" },
+      { "kind": "entity", "id": "product:rice" }
+    ],
+    "sourceIds": ["source:maff-rice-policy", "source:maff-rice-monthly-report"],
+    "componentInputs": {
+      "nationalImportance": 0.84,
+      "disruptionDepth": 0.69,
+      "sourceConfidence": 0.94,
+      "publicAttention": 0.62
+    },
+    "retrievedAt": "2026-04-25T00:00:00.000Z"
+  },
+  {
+    "id": "ranking-signal:semiconductors-kumamoto-exposure",
+    "label": "熊本半導体供給の対日露出",
+    "importanceAxes": ["semiconductors", "defense_industrial_base"],
+    "canonicalRefs": [
+      { "kind": "flow", "id": "flow:taiwan-semiconductors-japan" },
+      { "kind": "entity", "id": "facility:jasm-kumamoto" }
+    ],
+    "sourceIds": ["source:meti-semiconductor-frame", "source:cabinet-tsmc-2026"],
+    "componentInputs": {
+      "nationalImportance": 0.92,
+      "disruptionDepth": 0.77,
+      "sourceConfidence": 0.86,
+      "publicAttention": 0.36
+    },
+    "retrievedAt": "2026-04-25T00:00:00.000Z"
+  },
+  {
+    "id": "ranking-signal:logistics-japan-maritime-watch",
+    "label": "日本関係海運の監視優先",
+    "importanceAxes": ["logistics", "energy"],
+    "canonicalRefs": [
+      { "kind": "flow", "id": "flow:qatar-lng-japan" },
+      { "kind": "entity", "id": "chokepoint:malacca" }
+    ],
+    "sourceIds": ["source:enecho-energy-trends", "source:customs-trade-statistics"],
+    "componentInputs": {
+      "nationalImportance": 0.8,
+      "disruptionDepth": 0.83,
+      "sourceConfidence": 0.81,
+      "publicAttention": 0.28
+    },
+    "retrievedAt": "2026-04-25T00:00:00.000Z"
+  },
+  {
+    "id": "ranking-signal:disaster-ogochi-water-stress",
+    "label": "小河内貯水系の災害・生活基盤ストレス",
+    "importanceAxes": ["disaster_infrastructure", "household_cost"],
+    "canonicalRefs": [
+      { "kind": "observation", "id": "observation:ogochi-reservoir-stress" },
+      { "kind": "entity", "id": "reservoir:ogochi" }
+    ],
+    "sourceIds": ["source:mlit-drought-portal", "source:jma-drought-spi"],
+    "componentInputs": {
+      "nationalImportance": 0.78,
+      "disruptionDepth": 0.74,
+      "sourceConfidence": 0.9,
+      "publicAttention": 0.42
+    },
+    "retrievedAt": "2026-04-25T00:00:00.000Z"
+  }
+]

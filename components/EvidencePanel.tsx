@@ -2,6 +2,8 @@
 
 import { useState, type ReactNode } from "react";
 
+import { getSourceFreshness } from "../lib/official/source-freshness";
+import type { RankingExplanationViewModel } from "../lib/ranking/explain";
 import type { DetailViewModel, EvidenceGraphViewModel } from "../types/presentation";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
 import {
@@ -22,6 +24,7 @@ interface EvidencePanelProps {
   evidenceGraph: EvidenceGraphViewModel;
   onSelect: (id: string) => void;
   onToggleCollapsed: () => void;
+  rankingExplanation?: RankingExplanationViewModel | null;
   selectedId: string;
   statusPalette: StatusPalette;
   themePalette: ThemePalette;
@@ -35,6 +38,7 @@ export function EvidencePanel({
   evidenceGraph,
   onSelect,
   onToggleCollapsed,
+  rankingExplanation,
   selectedId,
   statusPalette,
   themePalette,
@@ -170,6 +174,93 @@ export function EvidencePanel({
 
         {tab === "summary" ? (
           <div className="mt-4 space-y-4">
+            {rankingExplanation ? (
+              <section
+                className="rounded-xl border p-4"
+                style={{
+                  borderColor: themePalette.borderSubtle,
+                  background: themePalette.surfacePanel
+                }}
+              >
+                <div className="font-mono text-[0.62rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
+                  Why Ranked
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {rankingExplanation.rankLabel ? (
+                    <PanelChip borderColor={themePalette.accent} textColor={themePalette.textPrimary}>
+                      {rankingExplanation.rankLabel}
+                    </PanelChip>
+                  ) : null}
+                  <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+                    {rankingExplanation.primaryAxis.label}
+                  </PanelChip>
+                  <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+                    {rankingExplanation.confidence.label}
+                  </PanelChip>
+                  <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+                    {rankingExplanation.freshness.label}
+                  </PanelChip>
+                  <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+                    {rankingExplanation.publicAttention.label}
+                  </PanelChip>
+                </div>
+                <p className="mt-3 text-[0.82rem] leading-6 text-slate-300">{rankingExplanation.summary}</p>
+                <div className="mt-4 grid gap-3">
+                  {rankingExplanation.components.map((component) => (
+                    <div
+                      key={component.id}
+                      className="rounded-xl border px-3 py-2"
+                      style={{
+                        borderColor: themePalette.borderSubtle,
+                        background: themePalette.surfacePanelElevated
+                      }}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-sm font-semibold text-white">{component.label}</div>
+                        <div className="text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                          {component.contributionPercent}% / 重み {component.weightPercent}%
+                        </div>
+                      </div>
+                      <div className="mt-1 text-[0.72rem]" style={{ color: themePalette.textMuted }}>
+                        値 {component.valuePercent}%
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+                    参照対象
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {rankingExplanation.canonicalRefs.map((ref) => (
+                      <PanelChip key={`${ref.kind}:${ref.id}`} borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+                        {localizeAnyLabel(ref.id, ref.id)}
+                      </PanelChip>
+                    ))}
+                  </div>
+                </div>
+                {rankingExplanation.override ? (
+                  <div
+                    className="mt-4 rounded-xl border px-3 py-3"
+                    style={{
+                      borderColor: themePalette.borderSubtle,
+                      background: themePalette.surfacePanelElevated
+                    }}
+                  >
+                    <div className="text-sm font-semibold text-white">{rankingExplanation.override.reason}</div>
+                    <div className="mt-1 text-[0.72rem]" style={{ color: themePalette.textMuted }}>
+                      {rankingExplanation.override.explanation}
+                    </div>
+                    <div className="mt-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                      {rankingExplanation.override.expiresLabel}
+                    </div>
+                    <div className="mt-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                      {rankingExplanation.override.remainingLabel}
+                    </div>
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
             {routeStatus ? (
               <FactRow label="ルート表示" themePalette={themePalette} value={routeStatus.description} />
             ) : null}
@@ -242,6 +333,7 @@ export function EvidencePanel({
               </div>
               <div className="mt-3 space-y-3">
                 {detail.sources.map((source) => {
+                  const freshness = getSourceFreshness(source);
                   const highlights = detail.sourceHighlights
                     .filter((item) => item.sourceId === source.id)
                     .slice(0, 2);
@@ -279,9 +371,18 @@ export function EvidencePanel({
                           Tier {source.tier}
                         </PanelChip>
                       ) : null}
+                      <PanelChip
+                        borderColor={getFreshnessBorderColor(freshness.tone, themePalette)}
+                        textColor={getFreshnessTextColor(freshness.tone, themePalette)}
+                      >
+                        {freshness.label}
+                      </PanelChip>
                     </div>
                     <div className="mt-1 text-xs" style={{ color: themePalette.textMuted }}>
                       {localizePublisher(source.publisher)}
+                    </div>
+                    <div className="mt-2 text-[0.72rem]" style={{ color: themePalette.textMuted }}>
+                      {freshness.accessedLabel}
                     </div>
                     {!highlights.length && source.description ? (
                       <div className="mt-2 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
@@ -398,6 +499,28 @@ function getSourceModeLabel(mode: "api" | "sparql" | "csv" | "excel" | "pdf" | "
       return "PDF";
     case "html":
       return "公開資料";
+  }
+}
+
+function getFreshnessBorderColor(tone: "fresh" | "recent" | "stale", themePalette: ThemePalette) {
+  switch (tone) {
+    case "fresh":
+      return themePalette.accent;
+    case "recent":
+      return themePalette.borderStrong;
+    case "stale":
+      return themePalette.borderSubtle;
+  }
+}
+
+function getFreshnessTextColor(tone: "fresh" | "recent" | "stale", themePalette: ThemePalette) {
+  switch (tone) {
+    case "fresh":
+      return themePalette.textPrimary;
+    case "recent":
+      return themePalette.textPrimary;
+    case "stale":
+      return themePalette.textMuted;
   }
 }
 

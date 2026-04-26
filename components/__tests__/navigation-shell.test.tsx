@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { ActionBar } from "../ActionBar";
 import { JapanMainMap } from "../JapanMainMap";
@@ -17,6 +17,14 @@ afterEach(() => {
   cleanup();
 });
 
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 const themePalette = getThemePalette("energy");
 const statusPalette = getStatusPalette();
 
@@ -29,6 +37,30 @@ const mapModel: JapanMapCanvasModel = {
 };
 
 describe("navigation shell", () => {
+  test("defers map canvas mount until after the first paint", () => {
+    render(
+      <JapanMainMap
+        activeId="flow:saudi-oil-japan"
+        focusTargetId={null}
+        mapMode="point"
+        model={mapModel}
+        onSelect={() => undefined}
+        statusPalette={statusPalette}
+        themePalette={themePalette}
+      />
+    );
+
+    expect(screen.getByText("地図を準備中")).toBeTruthy();
+    expect(screen.queryByTestId("ops-canvas")).toBeNull();
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
+    expect(screen.queryByText("地図を準備中")).toBeNull();
+    expect(screen.getByTestId("ops-canvas")).toBeTruthy();
+  });
+
   test("keeps app navigation separate from map-layer controls", () => {
     render(
       <>

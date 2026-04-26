@@ -1,8 +1,19 @@
 import { describe, expect, test } from "vitest";
 
+import * as semanticModule from "../../../types/semantic";
 import { parseOperationsUrlState, serializeOperationsUrlState } from "../url-state";
 
 describe("operations url state", () => {
+  test("uses a single runtime theme id list for validation", () => {
+    const themeIds = (semanticModule as Record<string, unknown>).THEME_IDS;
+
+    expect(themeIds).toEqual(["energy", "rice", "water", "defense", "semiconductors"]);
+
+    for (const themeId of themeIds as string[]) {
+      expect(parseOperationsUrlState({ theme: themeId }).themeId).toBe(themeId);
+    }
+  });
+
   test("parses valid query params and falls back on invalid ones", () => {
     expect(
       parseOperationsUrlState({

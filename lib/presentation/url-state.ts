@@ -1,3 +1,4 @@
+import { DEFAULT_THEME_ID, isThemeId } from "../config/theme-registry";
 import type { ThemeId } from "../../types/semantic";
 import type { OperationMapMode } from "./operations";
 
@@ -8,12 +9,11 @@ export interface OperationsUrlState {
 }
 
 export const DEFAULT_OPERATIONS_URL_STATE: OperationsUrlState = {
-  themeId: "energy",
+  themeId: DEFAULT_THEME_ID,
   selectedId: null,
   mapMode: "point"
 };
 
-const VALID_THEMES = new Set<ThemeId>(["energy", "rice", "water", "defense", "semiconductors"]);
 const VALID_MAP_MODES = new Set<OperationMapMode>(["point", "cluster", "choropleth", "route", "static"]);
 
 export function parseOperationsUrlState(
@@ -63,10 +63,6 @@ function getValue(
   }
 
   return value;
-}
-
-function isThemeId(value?: string): value is ThemeId {
-  return Boolean(value && VALID_THEMES.has(value as ThemeId));
 }
 
 function isOperationMapMode(value?: string): value is OperationMapMode {

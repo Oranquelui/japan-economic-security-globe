@@ -65,3 +65,5 @@ export function loadSeedGraph(): SemanticGraph {
     edges: buildEdges(typedFlows, typedObservations)
   };
 }
+
+export { loadRankingSignals as loadSeedRankingSignals } from "../ranking/ranking-loader";

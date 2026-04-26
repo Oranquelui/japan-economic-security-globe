@@ -105,4 +105,61 @@ describe("inbox sections", () => {
       "terminal:sodegaura-lng"
     ]);
   });
+
+  test("keeps ranked rows ahead of unranked ones within each monitoring section", () => {
+    const sections = buildInboxSections("energy", [
+      {
+        id: "watch-2",
+        type: "海上ルート依存",
+        label: "監視2",
+        subject: "LNG",
+        urgency: "通常",
+        status: "監視中",
+        action: "確認",
+        period: "2026",
+        ranking: {
+          finalScore: 0.81,
+          primaryAxis: "energy",
+          primaryAxisLabel: "エネルギー",
+          priorityTier: "critical",
+          rank: 2,
+          signalId: "ranking-signal:watch-2",
+          topComponentId: "nationalImportance",
+          whyRanked: "国家的重要度が高い。"
+        }
+      },
+      {
+        id: "watch-1",
+        type: "海上ルート依存",
+        label: "監視1",
+        subject: "LNG",
+        urgency: "通常",
+        status: "監視中",
+        action: "確認",
+        period: "2026",
+        ranking: {
+          finalScore: 0.88,
+          primaryAxis: "energy",
+          primaryAxisLabel: "エネルギー",
+          priorityTier: "critical",
+          rank: 1,
+          signalId: "ranking-signal:watch-1",
+          topComponentId: "nationalImportance",
+          whyRanked: "国家的重要度が高い。"
+        }
+      },
+      {
+        id: "watch-3",
+        type: "海上ルート依存",
+        label: "監視3",
+        subject: "LNG",
+        urgency: "通常",
+        status: "監視中",
+        action: "確認",
+        period: "2026"
+      }
+    ] as OperationRow[]);
+
+    expect(sections[1].rows.map((row) => row.id)).toEqual(["watch-1", "watch-2", "watch-3"]);
+  });
 });

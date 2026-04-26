@@ -1,20 +1,5 @@
+import { getThemeDefinition } from "../config/theme-registry";
 import type { ThemeId } from "../../types/semantic";
-
-const THEME_LABELS: Record<ThemeId, { label: string; sublabel: string }> = {
-  energy: { label: "エネルギー", sublabel: "原油 / LNG / 海上ルート" },
-  rice: { label: "コメ", sublabel: "価格 / 備蓄 / 政策" },
-  water: { label: "水", sublabel: "貯水池 / 渇水兆候" },
-  defense: { label: "防衛", sublabel: "2026年度予算フロー" },
-  semiconductors: { label: "半導体", sublabel: "供給網 / 産業基盤" }
-};
-
-const THEME_QUESTIONS: Record<ThemeId, string> = {
-  energy: "原油・LNG・海上輸送路の揺れは、日本のどこに着地するのか。",
-  rice: "コメ価格と備蓄の揺れは、日本の暮らしにどう跳ね返るのか。",
-  water: "水ストレスと貯水率の低下は、日本のどこに先に現れるのか。",
-  defense: "FY2026防衛予算は、どの能力へどのように配分されるのか。",
-  semiconductors: "半導体供給網の依存は、日本の産業基盤にどう効いているのか。"
-};
 
 const KIND_LABELS: Record<string, string> = {
   Observation: "観測",
@@ -156,11 +141,16 @@ const PUBLISHER_LABELS: Record<string, string> = {
 };
 
 export function getThemeLabel(themeId: ThemeId): { label: string; sublabel: string } {
-  return THEME_LABELS[themeId];
+  const theme = getThemeDefinition(themeId);
+
+  return {
+    label: theme.label,
+    sublabel: theme.sublabel
+  };
 }
 
 export function getThemeQuestion(themeId: ThemeId): string {
-  return THEME_QUESTIONS[themeId];
+  return getThemeDefinition(themeId).question;
 }
 
 export function localizeKind(kind: string): string {

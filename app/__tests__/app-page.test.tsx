@@ -4,8 +4,9 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { ReactElement } from "react";
 
-const { loadSeedGraphMock, parseOperationsUrlStateMock } = vi.hoisted(() => ({
+const { loadSeedGraphMock, loadSeedRankingSignalsMock, parseOperationsUrlStateMock } = vi.hoisted(() => ({
   loadSeedGraphMock: vi.fn(() => ({ mocked: true })),
+  loadSeedRankingSignalsMock: vi.fn(() => []),
   parseOperationsUrlStateMock: vi.fn(() => ({
     themeId: "energy",
     mapMode: "point",
@@ -24,7 +25,8 @@ vi.mock("../../components/AppShell", () => ({
 }));
 
 vi.mock("../../lib/data/seed-loader", () => ({
-  loadSeedGraph: loadSeedGraphMock
+  loadSeedGraph: loadSeedGraphMock,
+  loadSeedRankingSignals: loadSeedRankingSignalsMock
 }));
 
 vi.mock("../../lib/presentation/url-state", () => ({
@@ -47,6 +49,7 @@ afterEach(() => {
 beforeEach(() => {
   delete process.env.NEXT_PUBLIC_HOMEPAGE_MODE;
   loadSeedGraphMock.mockClear();
+  loadSeedRankingSignalsMock.mockClear();
   parseOperationsUrlStateMock.mockClear();
 });
 
@@ -76,6 +79,7 @@ describe("app page routes", () => {
     expect(screen.getByTestId("app-shell").getAttribute("data-locale")).toBe("ja");
     expect(screen.getByTestId("app-shell").getAttribute("data-homepage-mode")).toBe("app");
     expect(loadSeedGraphMock).toHaveBeenCalledTimes(1);
+    expect(loadSeedRankingSignalsMock).toHaveBeenCalledTimes(1);
     expect(parseOperationsUrlStateMock).toHaveBeenCalledWith({ theme: "rice" });
   });
 
@@ -87,6 +91,7 @@ describe("app page routes", () => {
     expect(screen.getByTestId("app-shell").getAttribute("data-locale")).toBe("en");
     expect(screen.getByTestId("app-shell").getAttribute("data-homepage-mode")).toBe("app");
     expect(loadSeedGraphMock).toHaveBeenCalledTimes(1);
+    expect(loadSeedRankingSignalsMock).toHaveBeenCalledTimes(1);
     expect(parseOperationsUrlStateMock).toHaveBeenCalledWith({});
   });
 });
