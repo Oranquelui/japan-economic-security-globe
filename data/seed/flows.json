@@ -39,6 +39,26 @@
     "riskLabel": "Electricity-cost exposure"
   },
   {
+    "id": "flow:japan-linked-maritime-watch",
+    "theme": "logistics",
+    "label": "Japan-linked maritime watch",
+    "originId": "country:qatar",
+    "destinationId": "country:japan",
+    "resourceId": "resource:lng",
+    "routeIds": ["route:gulf-to-japan", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng"],
+    "mapLineKind": "route",
+    "sourceIds": [
+      "source:customs-trade-statistics",
+      "source:enecho-energy-trends",
+      "source:meti-2026-energy-taskforce",
+      "source:tepco-2026-april-power"
+    ],
+    "period": "2026",
+    "summary": "A logistics-first flow showing the Japan-linked maritime route through Hormuz and Malacca into domestic landing infrastructure.",
+    "magnitudeLabel": "Japan-linked route",
+    "riskLabel": "Port and chokepoint exposure"
+  },
+  {
     "id": "flow:australia-coal-japan",
     "theme": "energy",
     "label": "Australian coal to Japan",

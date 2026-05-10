@@ -56,7 +56,7 @@ describe("getThemeView", () => {
 
   it("loads complete thin slices for every MVP theme", () => {
     const seededGraph = loadSeedGraph();
-    const themes = ["energy", "rice", "water", "defense", "semiconductors"] as const;
+    const themes = ["energy", "logistics", "rice", "water", "defense", "semiconductors"] as const;
 
     for (const theme of themes) {
       const view = getThemeView(seededGraph, theme);

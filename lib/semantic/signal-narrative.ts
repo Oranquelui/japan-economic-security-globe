@@ -42,6 +42,21 @@ export function buildSignalNarrativeForFlow(flow: DependencyFlow): SignalNarrati
     };
   }
 
+  if (flow.theme === "logistics") {
+    return {
+      category: "日本関係海運",
+      severity: "高",
+      status: "監視中",
+      recommendedAction: "港湾着地、海峡通過、国内受入拠点への波及を確認",
+      watchpoints: dedupeWatchpoints([
+        flow.routeIds.includes("chokepoint:hormuz") ? "ホルムズ海峡" : null,
+        flow.routeIds.includes("chokepoint:malacca") ? "マラッカ海峡" : null,
+        flow.routeIds.includes("port:yokohama") ? "横浜港" : null,
+        "国内着地点"
+      ])
+    };
+  }
+
   if (flow.theme === "defense") {
     if (flow.id === "flow:defense-budget-standoff") {
       return {
@@ -189,6 +204,16 @@ export function buildSignalNarrativeForObservation(observation: Observation): Si
       status: "要確認",
       recommendedAction: "小河内ダム34%から取水制限へ進む条件を確認",
       watchpoints: ["貯水率", "降水状況", "取水制限", "節水要請"]
+    };
+  }
+
+  if (observation.id === "observation:capital-lifeline-watch-2026") {
+    return {
+      category: "ライフライン複合監視",
+      severity: "高",
+      status: "監視中",
+      recommendedAction: "首都圏の地震情報、港湾着地、水供給の3点を同時に確認",
+      watchpoints: ["地震情報", "横浜港", "首都圏水資源", "国内着地点"]
     };
   }
 
@@ -458,6 +483,8 @@ function buildObservationClaimsForSource(observation: Observation, source: Sourc
       return buildRicePolicyClaims(source.id);
     case "observation:ogochi-reservoir-stress":
       return buildWaterStressClaims(source.id);
+    case "observation:capital-lifeline-watch-2026":
+      return buildCapitalLifelineClaims(source.id);
     case "observation:defense-budget-standoff-fy2026":
       return buildDefenseObservationClaims(source.id, "スタンド・オフ能力", "約9,733億円");
     case "observation:defense-budget-iamd-fy2026":
@@ -603,6 +630,17 @@ function buildWaterStressClaims(sourceId: string): SourceHighlight[] {
       return [{ sourceId, claim: "国交省関東地方整備局は2026-04-10時点で小河内ダムの貯水率34%を掲載した。" }];
     case "source:jma-drought-spi":
       return [{ sourceId, claim: "気象庁資料は少雨・干ばつをどう評価するかの公式な見方を補う。" }];
+    default:
+      return [];
+  }
+}
+
+function buildCapitalLifelineClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:jma-earthquake-information":
+      return [{ sourceId, claim: "気象庁は地震発生後、震度速報や震源・震度情報を段階的に発表する。" }];
+    case "source:mlit-drought-portal":
+      return [{ sourceId, claim: "国土交通省の首都圏水資源ページは、首都圏ライフラインの水供給側ストレスを確認する入口になる。" }];
     default:
       return [];
   }

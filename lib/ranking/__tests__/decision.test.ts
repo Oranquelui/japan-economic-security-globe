@@ -6,7 +6,8 @@ import { buildOperationRows } from "../../presentation/operations";
 import {
   applyRankingToOperationRows,
   buildHomepageLeadSelection,
-  buildPresetRailThemeOrder
+  buildPresetRailThemeOrder,
+  resolveRankingThemeId
 } from "../../presentation/ranking";
 import { getThemeView } from "../../semantic/selectors";
 import type { RankingOverride, RankingSignal } from "../../../types/ranking";
@@ -177,5 +178,13 @@ describe("ranking presentation helpers", () => {
 
     expect(new Set(orderedThemes)).toEqual(new Set(THEME_IDS));
     expect(orderedThemes.slice(0, 3)).toEqual(["energy", "semiconductors", "rice"]);
+  });
+
+  test("maps logistics ranking signals to the logistics theme", () => {
+    const graph = loadSeedGraph();
+    const logisticsSignal = loadSeedRankingSignals().find((signal) => signal.id === "ranking-signal:logistics-japan-maritime-watch");
+
+    expect(logisticsSignal).toBeDefined();
+    expect(resolveRankingThemeId(graph, logisticsSignal!)).toBe("logistics");
   });
 });

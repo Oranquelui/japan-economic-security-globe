@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { buildInboxSections } from "../lib/presentation/inbox";
 import type { OperationRow } from "../lib/presentation/operations";
 import type { ThemePalette } from "../lib/presentation/palette";
+import type { WatchOverlayItemViewModel } from "../lib/presentation/watch-overlays";
 import type { ThemeId } from "../types/semantic";
 
 interface MapInboxPanelProps {
@@ -16,6 +17,7 @@ interface MapInboxPanelProps {
   themeId: ThemeId;
   themeLabel: string;
   themePalette: ThemePalette;
+  watchOverlays?: WatchOverlayItemViewModel[];
 }
 
 export function MapInboxPanel({
@@ -26,7 +28,8 @@ export function MapInboxPanel({
   rows,
   themeId,
   themeLabel,
-  themePalette
+  themePalette,
+  watchOverlays = []
 }: MapInboxPanelProps) {
   const sections = buildInboxSections(themeId, rows).filter((section) => section.rows.length > 0);
 
@@ -104,6 +107,46 @@ export function MapInboxPanel({
           </div>
         </section>
 
+        {watchOverlays.length ? (
+          <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+                  近接監視
+                </div>
+                <p className="mt-1 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
+                  公開可能な範囲に絞った、bounded な近接監視オーバーレイです。
+                </p>
+              </div>
+              <PaneBadge themePalette={themePalette}>{watchOverlays.length}件</PaneBadge>
+            </div>
+            <div className="mt-3 space-y-2">
+              {watchOverlays.map((overlay) => (
+                <div
+                  key={overlay.id}
+                  className="rounded-xl border px-3 py-3"
+                  style={{
+                    borderColor: themePalette.borderSubtle,
+                    background: themePalette.surfacePanelElevated
+                  }}
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <OverlayChip themePalette={themePalette}>{overlay.freshnessLabel}</OverlayChip>
+                    <OverlayChip themePalette={themePalette}>{overlay.trustLabel}</OverlayChip>
+                  </div>
+                  <div className="mt-2 text-sm font-semibold text-white">{overlay.title}</div>
+                  <p className="mt-1 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
+                    {overlay.summary}
+                  </p>
+                  <div className="mt-2 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                    {overlay.disclosureLabel}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section className="min-h-0 flex-1 overflow-hidden px-4 py-4">
           <div
             data-testid="monitoring-inbox-scroll"
@@ -179,6 +222,15 @@ export function MapInboxPanel({
                                   >
                                     {ranking.primaryAxisLabel}
                                   </span>
+                                  {ranking.freshnessLabel ? (
+                                    <OverlayChip themePalette={themePalette}>{ranking.freshnessLabel}</OverlayChip>
+                                  ) : null}
+                                  {ranking.confidenceLabel ? (
+                                    <OverlayChip themePalette={themePalette}>{ranking.confidenceLabel}</OverlayChip>
+                                  ) : null}
+                                  {ranking.sourceTrustLabel ? (
+                                    <OverlayChip themePalette={themePalette}>{ranking.sourceTrustLabel}</OverlayChip>
+                                  ) : null}
                                 </div>
                               ) : null}
                               <div className="truncate text-sm font-semibold">{row.label}</div>
@@ -204,6 +256,27 @@ export function MapInboxPanel({
         </section>
       </div>
     </aside>
+  );
+}
+
+function OverlayChip({
+  children,
+  themePalette
+}: {
+  children: ReactNode;
+  themePalette: ThemePalette;
+}) {
+  return (
+    <span
+      className="rounded-full border px-2 py-1 text-[0.62rem]"
+      style={{
+        borderColor: themePalette.borderSubtle,
+        background: themePalette.surfacePanel,
+        color: themePalette.textMuted
+      }}
+    >
+      {children}
+    </span>
   );
 }
 

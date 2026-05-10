@@ -1,4 +1,5 @@
 import { IMPORTANCE_AXIS_LABELS, SCORE_TIER_THRESHOLDS } from "../config/ranking-registry";
+import { buildSignalSourceTrust } from "../official/source-trust";
 import type {
   CanonicalReference,
   RankingDecisionItem,
@@ -38,6 +39,12 @@ export interface RankingExplanationViewModel {
   publicAttention: {
     label: string;
     valuePercent: number;
+  };
+  sourceTrust: {
+    label: string;
+    detail: string;
+    officialCount: number;
+    totalCount: number;
   };
   components: RankingExplanationComponentViewModel[];
   canonicalRefs: CanonicalReference[];
@@ -83,6 +90,7 @@ export function buildRankingExplanation(
   const sourceConfidence = score.components.find((component) => component.id === "sourceConfidence")?.value ?? 0;
   const publicAttention = score.components.find((component) => component.id === "publicAttention")?.value ?? 0;
   const finalScore = decisionItem?.finalScore ?? score.finalScore;
+  const sourceTrust = buildSignalSourceTrust(signal.sourceIds);
 
   return {
     signalId: signal.id,
@@ -105,6 +113,7 @@ export function buildRankingExplanation(
       label: `公的関心 ${Math.round(publicAttention * 100)}%`,
       valuePercent: Math.round(publicAttention * 100)
     },
+    sourceTrust,
     components,
     canonicalRefs: signal.canonicalRefs,
     override: override

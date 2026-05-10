@@ -5,10 +5,23 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { MapInboxPanel } from "../MapInboxPanel";
 import { getThemePalette } from "../../lib/presentation/palette";
+import type { WatchOverlayItemViewModel } from "../../lib/presentation/watch-overlays";
 
 afterEach(() => {
   cleanup();
 });
+
+const watchOverlays: WatchOverlayItemViewModel[] = [
+  {
+    id: "overlay:japan-maritime-watch",
+    title: "日本関係海運ウォッチ",
+    summary: "ホルムズ海峡から日本の港湾・受入基地までを 1 日遅延で監視する。",
+    freshnessLabel: "1日前確認",
+    trustLabel: "公式中心",
+    disclosureLabel: "1日遅延 / bounded overlay",
+    relatedIds: ["flow:japan-linked-maritime-watch", "port:yokohama"]
+  }
+];
 
 describe("map inbox structure", () => {
   test("uses the left section as an inbox/filter pane and not as a theme menu", () => {
@@ -30,6 +43,7 @@ describe("map inbox structure", () => {
             period: "2026"
           }
         ]}
+        watchOverlays={watchOverlays}
         themeId="energy"
         themeLabel="エネルギー"
         themePalette={getThemePalette("energy")}
@@ -63,6 +77,7 @@ describe("map inbox structure", () => {
           { id: "row-4", type: "価格圧力", label: "行4", subject: "コメ", urgency: "高", status: "要確認", action: "確認", period: "2026" },
           { id: "row-5", type: "価格圧力", label: "行5", subject: "コメ", urgency: "高", status: "要確認", action: "確認", period: "2026" }
         ]}
+        watchOverlays={watchOverlays}
         themeId="rice"
         themeLabel="コメ"
         themePalette={getThemePalette("rice")}
@@ -97,10 +112,14 @@ describe("map inbox structure", () => {
               rank: 1,
               signalId: "ranking-signal:energy-middle-east-route",
               topComponentId: "nationalImportance",
+              confidenceLabel: "高信頼",
+              freshnessLabel: "1日前取得",
+              sourceTrustLabel: "公式中心",
               whyRanked: "国家的重要度が高く、日本向けの監視優先度が高い。"
             }
           }
         ] as never[]}
+        watchOverlays={watchOverlays}
         themeId="energy"
         themeLabel="エネルギー"
         themePalette={getThemePalette("energy")}
@@ -109,6 +128,29 @@ describe("map inbox structure", () => {
 
     expect(screen.getByText("#1")).toBeTruthy();
     expect(screen.getAllByText("エネルギー").length).toBeGreaterThan(1);
+    expect(screen.getByText("1日前取得")).toBeTruthy();
+    expect(screen.getByText("高信頼")).toBeTruthy();
+    expect(screen.getAllByText("公式中心").length).toBeGreaterThan(0);
     expect(screen.getByText("国家的重要度が高く、日本向けの監視優先度が高い。")).toBeTruthy();
+  });
+
+  test("shows bounded watch overlays with freshness and disclosure labels", () => {
+    render(
+      <MapInboxPanel
+        activeId="flow:japan-linked-maritime-watch"
+        onQueryChange={vi.fn()}
+        onSelect={vi.fn()}
+        query=""
+        rows={[]}
+        watchOverlays={watchOverlays}
+        themeId="logistics"
+        themeLabel="物流"
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    expect(screen.getByText("近接監視")).toBeTruthy();
+    expect(screen.getByText("日本関係海運ウォッチ")).toBeTruthy();
+    expect(screen.getByText("1日遅延 / bounded overlay")).toBeTruthy();
   });
 });

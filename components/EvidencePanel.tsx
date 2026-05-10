@@ -6,6 +6,7 @@ import { getSourceFreshness } from "../lib/official/source-freshness";
 import type { RankingExplanationViewModel } from "../lib/ranking/explain";
 import type { DetailViewModel, EvidenceGraphViewModel } from "../types/presentation";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
+import { getSignalTrend } from "../lib/presentation/trends";
 import {
   localizeAnyLabel,
   localizeKind,
@@ -16,6 +17,7 @@ import {
 } from "../lib/presentation/japanese";
 import { getRouteStatus } from "../lib/presentation/route-status";
 import { toStableSvgNumber } from "../lib/presentation/svg";
+import { SignalTrendChart } from "./SignalTrendChart";
 
 interface EvidencePanelProps {
   collapsed: boolean;
@@ -46,6 +48,7 @@ export function EvidencePanel({
 }: EvidencePanelProps) {
   const [tab, setTab] = useState<"summary" | "sources" | "related">("summary");
   const routeStatus = getRouteStatus(detail);
+  const trend = rankingExplanation ? getSignalTrend(rankingExplanation.signalId) : null;
 
   if (collapsible && collapsed) {
     return (
@@ -203,8 +206,14 @@ export function EvidencePanel({
                   <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
                     {rankingExplanation.publicAttention.label}
                   </PanelChip>
+                  <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+                    {rankingExplanation.sourceTrust.label}
+                  </PanelChip>
                 </div>
                 <p className="mt-3 text-[0.82rem] leading-6 text-slate-300">{rankingExplanation.summary}</p>
+                <p className="mt-2 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
+                  {rankingExplanation.sourceTrust.detail}
+                </p>
                 <div className="mt-4 grid gap-3">
                   {rankingExplanation.components.map((component) => (
                     <div
@@ -259,6 +268,17 @@ export function EvidencePanel({
                     </div>
                   </div>
                 ) : null}
+              </section>
+            ) : null}
+            {trend ? (
+              <section
+                className="rounded-xl border p-4"
+                style={{
+                  borderColor: themePalette.borderSubtle,
+                  background: themePalette.surfacePanel
+                }}
+              >
+                <SignalTrendChart themePalette={themePalette} trend={trend} />
               </section>
             ) : null}
             {routeStatus ? (

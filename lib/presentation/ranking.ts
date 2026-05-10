@@ -18,6 +18,7 @@ const AXIS_THEME_MAP: Partial<Record<ImportanceAxis, ThemeId>> = {
   defense_industrial_base: "defense",
   energy: "energy",
   food: "rice",
+  logistics: "logistics",
   semiconductors: "semiconductors"
 };
 
@@ -49,16 +50,27 @@ export function applyRankingToOperationRows(
       continue;
     }
 
+    const score = computeRankingScore(signal, {
+      now: decision.scoredAt
+    });
+    const explanation = buildRankingExplanation(signal, score, {
+      decisionItem: item,
+      now: decision.scoredAt
+    });
+
     rankingMap.set(targetId, {
+      confidenceLabel: explanation.confidence.label,
       finalScore: item.finalScore,
+      freshnessLabel: explanation.freshness.label,
       overrideId: item.overrideId,
       primaryAxis: item.primaryAxis,
       primaryAxisLabel: IMPORTANCE_AXIS_LABELS[item.primaryAxis],
       priorityTier: getRankingPriorityTier(item.finalScore),
       rank: item.rank,
       signalId: item.signalId,
+      sourceTrustLabel: explanation.sourceTrust.label,
       topComponentId: item.topComponentId,
-      whyRanked: item.explanation ?? "国家的重要度と国内波及を優先して配置。"
+      whyRanked: explanation.summary
     });
   }
 

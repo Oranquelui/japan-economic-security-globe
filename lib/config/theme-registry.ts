@@ -20,6 +20,14 @@ export const THEME_REGISTRY: Record<ThemeId, ThemeDefinition> = {
     sublabel: "原油 / LNG / 海上ルート",
     title: "エネルギー"
   },
+  logistics: {
+    accent: "#4ea4bf",
+    headline: "港・海峡・海運の揺れは、日本の供給と生活コストにどう波及するのか。",
+    label: "物流",
+    question: "日本向け物流の変化は、どの港・海峡・国内着地点に先に出るのか。",
+    sublabel: "港湾 / 海運 / チョークポイント",
+    title: "物流"
+  },
   rice: {
     accent: "#d9b45b",
     headline: "価格、備蓄、水、政策シグナルは、食卓にどうつながるのか。",
