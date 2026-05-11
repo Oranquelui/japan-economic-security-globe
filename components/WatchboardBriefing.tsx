@@ -4,23 +4,30 @@ import type { WatchboardBriefingViewModel } from "../lib/presentation/watchboard
 interface WatchboardBriefingProps {
   briefing: WatchboardBriefingViewModel | null;
   themePalette: ThemePalette;
+  variant?: "floating" | "pane";
 }
 
-export function WatchboardBriefing({ briefing, themePalette }: WatchboardBriefingProps) {
+export function WatchboardBriefing({ briefing, themePalette, variant = "floating" }: WatchboardBriefingProps) {
   if (!briefing) {
     return null;
   }
 
+  const pane = variant === "pane";
+
   return (
     <section
       data-testid="watchboard-briefing"
-      className="overflow-hidden rounded-2xl border shadow-2xl shadow-black/35 backdrop-blur-xl"
+      className={
+        pane
+          ? "overflow-hidden rounded-xl border"
+          : "overflow-hidden rounded-2xl border shadow-2xl shadow-black/35 backdrop-blur-xl"
+      }
       style={{
         borderColor: themePalette.borderSubtle,
         background: themePalette.surfacePanel
       }}
     >
-      <div className="border-b px-5 py-4" style={{ borderColor: themePalette.borderSubtle }}>
+      <div className={pane ? "border-b px-3 py-3" : "border-b px-5 py-4"} style={{ borderColor: themePalette.borderSubtle }}>
         <div className="flex items-center justify-between gap-3">
           <div className="font-mono text-[0.58rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
             JAPAN WATCHBOARD
@@ -29,10 +36,12 @@ export function WatchboardBriefing({ briefing, themePalette }: WatchboardBriefin
             Source proof
           </div>
         </div>
-        <h2 className="mt-3 max-w-[34rem] text-xl font-semibold leading-7 text-white">{briefing.strategicQuestion}</h2>
+        <h2 className={pane ? "mt-3 text-base font-semibold leading-6 text-white" : "mt-3 max-w-[34rem] text-xl font-semibold leading-7 text-white"}>
+          {briefing.strategicQuestion}
+        </h2>
       </div>
 
-      <div className="grid gap-4 p-5">
+      <div className={pane ? "grid gap-3 p-3" : "grid gap-4 p-5"}>
         <div>
           <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
             Now watching
@@ -46,7 +55,7 @@ export function WatchboardBriefing({ briefing, themePalette }: WatchboardBriefin
             <BriefingChip themePalette={themePalette}>{briefing.confidenceLabel}</BriefingChip>
           </div>
           <h3 className="mt-3 text-base font-semibold text-white">{briefing.title}</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-300">{briefing.whyNow}</p>
+          <p className={pane ? "mt-2 text-[0.78rem] leading-5 text-slate-300" : "mt-2 text-sm leading-6 text-slate-300"}>{briefing.whyNow}</p>
           <p className="mt-3 text-[0.74rem] leading-5" style={{ color: themePalette.textMuted }}>
             {briefing.japanImpact}
           </p>

@@ -81,6 +81,7 @@ export function AppShell({
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(true);
   const [isEvidenceOpen, setEvidenceOpen] = useState(true);
+  const [isCompareOpen, setCompareOpen] = useState(false);
   const [, startTransition] = useTransition();
   const initialSerializedRef = useRef(serializeOperationsUrlState(resolvedInitialState));
   const view = getThemeView(graph, themeId);
@@ -141,9 +142,11 @@ export function AppShell({
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
   const railWidth = 72;
-  const paneWidth = 320;
+  const paneWidth = 376;
   const visiblePaneWidth = isInboxOpen ? paneWidth : 0;
-  const compareHeight = 264;
+  const compareExpandedHeight = 264;
+  const compareCollapsedHeight = 76;
+  const compareHeight = isCompareOpen ? compareExpandedHeight : compareCollapsedHeight;
   const evidenceWidth = isEvidenceOpen ? 360 : 52;
   const mapOverlayInsets = {
     top: 16,
@@ -204,7 +207,6 @@ export function AppShell({
               onSelect={setSelectedId}
               statusPalette={statusPalette}
               themePalette={themePalette}
-              watchOverlays={watchOverlays}
             />
           </section>
 
@@ -229,7 +231,7 @@ export function AppShell({
 
           {isInboxOpen ? (
             <aside
-              data-testid="layout-left-nav"
+              data-testid="layout-command-pane"
               aria-hidden="false"
               className="absolute top-0 z-20 min-h-0 overflow-hidden border-r"
               style={{
@@ -242,6 +244,7 @@ export function AppShell({
             >
               <MapInboxPanel
                 activeId={activeId}
+                briefing={watchboardBriefing}
                 onQueryChange={setSearchQuery}
                 onSelect={setSelectedId}
                 query={searchQuery}
@@ -252,19 +255,6 @@ export function AppShell({
                 watchOverlays={watchOverlays}
               />
             </aside>
-          ) : null}
-
-          {watchboardBriefing ? (
-            <section
-              data-testid="layout-watchboard-overlay"
-              className="absolute top-4 z-30"
-              style={{
-                left: railWidth + visiblePaneWidth + 72,
-                width: 420
-              }}
-            >
-              <WatchboardBriefing briefing={watchboardBriefing} themePalette={themePalette} />
-            </section>
           ) : null}
 
           <div
@@ -294,7 +284,7 @@ export function AppShell({
           </div>
 
           <section
-            data-testid="layout-compare-overlay"
+            data-testid="layout-compare-drawer"
             className="absolute bottom-0 right-0 z-30 min-h-0"
             style={{
               left: railWidth + visiblePaneWidth,
@@ -304,14 +294,13 @@ export function AppShell({
           >
             <OperationsSignalTable
               activeId={activeId}
-              collapsed={false}
-              collapsible={false}
+              collapsed={!isCompareOpen}
               onSelect={setSelectedId}
               query={searchQuery}
               rows={filteredOperationRows}
               statusPalette={statusPalette}
               themePalette={themePalette}
-              onToggleCollapsed={() => undefined}
+              onToggleCollapsed={() => setCompareOpen((value) => !value)}
             />
           </section>
         </div>
