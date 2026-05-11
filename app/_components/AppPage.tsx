@@ -1,6 +1,6 @@
 import { AppShell } from "../../components/AppShell";
 import { resolveHomepageMode } from "../../lib/config/homepage-mode";
-import { loadSeedGraph, loadSeedRankingSignals } from "../../lib/data/seed-loader";
+import { loadSeedGraph, loadSeedLiveLogistics, loadSeedRankingSignals } from "../../lib/data/seed-loader";
 import { parseOperationsUrlState } from "../../lib/presentation/url-state";
 
 interface AppPageProps {
@@ -10,6 +10,7 @@ interface AppPageProps {
 
 export async function AppPage({ locale, searchParams }: AppPageProps) {
   const graph = loadSeedGraph();
+  const liveLogisticsEvents = loadSeedLiveLogistics();
   const rankingSignals = loadSeedRankingSignals();
   const resolvedSearchParams = await searchParams;
   const initialUrlState = parseOperationsUrlState(resolvedSearchParams);
@@ -28,6 +29,7 @@ export async function AppPage({ locale, searchParams }: AppPageProps) {
       homepageMode={homepageMode}
       initialUrlState={initialUrlState}
       locale={resolvedLocale}
+      liveLogisticsEvents={liveLogisticsEvents}
       rankingSignals={rankingSignals}
     />
   );

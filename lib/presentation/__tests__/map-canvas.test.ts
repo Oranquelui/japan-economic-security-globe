@@ -73,4 +73,39 @@ describe("japan map canvas model", () => {
     expect(model.globalRoutes).toHaveLength(0);
     expect(model.foreignWindow).toBeUndefined();
   });
+
+  test("adds live logistics routes and route-only points to the map model", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const liveLogistics = {
+      mapRoutes: [
+        {
+          id: "live-logistics:tanker-qatar-tokyo-bay",
+          label: "AIS tanker corridor",
+          pointIds: ["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng"],
+          relatedIds: ["flow:japan-linked-maritime-watch"]
+        },
+        {
+          id: "live-logistics:domestic-keihin-tokyo",
+          label: "Domestic logistics: Yokohama → Keihin/Sodegaura → Tokyo",
+          pointIds: ["port:yokohama", "refinery:keihin", "terminal:sodegaura-lng", "prefecture:tokyo"],
+          relatedIds: ["flow:japan-linked-maritime-watch"]
+        }
+      ]
+    };
+
+    const model = (buildJapanMapCanvasModel as any)(
+      graph,
+      view,
+      "flow:japan-linked-maritime-watch",
+      liveLogistics
+    );
+
+    expect(model.liveRoutes.map((route: { id: string }) => route.id)).toEqual(
+      expect.arrayContaining(["live-logistics:tanker-qatar-tokyo-bay", "live-logistics:domestic-keihin-tokyo"])
+    );
+    expect(model.livePoints.map((point: { id: string }) => point.id)).toEqual(
+      expect.arrayContaining(["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng", "refinery:keihin", "prefecture:tokyo"])
+    );
+  });
 });
