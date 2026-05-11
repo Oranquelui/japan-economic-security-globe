@@ -4,12 +4,14 @@ import { useEffect, useRef, useState, useTransition, type CSSProperties } from "
 import { usePathname, useRouter } from "next/navigation";
 
 import type { HomepageMode } from "../lib/config/homepage-mode";
+import type { LiveLogisticsEvent } from "../types/logistics";
 import type { ThemeView } from "../types/presentation";
 import type { RankingSignal } from "../types/ranking";
 import { THEME_IDS, type SemanticGraph, type ThemeId } from "../types/semantic";
 import { buildRankingDecision } from "../lib/ranking/decision";
 import { getDetailView } from "../lib/semantic/detail";
 import { buildJapanMapCanvasModel } from "../lib/presentation/map-canvas";
+import { buildLiveLogisticsView } from "../lib/presentation/live-logistics";
 import { getThemeView } from "../lib/semantic/selectors";
 import { buildEvidenceGraph } from "../lib/semantic/view-models";
 import { buildOperationRows, filterOperationRows, type OperationMapMode } from "../lib/presentation/operations";
@@ -44,6 +46,7 @@ interface AppShellProps {
   homepageMode?: HomepageMode;
   initialUrlState?: OperationsUrlState;
   locale?: string;
+  liveLogisticsEvents?: LiveLogisticsEvent[];
   rankingSignals?: RankingSignal[];
 }
 
@@ -53,6 +56,7 @@ export function AppShell({
   homepageMode = "default",
   initialUrlState = DEFAULT_OPERATIONS_URL_STATE,
   locale = "ja",
+  liveLogisticsEvents = [],
   rankingSignals = []
 }: AppShellProps) {
   const router = useRouter();
@@ -116,10 +120,11 @@ export function AppShell({
     ? buildWatchboardBriefing(graph, rankingSignals, homepageDecision, rankingNowRef.current)
     : null;
   const watchOverlays = buildWatchOverlayItems(themeId, activeId, new Date(rankingNowRef.current));
+  const liveLogistics = buildLiveLogisticsView(themeId, activeId, liveLogisticsEvents, new Date(rankingNowRef.current));
   const focusTargetId = validSelectedId;
   const detail = getDetailView(graph, activeId);
   const routeStatus = getRouteStatus(detail);
-  const mapModel = buildJapanMapCanvasModel(graph, view, activeId);
+  const mapModel = buildJapanMapCanvasModel(graph, view, activeId, liveLogistics);
   const themePalette = getThemePalette(themeId);
   const statusPalette = getStatusPalette();
   const themeLabel = getThemeLabel(themeId).label;
@@ -179,7 +184,7 @@ export function AppShell({
   }
 
   return (
-    <main className="relative grid h-screen min-h-screen grid-rows-[56px,minmax(0,1fr)] overflow-hidden text-slate-100" style={shellStyle}>
+    <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 lg:grid lg:grid-rows-[56px,minmax(0,1fr)]" style={shellStyle}>
       <InitialNoticeModal homepageMode={homepageMode} locale={locale} />
 
       <ActionBar
@@ -195,7 +200,7 @@ export function AppShell({
         themePalette={themePalette}
       />
 
-      <div className="min-h-0">
+      <div className="h-full min-h-0 min-w-0 overflow-x-hidden overflow-y-auto lg:overflow-hidden">
         <div className="relative hidden h-full min-h-0 lg:block">
           <section data-testid="layout-map-section" className="absolute inset-0 min-h-0">
             <JapanMainMap
@@ -249,6 +254,7 @@ export function AppShell({
                 onSelect={setSelectedId}
                 query={searchQuery}
                 rows={filteredOperationRows}
+                liveLogistics={liveLogistics}
                 themeId={themeId}
                 themeLabel={themeLabel}
                 themePalette={themePalette}
@@ -305,7 +311,7 @@ export function AppShell({
           </section>
         </div>
 
-        <div className="space-y-4 lg:hidden">
+        <div className="min-w-0 space-y-4 overflow-x-hidden pb-6 lg:hidden">
           {watchboardBriefing ? (
             <section className="px-4 pt-4">
               <WatchboardBriefing briefing={watchboardBriefing} themePalette={themePalette} />
@@ -365,6 +371,7 @@ export function AppShell({
             onSelect={setSelectedId}
             query={searchQuery}
             rows={filteredOperationRows}
+            liveLogistics={liveLogistics}
             themeId={themeId}
             themeLabel={themeLabel}
             themePalette={themePalette}

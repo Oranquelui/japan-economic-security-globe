@@ -24,6 +24,46 @@ const watchOverlays: WatchOverlayItemViewModel[] = [
   }
 ];
 
+const liveLogistics = {
+  title: "LIVE LOGISTICS",
+  subtitle: "AIS と国内物流の遅延・集約シグナル",
+  disclosureLabel: "15-60分遅延 / aggregated AIS + domestic logistics",
+  updatedLabel: "18分前",
+  items: [
+    {
+      id: "live-logistics:tanker-qatar-tokyo-bay",
+      title: "Tanker corridor: Hormuz → Malacca → Tokyo Bay",
+      kindLabel: "AIS tanker",
+      statusLabel: "Underway",
+      lastSeenLabel: "Last seen 18分前",
+      etaLabel: "ETA 42h",
+      sourceLabel: "AIS provider fixture",
+      disclosureLabel: "15-60分遅延 / aggregated vessel signal",
+      confidenceLabel: "集約信号",
+      corridorLabel: "Hormuz → Malacca → Yokohama/Sodegaura",
+      pointIds: ["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng"],
+      relatedIds: ["flow:japan-linked-maritime-watch"],
+      signalTone: "watch"
+    },
+    {
+      id: "live-logistics:domestic-keihin-tokyo",
+      title: "Domestic logistics: Yokohama → Keihin/Sodegaura → Tokyo",
+      kindLabel: "Domestic logistics",
+      statusLabel: "接続監視",
+      lastSeenLabel: "Last seen 22分前",
+      etaLabel: "次回更新 15分",
+      sourceLabel: "xROAD / Cyber Port fixture",
+      disclosureLabel: "公開系統 / route-level only",
+      confidenceLabel: "公式/準公式",
+      corridorLabel: "Yokohama → Keihin/Sodegaura → Tokyo",
+      pointIds: ["port:yokohama", "refinery:keihin", "terminal:sodegaura-lng", "prefecture:tokyo"],
+      relatedIds: ["flow:japan-linked-maritime-watch"],
+      signalTone: "monitoring"
+    }
+  ],
+  mapRoutes: []
+};
+
 const briefing: WatchboardBriefingViewModel = {
   confidenceLabel: "高信頼",
   freshnessLabel: "16日前取得",
@@ -206,5 +246,34 @@ describe("map inbox structure", () => {
     expect(screen.getByText("近接監視")).toBeTruthy();
     expect(screen.getByText("日本関係海運ウォッチ")).toBeTruthy();
     expect(screen.getByText("1日遅延 / bounded overlay")).toBeTruthy();
+  });
+
+  test("surfaces live logistics before bounded watch overlays", () => {
+    render(
+      <MapInboxPanel
+        activeId="flow:japan-linked-maritime-watch"
+        liveLogistics={liveLogistics as never}
+        onQueryChange={vi.fn()}
+        onSelect={vi.fn()}
+        query=""
+        rows={[]}
+        watchOverlays={watchOverlays}
+        themeId="logistics"
+        themeLabel="物流"
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    const commandPane = screen.getByTestId("command-pane-scroll");
+    const text = commandPane.textContent ?? "";
+
+    expect(text).toContain("LIVE LOGISTICS");
+    expect(text).toContain("AIS tanker");
+    expect(text).toContain("Tanker corridor: Hormuz");
+    expect(text).toContain("Last seen 18分前");
+    expect(text).toContain("ETA 42h");
+    expect(text).toContain("Domestic logistics");
+    expect(text).toContain("xROAD / Cyber Port fixture");
+    expect(text.indexOf("LIVE LOGISTICS")).toBeLessThan(text.indexOf("近接監視"));
   });
 });

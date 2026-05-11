@@ -1,7 +1,9 @@
 import entities from "../../data/seed/entities.json";
 import flows from "../../data/seed/flows.json";
+import liveLogistics from "../../data/seed/live-logistics.json";
 import observations from "../../data/seed/observations.json";
 import sources from "../../data/seed/sources.json";
+import type { LiveLogisticsEvent } from "../../types/logistics";
 import type {
   DependencyFlow,
   GraphEdge,
@@ -64,6 +66,10 @@ export function loadSeedGraph(): SemanticGraph {
     sources: typedSources,
     edges: buildEdges(typedFlows, typedObservations)
   };
+}
+
+export function loadSeedLiveLogistics(): LiveLogisticsEvent[] {
+  return liveLogistics as LiveLogisticsEvent[];
 }
 
 export { loadRankingSignals as loadSeedRankingSignals } from "../ranking/ranking-loader";

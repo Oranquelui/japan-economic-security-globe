@@ -1,4 +1,5 @@
 import type { ThemeView } from "../../types/presentation";
+import type { LiveLogisticsViewModel } from "../../types/logistics";
 import type { DependencyFlow, SemanticEntity, SemanticGraph } from "../../types/semantic";
 import { localizeAnyLabel } from "./japanese";
 import { isRenderableMapRoute } from "./route-status";
@@ -40,6 +41,8 @@ export type JapanMapCanvasModel = {
   regions: JapanMapRegion[];
   globalPoints: JapanMapPoint[];
   globalRoutes: JapanMapRoute[];
+  livePoints?: JapanMapPoint[];
+  liveRoutes?: JapanMapRoute[];
   foreignWindow?: {
     title: string;
     entities: ForeignWindowEntity[];
@@ -49,7 +52,8 @@ export type JapanMapCanvasModel = {
 export function buildJapanMapCanvasModel(
   graph: SemanticGraph,
   view: ThemeView,
-  activeId: string
+  activeId: string,
+  liveLogistics?: LiveLogisticsViewModel | null
 ): JapanMapCanvasModel {
   const japanEntity = graph.entities.find((entity) => entity.id === "country:japan");
   const routeScopedFlows = getRouteScopedFlows(graph, view, activeId);
@@ -98,6 +102,8 @@ export function buildJapanMapCanvasModel(
 
   const globalPoints = buildGlobalPoints(routeScopedFlows, graph, japanEntity);
   const globalRoutes = buildGlobalRoutes(routeScopedFlows, graph, globalPoints, japanEntity);
+  const liveRoutes = buildLiveRoutes(liveLogistics, graph);
+  const livePoints = buildLivePoints(liveRoutes, graph);
 
   return {
     points: visiblePoints,
@@ -105,6 +111,8 @@ export function buildJapanMapCanvasModel(
     regions,
     globalPoints,
     globalRoutes,
+    livePoints,
+    liveRoutes,
     foreignWindow: buildForeignWindow(graph, routeScopedFlows, activeId)
   };
 }
@@ -183,6 +191,43 @@ function buildGlobalRoutes(
       };
     })
     .filter((route): route is JapanMapRoute => route !== null);
+}
+
+function buildLiveRoutes(
+  liveLogistics: LiveLogisticsViewModel | null | undefined,
+  graph: SemanticGraph
+): JapanMapRoute[] {
+  if (!liveLogistics) {
+    return [];
+  }
+
+  return liveLogistics.mapRoutes
+    .map((route) => {
+      const pointIds = route.pointIds.filter((pointId) => hasCoordinates(graph.entities.find((entity) => entity.id === pointId)));
+
+      if (pointIds.length < 2) {
+        return null;
+      }
+
+      return {
+        id: route.id,
+        label: route.label,
+        pointIds,
+        relatedIds: route.relatedIds
+      };
+    })
+    .filter((route): route is JapanMapRoute => route !== null);
+}
+
+function buildLivePoints(liveRoutes: JapanMapRoute[], graph: SemanticGraph): JapanMapPoint[] {
+  const livePointIds = new Set(liveRoutes.flatMap((route) => route.pointIds));
+
+  return dedupeById(
+    graph.entities
+      .filter((entity) => livePointIds.has(entity.id))
+      .filter(hasCoordinates)
+      .map((entity) => toPoint(entity, classifyLiveTone(entity)))
+  );
 }
 
 function buildForeignWindow(
@@ -332,6 +377,18 @@ function classifyGlobalTone(entity: SemanticEntity): JapanMapPoint["tone"] {
   }
 
   if (entity.kind === "Country" || entity.kind === "Port") {
+    return "watch";
+  }
+
+  return "normal";
+}
+
+function classifyLiveTone(entity: SemanticEntity): JapanMapPoint["tone"] {
+  if (entity.kind === "Chokepoint" || entity.kind === "Terminal" || entity.kind === "Refinery") {
+    return "critical";
+  }
+
+  if (entity.kind === "Port" || entity.kind === "Country" || entity.kind === "Prefecture") {
     return "watch";
   }
 

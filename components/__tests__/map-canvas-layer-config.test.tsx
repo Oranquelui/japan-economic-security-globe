@@ -211,4 +211,51 @@ describe("map canvas layer config", () => {
     expect(globalRoutes.features[0].properties.id).toBe("flow:saudi-oil-japan");
     expect(globalRoutes.features[0].properties.selected).toBe(true);
   });
+
+  test("adds a dedicated live logistics route source and pulse layer", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="flow:saudi-oil-japan"
+        focusTargetId={null}
+        mapMode="route"
+        model={
+          {
+            ...model,
+            livePoints: [
+              ...model.globalPoints,
+              { id: "port:yokohama", kind: "Port", label: "横浜港", lat: 35.44, lon: 139.67, tone: "critical" }
+            ],
+            liveRoutes: [
+              {
+                id: "live-logistics:tanker-saudi-tokyo-bay",
+                label: "AIS tanker corridor",
+                pointIds: ["country:saudi-arabia", "chokepoint:hormuz", "country:japan", "port:yokohama"],
+                relatedIds: ["flow:saudi-oil-japan"]
+              }
+            ]
+          } as JapanMapCanvasModel
+        }
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("live-logistics-routes")).toBe(true);
+    });
+
+    const pulseLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-pulse") as any;
+    const labelLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-label") as any;
+    const liveRoutes = addedSources.get("live-logistics-routes") as {
+      features: Array<{ properties: { id: string; selected: boolean } }>;
+    };
+
+    expect(pulseLayer).toBeTruthy();
+    expect(pulseLayer.source).toBe("live-logistics-routes");
+    expect(pulseLayer.paint["line-color"]).toBe(getStatusPalette().monitoring);
+    expect(labelLayer).toBeTruthy();
+    expect(liveRoutes.features[0].properties.id).toBe("live-logistics:tanker-saudi-tokyo-bay");
+    expect(liveRoutes.features[0].properties.selected).toBe(true);
+  });
 });

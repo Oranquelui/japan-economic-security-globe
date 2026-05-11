@@ -22,13 +22,16 @@ vi.mock("next/navigation", () => ({
 vi.mock("../MapInboxPanel", () => ({
   MapInboxPanel: ({
     briefing,
+    liveLogistics,
     onSelect
   }: {
     briefing?: { strategicQuestion: string } | null;
+    liveLogistics?: { items: unknown[] } | null;
     onSelect: (id: string) => void;
   }) => (
     <div data-testid="inbox">
       {briefing ? <div data-testid="inbox-watchboard">{briefing.strategicQuestion}</div> : null}
+      {liveLogistics ? <div data-testid="inbox-live-logistics" data-count={liveLogistics.items.length} /> : null}
       <button type="button" onClick={() => onSelect("observation:rice-price-signal-2026")}>
         select-rice-from-inbox
       </button>
@@ -72,14 +75,23 @@ vi.mock("../JapanMainMap", () => ({
     activeId,
     focusTargetId,
     mapMode,
+    model,
     watchOverlays = []
   }: {
     activeId: string;
     focusTargetId: string | null;
     mapMode: OperationMapMode;
+    model?: { liveRoutes?: unknown[] };
     watchOverlays?: unknown[];
   }) => (
-    <div data-testid="map" data-active={activeId} data-focus={focusTargetId ?? ""} data-mode={mapMode} data-watch-overlays={watchOverlays.length}>
+    <div
+      data-testid="map"
+      data-active={activeId}
+      data-focus={focusTargetId ?? ""}
+      data-live-routes={model?.liveRoutes?.length ?? 0}
+      data-mode={mapMode}
+      data-watch-overlays={watchOverlays.length}
+    >
       mocked-map
     </div>
   )
@@ -299,6 +311,42 @@ describe("AppShell url sync", () => {
     );
 
     expect(screen.getAllByTestId("evidence")[0].getAttribute("data-ranking")).toBe("#1");
+  });
+
+  test("passes live logistics into the command pane and map model", () => {
+    const AppShellWithLiveLogistics = AppShell as any;
+
+    render(
+      <AppShellWithLiveLogistics
+        graph={loadSeedGraph()}
+        initialUrlState={{
+          themeId: "logistics",
+          mapMode: "route",
+          selectedId: "flow:japan-linked-maritime-watch"
+        }}
+        liveLogisticsEvents={[
+          {
+            id: "live-logistics:tanker-qatar-tokyo-bay",
+            themeIds: ["logistics", "energy"],
+            title: "Tanker corridor: Hormuz → Malacca → Tokyo Bay",
+            kindLabel: "AIS tanker",
+            statusLabel: "Underway",
+            lastSeenAt: "2026-05-11T00:00:00.000Z",
+            etaLabel: "ETA 42h",
+            sourceLabel: "AIS provider fixture",
+            disclosureLabel: "15-60分遅延 / aggregated vessel signal",
+            confidenceLabel: "集約信号",
+            corridorLabel: "Hormuz → Malacca → Yokohama/Sodegaura",
+            pointIds: ["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng"],
+            relatedIds: ["flow:japan-linked-maritime-watch"],
+            signalTone: "watch"
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getAllByTestId("inbox-live-logistics").map((element) => element.getAttribute("data-count"))).toEqual(["1", "1"]);
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-live-routes")).toBe("1");
   });
 
   test("replaces the URL when theme, map mode, and selection change", async () => {

@@ -108,6 +108,11 @@ export function JapanOperationsMapCanvas({
           data: routesToFeatureCollection(model.globalRoutes, model.globalPoints, activeId)
         });
 
+        map.addSource("live-logistics-routes", {
+          type: "geojson",
+          data: routesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId)
+        });
+
         map.addLayer({
           id: "global-route-line",
           type: "line",
@@ -146,6 +151,34 @@ export function JapanOperationsMapCanvas({
               themePalette.accent
             ],
             "text-opacity": mapMode === "route" ? 0.88 : 0.74
+          }
+        });
+
+        map.addLayer({
+          id: "live-logistics-route-pulse",
+          type: "line",
+          source: "live-logistics-routes",
+          paint: {
+            ...getLiveLogisticsRoutePaint(statusPalette, mapMode)
+          }
+        });
+
+        map.addLayer({
+          id: "live-logistics-route-label",
+          type: "symbol",
+          source: "live-logistics-routes",
+          layout: {
+            "symbol-placement": "line",
+            "text-field": "LIVE",
+            "text-size": 10,
+            "symbol-spacing": 180,
+            "text-keep-upright": false
+          },
+          paint: {
+            "text-color": statusPalette.monitoring,
+            "text-halo-color": "rgba(250,252,255,0.94)",
+            "text-halo-width": 1.2,
+            "text-opacity": mapMode === "route" ? 0.9 : 0.72
           }
         });
 
@@ -359,7 +392,7 @@ export function JapanOperationsMapCanvas({
           }
         });
 
-        for (const layerId of ["jp-point-circle", "jp-route-line", "jp-region-fill", "jp-cluster-circle", "global-point-circle", "global-route-line"]) {
+        for (const layerId of ["jp-point-circle", "jp-route-line", "jp-region-fill", "jp-cluster-circle", "global-point-circle", "global-route-line", "live-logistics-route-pulse"]) {
           map.on("mouseenter", layerId, () => {
             map.getCanvas().style.cursor = "pointer";
           });
@@ -373,6 +406,7 @@ export function JapanOperationsMapCanvas({
         map.on("click", "jp-region-fill", (event: any) => selectFeatureId(event, handleSelect));
         map.on("click", "global-point-circle", (event: any) => selectFeatureId(event, handleSelect));
         map.on("click", "global-route-line", (event: any) => selectFeatureId(event, handleSelect));
+        map.on("click", "live-logistics-route-pulse", (event: any) => selectFeatureId(event, handleSelect));
 
         map.on("click", "jp-cluster-circle", async (event: any) => {
           const feature = event.features?.[0];
@@ -444,6 +478,12 @@ export function JapanOperationsMapCanvas({
       themePalette.accent
     ]);
     map.setPaintProperty("global-route-direction", "text-opacity", mapMode === "route" ? 0.88 : 0.74);
+    map.setPaintProperty("live-logistics-route-pulse", "line-color", getLiveLogisticsRoutePaint(statusPalette, mapMode)["line-color"]);
+    map.setPaintProperty("live-logistics-route-pulse", "line-width", getLiveLogisticsRoutePaint(statusPalette, mapMode)["line-width"]);
+    map.setPaintProperty("live-logistics-route-pulse", "line-opacity", getLiveLogisticsRoutePaint(statusPalette, mapMode)["line-opacity"]);
+    map.setPaintProperty("live-logistics-route-pulse", "line-dasharray", getLiveLogisticsRoutePaint(statusPalette, mapMode)["line-dasharray"]);
+    map.setPaintProperty("live-logistics-route-label", "text-color", statusPalette.monitoring);
+    map.setPaintProperty("live-logistics-route-label", "text-opacity", mapMode === "route" ? 0.9 : 0.72);
     map.setPaintProperty("global-point-circle", "circle-color", [
       "match",
       ["get", "tone"],
@@ -492,6 +532,7 @@ export function JapanOperationsMapCanvas({
 
     updateSource(map, "global-points", pointsToFeatureCollection(model.globalPoints, activeId));
     updateSource(map, "global-routes", routesToFeatureCollection(model.globalRoutes, model.globalPoints, activeId));
+    updateSource(map, "live-logistics-routes", routesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId));
     updateSource(map, "jp-points", pointsToFeatureCollection(model.points, activeId));
     updateSource(map, "jp-points-cluster", pointsToFeatureCollection(model.points, activeId));
     updateSource(map, "jp-routes", routesToFeatureCollection(model.routes, model.points, activeId));
@@ -545,6 +586,8 @@ function applyModeVisibility(map: any, mapMode: OperationMapMode) {
   map.setLayoutProperty("global-route-line", "visibility", visibility(showRoutes));
   map.setLayoutProperty("global-route-highlight", "visibility", visibility(showRoutes));
   map.setLayoutProperty("global-route-direction", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("live-logistics-route-pulse", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("live-logistics-route-label", "visibility", visibility(showRoutes));
 
   map.setLayoutProperty("jp-point-circle", "visibility", visibility(showPoints));
   map.setLayoutProperty("jp-point-label", "visibility", visibility(showPoints));
@@ -608,6 +651,37 @@ function getGlobalRouteHighlightPaint(statusPalette: StatusPalette, mapMode: Ope
     "line-color": statusPalette.selected,
     "line-width": ["interpolate", ["linear"], ["zoom"], 2, routeFocused ? 6.8 : 5.8, 6, routeFocused ? 5.8 : 4.8, 10, routeFocused ? 4.9 : 4.1],
     "line-opacity": ["interpolate", ["linear"], ["zoom"], 2, 0.44, 6, 0.36, 10, 0.28]
+  };
+}
+
+function getLiveLogisticsRoutePaint(statusPalette: StatusPalette, mapMode: OperationMapMode): any {
+  const routeFocused = mapMode === "route";
+
+  return {
+    "line-color": statusPalette.monitoring,
+    "line-width": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      2,
+      routeFocused ? 5.8 : 4.6,
+      6,
+      routeFocused ? 5 : 3.8,
+      10,
+      routeFocused ? 4.2 : 3.2
+    ],
+    "line-opacity": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      2,
+      routeFocused ? 0.72 : 0.52,
+      6,
+      routeFocused ? 0.66 : 0.46,
+      10,
+      routeFocused ? 0.58 : 0.4
+    ],
+    "line-dasharray": routeFocused ? [0.55, 0.85] : [0.45, 1.05]
   };
 }
 
