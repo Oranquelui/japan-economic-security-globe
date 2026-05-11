@@ -21,11 +21,14 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("../MapInboxPanel", () => ({
   MapInboxPanel: ({
+    briefing,
     onSelect
   }: {
+    briefing?: { strategicQuestion: string } | null;
     onSelect: (id: string) => void;
   }) => (
     <div data-testid="inbox">
+      {briefing ? <div data-testid="inbox-watchboard">{briefing.strategicQuestion}</div> : null}
       <button type="button" onClick={() => onSelect("observation:rice-price-signal-2026")}>
         select-rice-from-inbox
       </button>
@@ -68,13 +71,15 @@ vi.mock("../JapanMainMap", () => ({
   JapanMainMap: ({
     activeId,
     focusTargetId,
-    mapMode
+    mapMode,
+    watchOverlays = []
   }: {
     activeId: string;
     focusTargetId: string | null;
     mapMode: OperationMapMode;
+    watchOverlays?: unknown[];
   }) => (
-    <div data-testid="map" data-active={activeId} data-focus={focusTargetId ?? ""} data-mode={mapMode}>
+    <div data-testid="map" data-active={activeId} data-focus={focusTargetId ?? ""} data-mode={mapMode} data-watch-overlays={watchOverlays.length}>
       mocked-map
     </div>
   )
@@ -97,8 +102,19 @@ vi.mock("../EvidencePanel", () => ({
 }));
 
 vi.mock("../OperationsSignalTable", () => ({
-  OperationsSignalTable: ({ collapsed, onSelect }: { collapsed: boolean; onSelect: (id: string) => void }) => (
+  OperationsSignalTable: ({
+    collapsed,
+    onSelect,
+    onToggleCollapsed
+  }: {
+    collapsed: boolean;
+    onSelect: (id: string) => void;
+    onToggleCollapsed: () => void;
+  }) => (
     <div data-testid="grid" data-collapsed={collapsed ? "yes" : "no"}>
+      <button type="button" onClick={onToggleCollapsed}>
+        toggle-grid
+      </button>
       <button type="button" onClick={() => onSelect("observation:rice-price-signal-2026")}>
         select-rice-observation
       </button>
@@ -118,17 +134,40 @@ beforeEach(() => {
 });
 
 describe("AppShell url sync", () => {
-  test("renders the shell as header plus full map stage with overlaid navigation, evidence, and comparison", () => {
-    render(<AppShell graph={loadSeedGraph()} />);
+  test("renders the shell as a command pane, full map stage, evidence pane, and collapsed compare drawer", () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        rankingSignals={[
+          {
+            id: "ranking-signal:energy-middle-east-route",
+            label: "Energy lead",
+            importanceAxes: ["energy"],
+            canonicalRefs: [{ kind: "flow", id: "flow:saudi-oil-japan" }],
+            sourceIds: ["source:enecho-energy-trends"],
+            componentInputs: {
+              nationalImportance: 0.98,
+              disruptionDepth: 0.88,
+              sourceConfidence: 0.9,
+              publicAttention: 0.45
+            },
+            retrievedAt: "2026-04-25T00:00:00.000Z"
+          }
+        ]}
+      />
+    );
 
     expect(screen.getByRole("banner")).toBeTruthy();
     expect(screen.getByTestId("layout-navigation-rail")).toBeTruthy();
-    expect(screen.getByTestId("layout-left-nav")).toBeTruthy();
+    expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
     expect(screen.getByTestId("layout-map-section")).toBeTruthy();
-    expect(screen.getByTestId("layout-compare-overlay")).toBeTruthy();
+    expect(screen.queryByTestId("layout-watchboard-overlay")).toBeNull();
+    expect(screen.getByTestId("inbox-watchboard")).toBeTruthy();
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-watch-overlays")).toBe("0");
+    expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
     expect(screen.getByTestId("layout-evidence-overlay")).toBeTruthy();
     expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("no");
-    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
+    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("yes");
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
@@ -182,15 +221,27 @@ describe("AppShell url sync", () => {
 
     render(<AppShell graph={loadSeedGraph()} />);
 
-    expect(screen.getByTestId("layout-left-nav")).toBeTruthy();
+    expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
 
     await user.click(screen.getByRole("button", { name: "監視インボックスを閉じる" }));
 
-    expect(screen.queryByTestId("layout-left-nav")).toBeNull();
+    expect(screen.queryByTestId("layout-command-pane")).toBeNull();
 
     await user.click(screen.getByRole("button", { name: "監視インボックスを開く" }));
 
-    expect(screen.getByTestId("layout-left-nav")).toBeTruthy();
+    expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
+  });
+
+  test("opens the compare drawer only after an explicit toggle", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("yes");
+
+    await user.click(screen.getAllByText("toggle-grid")[0]);
+
+    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
   });
 
   test("uses the homepage ranking lead when the URL did not explicitly pin a theme", () => {

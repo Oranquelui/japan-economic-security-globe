@@ -5,6 +5,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { MapInboxPanel } from "../MapInboxPanel";
 import { getThemePalette } from "../../lib/presentation/palette";
+import type { WatchboardBriefingViewModel } from "../../lib/presentation/watchboard";
 import type { WatchOverlayItemViewModel } from "../../lib/presentation/watch-overlays";
 
 afterEach(() => {
@@ -23,7 +24,60 @@ const watchOverlays: WatchOverlayItemViewModel[] = [
   }
 ];
 
+const briefing: WatchboardBriefingViewModel = {
+  confidenceLabel: "高信頼",
+  freshnessLabel: "16日前取得",
+  japanImpact: "電力・物流・家計費への波及を優先監視する。",
+  proofSourceLabels: ["METI", "Trade Statistics"],
+  priorityTierLabel: "Critical",
+  rankLabel: "#1",
+  safetyLabel: "公開情報のみ / 遅延・bounded overlay",
+  selectedId: "flow:saudi-oil-japan",
+  sourceProofLabel: "根拠: METI / Trade Statistics",
+  strategicQuestion: "日本のどのライフラインが、エネルギー・物流・食料ルートの変化に晒されるか？",
+  themeId: "energy",
+  themeLabel: "エネルギー",
+  title: "中東エネルギー輸送路の圧力",
+  whyNow: "ホルムズ海峡とマラッカ海峡を経由する日本向け燃料ルートの監視優先度が高い。"
+};
+
 describe("map inbox structure", () => {
+  test("uses the left pane as a command pane with the watchboard briefing before inbox controls", () => {
+    render(
+      <MapInboxPanel
+        activeId="flow:saudi-oil-japan"
+        briefing={briefing}
+        onQueryChange={vi.fn()}
+        onSelect={vi.fn()}
+        query=""
+        rows={[
+          {
+            id: "flow:saudi-oil-japan",
+            type: "依存ルート",
+            label: "サウジ原油 → 日本",
+            subject: "原油",
+            urgency: "高",
+            status: "監視中",
+            action: "ルートと根拠を確認",
+            period: "2026"
+          }
+        ]}
+        watchOverlays={watchOverlays}
+        themeId="energy"
+        themeLabel="エネルギー"
+        themePalette={getThemePalette("energy")}
+      />
+    );
+
+    const commandPane = screen.getByTestId("command-pane-scroll");
+    expect(commandPane.textContent).toContain("JAPAN WATCHBOARD");
+    expect(commandPane.textContent).toContain("日本のどのライフライン");
+    expect(commandPane.textContent).toContain("監視インボックス");
+    expect((commandPane.textContent ?? "").indexOf("JAPAN WATCHBOARD")).toBeLessThan(
+      (commandPane.textContent ?? "").indexOf("監視インボックス")
+    );
+  });
+
   test("uses the left section as an inbox/filter pane and not as a theme menu", () => {
     render(
       <MapInboxPanel

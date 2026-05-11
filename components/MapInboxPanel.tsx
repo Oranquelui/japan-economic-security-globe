@@ -5,11 +5,14 @@ import type { ReactNode } from "react";
 import { buildInboxSections } from "../lib/presentation/inbox";
 import type { OperationRow } from "../lib/presentation/operations";
 import type { ThemePalette } from "../lib/presentation/palette";
+import type { WatchboardBriefingViewModel } from "../lib/presentation/watchboard";
 import type { WatchOverlayItemViewModel } from "../lib/presentation/watch-overlays";
 import type { ThemeId } from "../types/semantic";
+import { WatchboardBriefing } from "./WatchboardBriefing";
 
 interface MapInboxPanelProps {
   activeId: string;
+  briefing?: WatchboardBriefingViewModel | null;
   onQueryChange: (query: string) => void;
   onSelect: (id: string) => void;
   query: string;
@@ -22,6 +25,7 @@ interface MapInboxPanelProps {
 
 export function MapInboxPanel({
   activeId,
+  briefing = null,
   onQueryChange,
   onSelect,
   query,
@@ -38,7 +42,53 @@ export function MapInboxPanel({
       className="flex h-full min-w-0 flex-col overflow-hidden"
       style={{ background: themePalette.surfacePanel }}
     >
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div data-testid="command-pane-scroll" className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
+        {briefing ? (
+          <section className="border-b p-3" style={{ borderColor: themePalette.borderSubtle }}>
+            <WatchboardBriefing briefing={briefing} themePalette={themePalette} variant="pane" />
+          </section>
+        ) : null}
+
+        {watchOverlays.length ? (
+          <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+                  近接監視
+                </div>
+                <p className="mt-1 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
+                  公開可能な範囲に絞った、bounded な近接監視オーバーレイです。
+                </p>
+              </div>
+              <PaneBadge themePalette={themePalette}>{watchOverlays.length}件</PaneBadge>
+            </div>
+            <div className="mt-3 space-y-2">
+              {watchOverlays.map((overlay) => (
+                <div
+                  key={overlay.id}
+                  className="rounded-xl border px-3 py-3"
+                  style={{
+                    borderColor: themePalette.borderSubtle,
+                    background: themePalette.surfacePanelElevated
+                  }}
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <OverlayChip themePalette={themePalette}>{overlay.freshnessLabel}</OverlayChip>
+                    <OverlayChip themePalette={themePalette}>{overlay.trustLabel}</OverlayChip>
+                  </div>
+                  <div className="mt-2 text-sm font-semibold text-white">{overlay.title}</div>
+                  <p className="mt-1 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
+                    {overlay.summary}
+                  </p>
+                  <div className="mt-2 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                    {overlay.disclosureLabel}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <div className="flex items-center justify-between gap-3 border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
           <div>
             <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
@@ -107,50 +157,10 @@ export function MapInboxPanel({
           </div>
         </section>
 
-        {watchOverlays.length ? (
-          <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-                  近接監視
-                </div>
-                <p className="mt-1 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
-                  公開可能な範囲に絞った、bounded な近接監視オーバーレイです。
-                </p>
-              </div>
-              <PaneBadge themePalette={themePalette}>{watchOverlays.length}件</PaneBadge>
-            </div>
-            <div className="mt-3 space-y-2">
-              {watchOverlays.map((overlay) => (
-                <div
-                  key={overlay.id}
-                  className="rounded-xl border px-3 py-3"
-                  style={{
-                    borderColor: themePalette.borderSubtle,
-                    background: themePalette.surfacePanelElevated
-                  }}
-                >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <OverlayChip themePalette={themePalette}>{overlay.freshnessLabel}</OverlayChip>
-                    <OverlayChip themePalette={themePalette}>{overlay.trustLabel}</OverlayChip>
-                  </div>
-                  <div className="mt-2 text-sm font-semibold text-white">{overlay.title}</div>
-                  <p className="mt-1 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
-                    {overlay.summary}
-                  </p>
-                  <div className="mt-2 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
-                    {overlay.disclosureLabel}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        <section className="min-h-0 flex-1 overflow-hidden px-4 py-4">
+        <section className="px-4 py-4">
           <div
             data-testid="monitoring-inbox-scroll"
-            className="h-full overflow-y-auto overscroll-contain border"
+            className="max-h-[36rem] overflow-y-auto overscroll-contain border"
             style={{
               borderColor: themePalette.borderSubtle,
               background: themePalette.surfacePanelElevated
