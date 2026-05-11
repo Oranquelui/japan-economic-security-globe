@@ -8,6 +8,7 @@
     "whyItMatters": "Japan is the subject of the service, not just another country node.",
     "themes": [
       "energy",
+      "logistics",
       "rice",
       "water",
       "defense",
@@ -195,6 +196,7 @@
     "whyItMatters": "For Japanese users, Hormuz matters when route risk becomes fuel, electricity, logistics, and food input pressure.",
     "themes": [
       "energy",
+      "logistics",
       "rice"
     ],
     "coordinates": {
@@ -214,6 +216,7 @@
     "whyItMatters": "Malacca helps explain why sea-lane disruption can become a Japanese domestic supply story.",
     "themes": [
       "energy",
+      "logistics",
       "semiconductors"
     ],
     "coordinates": {
@@ -233,6 +236,7 @@
     "whyItMatters": "It connects a faraway crisis to Japanese domestic energy exposure.",
     "themes": [
       "energy",
+      "logistics",
       "rice"
     ],
     "provenance": [
@@ -246,7 +250,9 @@
     "summary": "A representative Japanese port used to show domestic landing points.",
     "whyItMatters": "Ports show where global dependency becomes domestic infrastructure exposure.",
     "themes": [
-      "energy"
+      "energy",
+      "logistics",
+      "water"
     ],
     "coordinates": {
       "lat": 35.45,
@@ -266,7 +272,9 @@
     "summary": "Representative LNG receiving infrastructure in the Tokyo Bay energy system.",
     "whyItMatters": "LNG receiving terminals make global gas dependency visible inside Japan.",
     "themes": [
-      "energy"
+      "energy",
+      "logistics",
+      "water"
     ],
     "coordinates": {
       "lat": 35.45,
@@ -288,6 +296,7 @@
     "whyItMatters": "Refineries translate crude supply risk into Japanese fuel and logistics exposure.",
     "themes": [
       "energy",
+      "logistics",
       "rice"
     ],
     "coordinates": {

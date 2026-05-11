@@ -20,6 +20,8 @@ import {
   buildPresetRailThemeOrder,
   buildSelectedRankingExplanation
 } from "../lib/presentation/ranking";
+import { buildWatchboardBriefing } from "../lib/presentation/watchboard";
+import { buildWatchOverlayItems } from "../lib/presentation/watch-overlays";
 import {
   DEFAULT_OPERATIONS_URL_STATE,
   serializeOperationsUrlState,
@@ -34,6 +36,7 @@ import { JapanMainMap } from "./JapanMainMap";
 import { MapInboxPanel } from "./MapInboxPanel";
 import { NavigationRail } from "./NavigationRail";
 import { OperationsSignalTable } from "./OperationsSignalTable";
+import { WatchboardBriefing } from "./WatchboardBriefing";
 
 interface AppShellProps {
   graph: SemanticGraph;
@@ -108,6 +111,10 @@ export function AppShell({
   const rankingExplanation = inboxDecision
     ? buildSelectedRankingExplanation(activeId, rankingSignals, inboxDecision, rankingNowRef.current)
     : null;
+  const watchboardBriefing = homepageDecision
+    ? buildWatchboardBriefing(graph, rankingSignals, homepageDecision, rankingNowRef.current)
+    : null;
+  const watchOverlays = buildWatchOverlayItems(themeId, activeId, new Date(rankingNowRef.current));
   const focusTargetId = validSelectedId;
   const detail = getDetailView(graph, activeId);
   const routeStatus = getRouteStatus(detail);
@@ -133,7 +140,7 @@ export function AppShell({
     "--ops-text-primary": themePalette.textPrimary,
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
-  const railWidth = 56;
+  const railWidth = 72;
   const paneWidth = 320;
   const visiblePaneWidth = isInboxOpen ? paneWidth : 0;
   const compareHeight = 264;
@@ -197,6 +204,7 @@ export function AppShell({
               onSelect={setSelectedId}
               statusPalette={statusPalette}
               themePalette={themePalette}
+              watchOverlays={watchOverlays}
             />
           </section>
 
@@ -223,8 +231,9 @@ export function AppShell({
             <aside
               data-testid="layout-left-nav"
               aria-hidden="false"
-              className="absolute left-14 top-0 z-20 min-h-0 overflow-hidden border-r"
+              className="absolute top-0 z-20 min-h-0 overflow-hidden border-r"
               style={{
+                left: railWidth,
                 width: paneWidth,
                 bottom: 0,
                 borderColor: themePalette.borderSubtle,
@@ -240,8 +249,22 @@ export function AppShell({
                 themeId={themeId}
                 themeLabel={themeLabel}
                 themePalette={themePalette}
+                watchOverlays={watchOverlays}
               />
             </aside>
+          ) : null}
+
+          {watchboardBriefing ? (
+            <section
+              data-testid="layout-watchboard-overlay"
+              className="absolute top-4 z-30"
+              style={{
+                left: railWidth + visiblePaneWidth + 72,
+                width: 420
+              }}
+            >
+              <WatchboardBriefing briefing={watchboardBriefing} themePalette={themePalette} />
+            </section>
           ) : null}
 
           <div
@@ -294,6 +317,11 @@ export function AppShell({
         </div>
 
         <div className="space-y-4 lg:hidden">
+          {watchboardBriefing ? (
+            <section className="px-4 pt-4">
+              <WatchboardBriefing briefing={watchboardBriefing} themePalette={themePalette} />
+            </section>
+          ) : null}
           <section className="h-[50vh] min-h-[280px]">
             <JapanMainMap
               activeId={activeId}
@@ -309,6 +337,7 @@ export function AppShell({
               onSelect={setSelectedId}
               statusPalette={statusPalette}
               themePalette={themePalette}
+              watchOverlays={watchOverlays}
             />
           </section>
           <section className="flex gap-2 overflow-auto px-4">
@@ -350,6 +379,7 @@ export function AppShell({
             themeId={themeId}
             themeLabel={themeLabel}
             themePalette={themePalette}
+            watchOverlays={watchOverlays}
           />
           <OperationsSignalTable
             activeId={activeId}

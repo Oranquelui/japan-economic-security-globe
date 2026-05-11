@@ -9,6 +9,7 @@ import { OperationsSignalTable } from "../OperationsSignalTable";
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
 import type { DetailViewModel, EvidenceGraphViewModel } from "../../types/presentation";
 import type { JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
+import type { WatchOverlayItemViewModel } from "../../lib/presentation/watch-overlays";
 
 vi.mock("../JapanOperationsMapCanvas", () => ({
   JapanOperationsMapCanvas: () => <div data-testid="ops-canvas" />
@@ -91,6 +92,18 @@ const mapModel: JapanMapCanvasModel = {
   globalRoutes: []
 };
 
+const watchOverlays: WatchOverlayItemViewModel[] = [
+  {
+    id: "overlay:kanto-lifeline-watch",
+    title: "首都圏ライフライン監視",
+    summary: "港湾・受入基地・水供給の着地点を bounded overlay として表示する。",
+    freshnessLabel: "本日確認",
+    trustLabel: "公式中心",
+    disclosureLabel: "公式公開情報 / bounded overlay",
+    relatedIds: ["port:yokohama", "reservoir:ogochi"]
+  }
+];
+
 describe("operations accessibility", () => {
   test("supports keyboard selection in the operations grid", () => {
     const onSelect = vi.fn();
@@ -151,6 +164,9 @@ describe("operations accessibility", () => {
               rank: 1,
               signalId: "ranking-signal:energy-middle-east-route",
               topComponentId: "nationalImportance",
+              confidenceLabel: "高信頼",
+              freshnessLabel: "1日前取得",
+              sourceTrustLabel: "公式中心",
               whyRanked: "国家的重要度が高く、日本向けの監視優先度が高い。"
             }
           }
@@ -163,6 +179,9 @@ describe("operations accessibility", () => {
     expect(screen.getByText("優先")).toBeTruthy();
     expect(screen.getByText("理由")).toBeTruthy();
     expect(screen.getByText("#1")).toBeTruthy();
+    expect(screen.getByText("1日前取得")).toBeTruthy();
+    expect(screen.getByText("高信頼")).toBeTruthy();
+    expect(screen.getAllByText("公式中心").length).toBeGreaterThan(0);
     expect(screen.getByText("国家的重要度が高く、日本向けの監視優先度が高い。")).toBeTruthy();
   });
 
@@ -199,11 +218,14 @@ describe("operations accessibility", () => {
         onSelect={() => undefined}
         statusPalette={statusPalette}
         themePalette={themePalette}
+        watchOverlays={watchOverlays}
       />
     );
 
     expect(screen.getByRole("button", { name: "地図を拡大" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "地図を縮小" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "日本中心に戻す" })).toBeTruthy();
+    expect(screen.getByText("首都圏ライフライン監視")).toBeTruthy();
+    expect(screen.getByText("公式公開情報 / bounded overlay")).toBeTruthy();
   });
 });

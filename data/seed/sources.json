@@ -159,6 +159,17 @@
     "tier": "C"
   },
   {
+    "id": "source:jma-earthquake-information",
+    "label": "地震情報について",
+    "url": "https://www.jma.go.jp/jma/kishou/know/jishin/joho/seisinfo.html",
+    "publisher": "気象庁",
+    "accessed": "2026-04-26",
+    "description": "気象庁が地震発生後にどの情報をいつ発表するかをまとめた公式案内。bounded earthquake watch overlay の基準ソースとして使う。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "A"
+  },
+  {
     "id": "source:mod-fy2026-budget",
     "label": "FY2026 Budget Major Projects",
     "url": "https://www.mod.go.jp/en/d_act/d_budget/pdf/fy2026_20260302a.pdf",

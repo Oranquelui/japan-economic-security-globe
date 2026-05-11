@@ -39,6 +39,11 @@ const THEME_PALETTES: Record<ThemeId, Pick<ThemePalette, "accent" | "accentSoft"
     accentSoft: "rgba(182, 122, 69, 0.12)",
     accentText: "#f0d7bf"
   },
+  logistics: {
+    accent: "#4f9fbd",
+    accentSoft: "rgba(79, 159, 189, 0.12)",
+    accentText: "#d7eef6"
+  },
   rice: {
     accent: "#a88a56",
     accentSoft: "rgba(168, 138, 86, 0.12)",

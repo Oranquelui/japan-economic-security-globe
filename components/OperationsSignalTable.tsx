@@ -141,6 +141,7 @@ export function OperationsSignalTable({
               <th className="px-4 py-3 font-medium">対象</th>
               <th className="px-4 py-3 font-medium">緊急度</th>
               <th className="px-4 py-3 font-medium">状態</th>
+              <th className="px-4 py-3 font-medium">信頼</th>
               <th className="px-4 py-3 font-medium">理由</th>
               <th className="px-4 py-3 font-medium">必要アクション</th>
               <th className="px-4 py-3 font-medium">期間</th>
@@ -214,6 +215,27 @@ export function OperationsSignalTable({
                   >
                     {row.status}
                   </span>
+                </td>
+                <td className="min-w-44 px-4 py-3 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                  {row.ranking ? (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {row.ranking.freshnessLabel ? (
+                          <span className="rounded-full border px-2.5 py-1" style={buildBadgeStyle(themePalette.accent)}>
+                            {row.ranking.freshnessLabel}
+                          </span>
+                        ) : null}
+                        {row.ranking.confidenceLabel ? (
+                          <span className="rounded-full border px-2.5 py-1" style={buildBadgeStyle(statusPalette.monitoring)}>
+                            {row.ranking.confidenceLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div>{row.ranking.sourceTrustLabel ?? "-"}</div>
+                    </div>
+                  ) : (
+                    "-"
+                  )}
                 </td>
                 <td className="min-w-56 px-4 py-3 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
                   {row.ranking?.whyRanked ?? "-"}

@@ -1,5 +1,6 @@
 export const THEME_IDS = [
   "energy",
+  "logistics",
   "rice",
   "water",
   "defense",

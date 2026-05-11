@@ -14,6 +14,15 @@ interface NavigationRailProps {
   themePalette: ThemePalette;
 }
 
+const RAIL_LABELS: Record<ThemeId, string> = {
+  defense: "防衛",
+  energy: "エネ",
+  logistics: "物流",
+  rice: "コメ",
+  semiconductors: "半導",
+  water: "水"
+};
+
 export function NavigationRail({
   isInboxOpen,
   onCloseInbox,
@@ -36,7 +45,7 @@ export function NavigationRail({
           key="close-inbox"
           type="button"
           onClick={onCloseInbox}
-          className="grid h-10 w-10 place-items-center rounded-md border text-lg transition"
+          className="grid h-11 w-14 place-items-center rounded-md border text-lg transition"
           style={{
             borderColor: themePalette.accent,
             background: themePalette.accentSoft,
@@ -51,7 +60,7 @@ export function NavigationRail({
           key="open-inbox"
           type="button"
           onClick={onOpenInbox}
-          className="grid h-10 w-10 place-items-center rounded-md border text-lg transition"
+          className="grid h-11 w-14 place-items-center rounded-md border text-lg transition"
           style={{
             borderColor: themePalette.borderSubtle,
             background: themePalette.surfacePanelElevated,
@@ -64,7 +73,7 @@ export function NavigationRail({
       )}
 
       <div className="mt-4 flex flex-col items-center gap-2">
-        {themeIds.map((id) => {
+        {themeIds.map((id, index) => {
           const theme = getThemeLabel(id);
           const isActive = id === themeId;
 
@@ -73,7 +82,7 @@ export function NavigationRail({
               key={id}
               type="button"
               onClick={() => onThemeChange(id)}
-              className="grid h-10 w-10 place-items-center rounded-md border text-[0.62rem] font-bold transition"
+              className="relative grid h-11 w-14 place-items-center rounded-md border text-[0.68rem] font-bold transition"
               style={
                 isActive
                   ? {
@@ -90,7 +99,13 @@ export function NavigationRail({
               title={theme.label}
               aria-label={theme.label}
             >
-              {theme.label.slice(0, 1)}
+              <span
+                className="absolute left-1 top-1 font-mono text-[0.46rem] leading-none"
+                style={{ color: isActive ? themePalette.accentText : themePalette.textMuted }}
+              >
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className="mt-1">{RAIL_LABELS[id]}</span>
             </button>
           );
         })}

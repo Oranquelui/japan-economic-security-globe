@@ -72,7 +72,7 @@
     "label": "日本関係海運の監視優先",
     "importanceAxes": ["logistics", "energy"],
     "canonicalRefs": [
-      { "kind": "flow", "id": "flow:qatar-lng-japan" },
+      { "kind": "flow", "id": "flow:japan-linked-maritime-watch" },
       { "kind": "entity", "id": "chokepoint:malacca" }
     ],
     "sourceIds": ["source:enecho-energy-trends", "source:customs-trade-statistics"],
@@ -100,5 +100,23 @@
       "publicAttention": 0.42
     },
     "retrievedAt": "2026-04-25T00:00:00.000Z"
+  },
+  {
+    "id": "ranking-signal:capital-lifeline-watch",
+    "label": "首都圏ライフラインの複合監視",
+    "importanceAxes": ["disaster_infrastructure", "logistics"],
+    "canonicalRefs": [
+      { "kind": "observation", "id": "observation:capital-lifeline-watch-2026" },
+      { "kind": "entity", "id": "prefecture:tokyo" },
+      { "kind": "entity", "id": "port:yokohama" }
+    ],
+    "sourceIds": ["source:jma-earthquake-information", "source:mlit-drought-portal"],
+    "componentInputs": {
+      "nationalImportance": 0.72,
+      "disruptionDepth": 0.76,
+      "sourceConfidence": 0.84,
+      "publicAttention": 0.34
+    },
+    "retrievedAt": "2026-04-26T00:00:00.000Z"
   }
 ]

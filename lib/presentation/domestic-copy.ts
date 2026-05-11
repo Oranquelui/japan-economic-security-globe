@@ -21,6 +21,12 @@ const THEME_COPY: Partial<Record<ThemeId, DomesticImpactCopy>> = {
     subject: "国内エネルギー拠点",
     action: "どの受入基地と精製拠点に着地するか確認"
   },
+  logistics: {
+    label: "国内物流着地点",
+    description: "港湾・ターミナル・国内ボトルネックから見る、日本向け物流の着地点",
+    subject: "国内物流着地点",
+    action: "どの港湾や海峡変化が国内供給へ波及するか確認"
+  },
   rice: {
     label: "国内主要地域",
     description: "e-Stat の主食用収穫量と供給拠点で見る、コメの国内基盤",

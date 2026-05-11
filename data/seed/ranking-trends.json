@@ -1,0 +1,57 @@
+[
+  {
+    "signalId": "ranking-signal:energy-middle-east-route",
+    "title": "中東エネルギー輸送路圧力",
+    "unitLabel": "watch index",
+    "points": [
+      { "at": "2026-04-19", "value": 62 },
+      { "at": "2026-04-21", "value": 68 },
+      { "at": "2026-04-23", "value": 79 },
+      { "at": "2026-04-25", "value": 94 }
+    ]
+  },
+  {
+    "signalId": "ranking-signal:logistics-japan-maritime-watch",
+    "title": "日本関係海運の監視優先",
+    "unitLabel": "watch index",
+    "points": [
+      { "at": "2026-04-19", "value": 58 },
+      { "at": "2026-04-21", "value": 63 },
+      { "at": "2026-04-23", "value": 72 },
+      { "at": "2026-04-25", "value": 81 }
+    ]
+  },
+  {
+    "signalId": "ranking-signal:food-rice-price-pressure",
+    "title": "コメ価格の家計圧力",
+    "unitLabel": "watch index",
+    "points": [
+      { "at": "2026-04-19", "value": 64 },
+      { "at": "2026-04-21", "value": 69 },
+      { "at": "2026-04-23", "value": 73 },
+      { "at": "2026-04-25", "value": 77 }
+    ]
+  },
+  {
+    "signalId": "ranking-signal:disaster-ogochi-water-stress",
+    "title": "小河内貯水系の災害・生活基盤ストレス",
+    "unitLabel": "watch index",
+    "points": [
+      { "at": "2026-04-19", "value": 49 },
+      { "at": "2026-04-21", "value": 54 },
+      { "at": "2026-04-23", "value": 61 },
+      { "at": "2026-04-25", "value": 70 }
+    ]
+  },
+  {
+    "signalId": "ranking-signal:capital-lifeline-watch",
+    "title": "首都圏ライフラインの複合監視",
+    "unitLabel": "watch index",
+    "points": [
+      { "at": "2026-04-20", "value": 47 },
+      { "at": "2026-04-22", "value": 55 },
+      { "at": "2026-04-24", "value": 60 },
+      { "at": "2026-04-26", "value": 68 }
+    ]
+  }
+]

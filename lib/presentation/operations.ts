@@ -13,13 +13,16 @@ import {
 export type OperationMapMode = "point" | "cluster" | "choropleth" | "route" | "static";
 
 export interface OperationRowRanking {
+  confidenceLabel?: string;
   finalScore: number;
+  freshnessLabel?: string;
   overrideId?: string;
   primaryAxis: ImportanceAxis;
   primaryAxisLabel: string;
   priorityTier: "critical" | "high" | "watch" | "baseline";
   rank: number;
   signalId: string;
+  sourceTrustLabel?: string;
   topComponentId: RankingScoreComponentId;
   whyRanked: string;
 }

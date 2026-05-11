@@ -1,21 +1,30 @@
-# Japan Economic Security Globe
+# Japan Watchboard for Economic Security
 
 English | [日本語](README.ja.md)
 
-Japan Economic Security Globe is a public-interest semantic web MVP that explains Japan's strategic dependencies through a Japan-first operations map, a global supporting layer, an evidence graph, and an operations table.
+Japan Economic Security Globe is a public-interest Japan Watchboard MVP. It explains what Japan should watch now through a Japan-first operations map, a ranking-led briefing layer, bounded watch overlays, an evidence graph, and an operations table.
 
-The default view starts with `Energy`. As of April 2026, oil, LNG, sea lanes, electricity costs, and logistics are still the most intuitive public entry point. This project is not meant to end as a one-off news visualization, though. `Rice`, `Water`, `Defense`, and `Semiconductors` are already modeled on the same ontology.
+The default view starts with `Energy`, but `Logistics` is now a first-class theme rather than a hidden sub-story. As of April 2026, oil, LNG, chokepoints, ports, electricity costs, and disaster-relevant lifeline stress are still the strongest public entry points. This project is not meant to end as a one-off news visualization, though. `Rice`, `Water`, `Defense`, and `Semiconductors` are already modeled on the same ontology.
+
+## Public Demo
+
+- Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
+- First-screen promise: `What Japan should watch now`
+- Public framing: logistics visibility, official-source trust, bounded near-live overlays, and Japan-facing domestic impact
 
 ## Core Question
 
-> What does Japan depend on, and where do those dependencies land in everyday life, public spending, and domestic infrastructure?
+> What should Japan watch now, and where do those signals land in everyday life, public spending, and domestic infrastructure?
 
-The app answers that question through four layers:
+The app answers that question through five layers:
 
+- `Watchboard briefing`: ranks what Japan should watch now with freshness, confidence, and why-now context.
 - `Japan operations map`: shows ports, LNG terminals, refineries, reservoirs, prefectures, and other domestic landing points.
-- `Global supporting layer`: shows supplier countries, sea routes, chokepoints, and external context only insofar as they explain impact on Japan.
+- `Bounded watch overlays`: keeps near-live or delayed watch items visible without implying unrestricted live tracking.
 - `Evidence graph`: connects policy, budgets, laws, organizations, and source documents.
 - `Operations table`: lists routes, signals, and domestic landing points in an operational reading order.
+
+- `Global supporting layer` still exists behind these surfaces. It shows supplier countries, sea routes, chokepoints, and external context only insofar as they explain impact on Japan.
 
 The grammatical subject of this project is Japan. Foreign countries are shown only to explain effects on people, infrastructure, and policy in Japan. This is not a generic country profile explorer.
 
@@ -43,7 +52,7 @@ The MVP includes a thin but coherent slice for each theme:
 - `Defense`: a budget-flow example from FY2026 defense spending into stand-off defense capability.
 - `Semiconductors`: advanced semiconductor dependency flows linking Taiwan, South Korea, the Netherlands, the United States, China, and Japan.
 
-For Phase 0, logistics granularity stops at ports and receiving terminals. The public model covers sea chokepoints, import routes, Japanese ports, LNG receiving terminals, and refineries. Domestic trucking, warehousing, and retail distribution are deferred.
+For Phase 0, logistics granularity stops at ports and receiving terminals. The public model covers sea chokepoints, import routes, Japanese ports, LNG receiving terminals, refineries, bounded maritime watch overlays, and a small disaster-lifeline watch slice. Domestic trucking, warehousing, and retail distribution are deferred.
 
 ## Roadmap
 

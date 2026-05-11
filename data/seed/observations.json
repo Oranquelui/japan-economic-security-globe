@@ -123,6 +123,31 @@
     ]
   },
   {
+    "id": "observation:capital-lifeline-watch-2026",
+    "kind": "Observation",
+    "theme": "water",
+    "subjectId": "port:yokohama",
+    "label": "Capital lifeline watch",
+    "metric": "capital_lifeline_watch",
+    "value": "elevated",
+    "unit": "qualitative",
+    "period": "2026-04-26",
+    "sourceIds": ["source:jma-earthquake-information", "source:mlit-drought-portal"],
+    "summary": "A manual watch signal that keeps Tokyo-facing lifeline landing nodes in view while combining JMA earthquake information guidance with official capital-area water monitoring.",
+    "provenance": [
+      {
+        "sourceId": "source:jma-earthquake-information",
+        "claim": "JMA earthquake information is used as the public release baseline for bounded seismic monitoring around Japan.",
+        "retrievedAt": "2026-04-26"
+      },
+      {
+        "sourceId": "source:mlit-drought-portal",
+        "claim": "Capital-area water monitoring is used to keep domestic lifeline stress visible alongside bounded disaster watch overlays.",
+        "retrievedAt": "2026-04-26"
+      }
+    ]
+  },
+  {
     "id": "observation:defense-budget-standoff-fy2026",
     "kind": "BudgetObservation",
     "theme": "defense",

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { JapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import type { OperationMapMode } from "../lib/presentation/operations";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
+import type { WatchOverlayItemViewModel } from "../lib/presentation/watch-overlays";
 import { JapanOperationsMapCanvas } from "./JapanOperationsMapCanvas";
 
 interface JapanMainMapProps {
@@ -21,6 +22,7 @@ interface JapanMainMapProps {
   onSelect: (id: string) => void;
   statusPalette: StatusPalette;
   themePalette: ThemePalette;
+  watchOverlays?: WatchOverlayItemViewModel[];
 }
 
 export function JapanMainMap({
@@ -36,7 +38,8 @@ export function JapanMainMap({
   },
   onSelect,
   statusPalette,
-  themePalette
+  themePalette,
+  watchOverlays = []
 }: JapanMainMapProps) {
   const [command, setCommand] = useState<{ nonce: number; type: "recenter" | "zoomIn" | "zoomOut" }>();
   const [isMapMounted, setMapMounted] = useState(false);
@@ -105,6 +108,46 @@ export function JapanMainMap({
         <MapControlButton label="-" ariaLabel="地図を縮小" onClick={() => setCommand({ nonce: Date.now(), type: "zoomOut" })} />
         <MapControlButton label="⌖" ariaLabel="日本中心に戻す" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />
       </div>
+      {watchOverlays.length ? (
+        <aside
+          data-testid="map-watch-overlays"
+          className="absolute z-20 max-w-sm rounded-2xl border p-4 shadow-xl backdrop-blur-xl"
+          style={{
+            left: overlayInsets.left + 56,
+            bottom: overlayInsets.bottom,
+            borderColor: themePalette.borderSubtle,
+            background: themePalette.surfacePanel
+          }}
+        >
+          <div className="font-mono text-[0.58rem] uppercase tracking-[0.3em]" style={{ color: themePalette.textMuted }}>
+            近接監視
+          </div>
+          <div className="mt-3 space-y-3">
+            {watchOverlays.map((overlay) => (
+              <div
+                key={overlay.id}
+                className="rounded-xl border p-3"
+                style={{
+                  borderColor: themePalette.borderSubtle,
+                  background: themePalette.surfacePanelElevated
+                }}
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <MapOverlayChip themePalette={themePalette}>{overlay.freshnessLabel}</MapOverlayChip>
+                  <MapOverlayChip themePalette={themePalette}>{overlay.trustLabel}</MapOverlayChip>
+                </div>
+                <div className="mt-2 text-sm font-semibold text-white">{overlay.title}</div>
+                <p className="mt-1 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
+                  {overlay.summary}
+                </p>
+                <div className="mt-2 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                  {overlay.disclosureLabel}
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
+      ) : null}
     </section>
   );
 }
@@ -120,5 +163,26 @@ function MapControlButton({ ariaLabel, label, onClick }: { ariaLabel: string; la
     >
       {label}
     </button>
+  );
+}
+
+function MapOverlayChip({
+  children,
+  themePalette
+}: {
+  children: string;
+  themePalette: ThemePalette;
+}) {
+  return (
+    <span
+      className="rounded-full border px-2 py-1 text-[0.62rem]"
+      style={{
+        borderColor: themePalette.borderSubtle,
+        background: themePalette.surfacePanel,
+        color: themePalette.textMuted
+      }}
+    >
+      {children}
+    </span>
   );
 }

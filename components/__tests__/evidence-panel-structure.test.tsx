@@ -98,6 +98,12 @@ const rankingExplanation: RankingExplanationViewModel = {
     label: "公的関心 45%",
     valuePercent: 45
   },
+  sourceTrust: {
+    label: "公式中心",
+    detail: "2件中2件が公式一次ソース / PDF・HTML",
+    officialCount: 2,
+    totalCount: 2
+  },
   components: [
     {
       id: "nationalImportance",
@@ -220,9 +226,32 @@ describe("evidence panel structure", () => {
     expect(screen.getByText("#1")).toBeTruthy();
     expect(screen.getByText("高信頼")).toBeTruthy();
     expect(screen.getByText("1日前取得")).toBeTruthy();
+    expect(screen.getByText("公式中心")).toBeTruthy();
+    expect(screen.getByText("2件中2件が公式一次ソース / PDF・HTML")).toBeTruthy();
     expect(screen.getByText("国家的重要度")).toBeTruthy();
     expect(screen.getByText("国家的重要度が高く、日本向けの監視優先度が高い。")).toBeTruthy();
     expect(screen.getByText("ホルムズ海峡")).toBeTruthy();
     expect(screen.getByText("あと2日")).toBeTruthy();
+  });
+
+  test("shows a compact trend section when ranked history exists", () => {
+    render(
+      <EvidencePanel
+        collapsed={false}
+        detail={detail}
+        evidenceGraph={evidenceGraph}
+        onSelect={vi.fn()}
+        onToggleCollapsed={vi.fn()}
+        rankingExplanation={rankingExplanation}
+        selectedId="flow:saudi-oil-japan"
+        statusPalette={statusPalette}
+        themePalette={themePalette}
+        themeTitle="エネルギー"
+      />
+    );
+
+    expect(screen.getByText("Trend")).toBeTruthy();
+    expect(screen.getByText("7日変化 +32pt")).toBeTruthy();
+    expect(screen.getByLabelText("Trend chart for ranking-signal:energy-middle-east-route")).toBeTruthy();
   });
 });

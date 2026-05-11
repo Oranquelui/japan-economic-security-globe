@@ -17,7 +17,8 @@ describe("ranking loader", () => {
         "ranking-signal:food-rice-price-pressure",
         "ranking-signal:semiconductors-kumamoto-exposure",
         "ranking-signal:logistics-japan-maritime-watch",
-        "ranking-signal:disaster-ogochi-water-stress"
+        "ranking-signal:disaster-ogochi-water-stress",
+        "ranking-signal:capital-lifeline-watch"
       ])
     );
     expect(axes.has("energy")).toBe(true);
@@ -25,6 +26,19 @@ describe("ranking loader", () => {
     expect(axes.has("semiconductors")).toBe(true);
     expect(axes.has("logistics")).toBe(true);
     expect(axes.has("disaster_infrastructure")).toBe(true);
+  });
+
+  test("keeps disaster watch signals tied to explicit Japan-facing canonical references", () => {
+    const signals = loadRankingSignals();
+    const capitalSignal = signals.find((signal) => signal.id === "ranking-signal:capital-lifeline-watch");
+
+    expect(capitalSignal).toBeDefined();
+    expect(capitalSignal?.canonicalRefs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "observation", id: "observation:capital-lifeline-watch-2026" }),
+        expect.objectContaining({ kind: "entity", id: "prefecture:tokyo" })
+      ])
+    );
   });
 
   test("requires canonical references, source ids, and component inputs for every signal", () => {
