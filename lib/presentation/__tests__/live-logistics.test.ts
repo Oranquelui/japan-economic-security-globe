@@ -8,6 +8,11 @@ const events: Array<LiveLogisticsEvent & { laneId: "maritime" | "domestic" }> = 
     id: "live-logistics:tanker-qatar-tokyo-bay",
     themeIds: ["logistics", "energy"],
     title: "Tanker corridor: Hormuz → Malacca → Tokyo Bay",
+    currentPosition: {
+      lat: 12.4,
+      lon: 110.8,
+      label: "AIS tanker 042"
+    },
     kindLabel: "AIS tanker",
     statusLabel: "Underway",
     lastSeenLabel: "18分前",
@@ -46,13 +51,24 @@ describe("live logistics view", () => {
   test("builds a delayed route-level logistics surface for matching themes", () => {
     const view = buildLiveLogisticsView("logistics", "flow:japan-linked-maritime-watch", events, new Date("2026-05-11T00:30:00.000Z"));
 
-    expect(view?.title).toBe("LIVE LOGISTICS");
-    expect(view?.disclosureLabel).toContain("route-level only");
+    expect(view?.title).toBe("JAPAN-BOUND TANKER WATCH");
+    expect(view?.disclosureLabel).toContain("AIS coverage");
     expect(view?.items.map((item) => item.kindLabel)).toEqual(["AIS tanker", "Domestic logistics"]);
-    expect(view?.lanes.map((lane) => lane.title)).toEqual(["海上 / タンカー", "国内物流"]);
+    expect(view?.lanes.map((lane) => lane.title)).toEqual(["日本向けタンカー", "国内接続"]);
     expect(view?.lanes[0].items.map((item) => item.kindLabel)).toEqual(["AIS tanker"]);
     expect(view?.lanes[1].items.map((item) => item.kindLabel)).toEqual(["Domestic logistics"]);
     expect(view?.items[0].sourceLabel).toBe("AIS provider fixture");
+    expect(view?.mapVessels).toEqual([
+      {
+        id: "live-vessel:tanker-qatar-tokyo-bay",
+        label: "AIS tanker 042",
+        lat: 12.4,
+        lon: 110.8,
+        relatedIds: ["flow:japan-linked-maritime-watch"],
+        etaLabel: "ETA 42h",
+        lastSeenLabel: "18分前"
+      }
+    ]);
     expect(view?.mapRoutes[0]).toMatchObject({
       id: "live-logistics:tanker-qatar-tokyo-bay",
       pointIds: ["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng"]

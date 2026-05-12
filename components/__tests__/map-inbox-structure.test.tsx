@@ -59,21 +59,21 @@ const domesticLiveItem = {
 };
 
 const liveLogistics = {
-  title: "LIVE LOGISTICS",
-  subtitle: "海上監視と国内接続を分けた遅延・集約シグナル",
-  disclosureLabel: "15-60分遅延 / aggregated AIS + domestic logistics",
+  title: "JAPAN-BOUND TANKER WATCH",
+  subtitle: "日本に向かうタンカー捕捉と港湾後続を分けて監視",
+  disclosureLabel: "AIS coverage / 15-60分遅延 / provider-gated",
   updatedLabel: "18分前",
   items: [maritimeLiveItem, domesticLiveItem],
   lanes: [
     {
       id: "maritime",
-      title: "海上 / タンカー",
-      subtitle: "AIS・港湾・受入基地は海側の監視として扱う。",
+      title: "日本向けタンカー",
+      subtitle: "AIS・衛星AIS・港湾ETAを海側の捕捉として扱う。",
       items: [maritimeLiveItem]
     },
     {
       id: "domestic",
-      title: "国内物流",
+      title: "国内接続",
       subtitle: "港から首都圏の燃料・物流接続として扱う。",
       items: [domesticLiveItem]
     }
@@ -284,16 +284,16 @@ describe("map inbox structure", () => {
     const commandPane = screen.getByTestId("command-pane-scroll");
     const text = commandPane.textContent ?? "";
 
-    expect(text).toContain("LIVE LOGISTICS");
-    expect(text).toContain("海上 / タンカー");
+    expect(text).toContain("JAPAN-BOUND TANKER WATCH");
+    expect(text).toContain("日本向けタンカー");
     expect(text).toContain("AIS tanker");
     expect(text).toContain("Tanker corridor: Hormuz");
     expect(text).toContain("Last seen 18分前");
     expect(text).toContain("ETA 42h");
-    expect(text).toContain("国内物流");
+    expect(text).toContain("国内接続");
     expect(text).toContain("Domestic logistics");
     expect(text).toContain("xROAD / Cyber Port fixture");
-    expect(text.indexOf("海上 / タンカー")).toBeLessThan(text.indexOf("国内物流"));
-    expect(text.indexOf("LIVE LOGISTICS")).toBeLessThan(text.indexOf("近接監視"));
+    expect(text.indexOf("日本向けタンカー")).toBeLessThan(text.indexOf("国内接続"));
+    expect(text.indexOf("JAPAN-BOUND TANKER WATCH")).toBeLessThan(text.indexOf("近接監視"));
   });
 });

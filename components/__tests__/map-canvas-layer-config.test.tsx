@@ -274,6 +274,57 @@ describe("map canvas layer config", () => {
     expect(liveRoutes.features[0].properties.selected).toBe(true);
   });
 
+  test("adds live tanker position markers that select the related maritime watch detail", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="flow:japan-linked-maritime-watch"
+        focusTargetId={null}
+        mapMode="route"
+        model={
+          {
+            ...model,
+            liveVessels: [
+              {
+                id: "live-vessel:tanker-qatar-tokyo-bay",
+                kind: "Japan-bound tanker",
+                label: "AIS tanker 042",
+                lat: 12.4,
+                lon: 110.8,
+                selectionId: "flow:japan-linked-maritime-watch",
+                tone: "watch"
+              }
+            ]
+          } as JapanMapCanvasModel
+        }
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("live-vessels")).toBe(true);
+    });
+
+    const markerLayer = addedLayers.find((layer) => layer.id === "live-vessel-marker") as any;
+    const labelLayer = addedLayers.find((layer) => layer.id === "live-vessel-label") as any;
+    const liveVessels = addedSources.get("live-vessels") as {
+      features: Array<{ properties: { id: string; kind: string; label: string; selectionId: string; selected: boolean } }>;
+    };
+
+    expect(markerLayer).toBeTruthy();
+    expect(markerLayer.source).toBe("live-vessels");
+    expect(markerLayer.paint["circle-color"]).toBe(getStatusPalette().selected);
+    expect(labelLayer).toBeTruthy();
+    expect(liveVessels.features[0].properties).toMatchObject({
+      id: "live-vessel:tanker-qatar-tokyo-bay",
+      kind: "Japan-bound tanker",
+      label: "AIS tanker 042",
+      selectionId: "flow:japan-linked-maritime-watch",
+      selected: true
+    });
+  });
+
   test("scales selection fit padding to the mobile map viewport", async () => {
     mapCanvasSize = { width: 390, height: 420 };
 

@@ -113,6 +113,11 @@ export function JapanOperationsMapCanvas({
           data: routesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId)
         });
 
+        map.addSource("live-vessels", {
+          type: "geojson",
+          data: pointsToFeatureCollection(model.liveVessels ?? [], activeId)
+        });
+
         map.addLayer({
           id: "global-route-line",
           type: "line",
@@ -179,6 +184,77 @@ export function JapanOperationsMapCanvas({
             "text-halo-color": "rgba(250,252,255,0.94)",
             "text-halo-width": 1.2,
             "text-opacity": mapMode === "route" ? 0.9 : 0.72
+          }
+        });
+
+        map.addLayer({
+          id: "live-vessel-halo",
+          type: "circle",
+          source: "live-vessels",
+          paint: {
+            "circle-color": statusPalette.selected,
+            "circle-opacity": 0.18,
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              2,
+              12,
+              6,
+              15,
+              10,
+              18
+            ],
+            "circle-stroke-color": "rgba(255,255,255,0.72)",
+            "circle-stroke-opacity": 0.4,
+            "circle-stroke-width": 1
+          }
+        });
+
+        map.addLayer({
+          id: "live-vessel-marker",
+          type: "circle",
+          source: "live-vessels",
+          paint: {
+            "circle-color": statusPalette.selected,
+            "circle-opacity": 0.96,
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              2,
+              5.8,
+              6,
+              6.8,
+              10,
+              8
+            ],
+            "circle-stroke-color": "rgba(21, 30, 36, 0.92)",
+            "circle-stroke-width": [
+              "case",
+              ["boolean", ["get", "selected"], false],
+              2.2,
+              1.2
+            ]
+          }
+        });
+
+        map.addLayer({
+          id: "live-vessel-label",
+          type: "symbol",
+          source: "live-vessels",
+          layout: {
+            "text-field": ["get", "label"],
+            "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
+            "text-size": 11,
+            "text-offset": [0.9, 0.1],
+            "text-anchor": "left"
+          },
+          paint: {
+            "text-color": "#24313b",
+            "text-halo-color": "rgba(250,252,255,0.96)",
+            "text-halo-width": 1.4,
+            "text-opacity": mapMode === "route" ? 0.95 : 0.76
           }
         });
 
@@ -392,7 +468,7 @@ export function JapanOperationsMapCanvas({
           }
         });
 
-        for (const layerId of ["jp-point-circle", "jp-route-line", "jp-region-fill", "jp-cluster-circle", "global-point-circle", "global-route-line", "live-logistics-route-pulse"]) {
+        for (const layerId of ["jp-point-circle", "jp-route-line", "jp-region-fill", "jp-cluster-circle", "global-point-circle", "global-route-line", "live-logistics-route-pulse", "live-vessel-marker"]) {
           map.on("mouseenter", layerId, () => {
             map.getCanvas().style.cursor = "pointer";
           });
@@ -407,6 +483,7 @@ export function JapanOperationsMapCanvas({
         map.on("click", "global-point-circle", (event: any) => selectFeatureId(event, handleSelect));
         map.on("click", "global-route-line", (event: any) => selectFeatureId(event, handleSelect));
         map.on("click", "live-logistics-route-pulse", (event: any) => selectFeatureId(event, handleSelect));
+        map.on("click", "live-vessel-marker", (event: any) => selectFeatureId(event, handleSelect));
 
         map.on("click", "jp-cluster-circle", async (event: any) => {
           const feature = event.features?.[0];
@@ -484,6 +561,9 @@ export function JapanOperationsMapCanvas({
     map.setPaintProperty("live-logistics-route-pulse", "line-dasharray", getLiveLogisticsRoutePaint(statusPalette, mapMode)["line-dasharray"]);
     map.setPaintProperty("live-logistics-route-label", "text-color", statusPalette.monitoring);
     map.setPaintProperty("live-logistics-route-label", "text-opacity", mapMode === "route" ? 0.9 : 0.72);
+    map.setPaintProperty("live-vessel-halo", "circle-color", statusPalette.selected);
+    map.setPaintProperty("live-vessel-marker", "circle-color", statusPalette.selected);
+    map.setPaintProperty("live-vessel-label", "text-opacity", mapMode === "route" ? 0.95 : 0.76);
     map.setPaintProperty("global-point-circle", "circle-color", [
       "match",
       ["get", "tone"],
@@ -533,6 +613,7 @@ export function JapanOperationsMapCanvas({
     updateSource(map, "global-points", pointsToFeatureCollection(model.globalPoints, activeId));
     updateSource(map, "global-routes", routesToFeatureCollection(model.globalRoutes, model.globalPoints, activeId));
     updateSource(map, "live-logistics-routes", routesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId));
+    updateSource(map, "live-vessels", pointsToFeatureCollection(model.liveVessels ?? [], activeId));
     updateSource(map, "jp-points", pointsToFeatureCollection(model.points, activeId));
     updateSource(map, "jp-points-cluster", pointsToFeatureCollection(model.points, activeId));
     updateSource(map, "jp-routes", routesToFeatureCollection(model.routes, model.points, activeId));
@@ -588,6 +669,9 @@ function applyModeVisibility(map: any, mapMode: OperationMapMode) {
   map.setLayoutProperty("global-route-direction", "visibility", visibility(showRoutes));
   map.setLayoutProperty("live-logistics-route-pulse", "visibility", visibility(showRoutes));
   map.setLayoutProperty("live-logistics-route-label", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("live-vessel-halo", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("live-vessel-marker", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("live-vessel-label", "visibility", visibility(showRoutes));
 
   map.setLayoutProperty("jp-point-circle", "visibility", visibility(showPoints));
   map.setLayoutProperty("jp-point-label", "visibility", visibility(showPoints));
@@ -732,8 +816,9 @@ function pointsToFeatureCollection(points: JapanMapPoint[], activeId?: string) {
         id: point.id,
         kind: point.kind,
         label: point.label,
-        selectionId: point.id,
-        selected: point.id === activeId,
+        metaLabel: point.metaLabel,
+        selectionId: point.selectionId ?? point.id,
+        selected: point.id === activeId || point.selectionId === activeId,
         tone: point.tone
       }
     }))

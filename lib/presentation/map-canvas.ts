@@ -10,6 +10,8 @@ export type JapanMapPoint = {
   label: string;
   lat: number;
   lon: number;
+  metaLabel?: string;
+  selectionId?: string;
   tone: "critical" | "watch" | "normal";
 };
 
@@ -43,6 +45,7 @@ export type JapanMapCanvasModel = {
   globalRoutes: JapanMapRoute[];
   livePoints?: JapanMapPoint[];
   liveRoutes?: JapanMapRoute[];
+  liveVessels?: JapanMapPoint[];
   foreignWindow?: {
     title: string;
     entities: ForeignWindowEntity[];
@@ -104,6 +107,7 @@ export function buildJapanMapCanvasModel(
   const globalRoutes = buildGlobalRoutes(routeScopedFlows, graph, globalPoints, japanEntity);
   const liveRoutes = buildLiveRoutes(liveLogistics, graph);
   const livePoints = buildLivePoints(liveRoutes, graph);
+  const liveVessels = buildLiveVessels(liveLogistics);
 
   return {
     points: visiblePoints,
@@ -113,6 +117,7 @@ export function buildJapanMapCanvasModel(
     globalRoutes,
     livePoints,
     liveRoutes,
+    liveVessels,
     foreignWindow: buildForeignWindow(graph, routeScopedFlows, activeId)
   };
 }
@@ -228,6 +233,23 @@ function buildLivePoints(liveRoutes: JapanMapRoute[], graph: SemanticGraph): Jap
       .filter(hasCoordinates)
       .map((entity) => toPoint(entity, classifyLiveTone(entity)))
   );
+}
+
+function buildLiveVessels(liveLogistics: LiveLogisticsViewModel | null | undefined): JapanMapPoint[] {
+  if (!liveLogistics) {
+    return [];
+  }
+
+  return liveLogistics.mapVessels.map((vessel) => ({
+    id: vessel.id,
+    kind: "Japan-bound tanker",
+    label: vessel.label,
+    lat: vessel.lat,
+    lon: vessel.lon,
+    metaLabel: `${vessel.etaLabel} / ${vessel.lastSeenLabel}`,
+    selectionId: vessel.relatedIds.find((id) => !id.startsWith("live-logistics:")) ?? vessel.relatedIds[0] ?? vessel.id,
+    tone: "watch"
+  }));
 }
 
 function buildForeignWindow(

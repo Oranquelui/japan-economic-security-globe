@@ -19,6 +19,22 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "geojson",
       data: landFeature
     },
+    "terrain-shaded-relief": {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}"
+      ],
+      tileSize: 256,
+      attribution: "Esri, USGS, NOAA"
+    },
+    "terrain-contours": {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}"
+      ],
+      tileSize: 256,
+      attribution: "Esri, USGS, NOAA"
+    },
     "gray-canvas-base": {
       type: "raster",
       tiles: [
@@ -48,11 +64,30 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       }
     },
     {
+      id: "terrain-shaded-relief",
+      type: "raster",
+      source: "terrain-shaded-relief",
+      paint: {
+        "raster-opacity": 0.32,
+        "raster-fade-duration": 0
+      }
+    },
+    {
+      id: "terrain-contours",
+      type: "raster",
+      source: "terrain-contours",
+      minzoom: 3,
+      paint: {
+        "raster-opacity": 0.2,
+        "raster-fade-duration": 0
+      }
+    },
+    {
       id: "gray-canvas-base",
       type: "raster",
       source: "gray-canvas-base",
       paint: {
-        "raster-opacity": 0.86,
+        "raster-opacity": 0.74,
         "raster-fade-duration": 0
       }
     },

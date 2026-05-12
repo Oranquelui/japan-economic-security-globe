@@ -6,6 +6,11 @@ export type LiveLogisticsLaneId = "maritime" | "domestic";
 export interface LiveLogisticsEvent {
   confidenceLabel: string;
   corridorLabel: string;
+  currentPosition?: {
+    label?: string;
+    lat: number;
+    lon: number;
+  };
   disclosureLabel: string;
   etaLabel: string;
   id: string;
@@ -26,6 +31,11 @@ export interface LiveLogisticsEvent {
 export interface LiveLogisticsItemViewModel {
   confidenceLabel: string;
   corridorLabel: string;
+  currentPosition?: {
+    label?: string;
+    lat: number;
+    lon: number;
+  };
   disclosureLabel: string;
   etaLabel: string;
   id: string;
@@ -55,11 +65,22 @@ export interface LiveLogisticsMapRoute {
   relatedIds: string[];
 }
 
+export interface LiveLogisticsMapVessel {
+  etaLabel: string;
+  id: string;
+  label: string;
+  lastSeenLabel: string;
+  lat: number;
+  lon: number;
+  relatedIds: string[];
+}
+
 export interface LiveLogisticsViewModel {
   disclosureLabel: string;
   items: LiveLogisticsItemViewModel[];
   lanes: LiveLogisticsLaneViewModel[];
   mapRoutes: LiveLogisticsMapRoute[];
+  mapVessels: LiveLogisticsMapVessel[];
   subtitle: string;
   title: string;
   updatedLabel: string;
