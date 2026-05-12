@@ -14,13 +14,13 @@ const LIVE_LOGISTICS_LANES: Array<{
 }> = [
   {
     id: "maritime",
-    subtitle: "AIS・港湾・受入基地を海側の監視として分離。",
-    title: "海上 / タンカー"
+    subtitle: "AIS・衛星AIS・港湾ETAを海側の捕捉として扱う。",
+    title: "日本向けタンカー"
   },
   {
     id: "domestic",
     subtitle: "港から首都圏の燃料・物流接続を分離。",
-    title: "国内物流"
+    title: "国内接続"
   }
 ];
 
@@ -38,14 +38,14 @@ export function buildLiveLogisticsView(
         || right.priority - left.priority
         || left.title.localeCompare(right.title, "ja");
     })
-    .slice(0, 4);
+    .slice(0, 8);
 
   if (items.length === 0) {
     return null;
   }
 
   return {
-    disclosureLabel: "遅延・集約 / 船名非表示 / route-level only",
+    disclosureLabel: "AIS coverage / 15-60分遅延 / provider-gated",
     items,
     lanes: buildLiveLogisticsLanes(items),
     mapRoutes: items
@@ -56,8 +56,19 @@ export function buildLiveLogisticsView(
         pointIds: item.pointIds,
         relatedIds: [item.id, ...item.relatedIds]
       })),
-    subtitle: "海上監視と国内接続を分けた遅延・集約シグナル",
-    title: "LIVE LOGISTICS",
+    mapVessels: items
+      .filter((item) => item.currentPosition)
+      .map((item) => ({
+        id: item.id.replace("live-logistics:", "live-vessel:"),
+        label: item.currentPosition?.label ?? item.kindLabel,
+        lat: item.currentPosition!.lat,
+        lon: item.currentPosition!.lon,
+        relatedIds: item.relatedIds,
+        etaLabel: item.etaLabel,
+        lastSeenLabel: item.lastSeenLabel
+      })),
+    subtitle: "日本に向かうタンカー捕捉と港湾後続を分けて監視",
+    title: "JAPAN-BOUND TANKER WATCH",
     updatedLabel: items[0]?.lastSeenLabel ?? "更新待ち"
   };
 }
@@ -66,6 +77,7 @@ function toViewItem(event: LiveLogisticsEvent, now: Date): LiveLogisticsItemView
   return {
     confidenceLabel: event.confidenceLabel,
     corridorLabel: event.corridorLabel,
+    currentPosition: event.currentPosition,
     disclosureLabel: event.disclosureLabel,
     etaLabel: event.etaLabel,
     id: event.id,

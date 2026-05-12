@@ -3,6 +3,11 @@
     "id": "live-logistics:tanker-qatar-tokyo-bay",
     "themeIds": ["logistics", "energy"],
     "title": "Tanker corridor: Hormuz → Malacca → Tokyo Bay",
+    "currentPosition": {
+      "lat": 12.4,
+      "lon": 110.8,
+      "label": "AIS tanker 042"
+    },
     "kindLabel": "AIS tanker",
     "laneId": "maritime",
     "statusLabel": "Underway",
@@ -16,6 +21,75 @@
     "relatedIds": ["flow:japan-linked-maritime-watch", "flow:qatar-lng-japan", "chokepoint:hormuz", "chokepoint:malacca"],
     "signalTone": "watch",
     "priority": 98
+  },
+  {
+    "id": "live-logistics:tanker-saudi-kashima",
+    "themeIds": ["logistics", "energy"],
+    "title": "Crude tanker: Ras Tanura → Malacca → Kashima",
+    "currentPosition": {
+      "lat": 7.6,
+      "lon": 93.4,
+      "label": "Crude tanker 118"
+    },
+    "kindLabel": "AIS tanker",
+    "laneId": "maritime",
+    "statusLabel": "Japan-bound",
+    "lastSeenLabel": "26分前",
+    "etaLabel": "ETA 68h",
+    "sourceLabel": "AIS provider fixture",
+    "disclosureLabel": "15-60分遅延 / aggregated vessel signal",
+    "confidenceLabel": "衛星AIS補完",
+    "corridorLabel": "Ras Tanura → Malacca → Kashima",
+    "pointIds": ["country:saudi-arabia", "chokepoint:hormuz", "chokepoint:malacca", "country:japan"],
+    "relatedIds": ["flow:japan-linked-maritime-watch", "flow:saudi-oil-japan", "chokepoint:hormuz", "chokepoint:malacca"],
+    "signalTone": "watch",
+    "priority": 97
+  },
+  {
+    "id": "live-logistics:tanker-australia-sodegaura",
+    "themeIds": ["logistics", "energy"],
+    "title": "LNG tanker: North West Shelf → Sodegaura",
+    "currentPosition": {
+      "lat": 19.2,
+      "lon": 139.4,
+      "label": "LNG tanker 073"
+    },
+    "kindLabel": "AIS tanker",
+    "laneId": "maritime",
+    "statusLabel": "Approaching",
+    "lastSeenLabel": "11分前",
+    "etaLabel": "ETA 22h",
+    "sourceLabel": "AIS provider fixture",
+    "disclosureLabel": "15-60分遅延 / aggregated vessel signal",
+    "confidenceLabel": "沿岸AIS近接",
+    "corridorLabel": "North West Shelf → Sodegaura LNG",
+    "pointIds": ["country:australia", "terminal:sodegaura-lng"],
+    "relatedIds": ["flow:japan-linked-maritime-watch", "flow:qatar-lng-japan", "terminal:sodegaura-lng"],
+    "signalTone": "monitoring",
+    "priority": 96
+  },
+  {
+    "id": "live-logistics:tanker-singapore-yokohama",
+    "themeIds": ["logistics", "energy"],
+    "title": "Product tanker: Singapore → Yokohama",
+    "currentPosition": {
+      "lat": 24.7,
+      "lon": 126.1,
+      "label": "Product tanker 215"
+    },
+    "kindLabel": "AIS tanker",
+    "laneId": "maritime",
+    "statusLabel": "Japan-bound",
+    "lastSeenLabel": "39分前",
+    "etaLabel": "ETA 31h",
+    "sourceLabel": "AIS provider fixture",
+    "disclosureLabel": "15-60分遅延 / aggregated vessel signal",
+    "confidenceLabel": "集約信号",
+    "corridorLabel": "Singapore → Okinawa approach → Yokohama",
+    "pointIds": ["chokepoint:malacca", "port:yokohama"],
+    "relatedIds": ["flow:japan-linked-maritime-watch", "port:yokohama", "chokepoint:malacca"],
+    "signalTone": "normal",
+    "priority": 89
   },
   {
     "id": "live-logistics:domestic-keihin-tokyo",

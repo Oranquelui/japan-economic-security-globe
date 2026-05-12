@@ -78,6 +78,17 @@ describe("japan map canvas model", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "logistics");
     const liveLogistics = {
+      mapVessels: [
+        {
+          id: "live-vessel:tanker-qatar-tokyo-bay",
+          label: "AIS tanker 042",
+          lat: 12.4,
+          lon: 110.8,
+          relatedIds: ["flow:japan-linked-maritime-watch"],
+          etaLabel: "ETA 42h",
+          lastSeenLabel: "18分前"
+        }
+      ],
       mapRoutes: [
         {
           id: "live-logistics:tanker-qatar-tokyo-bay",
@@ -107,5 +118,15 @@ describe("japan map canvas model", () => {
     expect(model.livePoints.map((point: { id: string }) => point.id)).toEqual(
       expect.arrayContaining(["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng", "refinery:keihin", "prefecture:tokyo"])
     );
+    expect(model.liveVessels).toEqual([
+      expect.objectContaining({
+        id: "live-vessel:tanker-qatar-tokyo-bay",
+        kind: "Japan-bound tanker",
+        label: "AIS tanker 042",
+        lat: 12.4,
+        lon: 110.8,
+        selectionId: "flow:japan-linked-maritime-watch"
+      })
+    ]);
   });
 });
