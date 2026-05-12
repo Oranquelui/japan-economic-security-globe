@@ -194,15 +194,16 @@ describe("AppShell url sync", () => {
     render(<AppShell graph={loadSeedGraph()} homepageMode="app" locale="ja" />);
 
     await waitFor(() => {
-      expect(screen.getByRole("dialog")).toBeTruthy();
+      expect(screen.getByRole("region", { name: "MVP/テスト運用中" })).toBeTruthy();
     });
 
+    expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByText("MVP/テスト運用中")).toBeTruthy();
-    expect(screen.getByText("更新: 監視インボックスの開閉操作を修正しました")).toBeTruthy();
+    expect(screen.getByText("更新: 日本向けタンカー監視と地形地図を追加しました")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "お知らせを閉じる" }));
 
     await waitFor(() => {
-      expect(screen.queryByRole("dialog")).toBeNull();
+      expect(screen.queryByRole("region", { name: "MVP/テスト運用中" })).toBeNull();
     });
 
     expect(window.localStorage.getItem(HOMEPAGE_NOTICE_STORAGE_KEY)).toBe("dismissed");

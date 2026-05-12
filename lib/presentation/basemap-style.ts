@@ -68,7 +68,7 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "raster",
       source: "terrain-shaded-relief",
       paint: {
-        "raster-opacity": 0.32,
+        "raster-opacity": 0.46,
         "raster-fade-duration": 0
       }
     },
@@ -76,9 +76,9 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       id: "terrain-contours",
       type: "raster",
       source: "terrain-contours",
-      minzoom: 3,
+      minzoom: 2.4,
       paint: {
-        "raster-opacity": 0.2,
+        "raster-opacity": 0.34,
         "raster-fade-duration": 0
       }
     },
@@ -87,7 +87,7 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "raster",
       source: "gray-canvas-base",
       paint: {
-        "raster-opacity": 0.74,
+        "raster-opacity": 0.58,
         "raster-fade-duration": 0
       }
     },
@@ -106,7 +106,7 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "fill",
       source: "world-land",
       paint: {
-        "fill-color": "rgba(218,229,224,0.24)",
+        "fill-color": "rgba(218,229,224,0.16)",
         "fill-opacity": 1
       }
     }

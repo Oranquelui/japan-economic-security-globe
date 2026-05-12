@@ -14,16 +14,17 @@ beforeEach(() => {
 });
 
 describe("InitialNoticeModal", () => {
-  test("renders the first-visit notice in homepage app mode", async () => {
+  test("renders the first-visit notice as a non-blocking status notice in homepage app mode", async () => {
     render(<InitialNoticeModal homepageMode="app" locale="ja" />);
 
     await waitFor(() => {
-      expect(screen.getByRole("dialog")).toBeTruthy();
+      expect(screen.getByRole("region", { name: "MVP/テスト運用中" })).toBeTruthy();
     });
 
+    expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByText("MVP/テスト運用中")).toBeTruthy();
     expect(screen.getByText("無料公開中")).toBeTruthy();
-    expect(screen.getByText("更新: 監視インボックスの開閉操作を修正しました")).toBeTruthy();
+    expect(screen.getByText("更新: 日本向けタンカー監視と地形地図を追加しました")).toBeTruthy();
     expect(screen.getByText("仕様は予告なく変更される場合があります")).toBeTruthy();
     expect(screen.getByAltText("Homepage notice seal").getAttribute("src")).toBe("/brand/homepage-notice-seal.webp");
   });
@@ -33,7 +34,7 @@ describe("InitialNoticeModal", () => {
 
     render(<InitialNoticeModal homepageMode="app" locale="ja" />);
 
-    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.queryByRole("region", { name: "MVP/テスト運用中" })).toBeNull();
   });
 
   test("persists dismissal when the close button is pressed", async () => {
@@ -43,7 +44,7 @@ describe("InitialNoticeModal", () => {
     fireEvent.click(closeButton);
 
     await waitFor(() => {
-      expect(screen.queryByRole("dialog")).toBeNull();
+      expect(screen.queryByRole("region", { name: "MVP/テスト運用中" })).toBeNull();
     });
 
     expect(window.localStorage.getItem(HOMEPAGE_NOTICE_STORAGE_KEY)).toBe("dismissed");
@@ -52,11 +53,11 @@ describe("InitialNoticeModal", () => {
   test("closes on Escape and stores the dismissal state", async () => {
     render(<InitialNoticeModal homepageMode="app" locale="ja" />);
 
-    await screen.findByRole("dialog");
+    await screen.findByRole("region", { name: "MVP/テスト運用中" });
     fireEvent.keyDown(window, { key: "Escape" });
 
     await waitFor(() => {
-      expect(screen.queryByRole("dialog")).toBeNull();
+      expect(screen.queryByRole("region", { name: "MVP/テスト運用中" })).toBeNull();
     });
 
     expect(window.localStorage.getItem(HOMEPAGE_NOTICE_STORAGE_KEY)).toBe("dismissed");
