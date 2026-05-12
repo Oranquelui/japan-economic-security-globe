@@ -9,18 +9,26 @@
 ## 公開デモ
 
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
+- Launch view: [日本向けタンカー watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route&selected=flow%3Ajapan-linked-maritime-watch)
 - 最初の約束: `日本が今なにを注視すべきか`
-- 公開 framing: 物流の見え方、公式ソース信頼、bounded な near-live overlay、国内着地点
+- 公開 framing: 物流の見え方、日本向けタンカー watch、公式ソース信頼、bounded な near-live overlay、地形が読める地図、国内着地点
+
+## 公開プレビュー
+
+![Japan Watchboard logistics view showing Japan-bound tanker routes, terrain basemap, and evidence detail popup](docs/assets/japan-watchboard-logistics.png)
+
+現在の公開面では、日本向け logistics watch を前面に出しています。タンカールート、海上チョークポイント、国内着地点、地形文脈、出典信頼を別々の図ではなく同じ画面で確認できます。
 
 ## 中心となる問い
 
 > 日本は今なにを注視すべきか。そして、そのシグナルは暮らし、公共支出、国内インフラのどこに着地するのか。
 
-この問いを、次の5層で見せます。
+この問いを、次の主要レイヤーで見せます。
 
 - `Watchboard briefing`: 国家的重要度、freshness、confidence、why now を先に出す。
 - `Japan operations map`: コメ、水、貯水池、港湾、LNG受入基地、製油所、都道府県など、国内に着地する影響を主画面で見せる。
 - `Bounded watch overlays`: 公開可能な範囲に限定した、近接監視・遅延監視の情報を重ねる。
+- `Japan-bound tanker watch`: 海上のタンカー移動と国内物流の後続を分け、freshness と provider limitation を UI 上に明示する。
 - `Global supporting layer`: 原油、LNG、石炭、半導体、供給国、海上輸送路、チョークポイントなど、世界依存の関係を日本への補助文脈として見せる。
 - `Evidence graph`: 政策、予算、法令、組織、出典文書、provenance の関係を見せる。
 - `Operations table`: 依存ルート、観測シグナル、国内着地点を運用リストとして並べ、Palantir 的な意思決定画面の情報構造に寄せる。
@@ -51,7 +59,7 @@ MVP では、各テーマについて薄いが一貫した一連の導線を入�
 - `Defense`: 2026年度防衛予算からスタンド・オフ防衛能力への予算フロー例。
 - `Semiconductors`: 台湾、韓国、オランダ、米国、中国と日本を結ぶ先端半導体依存フロー。
 
-Phase 0 の物流粒度は「港湾・受入基地まで」です。つまり、海上チョークポイント、輸入ルート、日本側の港湾、LNG受入基地、製油所、bounded な海運 watch overlay、小さな災害ライフライン watch slice までを扱います。国内トラック輸送、倉庫、小売流通網は今後の対象です。
+Phase 0 の物流面は、意図的に bounded にしています。海上チョークポイント、輸入ルート、日本向けタンカー watch item、日本側の港湾、LNG受入基地、製油所、bounded な海運 watch overlay、小さな災害ライフライン watch slice までを扱います。ただし、日本に向かう全タンカーの完全リアルタイム AIS coverage を主張するものではありません。それには licensed AIS / provider integration が必要です。
 
 ## ロードマップ
 
@@ -70,6 +78,7 @@ Phase 0 の物流粒度は「港湾・受入基地まで」です。つまり、
 - 日本への影響説明に必要な範囲で、地政学的隣国との関係を追加する。
 - ルート、港湾、施設、出典文書の対象範囲を増やす。
 - 繰り返し可能な取り込み処理と検証を始める。
+- 日本向けタンカー coverage のため、licensed AIS と port-call provider を評価する。
 
 `Phase 2`: 法人・組織向け intelligence product
 
@@ -194,7 +203,11 @@ Phase 2 で institutional / paid product に入る時点では、この運用を
 
 コードのライセンスはリポジトリ直下の [`LICENSE`](LICENSE) に従います。現時点では `Apache-2.0` を採用しています。
 
+この project は MIT ではなく Apache-2.0 を維持します。単純な UI library なら MIT でも問題ありませんが、この project は将来的に institutional layer を持ちうる intelligence / data product です。Apache-2.0 は permissive な open source でありつつ、downstream use に対する patent、notice、trademark の境界を MIT より明確にできます。
+
 一方で `data/seed/` の出典付きデータは、コードと同じ意味で一括再ライセンスしていません。政府・公的機関ソースと民間ソースが混在するため、ソース別条件に従って扱います。詳細は [`DATA-SOURCES.md`](DATA-SOURCES.md) と `Sources/License` ページを参照してください。
+
+公開発表用の文面は [`docs/public-launch.md`](docs/public-launch.md) にまとめています。
 
 ## ディレクトリ構成
 
