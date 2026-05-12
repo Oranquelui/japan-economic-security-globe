@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { HomepageMode } from "../lib/config/homepage-mode";
 
@@ -14,7 +14,6 @@ interface InitialNoticeModalProps {
 export function InitialNoticeModal({ homepageMode, locale }: InitialNoticeModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
-  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     setHasMounted(true);
@@ -35,8 +34,6 @@ export function InitialNoticeModal({ homepageMode, locale }: InitialNoticeModalP
     if (!isOpen) {
       return;
     }
-
-    closeButtonRef.current?.focus();
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -67,25 +64,43 @@ export function InitialNoticeModal({ homepageMode, locale }: InitialNoticeModalP
 
   return (
     <div
-      className="absolute inset-0 z-50 flex items-center justify-center bg-[rgba(6,9,14,0.68)] px-4"
+      aria-live="polite"
+      className="pointer-events-none absolute inset-x-0 bottom-4 z-50 flex justify-center px-4 sm:bottom-5 lg:bottom-6"
       data-locale={locale ?? "ja"}
     >
       <div
         aria-labelledby="homepage-notice-title"
-        aria-modal="true"
-        className="w-full max-w-sm rounded-2xl border px-6 py-5 text-center shadow-2xl"
-        role="dialog"
+        className="pointer-events-auto flex w-[min(560px,calc(100vw-2rem))] items-start gap-3 rounded-xl border px-4 py-3 text-left shadow-2xl"
+        role="region"
         style={{
-          background: "color-mix(in srgb, var(--ops-surface-panel, #121923) 90%, #0c1017 10%)",
+          background: "color-mix(in srgb, var(--ops-surface-panel, #121923) 92%, #0c1017 8%)",
           borderColor: "var(--ops-border-strong, #3a4250)",
           color: "var(--ops-text-primary, #e2e8f0)",
-          boxShadow: "0 18px 40px rgba(2, 6, 12, 0.65)"
+          boxShadow: "0 16px 36px rgba(2, 6, 12, 0.5)"
         }}
       >
+        <img
+          alt="Homepage notice seal"
+          className="mt-0.5 h-10 w-10 shrink-0 rounded-full object-cover"
+          height={40}
+          src="/brand/homepage-notice-seal.webp"
+          width={40}
+        />
+        <div className="min-w-0 flex-1 space-y-1 text-sm leading-5">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <p className="font-semibold" id="homepage-notice-title">
+              MVP/テスト運用中
+            </p>
+            <p className="rounded-full border px-2 py-0.5 text-[0.68rem]" style={{ borderColor: "var(--ops-border-subtle, #3a4250)", color: "var(--ops-text-muted, #cbd5e1)" }}>
+              無料公開中
+            </p>
+          </div>
+          <p>更新: 日本向けタンカー監視と地形地図を追加しました</p>
+          <p style={{ color: "var(--ops-text-muted, #cbd5e1)" }}>仕様は予告なく変更される場合があります</p>
+        </div>
         <button
-          ref={closeButtonRef}
           aria-label="お知らせを閉じる"
-          className="ml-auto flex h-8 w-8 items-center justify-center rounded-full border text-sm transition hover:bg-white/5"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm transition hover:bg-white/5"
           onClick={dismissNotice}
           style={{
             borderColor: "var(--ops-border-strong, #4a5364)",
@@ -95,19 +110,6 @@ export function InitialNoticeModal({ homepageMode, locale }: InitialNoticeModalP
         >
           ×
         </button>
-        <img
-          alt="Homepage notice seal"
-          className="mx-auto mt-1 h-12 w-12 rounded-full object-cover"
-          height={48}
-          src="/brand/homepage-notice-seal.webp"
-          width={48}
-        />
-        <div className="mt-4 space-y-1 text-sm leading-6">
-          <p id="homepage-notice-title">MVP/テスト運用中</p>
-          <p>無料公開中</p>
-          <p>更新: 監視インボックスの開閉操作を修正しました</p>
-          <p>仕様は予告なく変更される場合があります</p>
-        </div>
       </div>
     </div>
   );

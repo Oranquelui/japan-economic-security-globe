@@ -25,17 +25,17 @@ describe("operations basemap style", () => {
       style.layers.map((layer) => layer.id).indexOf("gray-canvas-base")
     );
     expect(style.layers.find((layer) => layer.id === "terrain-shaded-relief")).toMatchObject({
-      paint: { "raster-opacity": 0.32 }
+      paint: { "raster-opacity": 0.46 }
     });
     expect(style.layers.find((layer) => layer.id === "terrain-contours")).toMatchObject({
-      minzoom: 3,
-      paint: { "raster-opacity": 0.2 }
+      minzoom: 2.4,
+      paint: { "raster-opacity": 0.34 }
     });
     expect(style.layers.find((layer) => layer.id === "gray-canvas-base")).toMatchObject({
-      paint: { "raster-opacity": 0.74 }
+      paint: { "raster-opacity": 0.58 }
     });
     expect(style.layers.find((layer) => layer.id === "world-land-fill")).toMatchObject({
-      paint: { "fill-color": "rgba(218,229,224,0.24)" }
+      paint: { "fill-color": "rgba(218,229,224,0.16)" }
     });
   });
 });
