@@ -52,7 +52,7 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "raster",
       source: "gray-canvas-base",
       paint: {
-        "raster-opacity": 1,
+        "raster-opacity": 0.86,
         "raster-fade-duration": 0
       }
     },
@@ -62,7 +62,7 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       source: "gray-canvas-reference",
       minzoom: 6.6,
       paint: {
-        "raster-opacity": 0.48,
+        "raster-opacity": 0.42,
         "raster-fade-duration": 0
       }
     },
@@ -71,7 +71,7 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "fill",
       source: "world-land",
       paint: {
-        "fill-color": "rgba(232,236,240,0.12)",
+        "fill-color": "rgba(218,229,224,0.24)",
         "fill-opacity": 1
       }
     }

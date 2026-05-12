@@ -9,6 +9,10 @@ import type { JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
 
 const addedLayers: Array<Record<string, unknown>> = [];
 const addedSources = new Map<string, unknown>();
+let lastMap: {
+  fitBounds: ReturnType<typeof vi.fn>;
+} | null = null;
+let mapCanvasSize = { width: 1024, height: 720 };
 
 vi.mock("maplibre-gl", () => {
   class MockMap {
@@ -29,10 +33,18 @@ vi.mock("maplibre-gl", () => {
     zoomOut = vi.fn();
     setPaintProperty = vi.fn();
     setLayoutProperty = vi.fn();
-    getCanvas = vi.fn(() => ({ style: { cursor: "" } }));
+    getCanvas = vi.fn(() => ({
+      clientHeight: mapCanvasSize.height,
+      clientWidth: mapCanvasSize.width,
+      style: { cursor: "" }
+    }));
     getSource = vi.fn(() => ({ setData: vi.fn(), getClusterExpansionZoom: vi.fn(async () => 6) }));
     isStyleLoaded = vi.fn(() => true);
     getZoom = vi.fn(() => 5.3);
+
+    constructor() {
+      lastMap = this;
+    }
 
     on = vi.fn((event: string, handler: (...args: unknown[]) => void) => {
       if (event === "load") {
@@ -55,6 +67,8 @@ afterEach(() => {
   cleanup();
   addedLayers.length = 0;
   addedSources.clear();
+  lastMap = null;
+  mapCanvasSize = { width: 1024, height: 720 };
 });
 
 const model: JapanMapCanvasModel = {
@@ -248,7 +262,7 @@ describe("map canvas layer config", () => {
     const pulseLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-pulse") as any;
     const labelLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-label") as any;
     const liveRoutes = addedSources.get("live-logistics-routes") as {
-      features: Array<{ properties: { id: string; selected: boolean } }>;
+      features: Array<{ properties: { id: string; selected: boolean; selectionId: string } }>;
     };
 
     expect(pulseLayer).toBeTruthy();
@@ -256,6 +270,34 @@ describe("map canvas layer config", () => {
     expect(pulseLayer.paint["line-color"]).toBe(getStatusPalette().monitoring);
     expect(labelLayer).toBeTruthy();
     expect(liveRoutes.features[0].properties.id).toBe("live-logistics:tanker-saudi-tokyo-bay");
+    expect(liveRoutes.features[0].properties.selectionId).toBe("flow:saudi-oil-japan");
     expect(liveRoutes.features[0].properties.selected).toBe(true);
+  });
+
+  test("scales selection fit padding to the mobile map viewport", async () => {
+    mapCanvasSize = { width: 390, height: 420 };
+
+    render(
+      <JapanOperationsMapCanvas
+        activeId="flow:saudi-oil-japan"
+        focusTargetId="flow:saudi-oil-japan"
+        mapMode="route"
+        model={model}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(lastMap?.fitBounds).toHaveBeenCalled();
+    });
+
+    expect(lastMap?.fitBounds.mock.calls.at(-1)?.[1].padding).toEqual({
+      top: 67,
+      right: 46,
+      bottom: 84,
+      left: 46
+    });
   });
 });

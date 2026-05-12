@@ -24,11 +24,11 @@ export type StatusPalette = {
 export type SemanticTone = "accent" | "high" | "watch" | "normal" | "monitoring" | "selected" | "neutral";
 
 const BASE_THEME: Omit<ThemePalette, "accent" | "accentSoft" | "accentText"> = {
-  surfaceCanvas: "#d7dde2",
-  surfacePanel: "rgba(57, 63, 69, 0.84)",
-  surfacePanelElevated: "rgba(71, 79, 86, 0.78)",
-  borderSubtle: "rgba(98, 108, 118, 0.42)",
-  borderStrong: "rgba(78, 89, 99, 0.58)",
+  surfaceCanvas: "#c8d2d6",
+  surfacePanel: "rgba(39, 47, 53, 0.9)",
+  surfacePanelElevated: "rgba(52, 63, 70, 0.84)",
+  borderSubtle: "rgba(107, 120, 128, 0.38)",
+  borderStrong: "rgba(129, 145, 153, 0.54)",
   textPrimary: "#f5f7fa",
   textMuted: "#c4ccd5"
 };
@@ -40,9 +40,9 @@ const THEME_PALETTES: Record<ThemeId, Pick<ThemePalette, "accent" | "accentSoft"
     accentText: "#f0d7bf"
   },
   logistics: {
-    accent: "#4f9fbd",
-    accentSoft: "rgba(79, 159, 189, 0.12)",
-    accentText: "#d7eef6"
+    accent: "#42a6bd",
+    accentSoft: "rgba(66, 166, 189, 0.14)",
+    accentText: "#d5f1f6"
   },
   rice: {
     accent: "#a88a56",
@@ -67,11 +67,11 @@ const THEME_PALETTES: Record<ThemeId, Pick<ThemePalette, "accent" | "accentSoft"
 };
 
 const STATUS_PALETTE: StatusPalette = {
-  high: "#d36b6b",
-  watch: "#d1a55d",
-  normal: "#6da88a",
-  monitoring: "#5d8db8",
-  selected: "#7db7d9"
+  high: "#df6d65",
+  watch: "#d7a24c",
+  normal: "#79a878",
+  monitoring: "#4b9fc5",
+  selected: "#f0c95a"
 };
 
 export function getThemePalette(themeId: ThemeId): ThemePalette {

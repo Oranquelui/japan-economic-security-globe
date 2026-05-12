@@ -1,0 +1,185 @@
+"use client";
+
+import type { ReactNode } from "react";
+
+import type { RankingExplanationViewModel } from "../lib/ranking/explain";
+import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
+import type { DetailViewModel } from "../types/presentation";
+import {
+  localizeAnyLabel,
+  localizeKind,
+  localizePublisher,
+  localizeSourceLabel,
+  localizeSummary,
+  localizeWhyItMatters
+} from "../lib/presentation/japanese";
+
+interface MapDetailPopupProps {
+  detail: DetailViewModel;
+  onClose: () => void;
+  onSelect: (id: string) => void;
+  rankingExplanation?: RankingExplanationViewModel | null;
+  routeStatusLabel?: string | null;
+  statusPalette: StatusPalette;
+  themePalette: ThemePalette;
+  themeTitle: string;
+}
+
+export function MapDetailPopup({
+  detail,
+  onClose,
+  onSelect,
+  rankingExplanation,
+  routeStatusLabel,
+  statusPalette,
+  themePalette,
+  themeTitle
+}: MapDetailPopupProps) {
+  const relatedEntities = detail.relatedEntities.slice(0, 4);
+  const sources = detail.sources.slice(0, 2);
+
+  return (
+    <aside
+      data-testid="map-detail-popup"
+      className="pointer-events-auto max-h-[min(34rem,calc(100vh-6rem))] overflow-y-auto rounded-2xl border p-4 shadow-2xl backdrop-blur-xl"
+      style={{
+        borderColor: themePalette.borderStrong,
+        background: "color-mix(in srgb, var(--ops-surface-panel) 94%, rgba(9,13,18,0.92) 6%)",
+        boxShadow: "0 20px 55px rgba(4, 9, 14, 0.38)"
+      }}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="font-mono text-[0.58rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
+            MAP DETAIL
+          </div>
+          <h2 className="mt-2 text-lg font-semibold leading-6 text-white [overflow-wrap:anywhere]">
+            {localizeAnyLabel(detail.id, detail.label)}
+          </h2>
+          <p className="mt-1 text-[0.7rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
+            {themeTitle}
+          </p>
+        </div>
+        <button
+          aria-label="地図詳細を閉じる"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border text-sm transition hover:bg-white/5"
+          onClick={onClose}
+          style={{
+            borderColor: themePalette.borderSubtle,
+            color: themePalette.textMuted
+          }}
+          type="button"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {rankingExplanation?.rankLabel ? (
+          <PopupChip borderColor={themePalette.accent} textColor={themePalette.textPrimary}>
+            {rankingExplanation.rankLabel}
+          </PopupChip>
+        ) : null}
+        {routeStatusLabel ? (
+          <PopupChip borderColor={statusPalette.selected} textColor={themePalette.textPrimary}>
+            {routeStatusLabel}
+          </PopupChip>
+        ) : null}
+        <PopupChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+          {localizeKind(detail.kind)}
+        </PopupChip>
+        <PopupChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+          {detail.sources.length} 出典
+        </PopupChip>
+        <PopupChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+          {detail.relatedEntities.length} 関連
+        </PopupChip>
+      </div>
+
+      <p className="mt-3 text-[0.82rem] leading-6 text-slate-100 [overflow-wrap:anywhere]">
+        {localizeSummary(detail.id, detail.summary)}
+      </p>
+      <p className="mt-2 text-[0.72rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
+        {localizeWhyItMatters(detail.id, detail.whyItMatters)}
+      </p>
+
+      {rankingExplanation ? (
+        <section className="mt-4 border-t pt-3" style={{ borderColor: themePalette.borderSubtle }}>
+          <div className="font-mono text-[0.56rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+            WHY RANKED
+          </div>
+          <p className="mt-2 text-[0.74rem] leading-5 text-slate-100 [overflow-wrap:anywhere]">
+            {rankingExplanation.summary}
+          </p>
+          <p className="mt-1 text-[0.68rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
+            {rankingExplanation.sourceTrust.detail}
+          </p>
+        </section>
+      ) : null}
+
+      {sources.length ? (
+        <section className="mt-4 border-t pt-3" style={{ borderColor: themePalette.borderSubtle }}>
+          <div className="font-mono text-[0.56rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+            SOURCE PROOF
+          </div>
+          <div className="mt-2 space-y-2">
+            {sources.map((source) => (
+              <div key={source.id} className="text-[0.7rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
+                <span className="font-semibold text-slate-100">{localizeSourceLabel(source.id, source.label)}</span>
+                <span> / {localizePublisher(source.publisher)}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {relatedEntities.length ? (
+        <section className="mt-4 border-t pt-3" style={{ borderColor: themePalette.borderSubtle }}>
+          <div className="font-mono text-[0.56rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+            RELATED POINTS
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {relatedEntities.map((entity) => (
+              <button
+                key={entity.id}
+                aria-label={`関連: ${localizeAnyLabel(entity.id, entity.label)}`}
+                className="rounded-full border px-2.5 py-1.5 text-[0.66rem] transition hover:bg-white/5"
+                onClick={() => onSelect(entity.id)}
+                style={{
+                  borderColor: themePalette.borderSubtle,
+                  color: themePalette.textMuted
+                }}
+                type="button"
+              >
+                {localizeAnyLabel(entity.id, entity.label)}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+    </aside>
+  );
+}
+
+function PopupChip({
+  borderColor,
+  children,
+  textColor
+}: {
+  borderColor: string;
+  children: ReactNode;
+  textColor: string;
+}) {
+  return (
+    <span
+      className="rounded-full border px-2 py-1 text-[0.62rem]"
+      style={{
+        borderColor,
+        background: "rgba(9, 13, 18, 0.2)",
+        color: textColor
+      }}
+    >
+      {children}
+    </span>
+  );
+}

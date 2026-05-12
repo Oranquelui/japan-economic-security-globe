@@ -17,5 +17,11 @@ describe("operations basemap style", () => {
         "gray-canvas-reference"
       ])
     );
+    expect(style.layers.find((layer) => layer.id === "gray-canvas-base")).toMatchObject({
+      paint: { "raster-opacity": 0.86 }
+    });
+    expect(style.layers.find((layer) => layer.id === "world-land-fill")).toMatchObject({
+      paint: { "fill-color": "rgba(218,229,224,0.24)" }
+    });
   });
 });

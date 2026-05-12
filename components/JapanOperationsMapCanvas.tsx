@@ -712,7 +712,7 @@ function getDomesticRoutePaint(themePalette: ThemePalette, statusPalette: Status
 
 function selectFeatureId(event: any, onSelect: (id: string) => void) {
   const feature = event.features?.[0];
-  const id = feature?.properties?.id;
+  const id = feature?.properties?.selectionId ?? feature?.properties?.id;
 
   if (id) {
     onSelect(id);
@@ -732,6 +732,7 @@ function pointsToFeatureCollection(points: JapanMapPoint[], activeId?: string) {
         id: point.id,
         kind: point.kind,
         label: point.label,
+        selectionId: point.id,
         selected: point.id === activeId,
         tone: point.tone
       }
@@ -764,6 +765,7 @@ function routesToFeatureCollection(routes: JapanMapRoute[], points: JapanMapPoin
           properties: {
             id: route.id,
             label: route.label,
+            selectionId: resolveRouteSelectionId(route),
             selected:
               route.id === activeId ||
               route.pointIds.includes(activeId) ||
@@ -787,11 +789,20 @@ function regionsToFeatureCollection(regions: JapanMapRegion[], activeId: string)
       properties: {
         id: region.id,
         label: region.label,
+        selectionId: region.id,
         selected: region.id === activeId,
         value: region.value
       }
     }))
   };
+}
+
+function resolveRouteSelectionId(route: JapanMapRoute) {
+  if (!route.id.startsWith("live-logistics:")) {
+    return route.id;
+  }
+
+  return route.relatedIds.find((id) => !id.startsWith("live-logistics:")) ?? route.relatedIds[0] ?? route.id;
 }
 
 function createCirclePolygon(lon: number, lat: number, radiusKm: number) {
@@ -814,6 +825,32 @@ function updateSource(map: any, sourceId: string, data: unknown) {
   if (source && "setData" in source) {
     source.setData(data);
   }
+}
+
+function getResponsiveFitPadding(map: any, prefersGlobal: boolean) {
+  const canvas = typeof map.getCanvas === "function" ? map.getCanvas() : null;
+  const width = getCanvasDimension(canvas?.clientWidth, canvas?.width, 1024);
+  const height = getCanvasDimension(canvas?.clientHeight, canvas?.height, 720);
+  const horizontal = Math.min(120, Math.max(32, Math.floor(width * 0.12)));
+  const top = Math.min(180, Math.max(44, Math.floor(height * 0.16)));
+  const bottom = Math.min(prefersGlobal ? 200 : 260, Math.max(56, Math.floor(height * 0.2)));
+
+  return {
+    top,
+    right: horizontal,
+    bottom,
+    left: horizontal
+  };
+}
+
+function getCanvasDimension(primary: unknown, secondary: unknown, fallback: number) {
+  for (const value of [primary, secondary]) {
+    if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+      return value;
+    }
+  }
+
+  return fallback;
 }
 
 function focusMapOnSelection(
@@ -839,10 +876,11 @@ function focusMapOnSelection(
         .filter((point): point is JapanMapPoint => Boolean(point))
     : [];
   const prefersGlobalRoute = mapMode === "route" && Boolean(activeGlobalRoute);
-  const prefersGlobal =
+  const prefersGlobal = Boolean(
     prefersGlobalRoute ||
-    (!activeRoute && !activePoint && !activeRegion && (activeGlobalRoute || activeGlobalPoint)) ||
-    currentZoom <= GLOBAL_CONTEXT_MAX_ZOOM + 0.15;
+      (!activeRoute && !activePoint && !activeRegion && (activeGlobalRoute || activeGlobalPoint)) ||
+      currentZoom <= GLOBAL_CONTEXT_MAX_ZOOM + 0.15
+  );
 
   const focusPoints = prefersGlobal
     ? resolveGlobalFocusPoints(model, activeGlobalPoint, globalRoutePoints)
@@ -881,19 +919,7 @@ function focusMapOnSelection(
   );
 
   map.fitBounds(bounds, {
-    padding: prefersGlobal
-      ? {
-          top: 180,
-          right: 120,
-          bottom: 200,
-          left: 120
-        }
-      : {
-          top: 180,
-          right: 120,
-          bottom: 260,
-          left: 120
-        },
+    padding: getResponsiveFitPadding(map, prefersGlobal),
     maxZoom: prefersGlobal ? 4.4 : mapMode === "route" ? 8.4 : 7.6,
     duration: 700
   });

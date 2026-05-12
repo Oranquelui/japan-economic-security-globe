@@ -13,7 +13,6 @@ import { getDetailView } from "../lib/semantic/detail";
 import { buildJapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import { buildLiveLogisticsView } from "../lib/presentation/live-logistics";
 import { getThemeView } from "../lib/semantic/selectors";
-import { buildEvidenceGraph } from "../lib/semantic/view-models";
 import { buildOperationRows, filterOperationRows, type OperationMapMode } from "../lib/presentation/operations";
 import { getStatusPalette, getThemePalette } from "../lib/presentation/palette";
 import {
@@ -32,7 +31,6 @@ import {
 import { getThemeLabel, localizeAnyLabel, localizeKind } from "../lib/presentation/japanese";
 import { getRouteStatus } from "../lib/presentation/route-status";
 import { ActionBar } from "./ActionBar";
-import { EvidencePanel } from "./EvidencePanel";
 import { InitialNoticeModal } from "./InitialNoticeModal";
 import { JapanMainMap } from "./JapanMainMap";
 import { MapInboxPanel } from "./MapInboxPanel";
@@ -84,12 +82,10 @@ export function AppShell({
   const [mapMode, setMapMode] = useState<OperationMapMode>(resolvedInitialState.mapMode);
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(true);
-  const [isEvidenceOpen, setEvidenceOpen] = useState(true);
   const [isCompareOpen, setCompareOpen] = useState(false);
   const [, startTransition] = useTransition();
   const initialSerializedRef = useRef(serializeOperationsUrlState(resolvedInitialState));
   const view = getThemeView(graph, themeId);
-  const evidenceGraph = buildEvidenceGraph(graph, themeId);
   const inboxDecision = rankingSignals.length
     ? buildRankingDecision({
         surfaceId: "inbox",
@@ -125,6 +121,14 @@ export function AppShell({
   const detail = getDetailView(graph, activeId);
   const routeStatus = getRouteStatus(detail);
   const mapModel = buildJapanMapCanvasModel(graph, view, activeId, liveLogistics);
+  const mapDetailPopup = validSelectedId
+    ? {
+        detail,
+        rankingExplanation,
+        routeStatusLabel: routeStatus?.chipLabel ?? null,
+        themeTitle: view.title
+      }
+    : null;
   const themePalette = getThemePalette(themeId);
   const statusPalette = getStatusPalette();
   const themeLabel = getThemeLabel(themeId).label;
@@ -152,11 +156,10 @@ export function AppShell({
   const compareExpandedHeight = 264;
   const compareCollapsedHeight = 76;
   const compareHeight = isCompareOpen ? compareExpandedHeight : compareCollapsedHeight;
-  const evidenceWidth = isEvidenceOpen ? 360 : 52;
   const mapOverlayInsets = {
     top: 16,
     left: railWidth + visiblePaneWidth + 16,
-    right: evidenceWidth + 16,
+    right: 16,
     bottom: compareHeight + 16
   };
 
@@ -205,10 +208,12 @@ export function AppShell({
           <section data-testid="layout-map-section" className="absolute inset-0 min-h-0">
             <JapanMainMap
               activeId={activeId}
+              detailPopup={mapDetailPopup}
               focusTargetId={focusTargetId}
               mapMode={mapMode}
               model={mapModel}
               overlayInsets={mapOverlayInsets}
+              onCloseDetail={() => setSelectedId(null)}
               onSelect={setSelectedId}
               statusPalette={statusPalette}
               themePalette={themePalette}
@@ -263,38 +268,12 @@ export function AppShell({
             </aside>
           ) : null}
 
-          <div
-            data-testid="layout-evidence-overlay"
-            className="pointer-events-none absolute right-0 top-0 z-40 flex justify-end"
-            style={{
-              bottom: 0
-            }}
-          >
-            <div
-              className="pointer-events-auto h-full transition-[width] duration-200 ease-out"
-              style={{ width: evidenceWidth }}
-            >
-              <EvidencePanel
-                collapsed={!isEvidenceOpen}
-                detail={detail}
-                evidenceGraph={evidenceGraph}
-                onSelect={setSelectedId}
-                onToggleCollapsed={() => setEvidenceOpen((value) => !value)}
-                rankingExplanation={rankingExplanation}
-                selectedId={activeId}
-                statusPalette={statusPalette}
-                themePalette={themePalette}
-                themeTitle={view.title}
-              />
-            </div>
-          </div>
-
           <section
             data-testid="layout-compare-drawer"
             className="absolute bottom-0 right-0 z-30 min-h-0"
             style={{
               left: railWidth + visiblePaneWidth,
-              right: evidenceWidth,
+              right: 0,
               height: compareHeight
             }}
           >
@@ -320,6 +299,7 @@ export function AppShell({
           <section className="h-[50vh] min-h-[280px]">
             <JapanMainMap
               activeId={activeId}
+              detailPopup={mapDetailPopup}
               focusTargetId={focusTargetId}
               mapMode={mapMode}
               model={mapModel}
@@ -329,6 +309,7 @@ export function AppShell({
                 right: 16,
                 bottom: 16
               }}
+              onCloseDetail={() => setSelectedId(null)}
               onSelect={setSelectedId}
               statusPalette={statusPalette}
               themePalette={themePalette}
@@ -386,19 +367,6 @@ export function AppShell({
             rows={filteredOperationRows}
             statusPalette={statusPalette}
             themePalette={themePalette}
-            onToggleCollapsed={() => undefined}
-          />
-          <EvidencePanel
-            collapsed={false}
-            collapsible={false}
-            detail={detail}
-            evidenceGraph={evidenceGraph}
-            onSelect={setSelectedId}
-            rankingExplanation={rankingExplanation}
-            selectedId={activeId}
-            statusPalette={statusPalette}
-            themePalette={themePalette}
-            themeTitle={view.title}
             onToggleCollapsed={() => undefined}
           />
         </div>
