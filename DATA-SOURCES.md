@@ -8,6 +8,8 @@ This repository separates code licensing from source-material handling.
 - Source-linked data in `data/seed/` is not treated as a single relicensable corpus.
 - `ontology/` contains project-authored semantic structure, but many seeded facts point to third-party source materials.
 
+The public repository intentionally uses `Apache-2.0` rather than `MIT`. The code should remain easy to inspect, fork, and reuse, while the project keeps clearer patent, notice, and trademark boundaries for downstream institutional use.
+
 ## Public-sector sources
 
 Government and public-institution sources are handled with attribution-first reuse rules, subject to the terms published by each source.
