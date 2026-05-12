@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { buildInboxSections } from "../lib/presentation/inbox";
 import type {
@@ -143,15 +143,16 @@ export function MapInboxPanel({
               検索
             </div>
             <input
+              suppressHydrationWarning
               value={query}
               onChange={(event) => onQueryChange(event.target.value)}
               placeholder="LNG、港湾、コメ、予算"
-              className="mt-2 w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-500"
+              className="mt-2 w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition [background-color:var(--map-inbox-input-bg)] [border-color:var(--map-inbox-input-border)] [color:var(--map-inbox-input-text)] placeholder:text-slate-500"
               style={{
-                borderColor: themePalette.borderSubtle,
-                background: themePalette.surfacePanelElevated,
-                color: themePalette.textPrimary
-              }}
+                "--map-inbox-input-bg": themePalette.surfacePanelElevated,
+                "--map-inbox-input-border": themePalette.borderSubtle,
+                "--map-inbox-input-text": themePalette.textPrimary
+              } as CSSProperties}
             />
           </label>
         </section>

@@ -4,12 +4,21 @@ import { useEffect, useState } from "react";
 
 import type { JapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import type { OperationMapMode } from "../lib/presentation/operations";
+import type { RankingExplanationViewModel } from "../lib/ranking/explain";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
+import type { DetailViewModel } from "../types/presentation";
 import type { WatchOverlayItemViewModel } from "../lib/presentation/watch-overlays";
 import { JapanOperationsMapCanvas } from "./JapanOperationsMapCanvas";
+import { MapDetailPopup } from "./MapDetailPopup";
 
 interface JapanMainMapProps {
   activeId: string;
+  detailPopup?: {
+    detail: DetailViewModel;
+    rankingExplanation?: RankingExplanationViewModel | null;
+    routeStatusLabel?: string | null;
+    themeTitle: string;
+  } | null;
   focusTargetId: string | null;
   mapMode: OperationMapMode;
   model: JapanMapCanvasModel;
@@ -19,6 +28,7 @@ interface JapanMainMapProps {
     right: number;
     top: number;
   };
+  onCloseDetail?: () => void;
   onSelect: (id: string) => void;
   statusPalette: StatusPalette;
   themePalette: ThemePalette;
@@ -27,6 +37,7 @@ interface JapanMainMapProps {
 
 export function JapanMainMap({
   activeId,
+  detailPopup = null,
   focusTargetId,
   mapMode,
   model,
@@ -36,6 +47,7 @@ export function JapanMainMap({
     bottom: 16,
     left: 16
   },
+  onCloseDetail,
   onSelect,
   statusPalette,
   themePalette,
@@ -147,6 +159,45 @@ export function JapanMainMap({
             ))}
           </div>
         </aside>
+      ) : null}
+      {detailPopup ? (
+        <>
+          <div
+            className="fixed inset-x-0 z-50 px-3 lg:hidden"
+            style={{
+              bottom: overlayInsets.bottom
+            }}
+          >
+            <MapDetailPopup
+              detail={detailPopup.detail}
+              onClose={onCloseDetail ?? (() => undefined)}
+              onSelect={onSelect}
+              rankingExplanation={detailPopup.rankingExplanation}
+              routeStatusLabel={detailPopup.routeStatusLabel}
+              statusPalette={statusPalette}
+              themePalette={themePalette}
+              themeTitle={detailPopup.themeTitle}
+            />
+          </div>
+          <div
+            className="absolute z-30 hidden w-[23rem] lg:block"
+            style={{
+              right: overlayInsets.right,
+              top: overlayInsets.top
+            }}
+          >
+            <MapDetailPopup
+              detail={detailPopup.detail}
+              onClose={onCloseDetail ?? (() => undefined)}
+              onSelect={onSelect}
+              rankingExplanation={detailPopup.rankingExplanation}
+              routeStatusLabel={detailPopup.routeStatusLabel}
+              statusPalette={statusPalette}
+              themePalette={themePalette}
+              themeTitle={detailPopup.themeTitle}
+            />
+          </div>
+        </>
       ) : null}
     </section>
   );

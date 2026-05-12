@@ -73,12 +73,17 @@ vi.mock("../NavigationRail", () => ({
 vi.mock("../JapanMainMap", () => ({
   JapanMainMap: ({
     activeId,
+    detailPopup,
     focusTargetId,
     mapMode,
     model,
     watchOverlays = []
   }: {
     activeId: string;
+    detailPopup?: {
+      detail: { label: string };
+      rankingExplanation?: { rankLabel?: string } | null;
+    } | null;
     focusTargetId: string | null;
     mapMode: OperationMapMode;
     model?: { liveRoutes?: unknown[] };
@@ -87,9 +92,11 @@ vi.mock("../JapanMainMap", () => ({
     <div
       data-testid="map"
       data-active={activeId}
+      data-detail-popup={detailPopup?.detail.label ?? ""}
       data-focus={focusTargetId ?? ""}
       data-live-routes={model?.liveRoutes?.length ?? 0}
       data-mode={mapMode}
+      data-ranking={detailPopup?.rankingExplanation?.rankLabel ?? ""}
       data-watch-overlays={watchOverlays.length}
     >
       mocked-map
@@ -146,7 +153,7 @@ beforeEach(() => {
 });
 
 describe("AppShell url sync", () => {
-  test("renders the shell as a command pane, full map stage, evidence pane, and collapsed compare drawer", () => {
+  test("renders the shell as a command pane, full map stage, map detail popup surface, and collapsed compare drawer", () => {
     render(
       <AppShell
         graph={loadSeedGraph()}
@@ -177,8 +184,8 @@ describe("AppShell url sync", () => {
     expect(screen.getByTestId("inbox-watchboard")).toBeTruthy();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-watch-overlays")).toBe("0");
     expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
-    expect(screen.getByTestId("layout-evidence-overlay")).toBeTruthy();
-    expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("no");
+    expect(screen.queryByTestId("layout-evidence-overlay")).toBeNull();
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("");
     expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("yes");
     expect(screen.queryByRole("dialog")).toBeNull();
   });
@@ -217,6 +224,7 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("cluster");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("observation:rice-price-signal-2026");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("observation:rice-price-signal-2026");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("Rice price pressure signal");
     expect(replaceMock).not.toHaveBeenCalled();
   });
 
@@ -287,10 +295,15 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("observation:rice-price-signal-2026");
   });
 
-  test("passes ranking explanation to the evidence panel for the selected ranked item", () => {
+  test("passes ranking explanation to the map detail popup for the selected ranked item", () => {
     render(
       <AppShell
         graph={loadSeedGraph()}
+        initialUrlState={{
+          themeId: "energy",
+          mapMode: "route",
+          selectedId: "flow:saudi-oil-japan"
+        }}
         rankingSignals={[
           {
             id: "ranking-signal:energy-middle-east-route",
@@ -310,7 +323,7 @@ describe("AppShell url sync", () => {
       />
     );
 
-    expect(screen.getAllByTestId("evidence")[0].getAttribute("data-ranking")).toBe("#1");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-ranking")).toBe("#1");
   });
 
   test("passes live logistics into the command pane and map model", () => {
