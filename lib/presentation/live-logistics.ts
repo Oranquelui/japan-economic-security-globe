@@ -1,9 +1,28 @@
 import type {
   LiveLogisticsEvent,
   LiveLogisticsItemViewModel,
+  LiveLogisticsLaneId,
+  LiveLogisticsLaneViewModel,
   LiveLogisticsViewModel
 } from "../../types/logistics";
 import type { ThemeId } from "../../types/semantic";
+
+const LIVE_LOGISTICS_LANES: Array<{
+  id: LiveLogisticsLaneId;
+  subtitle: string;
+  title: string;
+}> = [
+  {
+    id: "maritime",
+    subtitle: "AIS・港湾・受入基地を海側の監視として分離。",
+    title: "海上 / タンカー"
+  },
+  {
+    id: "domestic",
+    subtitle: "港から首都圏の燃料・物流接続を分離。",
+    title: "国内物流"
+  }
+];
 
 export function buildLiveLogisticsView(
   themeId: ThemeId,
@@ -28,6 +47,7 @@ export function buildLiveLogisticsView(
   return {
     disclosureLabel: "遅延・集約 / 船名非表示 / route-level only",
     items,
+    lanes: buildLiveLogisticsLanes(items),
     mapRoutes: items
       .filter((item) => item.pointIds.length >= 2)
       .map((item) => ({
@@ -36,7 +56,7 @@ export function buildLiveLogisticsView(
         pointIds: item.pointIds,
         relatedIds: [item.id, ...item.relatedIds]
       })),
-    subtitle: "AIS と国内物流の遅延・集約シグナル",
+    subtitle: "海上監視と国内接続を分けた遅延・集約シグナル",
     title: "LIVE LOGISTICS",
     updatedLabel: items[0]?.lastSeenLabel ?? "更新待ち"
   };
@@ -50,6 +70,7 @@ function toViewItem(event: LiveLogisticsEvent, now: Date): LiveLogisticsItemView
     etaLabel: event.etaLabel,
     id: event.id,
     kindLabel: event.kindLabel,
+    laneId: event.laneId ?? inferLiveLogisticsLane(event),
     lastSeenLabel: event.lastSeenLabel ?? formatRelativeTime(event.lastSeenAt, now),
     pointIds: event.pointIds,
     priority: event.priority ?? getTonePriority(event.signalTone),
@@ -59,6 +80,18 @@ function toViewItem(event: LiveLogisticsEvent, now: Date): LiveLogisticsItemView
     statusLabel: event.statusLabel,
     title: event.title
   };
+}
+
+function buildLiveLogisticsLanes(items: LiveLogisticsItemViewModel[]): LiveLogisticsLaneViewModel[] {
+  return LIVE_LOGISTICS_LANES.map((lane) => ({
+    ...lane,
+    items: items.filter((item) => item.laneId === lane.id)
+  })).filter((lane) => lane.items.length > 0);
+}
+
+function inferLiveLogisticsLane(event: LiveLogisticsEvent): LiveLogisticsLaneId {
+  const marker = `${event.id} ${event.kindLabel} ${event.title}`.toLowerCase();
+  return marker.includes("domestic") ? "domestic" : "maritime";
 }
 
 function getActiveScore(item: LiveLogisticsItemViewModel, activeId: string | null | undefined) {

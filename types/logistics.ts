@@ -1,6 +1,7 @@
 import type { ThemeId } from "./semantic";
 
 export type LiveLogisticsSignalTone = "high" | "watch" | "monitoring" | "normal";
+export type LiveLogisticsLaneId = "maritime" | "domestic";
 
 export interface LiveLogisticsEvent {
   confidenceLabel: string;
@@ -9,6 +10,7 @@ export interface LiveLogisticsEvent {
   etaLabel: string;
   id: string;
   kindLabel: string;
+  laneId?: LiveLogisticsLaneId;
   lastSeenAt?: string;
   lastSeenLabel?: string;
   pointIds: string[];
@@ -28,6 +30,7 @@ export interface LiveLogisticsItemViewModel {
   etaLabel: string;
   id: string;
   kindLabel: string;
+  laneId: LiveLogisticsLaneId;
   lastSeenLabel: string;
   pointIds: string[];
   priority: number;
@@ -35,6 +38,13 @@ export interface LiveLogisticsItemViewModel {
   signalTone: LiveLogisticsSignalTone;
   sourceLabel: string;
   statusLabel: string;
+  title: string;
+}
+
+export interface LiveLogisticsLaneViewModel {
+  id: LiveLogisticsLaneId;
+  items: LiveLogisticsItemViewModel[];
+  subtitle: string;
   title: string;
 }
 
@@ -48,6 +58,7 @@ export interface LiveLogisticsMapRoute {
 export interface LiveLogisticsViewModel {
   disclosureLabel: string;
   items: LiveLogisticsItemViewModel[];
+  lanes: LiveLogisticsLaneViewModel[];
   mapRoutes: LiveLogisticsMapRoute[];
   subtitle: string;
   title: string;

@@ -3,7 +3,11 @@
 import type { ReactNode } from "react";
 
 import { buildInboxSections } from "../lib/presentation/inbox";
-import type { LiveLogisticsViewModel } from "../types/logistics";
+import type {
+  LiveLogisticsItemViewModel,
+  LiveLogisticsLaneViewModel,
+  LiveLogisticsViewModel
+} from "../types/logistics";
 import type { OperationRow } from "../lib/presentation/operations";
 import type { ThemePalette } from "../lib/presentation/palette";
 import type { WatchboardBriefingViewModel } from "../lib/presentation/watchboard";
@@ -69,34 +73,15 @@ export function MapInboxPanel({
               <OverlayChip themePalette={themePalette}>{liveLogistics.updatedLabel}</OverlayChip>
               <OverlayChip themePalette={themePalette}>{liveLogistics.disclosureLabel}</OverlayChip>
             </div>
-            <div className="mt-3 space-y-2">
-              {liveLogistics.items.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => onSelect(item.relatedIds[0] ?? item.id)}
-                  className="w-full rounded-lg border px-3 py-3 text-left transition hover:border-slate-300/40"
-                  style={{
-                    borderColor: activeId === item.id || item.relatedIds.includes(activeId) ? themePalette.accent : themePalette.borderSubtle,
-                    background: activeId === item.id || item.relatedIds.includes(activeId) ? themePalette.accentSoft : themePalette.surfacePanelElevated
-                  }}
-                >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <OverlayChip themePalette={themePalette}>{item.kindLabel}</OverlayChip>
-                    <OverlayChip themePalette={themePalette}>{item.statusLabel}</OverlayChip>
-                    <OverlayChip themePalette={themePalette}>{item.lastSeenLabel}</OverlayChip>
-                  </div>
-                  <div className="mt-2 min-w-0 text-sm font-semibold leading-5 text-white [overflow-wrap:anywhere]">{item.title}</div>
-                  <div className="mt-1 min-w-0 text-[0.72rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
-                    {item.corridorLabel}
-                  </div>
-                  <div className="mt-2 grid grid-cols-1 gap-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
-                    <span className="[overflow-wrap:anywhere]">{item.etaLabel}</span>
-                    <span className="[overflow-wrap:anywhere]">{item.sourceLabel}</span>
-                    <span className="[overflow-wrap:anywhere]">{item.confidenceLabel}</span>
-                    <span className="[overflow-wrap:anywhere]">{item.disclosureLabel}</span>
-                  </div>
-                </button>
+            <div className="mt-4 space-y-4">
+              {getLiveLogisticsLanes(liveLogistics).map((lane) => (
+                <LiveLogisticsLaneSection
+                  key={lane.id}
+                  activeId={activeId}
+                  lane={lane}
+                  onSelect={onSelect}
+                  themePalette={themePalette}
+                />
               ))}
             </div>
           </section>
@@ -319,6 +304,102 @@ export function MapInboxPanel({
         </section>
       </div>
     </aside>
+  );
+}
+
+function getLiveLogisticsLanes(liveLogistics: LiveLogisticsViewModel): LiveLogisticsLaneViewModel[] {
+  const lanes = liveLogistics.lanes ?? [];
+
+  if (lanes.length > 0) {
+    return lanes;
+  }
+
+  return [
+    {
+      id: "maritime",
+      items: liveLogistics.items,
+      subtitle: liveLogistics.subtitle,
+      title: "物流シグナル"
+    }
+  ];
+}
+
+function LiveLogisticsLaneSection({
+  activeId,
+  lane,
+  onSelect,
+  themePalette
+}: {
+  activeId: string;
+  lane: LiveLogisticsLaneViewModel;
+  onSelect: (id: string) => void;
+  themePalette: ThemePalette;
+}) {
+  return (
+    <section className="border-t pt-3 first:border-t-0 first:pt-0" style={{ borderColor: themePalette.borderSubtle }}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[0.72rem] font-semibold leading-5 text-white [overflow-wrap:anywhere]">{lane.title}</div>
+          <p className="mt-0.5 text-[0.66rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
+            {lane.subtitle}
+          </p>
+        </div>
+        <PaneBadge themePalette={themePalette}>{lane.items.length}件</PaneBadge>
+      </div>
+      <div className="mt-2 space-y-2">
+        {lane.items.map((item) => (
+          <LiveLogisticsItemButton
+            key={item.id}
+            activeId={activeId}
+            item={item}
+            onSelect={onSelect}
+            themePalette={themePalette}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function LiveLogisticsItemButton({
+  activeId,
+  item,
+  onSelect,
+  themePalette
+}: {
+  activeId: string;
+  item: LiveLogisticsItemViewModel;
+  onSelect: (id: string) => void;
+  themePalette: ThemePalette;
+}) {
+  const isActive = activeId === item.id || item.relatedIds.includes(activeId);
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(item.relatedIds[0] ?? item.id)}
+      className="w-full rounded-lg border px-3 py-3 text-left transition hover:border-slate-300/40"
+      style={{
+        borderColor: isActive ? themePalette.accent : themePalette.borderSubtle,
+        background: isActive ? themePalette.accentSoft : themePalette.surfacePanelElevated
+      }}
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <OverlayChip themePalette={themePalette}>{item.kindLabel}</OverlayChip>
+        <OverlayChip themePalette={themePalette}>{item.statusLabel}</OverlayChip>
+        <OverlayChip themePalette={themePalette}>{item.lastSeenLabel}</OverlayChip>
+      </div>
+      <div className="mt-2 min-w-0 text-sm font-semibold leading-5 text-white [overflow-wrap:anywhere]">{item.title}</div>
+      <div className="mt-1 min-w-0 text-[0.72rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
+        {item.corridorLabel}
+      </div>
+      <div className="mt-2 grid grid-cols-1 gap-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+        <span className="[overflow-wrap:anywhere]">{item.etaLabel}</span>
+        <span className="[overflow-wrap:anywhere]">{item.sourceLabel}</span>
+        <span className="[overflow-wrap:anywhere]">{item.confidenceLabel}</span>
+        <span className="[overflow-wrap:anywhere]">{item.disclosureLabel}</span>
+      </div>
+    </button>
   );
 }
 

@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import type { LiveLogisticsEvent } from "../../../types/logistics";
 import { buildLiveLogisticsView } from "../live-logistics";
 
-const events: LiveLogisticsEvent[] = [
+const events: Array<LiveLogisticsEvent & { laneId: "maritime" | "domestic" }> = [
   {
     id: "live-logistics:tanker-qatar-tokyo-bay",
     themeIds: ["logistics", "energy"],
@@ -18,6 +18,7 @@ const events: LiveLogisticsEvent[] = [
     corridorLabel: "Hormuz → Malacca → Yokohama/Sodegaura",
     pointIds: ["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng"],
     relatedIds: ["flow:japan-linked-maritime-watch"],
+    laneId: "maritime",
     signalTone: "watch",
     priority: 98
   },
@@ -35,6 +36,7 @@ const events: LiveLogisticsEvent[] = [
     corridorLabel: "Yokohama → Keihin/Sodegaura → Tokyo",
     pointIds: ["port:yokohama", "refinery:keihin", "terminal:sodegaura-lng", "prefecture:tokyo"],
     relatedIds: ["flow:japan-linked-maritime-watch"],
+    laneId: "domestic",
     signalTone: "monitoring",
     priority: 94
   }
@@ -47,6 +49,9 @@ describe("live logistics view", () => {
     expect(view?.title).toBe("LIVE LOGISTICS");
     expect(view?.disclosureLabel).toContain("route-level only");
     expect(view?.items.map((item) => item.kindLabel)).toEqual(["AIS tanker", "Domestic logistics"]);
+    expect(view?.lanes.map((lane) => lane.title)).toEqual(["海上 / タンカー", "国内物流"]);
+    expect(view?.lanes[0].items.map((item) => item.kindLabel)).toEqual(["AIS tanker"]);
+    expect(view?.lanes[1].items.map((item) => item.kindLabel)).toEqual(["Domestic logistics"]);
     expect(view?.items[0].sourceLabel).toBe("AIS provider fixture");
     expect(view?.mapRoutes[0]).toMatchObject({
       id: "live-logistics:tanker-qatar-tokyo-bay",
