@@ -247,9 +247,19 @@ function buildLiveVessels(liveLogistics: LiveLogisticsViewModel | null | undefin
     lat: vessel.lat,
     lon: vessel.lon,
     metaLabel: `${vessel.etaLabel} / ${vessel.lastSeenLabel}`,
-    selectionId: vessel.relatedIds.find((id) => !id.startsWith("live-logistics:")) ?? vessel.relatedIds[0] ?? vessel.id,
+    selectionId: resolveLiveVesselSelectionId(vessel),
     tone: "watch"
   }));
+}
+
+function resolveLiveVesselSelectionId(
+  vessel: LiveLogisticsViewModel["mapVessels"][number]
+) {
+  return (
+    vessel.selectionId
+    ?? vessel.relatedIds.find((id) => id.startsWith("live-logistics:"))
+    ?? (vessel.id.startsWith("live-vessel:") ? vessel.id.replace("live-vessel:", "live-logistics:") : vessel.id)
+  );
 }
 
 function buildForeignWindow(

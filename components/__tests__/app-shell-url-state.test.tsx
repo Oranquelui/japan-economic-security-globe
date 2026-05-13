@@ -82,6 +82,7 @@ vi.mock("../JapanMainMap", () => ({
     activeId: string;
     detailPopup?: {
       detail: { label: string };
+      anchor?: { placement: string; x: number; y: number } | null;
       rankingExplanation?: { rankLabel?: string } | null;
     } | null;
     focusTargetId: string | null;
@@ -93,6 +94,7 @@ vi.mock("../JapanMainMap", () => ({
       data-testid="map"
       data-active={activeId}
       data-detail-popup={detailPopup?.detail.label ?? ""}
+      data-popup-anchor={detailPopup?.anchor ? `${detailPopup.anchor.placement}:${detailPopup.anchor.x}:${detailPopup.anchor.y}` : ""}
       data-focus={focusTargetId ?? ""}
       data-live-routes={model?.liveRoutes?.length ?? 0}
       data-mode={mapMode}
@@ -361,6 +363,40 @@ describe("AppShell url sync", () => {
 
     expect(screen.getAllByTestId("inbox-live-logistics").map((element) => element.getAttribute("data-count"))).toEqual(["1", "1"]);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-live-routes")).toBe("1");
+  });
+
+  test("keeps an individual live tanker selection and maps it to a tanker detail popup", () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        initialUrlState={{
+          themeId: "logistics",
+          mapMode: "route",
+          selectedId: "live-logistics:tanker-qatar-tokyo-bay"
+        }}
+        liveLogisticsEvents={[
+          {
+            id: "live-logistics:tanker-qatar-tokyo-bay",
+            themeIds: ["logistics", "energy"],
+            title: "Tanker corridor: Hormuz → Malacca → Tokyo Bay",
+            kindLabel: "AIS tanker",
+            statusLabel: "Underway",
+            lastSeenAt: "2026-05-11T00:00:00.000Z",
+            etaLabel: "ETA 42h",
+            sourceLabel: "AIS provider fixture",
+            disclosureLabel: "15-60分遅延 / aggregated vessel signal",
+            confidenceLabel: "集約信号",
+            corridorLabel: "Hormuz → Malacca → Yokohama/Sodegaura",
+            pointIds: ["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng"],
+            relatedIds: ["flow:japan-linked-maritime-watch"],
+            signalTone: "watch"
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("live-logistics:tanker-qatar-tokyo-bay");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("Tanker corridor: Hormuz → Malacca → Tokyo Bay");
   });
 
   test("replaces the URL when theme, map mode, and selection change", async () => {

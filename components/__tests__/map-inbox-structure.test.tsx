@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { MapInboxPanel } from "../MapInboxPanel";
@@ -295,5 +295,27 @@ describe("map inbox structure", () => {
     expect(text).toContain("xROAD / Cyber Port fixture");
     expect(text.indexOf("日本向けタンカー")).toBeLessThan(text.indexOf("国内接続"));
     expect(text.indexOf("JAPAN-BOUND TANKER WATCH")).toBeLessThan(text.indexOf("近接監視"));
+  });
+
+  test("selects an individual live tanker item instead of collapsing to the shared maritime flow", () => {
+    const onSelect = vi.fn();
+
+    render(
+      <MapInboxPanel
+        activeId="flow:japan-linked-maritime-watch"
+        liveLogistics={liveLogistics as never}
+        onQueryChange={vi.fn()}
+        onSelect={onSelect}
+        query=""
+        rows={[]}
+        themeId="logistics"
+        themeLabel="物流"
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    fireEvent.click(screen.getByText("Tanker corridor: Hormuz → Malacca → Tokyo Bay"));
+
+    expect(onSelect).toHaveBeenCalledWith("live-logistics:tanker-qatar-tokyo-bay");
   });
 });

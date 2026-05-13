@@ -378,7 +378,7 @@ function LiveLogisticsItemButton({
   return (
     <button
       type="button"
-      onClick={() => onSelect(item.relatedIds[0] ?? item.id)}
+      onClick={() => onSelect(item.id)}
       className="w-full rounded-lg border px-3 py-3 text-left transition hover:border-slate-300/40"
       style={{
         borderColor: isActive ? themePalette.accent : themePalette.borderSubtle,

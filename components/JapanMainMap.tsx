@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 
 import type { JapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import type { OperationMapMode } from "../lib/presentation/operations";
 import type { RankingExplanationViewModel } from "../lib/ranking/explain";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
-import type { DetailViewModel } from "../types/presentation";
+import type { DetailViewModel, MapPopupAnchor } from "../types/presentation";
 import type { WatchOverlayItemViewModel } from "../lib/presentation/watch-overlays";
 import { JapanOperationsMapCanvas } from "./JapanOperationsMapCanvas";
 import { MapDetailPopup } from "./MapDetailPopup";
@@ -14,6 +14,7 @@ import { MapDetailPopup } from "./MapDetailPopup";
 interface JapanMainMapProps {
   activeId: string;
   detailPopup?: {
+    anchor?: MapPopupAnchor | null;
     detail: DetailViewModel;
     rankingExplanation?: RankingExplanationViewModel | null;
     routeStatusLabel?: string | null;
@@ -29,7 +30,7 @@ interface JapanMainMapProps {
     top: number;
   };
   onCloseDetail?: () => void;
-  onSelect: (id: string) => void;
+  onSelect: (id: string, anchor?: MapPopupAnchor) => void;
   statusPalette: StatusPalette;
   themePalette: ThemePalette;
   watchOverlays?: WatchOverlayItemViewModel[];
@@ -180,11 +181,10 @@ export function JapanMainMap({
             />
           </div>
           <div
+            data-testid="map-detail-popup-anchor"
+            data-placement={detailPopup.anchor?.placement ?? "fixed"}
             className="absolute z-30 hidden w-[23rem] lg:block"
-            style={{
-              right: overlayInsets.right,
-              top: overlayInsets.top
-            }}
+            style={getDesktopPopupStyle(detailPopup.anchor ?? null, overlayInsets)}
           >
             <MapDetailPopup
               detail={detailPopup.detail}
@@ -201,6 +201,24 @@ export function JapanMainMap({
       ) : null}
     </section>
   );
+}
+
+function getDesktopPopupStyle(
+  anchor: MapPopupAnchor | null,
+  overlayInsets: NonNullable<JapanMainMapProps["overlayInsets"]>
+): CSSProperties {
+  if (!anchor) {
+    return {
+      right: overlayInsets.right,
+      top: overlayInsets.top
+    };
+  }
+
+  return {
+    left: anchor.x,
+    top: `clamp(${overlayInsets.top}px, ${anchor.y}px, calc(100% - ${overlayInsets.bottom}px))`,
+    transform: anchor.placement === "right" ? "translate(16px, -50%)" : "translate(calc(-100% - 16px), -50%)"
+  };
 }
 
 function MapControlButton({ ariaLabel, label, onClick }: { ariaLabel: string; label: string; onClick: () => void }) {

@@ -5,12 +5,13 @@ import { usePathname, useRouter } from "next/navigation";
 
 import type { HomepageMode } from "../lib/config/homepage-mode";
 import type { LiveLogisticsEvent } from "../types/logistics";
-import type { ThemeView } from "../types/presentation";
+import type { MapPopupAnchor, ThemeView } from "../types/presentation";
 import type { RankingSignal } from "../types/ranking";
 import { THEME_IDS, type SemanticGraph, type ThemeId } from "../types/semantic";
 import { buildRankingDecision } from "../lib/ranking/decision";
 import { getDetailView } from "../lib/semantic/detail";
 import { buildJapanMapCanvasModel } from "../lib/presentation/map-canvas";
+import { buildLiveLogisticsDetail } from "../lib/presentation/live-logistics-detail";
 import { buildLiveLogisticsView } from "../lib/presentation/live-logistics";
 import { getThemeView } from "../lib/semantic/selectors";
 import { buildOperationRows, filterOperationRows, type OperationMapMode } from "../lib/presentation/operations";
@@ -79,6 +80,7 @@ export function AppShell({
   };
   const [themeId, setThemeId] = useState<ThemeId>(resolvedInitialState.themeId);
   const [selectedId, setSelectedId] = useState<string | null>(resolvedInitialState.selectedId);
+  const [mapPopupAnchor, setMapPopupAnchor] = useState<MapPopupAnchor | null>(null);
   const [mapMode, setMapMode] = useState<OperationMapMode>(resolvedInitialState.mapMode);
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(true);
@@ -107,8 +109,14 @@ export function AppShell({
     ? buildPresetRailThemeOrder(THEME_IDS, graph, rankingSignals, presetRailDecision)
     : THEME_IDS;
   const filteredOperationRows = filterOperationRows(operationRows, searchQuery);
-  const validSelectedId = resolveSelectableId(view, selectedId);
-  const activeId = resolveActiveId(view, validSelectedId);
+  const preliminaryLiveLogistics = buildLiveLogisticsView(
+    themeId,
+    selectedId,
+    liveLogisticsEvents,
+    new Date(rankingNowRef.current)
+  );
+  const validSelectedId = resolveSelectableId(view, preliminaryLiveLogistics, selectedId);
+  const activeId = resolveActiveId(view, preliminaryLiveLogistics, validSelectedId);
   const rankingExplanation = inboxDecision
     ? buildSelectedRankingExplanation(activeId, rankingSignals, inboxDecision, rankingNowRef.current)
     : null;
@@ -117,14 +125,18 @@ export function AppShell({
     : null;
   const watchOverlays = buildWatchOverlayItems(themeId, activeId, new Date(rankingNowRef.current));
   const liveLogistics = buildLiveLogisticsView(themeId, activeId, liveLogisticsEvents, new Date(rankingNowRef.current));
+  const liveLogisticsDetailItem = liveLogistics?.items.find((item) => item.id === activeId) ?? null;
   const focusTargetId = validSelectedId;
-  const detail = getDetailView(graph, activeId);
+  const detail = liveLogisticsDetailItem
+    ? buildLiveLogisticsDetail(graph, liveLogisticsDetailItem)
+    : getDetailView(graph, activeId);
   const routeStatus = getRouteStatus(detail);
   const mapModel = buildJapanMapCanvasModel(graph, view, activeId, liveLogistics);
   const mapDetailPopup = validSelectedId
     ? {
         detail,
-        rankingExplanation,
+        anchor: mapPopupAnchor,
+        rankingExplanation: liveLogisticsDetailItem ? null : rankingExplanation,
         routeStatusLabel: routeStatus?.chipLabel ?? null,
         themeTitle: view.title
       }
@@ -182,8 +194,24 @@ export function AppShell({
     startTransition(() => {
       setThemeId(nextThemeId);
       setSelectedId(null);
+      setMapPopupAnchor(null);
       setSearchQuery("");
     });
+  }
+
+  function handleSelect(nextSelectedId: string) {
+    setSelectedId(nextSelectedId);
+    setMapPopupAnchor(null);
+  }
+
+  function handleMapSelect(nextSelectedId: string, anchor?: MapPopupAnchor) {
+    setSelectedId(nextSelectedId);
+    setMapPopupAnchor(anchor ?? null);
+  }
+
+  function handleCloseDetail() {
+    setSelectedId(null);
+    setMapPopupAnchor(null);
   }
 
   return (
@@ -213,8 +241,8 @@ export function AppShell({
               mapMode={mapMode}
               model={mapModel}
               overlayInsets={mapOverlayInsets}
-              onCloseDetail={() => setSelectedId(null)}
-              onSelect={setSelectedId}
+              onCloseDetail={handleCloseDetail}
+              onSelect={handleMapSelect}
               statusPalette={statusPalette}
               themePalette={themePalette}
             />
@@ -256,7 +284,7 @@ export function AppShell({
                 activeId={activeId}
                 briefing={watchboardBriefing}
                 onQueryChange={setSearchQuery}
-                onSelect={setSelectedId}
+                onSelect={handleSelect}
                 query={searchQuery}
                 rows={filteredOperationRows}
                 liveLogistics={liveLogistics}
@@ -280,7 +308,7 @@ export function AppShell({
             <OperationsSignalTable
               activeId={activeId}
               collapsed={!isCompareOpen}
-              onSelect={setSelectedId}
+              onSelect={handleSelect}
               query={searchQuery}
               rows={filteredOperationRows}
               statusPalette={statusPalette}
@@ -309,8 +337,8 @@ export function AppShell({
                 right: 16,
                 bottom: 16
               }}
-              onCloseDetail={() => setSelectedId(null)}
-              onSelect={setSelectedId}
+              onCloseDetail={handleCloseDetail}
+              onSelect={handleMapSelect}
               statusPalette={statusPalette}
               themePalette={themePalette}
               watchOverlays={watchOverlays}
@@ -349,7 +377,7 @@ export function AppShell({
           <MapInboxPanel
             activeId={activeId}
             onQueryChange={setSearchQuery}
-            onSelect={setSelectedId}
+            onSelect={handleSelect}
             query={searchQuery}
             rows={filteredOperationRows}
             liveLogistics={liveLogistics}
@@ -362,7 +390,7 @@ export function AppShell({
             activeId={activeId}
             collapsed={false}
             collapsible={false}
-            onSelect={setSelectedId}
+            onSelect={handleSelect}
             query={searchQuery}
             rows={filteredOperationRows}
             statusPalette={statusPalette}
@@ -375,12 +403,12 @@ export function AppShell({
   );
 }
 
-function resolveActiveId(view: ThemeView, selectedId: string | null): string {
-  const candidateIds = new Set([
-    ...view.flows.map((flow) => flow.id),
-    ...view.observations.map((observation) => observation.id),
-    ...view.entities.map((entity) => entity.id)
-  ]);
+function resolveActiveId(
+  view: ThemeView,
+  liveLogistics: ReturnType<typeof buildLiveLogisticsView>,
+  selectedId: string | null
+): string {
+  const candidateIds = getSelectableIds(view, liveLogistics);
 
   if (selectedId && candidateIds.has(selectedId)) {
     return selectedId;
@@ -389,16 +417,25 @@ function resolveActiveId(view: ThemeView, selectedId: string | null): string {
   return view.flows[0]?.id ?? view.observations[0]?.id ?? view.entities[0]?.id ?? "country:japan";
 }
 
-function resolveSelectableId(view: ThemeView, selectedId: string | null) {
-  const candidateIds = new Set([
-    ...view.flows.map((flow) => flow.id),
-    ...view.observations.map((observation) => observation.id),
-    ...view.entities.map((entity) => entity.id)
-  ]);
+function resolveSelectableId(
+  view: ThemeView,
+  liveLogistics: ReturnType<typeof buildLiveLogisticsView>,
+  selectedId: string | null
+) {
+  const candidateIds = getSelectableIds(view, liveLogistics);
 
   if (selectedId && candidateIds.has(selectedId)) {
     return selectedId;
   }
 
   return null;
+}
+
+function getSelectableIds(view: ThemeView, liveLogistics: ReturnType<typeof buildLiveLogisticsView>) {
+  return new Set([
+    ...view.flows.map((flow) => flow.id),
+    ...view.observations.map((observation) => observation.id),
+    ...view.entities.map((entity) => entity.id),
+    ...(liveLogistics?.items.map((item) => item.id) ?? [])
+  ]);
 }
