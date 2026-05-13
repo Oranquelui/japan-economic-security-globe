@@ -9,6 +9,7 @@ import type { JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
 
 const addedLayers: Array<Record<string, unknown>> = [];
 const addedSources = new Map<string, unknown>();
+const registeredLayerHandlers = new Map<string, (...args: any[]) => void>();
 let lastMap: {
   fitBounds: ReturnType<typeof vi.fn>;
 } | null = null;
@@ -46,9 +47,13 @@ vi.mock("maplibre-gl", () => {
       lastMap = this;
     }
 
-    on = vi.fn((event: string, handler: (...args: unknown[]) => void) => {
-      if (event === "load") {
-        handler();
+    on = vi.fn((event: string, layerOrHandler: string | ((...args: unknown[]) => void), handler?: (...args: any[]) => void) => {
+      if (event === "load" && typeof layerOrHandler === "function") {
+        layerOrHandler();
+      }
+
+      if (typeof layerOrHandler === "string" && handler) {
+        registeredLayerHandlers.set(`${event}:${layerOrHandler}`, handler);
       }
     });
   }
@@ -67,6 +72,7 @@ afterEach(() => {
   cleanup();
   addedLayers.length = 0;
   addedSources.clear();
+  registeredLayerHandlers.clear();
   lastMap = null;
   mapCanvasSize = { width: 1024, height: 720 };
 });
@@ -270,14 +276,14 @@ describe("map canvas layer config", () => {
     expect(pulseLayer.paint["line-color"]).toBe(getStatusPalette().monitoring);
     expect(labelLayer).toBeTruthy();
     expect(liveRoutes.features[0].properties.id).toBe("live-logistics:tanker-saudi-tokyo-bay");
-    expect(liveRoutes.features[0].properties.selectionId).toBe("flow:saudi-oil-japan");
+    expect(liveRoutes.features[0].properties.selectionId).toBe("live-logistics:tanker-saudi-tokyo-bay");
     expect(liveRoutes.features[0].properties.selected).toBe(true);
   });
 
-  test("adds live tanker position markers that select the related maritime watch detail", async () => {
+  test("adds live tanker position markers that select the individual tanker item", async () => {
     render(
       <JapanOperationsMapCanvas
-        activeId="flow:japan-linked-maritime-watch"
+        activeId="live-logistics:tanker-qatar-tokyo-bay"
         focusTargetId={null}
         mapMode="route"
         model={
@@ -290,7 +296,7 @@ describe("map canvas layer config", () => {
                 label: "AIS tanker 042",
                 lat: 12.4,
                 lon: 110.8,
-                selectionId: "flow:japan-linked-maritime-watch",
+                selectionId: "live-logistics:tanker-qatar-tokyo-bay",
                 tone: "watch"
               }
             ]
@@ -320,8 +326,56 @@ describe("map canvas layer config", () => {
       id: "live-vessel:tanker-qatar-tokyo-bay",
       kind: "Japan-bound tanker",
       label: "AIS tanker 042",
-      selectionId: "flow:japan-linked-maritime-watch",
+      selectionId: "live-logistics:tanker-qatar-tokyo-bay",
       selected: true
+    });
+  });
+
+  test("passes a popup anchor when a live tanker marker is clicked", async () => {
+    const onSelect = vi.fn();
+
+    render(
+      <JapanOperationsMapCanvas
+        activeId="live-logistics:tanker-qatar-tokyo-bay"
+        focusTargetId={null}
+        mapMode="route"
+        model={
+          {
+            ...model,
+            liveVessels: [
+              {
+                id: "live-vessel:tanker-qatar-tokyo-bay",
+                kind: "Japan-bound tanker",
+                label: "AIS tanker 042",
+                lat: 12.4,
+                lon: 110.8,
+                selectionId: "live-logistics:tanker-qatar-tokyo-bay",
+                tone: "watch"
+              }
+            ]
+          } as JapanMapCanvasModel
+        }
+        onSelect={onSelect}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(registeredLayerHandlers.has("click:live-vessel-halo")).toBe(true);
+      expect(registeredLayerHandlers.has("click:live-vessel-label")).toBe(true);
+      expect(registeredLayerHandlers.has("click:live-vessel-marker")).toBe(true);
+    });
+
+    registeredLayerHandlers.get("click:live-vessel-halo")?.({
+      features: [{ properties: { selectionId: "live-logistics:tanker-qatar-tokyo-bay" } }],
+      point: { x: 900, y: 280 }
+    });
+
+    expect(onSelect).toHaveBeenCalledWith("live-logistics:tanker-qatar-tokyo-bay", {
+      placement: "left",
+      x: 900,
+      y: 280
     });
   });
 

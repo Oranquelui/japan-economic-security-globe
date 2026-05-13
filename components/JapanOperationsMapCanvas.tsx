@@ -5,6 +5,7 @@ import { useEffect, useEffectEvent, useRef } from "react";
 import type { OperationMapMode } from "../lib/presentation/operations";
 import type { JapanMapCanvasModel, JapanMapPoint, JapanMapRegion, JapanMapRoute } from "../lib/presentation/map-canvas";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
+import type { MapPopupAnchor } from "../types/presentation";
 import { buildOperationsBasemapStyle } from "../lib/presentation/basemap-style";
 
 interface JapanOperationsMapCanvasProps {
@@ -16,7 +17,7 @@ interface JapanOperationsMapCanvasProps {
   focusTargetId: string | null;
   mapMode: OperationMapMode;
   model: JapanMapCanvasModel;
-  onSelect: (id: string) => void;
+  onSelect: (id: string, anchor?: MapPopupAnchor) => void;
   statusPalette: StatusPalette;
   themePalette: ThemePalette;
 }
@@ -468,7 +469,7 @@ export function JapanOperationsMapCanvas({
           }
         });
 
-        for (const layerId of ["jp-point-circle", "jp-route-line", "jp-region-fill", "jp-cluster-circle", "global-point-circle", "global-route-line", "live-logistics-route-pulse", "live-vessel-marker"]) {
+        for (const layerId of ["jp-point-circle", "jp-route-line", "jp-region-fill", "jp-cluster-circle", "global-point-circle", "global-route-line", "live-logistics-route-pulse", "live-logistics-route-label", "live-vessel-halo", "live-vessel-marker", "live-vessel-label"]) {
           map.on("mouseenter", layerId, () => {
             map.getCanvas().style.cursor = "pointer";
           });
@@ -477,13 +478,16 @@ export function JapanOperationsMapCanvas({
           });
         }
 
-        map.on("click", "jp-point-circle", (event: any) => selectFeatureId(event, handleSelect));
-        map.on("click", "jp-route-line", (event: any) => selectFeatureId(event, handleSelect));
-        map.on("click", "jp-region-fill", (event: any) => selectFeatureId(event, handleSelect));
-        map.on("click", "global-point-circle", (event: any) => selectFeatureId(event, handleSelect));
-        map.on("click", "global-route-line", (event: any) => selectFeatureId(event, handleSelect));
-        map.on("click", "live-logistics-route-pulse", (event: any) => selectFeatureId(event, handleSelect));
-        map.on("click", "live-vessel-marker", (event: any) => selectFeatureId(event, handleSelect));
+        map.on("click", "jp-point-circle", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "jp-route-line", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "jp-region-fill", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "global-point-circle", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "global-route-line", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "live-logistics-route-pulse", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "live-logistics-route-label", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "live-vessel-halo", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "live-vessel-marker", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "live-vessel-label", (event: any) => selectFeatureId(event, handleSelect, map));
 
         map.on("click", "jp-cluster-circle", async (event: any) => {
           const feature = event.features?.[0];
@@ -624,7 +628,7 @@ export function JapanOperationsMapCanvas({
   useEffect(() => {
     const map = mapRef.current;
 
-    if (!map || !map.isStyleLoaded() || !focusTargetId) {
+    if (!map || !focusTargetId) {
       return;
     }
 
@@ -794,13 +798,31 @@ function getDomesticRoutePaint(themePalette: ThemePalette, statusPalette: Status
   };
 }
 
-function selectFeatureId(event: any, onSelect: (id: string) => void) {
+function selectFeatureId(event: any, onSelect: (id: string, anchor?: MapPopupAnchor) => void, map: any) {
   const feature = event.features?.[0];
   const id = feature?.properties?.selectionId ?? feature?.properties?.id;
 
   if (id) {
-    onSelect(id);
+    onSelect(id, resolveSelectionAnchor(event, map));
   }
+}
+
+function resolveSelectionAnchor(event: any, map: any): MapPopupAnchor | undefined {
+  const x = typeof event?.point?.x === "number" ? Math.round(event.point.x) : null;
+  const y = typeof event?.point?.y === "number" ? Math.round(event.point.y) : null;
+
+  if (x === null || y === null) {
+    return undefined;
+  }
+
+  const canvas = typeof map?.getCanvas === "function" ? map.getCanvas() : null;
+  const width = getCanvasDimension(canvas?.clientWidth, canvas?.width, 1024);
+
+  return {
+    placement: x > width * 0.64 ? "left" : "right",
+    x,
+    y
+  };
 }
 
 function pointsToFeatureCollection(points: JapanMapPoint[], activeId?: string) {
@@ -883,11 +905,7 @@ function regionsToFeatureCollection(regions: JapanMapRegion[], activeId: string)
 }
 
 function resolveRouteSelectionId(route: JapanMapRoute) {
-  if (!route.id.startsWith("live-logistics:")) {
-    return route.id;
-  }
-
-  return route.relatedIds.find((id) => !id.startsWith("live-logistics:")) ?? route.relatedIds[0] ?? route.id;
+  return route.id;
 }
 
 function createCirclePolygon(lon: number, lat: number, radiusKm: number) {
@@ -950,9 +968,16 @@ function focusMapOnSelection(
   const activeRegion = model.regions.find((region) => region.id === activeId);
   const activeGlobalRoute = model.globalRoutes.find((route) => routeMatchesSelection(route, activeId));
   const activeGlobalPoint = model.globalPoints.find((point) => point.id === activeId);
+  const activeLiveRoute = model.liveRoutes?.find((route) => routeMatchesSelection(route, activeId));
+  const activeLiveVessel = model.liveVessels?.find((point) => point.id === activeId || point.selectionId === activeId);
   const globalRoutePoints = activeGlobalRoute
     ? activeGlobalRoute.pointIds
         .map((pointId) => model.globalPoints.find((point) => point.id === pointId))
+        .filter((point): point is JapanMapPoint => Boolean(point))
+    : [];
+  const liveRoutePoints = activeLiveRoute
+    ? activeLiveRoute.pointIds
+        .map((pointId) => model.livePoints?.find((point) => point.id === pointId))
         .filter((point): point is JapanMapPoint => Boolean(point))
     : [];
   const domesticRoutePoints = activeRoute
@@ -960,15 +985,17 @@ function focusMapOnSelection(
         .map((pointId) => model.points.find((point) => point.id === pointId))
         .filter((point): point is JapanMapPoint => Boolean(point))
     : [];
-  const prefersGlobalRoute = mapMode === "route" && Boolean(activeGlobalRoute);
+  const prefersGlobalRoute = mapMode === "route" && Boolean(activeGlobalRoute || activeLiveRoute || activeLiveVessel);
   const prefersGlobal = Boolean(
     prefersGlobalRoute ||
-      (!activeRoute && !activePoint && !activeRegion && (activeGlobalRoute || activeGlobalPoint)) ||
+      (!activeRoute && !activePoint && !activeRegion && (activeGlobalRoute || activeGlobalPoint || activeLiveRoute || activeLiveVessel)) ||
       currentZoom <= GLOBAL_CONTEXT_MAX_ZOOM + 0.15
   );
 
-  const focusPoints = prefersGlobal
-    ? resolveGlobalFocusPoints(model, activeGlobalPoint, globalRoutePoints)
+  const focusPoints = liveRoutePoints.length > 0 || activeLiveVessel
+    ? resolveLiveFocusPoints(model, activeLiveVessel, liveRoutePoints)
+    : prefersGlobal
+      ? resolveGlobalFocusPoints(model, activeGlobalPoint, globalRoutePoints)
     : resolveDomesticFocusPoints(model, activePoint, activeRegion, domesticRoutePoints);
 
   if (focusPoints.length === 0) {
@@ -1058,4 +1085,20 @@ function resolveGlobalFocusPoints(
   }
 
   return model.globalPoints;
+}
+
+function resolveLiveFocusPoints(
+  model: JapanMapCanvasModel,
+  activeLiveVessel?: JapanMapPoint,
+  routePoints: JapanMapPoint[] = []
+) {
+  if (routePoints.length > 0) {
+    return activeLiveVessel ? [...routePoints, activeLiveVessel] : routePoints;
+  }
+
+  if (activeLiveVessel) {
+    return [activeLiveVessel];
+  }
+
+  return [...(model.livePoints ?? []), ...(model.liveVessels ?? [])];
 }

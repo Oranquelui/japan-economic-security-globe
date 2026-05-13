@@ -125,7 +125,7 @@ describe("japan map canvas model", () => {
         label: "AIS tanker 042",
         lat: 12.4,
         lon: 110.8,
-        selectionId: "flow:japan-linked-maritime-watch"
+        selectionId: "live-logistics:tanker-qatar-tokyo-bay"
       })
     ]);
   });

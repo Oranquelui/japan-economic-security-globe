@@ -63,7 +63,8 @@ export function buildLiveLogisticsView(
         label: item.currentPosition?.label ?? item.kindLabel,
         lat: item.currentPosition!.lat,
         lon: item.currentPosition!.lon,
-        relatedIds: item.relatedIds,
+        relatedIds: [item.id, ...item.relatedIds],
+        selectionId: item.id,
         etaLabel: item.etaLabel,
         lastSeenLabel: item.lastSeenLabel
       })),

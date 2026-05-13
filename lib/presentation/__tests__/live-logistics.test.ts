@@ -64,7 +64,8 @@ describe("live logistics view", () => {
         label: "AIS tanker 042",
         lat: 12.4,
         lon: 110.8,
-        relatedIds: ["flow:japan-linked-maritime-watch"],
+        relatedIds: ["live-logistics:tanker-qatar-tokyo-bay", "flow:japan-linked-maritime-watch"],
+        selectionId: "live-logistics:tanker-qatar-tokyo-bay",
         etaLabel: "ETA 42h",
         lastSeenLabel: "18分前"
       }

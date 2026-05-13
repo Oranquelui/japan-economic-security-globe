@@ -86,3 +86,9 @@ export interface DetailViewModel {
   linkedFlows: DependencyFlow[];
   sparql: SparqlPreviewViewModel;
 }
+
+export interface MapPopupAnchor {
+  placement: "left" | "right";
+  x: number;
+  y: number;
+}

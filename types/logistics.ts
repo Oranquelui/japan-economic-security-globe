@@ -73,6 +73,7 @@ export interface LiveLogisticsMapVessel {
   lat: number;
   lon: number;
   relatedIds: string[];
+  selectionId: string;
 }
 
 export interface LiveLogisticsViewModel {
