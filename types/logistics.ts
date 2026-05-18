@@ -1,7 +1,7 @@
 import type { ThemeId } from "./semantic";
 
 export type LiveLogisticsSignalTone = "high" | "watch" | "monitoring" | "normal";
-export type LiveLogisticsLaneId = "maritime" | "domestic";
+export type LiveLogisticsLaneId = "road" | "rail" | "coastal" | "air" | "maritime" | "domestic";
 
 export interface LiveLogisticsEvent {
   confidenceLabel: string;

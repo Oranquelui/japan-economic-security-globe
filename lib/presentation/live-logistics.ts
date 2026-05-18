@@ -13,14 +13,34 @@ const LIVE_LOGISTICS_LANES: Array<{
   title: string;
 }> = [
   {
-    id: "maritime",
-    subtitle: "AIS・衛星AIS・港湾ETAを海側の捕捉として扱う。",
-    title: "日本向けタンカー"
+    id: "road",
+    subtitle: "高速道路・港湾後背地・トラック配送を国内物流の主レイヤーとして扱う。",
+    title: "陸路・トラック"
+  },
+  {
+    id: "rail",
+    subtitle: "主要貨物幹線と代替輸送力を corridor-level で見る。",
+    title: "鉄道貨物"
+  },
+  {
+    id: "coastal",
+    subtitle: "内航海運と港湾後続を、外航船の捕捉とは分けて見る。",
+    title: "内航海運・港湾後続"
+  },
+  {
+    id: "air",
+    subtitle: "航空貨物・緊急配送・高付加価値品の国内空路を route-level で見る。",
+    title: "航空貨物"
   },
   {
     id: "domestic",
-    subtitle: "港から首都圏の燃料・物流接続を分離。",
-    title: "国内接続"
+    subtitle: "複数モードにまたがる国内接続をまとめて見る。",
+    title: "国内接続（複合）"
+  },
+  {
+    id: "maritime",
+    subtitle: "外航AIS・海峡・港湾ETAは、国内モードへ入る前段の補助線として扱う。",
+    title: "外航海上補助"
   }
 ];
 
@@ -35,6 +55,7 @@ export function buildLiveLogisticsView(
     .map((event) => toViewItem(event, now))
     .toSorted((left, right) => {
       return getActiveScore(right, activeId) - getActiveScore(left, activeId)
+        || getLanePriority(right, themeId) - getLanePriority(left, themeId)
         || right.priority - left.priority
         || left.title.localeCompare(right.title, "ja");
     })
@@ -45,7 +66,7 @@ export function buildLiveLogisticsView(
   }
 
   return {
-    disclosureLabel: "AIS coverage / 15-60分遅延 / provider-gated",
+    disclosureLabel: getSurfaceDisclosureLabel(themeId),
     items,
     lanes: buildLiveLogisticsLanes(items),
     mapRoutes: items
@@ -68,8 +89,8 @@ export function buildLiveLogisticsView(
         etaLabel: item.etaLabel,
         lastSeenLabel: item.lastSeenLabel
       })),
-    subtitle: "日本に向かうタンカー捕捉と港湾後続を分けて監視",
-    title: "JAPAN-BOUND TANKER WATCH",
+    subtitle: getSurfaceSubtitle(themeId),
+    title: getSurfaceTitle(themeId),
     updatedLabel: items[0]?.lastSeenLabel ?? "更新待ち"
   };
 }
@@ -104,7 +125,24 @@ function buildLiveLogisticsLanes(items: LiveLogisticsItemViewModel[]): LiveLogis
 
 function inferLiveLogisticsLane(event: LiveLogisticsEvent): LiveLogisticsLaneId {
   const marker = `${event.id} ${event.kindLabel} ${event.title}`.toLowerCase();
-  return marker.includes("domestic") ? "domestic" : "maritime";
+
+  if (marker.includes("rail") || marker.includes("鉄道")) {
+    return "rail";
+  }
+
+  if (marker.includes("air") || marker.includes("aviation") || marker.includes("空路") || marker.includes("航空")) {
+    return "air";
+  }
+
+  if (marker.includes("coastal") || marker.includes("内航")) {
+    return "coastal";
+  }
+
+  if (marker.includes("road") || marker.includes("truck") || marker.includes("陸路") || marker.includes("道路")) {
+    return "road";
+  }
+
+  return marker.includes("domestic") || marker.includes("国内") ? "domestic" : "maritime";
 }
 
 function getActiveScore(item: LiveLogisticsItemViewModel, activeId: string | null | undefined) {
@@ -113,6 +151,51 @@ function getActiveScore(item: LiveLogisticsItemViewModel, activeId: string | nul
   }
 
   return item.id === activeId || item.relatedIds.includes(activeId) || item.pointIds.includes(activeId) ? 1 : 0;
+}
+
+function getLanePriority(item: LiveLogisticsItemViewModel, themeId: ThemeId) {
+  if (themeId !== "logistics") {
+    return 0;
+  }
+
+  switch (item.laneId) {
+    case "road":
+      return 60;
+    case "rail":
+      return 50;
+    case "coastal":
+      return 40;
+    case "air":
+      return 30;
+    case "domestic":
+      return 20;
+    case "maritime":
+      return 0;
+  }
+}
+
+function getSurfaceDisclosureLabel(themeId: ThemeId) {
+  if (themeId === "logistics") {
+    return "公開系統 / route-level only / 陸路/鉄道/内航/航空 / AIS補助 / 15-60分遅延";
+  }
+
+  return "AIS coverage / 15-60分遅延 / provider-gated";
+}
+
+function getSurfaceSubtitle(themeId: ThemeId) {
+  if (themeId === "logistics") {
+    return "国内物流の着地点と港湾後続を主表示し、道路・鉄道・内航海運・航空を分けて表示する。海上捕捉は補助線として監視";
+  }
+
+  return "外航AIS捕捉と港湾後続を、国内物流の前段補助線として監視";
+}
+
+function getSurfaceTitle(themeId: ThemeId) {
+  if (themeId === "logistics") {
+    return "JAPAN DOMESTIC LOGISTICS WATCH";
+  }
+
+  return "JAPAN MARITIME AIS SUPPORT WATCH";
 }
 
 function getTonePriority(tone: LiveLogisticsItemViewModel["signalTone"]) {

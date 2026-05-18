@@ -292,7 +292,7 @@ describe("map canvas layer config", () => {
             liveVessels: [
               {
                 id: "live-vessel:tanker-qatar-tokyo-bay",
-                kind: "Japan-bound tanker",
+                kind: "AIS supporting context",
                 label: "AIS tanker 042",
                 lat: 12.4,
                 lon: 110.8,
@@ -324,7 +324,7 @@ describe("map canvas layer config", () => {
     expect(labelLayer).toBeTruthy();
     expect(liveVessels.features[0].properties).toMatchObject({
       id: "live-vessel:tanker-qatar-tokyo-bay",
-      kind: "Japan-bound tanker",
+      kind: "AIS supporting context",
       label: "AIS tanker 042",
       selectionId: "live-logistics:tanker-qatar-tokyo-bay",
       selected: true
@@ -345,7 +345,7 @@ describe("map canvas layer config", () => {
             liveVessels: [
               {
                 id: "live-vessel:tanker-qatar-tokyo-bay",
-                kind: "Japan-bound tanker",
+                kind: "AIS supporting context",
                 label: "AIS tanker 042",
                 lat: 12.4,
                 lon: 110.8,

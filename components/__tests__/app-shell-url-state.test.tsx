@@ -201,7 +201,7 @@ describe("AppShell url sync", () => {
 
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByText("MVP/テスト運用中")).toBeTruthy();
-    expect(screen.getByText("更新: 日本向けタンカー監視と地形地図を追加しました")).toBeTruthy();
+    expect(screen.getByText("更新: 国内物流監視と地形地図を追加しました")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "お知らせを閉じる" }));
 
     await waitFor(() => {
@@ -349,7 +349,7 @@ describe("AppShell url sync", () => {
             statusLabel: "Underway",
             lastSeenAt: "2026-05-11T00:00:00.000Z",
             etaLabel: "ETA 42h",
-            sourceLabel: "AIS provider fixture",
+            sourceLabel: "AIS demo fixture (supporting context)",
             disclosureLabel: "15-60分遅延 / aggregated vessel signal",
             confidenceLabel: "集約信号",
             corridorLabel: "Hormuz → Malacca → Yokohama/Sodegaura",
@@ -363,6 +363,61 @@ describe("AppShell url sync", () => {
 
     expect(screen.getAllByTestId("inbox-live-logistics").map((element) => element.getAttribute("data-count"))).toEqual(["1", "1"]);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-live-routes")).toBe("1");
+  });
+
+  test("uses domestic logistics as the default active item when the logistics URL has no selected item", () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "logistics",
+          mapMode: "route",
+          selectedId: null
+        }}
+        liveLogisticsEvents={[
+          {
+            id: "live-logistics:tanker-qatar-tokyo-bay",
+            themeIds: ["logistics", "energy"],
+            title: "Tanker corridor: Hormuz → Malacca → Tokyo Bay",
+            kindLabel: "AIS tanker",
+            laneId: "maritime",
+            statusLabel: "Underway",
+            lastSeenAt: "2026-05-11T00:00:00.000Z",
+            etaLabel: "ETA 42h",
+            sourceLabel: "AIS demo fixture (supporting context)",
+            disclosureLabel: "15-60分遅延 / aggregated vessel signal",
+            confidenceLabel: "集約信号",
+            corridorLabel: "Hormuz → Malacca → Yokohama/Sodegaura",
+            pointIds: ["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng"],
+            relatedIds: ["flow:japan-linked-maritime-watch"],
+            signalTone: "watch",
+            priority: 98
+          },
+          {
+            id: "live-logistics:road-keihin-tokyo",
+            themeIds: ["logistics", "energy"],
+            title: "陸路: 横浜港・京浜 → 首都圏配送",
+            kindLabel: "道路物流",
+            laneId: "road",
+            statusLabel: "接続監視",
+            lastSeenAt: "2026-05-11T00:00:00.000Z",
+            etaLabel: "次回更新 15分",
+            sourceLabel: "Domestic logistics demo fixture (public route-level)",
+            disclosureLabel: "公開系統 / route-level only",
+            confidenceLabel: "デモ / 公開粒度",
+            corridorLabel: "Yokohama → Keihin/Sodegaura → Tokyo",
+            pointIds: ["port:yokohama", "refinery:keihin", "terminal:sodegaura-lng"],
+            relatedIds: ["flow:japan-linked-maritime-watch"],
+            signalTone: "monitoring",
+            priority: 94
+          }
+        ]}
+      />
+    );
+
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("live-logistics:road-keihin-tokyo");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
   });
 
   test("keeps an individual live tanker selection and maps it to a tanker detail popup", () => {
@@ -383,7 +438,7 @@ describe("AppShell url sync", () => {
             statusLabel: "Underway",
             lastSeenAt: "2026-05-11T00:00:00.000Z",
             etaLabel: "ETA 42h",
-            sourceLabel: "AIS provider fixture",
+            sourceLabel: "AIS demo fixture (supporting context)",
             disclosureLabel: "15-60分遅延 / aggregated vessel signal",
             confidenceLabel: "集約信号",
             corridorLabel: "Hormuz → Malacca → Yokohama/Sodegaura",

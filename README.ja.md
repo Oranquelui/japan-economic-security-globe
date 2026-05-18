@@ -9,15 +9,15 @@
 ## 公開デモ
 
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
-- Launch view: [日本向けタンカー watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route&selected=flow%3Ajapan-linked-maritime-watch)
+- Launch view: [国内物流 watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
 - 最初の約束: `日本が今なにを注視すべきか`
-- 公開 framing: 物流の見え方、日本向けタンカー watch、公式ソース信頼、bounded な near-live overlay、地形が読める地図、国内着地点
+- 公開 framing: 国内物流の見え方、港湾後続、道路・鉄道・内航・航空、公式ソース信頼、bounded な near-live overlay、地形が読める地図、AIS補助線
 
 ## 公開プレビュー
 
-![Japan Watchboard logistics view showing Japan-bound tanker routes, terrain basemap, and evidence detail popup](docs/assets/japan-watchboard-logistics.png)
+![Japan Watchboard logistics view showing domestic logistics lanes, terrain basemap, and evidence detail popup](docs/assets/japan-watchboard-logistics.png)
 
-現在の公開面では、日本向け logistics watch を前面に出しています。タンカールート、海上チョークポイント、国内着地点、地形文脈、出典信頼を別々の図ではなく同じ画面で確認できます。
+現在の公開面では、国内 logistics watch を前面に出しています。港湾着地点、道路・鉄道・内航・航空の国内後続、地形文脈、出典信頼、AIS補助線を別々の図ではなく同じ画面で確認できます。
 
 ## 中心となる問い
 
@@ -28,7 +28,7 @@
 - `Watchboard briefing`: 国家的重要度、freshness、confidence、why now を先に出す。
 - `Japan operations map`: コメ、水、貯水池、港湾、LNG受入基地、製油所、都道府県など、国内に着地する影響を主画面で見せる。
 - `Bounded watch overlays`: 公開可能な範囲に限定した、近接監視・遅延監視の情報を重ねる。
-- `Japan-bound tanker watch`: 海上のタンカー移動と国内物流の後続を分け、freshness と provider limitation を UI 上に明示する。
+- `Domestic logistics watch`: 国内の道路・鉄道・内航・航空と港湾後続を主表示し、外航AISは補助線として freshness と provider limitation を UI 上に明示する。
 - `Global supporting layer`: 原油、LNG、石炭、半導体、供給国、海上輸送路、チョークポイントなど、世界依存の関係を日本への補助文脈として見せる。
 - `Evidence graph`: 政策、予算、法令、組織、出典文書、provenance の関係を見せる。
 - `Operations table`: 依存ルート、観測シグナル、国内着地点を運用リストとして並べ、Palantir 的な意思決定画面の情報構造に寄せる。
@@ -59,7 +59,7 @@ MVP では、各テーマについて薄いが一貫した一連の導線を入�
 - `Defense`: 2026年度防衛予算からスタンド・オフ防衛能力への予算フロー例。
 - `Semiconductors`: 台湾、韓国、オランダ、米国、中国と日本を結ぶ先端半導体依存フロー。
 
-Phase 0 の物流面は、意図的に bounded にしています。海上チョークポイント、輸入ルート、日本向けタンカー watch item、日本側の港湾、LNG受入基地、製油所、bounded な海運 watch overlay、小さな災害ライフライン watch slice までを扱います。ただし、日本に向かう全タンカーの完全リアルタイム AIS coverage を主張するものではありません。それには licensed AIS / provider integration が必要です。
+Phase 0 の物流面は、意図的に bounded にしています。国内の道路・鉄道・内航・航空、港湾後続、日本側の港湾、LNG受入基地、製油所、海上チョークポイントと輸入ルートの補助線、bounded な海運 watch overlay、小さな災害ライフライン watch slice までを扱います。ただし、日本に向かう全タンカーの完全リアルタイム AIS coverage を主張するものではありません。それには licensed AIS / provider integration が必要です。
 
 ## ロードマップ
 
@@ -78,7 +78,7 @@ Phase 0 の物流面は、意図的に bounded にしています。海上チョ
 - 日本への影響説明に必要な範囲で、地政学的隣国との関係を追加する。
 - ルート、港湾、施設、出典文書の対象範囲を増やす。
 - 繰り返し可能な取り込み処理と検証を始める。
-- 日本向けタンカー coverage のため、licensed AIS と port-call provider を評価する。
+- 外航海上補助 coverage のため、licensed AIS と port-call provider を評価する。
 
 `Phase 2`: 法人・組織向け intelligence product
 

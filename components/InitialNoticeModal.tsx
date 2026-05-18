@@ -95,7 +95,7 @@ export function InitialNoticeModal({ homepageMode, locale }: InitialNoticeModalP
               無料公開中
             </p>
           </div>
-          <p>更新: 日本向けタンカー監視と地形地図を追加しました</p>
+          <p>更新: 国内物流監視と地形地図を追加しました</p>
           <p style={{ color: "var(--ops-text-muted, #cbd5e1)" }}>仕様は予告なく変更される場合があります</p>
         </div>
         <button

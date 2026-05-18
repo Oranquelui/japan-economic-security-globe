@@ -6,7 +6,7 @@ Japan Watchboard for Economic Security is now public:
 
 https://economic-security.quadrillionaaa.com/
 
-The launch view focuses on Japan-bound logistics: tanker routes, maritime chokepoints, domestic landing points, source trust, and a terrain-aware map. The goal is not to make another geopolitical map. The goal is to show what Japan should watch now, why it matters domestically, and which public sources support the signal.
+The launch view focuses on Japan domestic logistics: domestic landing points, port follow-through, road/rail/coastal/air lanes, source trust, and a terrain-aware map. Tanker routes and maritime chokepoints remain visible as supporting context, not the primary surface. The goal is not to make another geopolitical map. The goal is to show what Japan should watch now, why it matters domestically, and which public sources support the signal.
 
 Repository:
 
@@ -18,7 +18,7 @@ https://github.com/Oranquelui/japan-economic-security-globe
 
 https://economic-security.quadrillionaaa.com/
 
-今回の公開面では、日本向け logistics watch を前面に出しています。タンカールート、海上チョークポイント、国内着地点、出典信頼、地形が読める地図を同じ画面で確認できます。
+今回の公開面では、国内 logistics watch を前面に出しています。国内着地点、港湾後続、道路・鉄道・内航・航空、出典信頼、地形が読める地図を同じ画面で確認できます。タンカールートと海上チョークポイントは補助線として残します。
 
 目的は、単なる地政学マップを作ることではありません。日本が今なにを注視すべきか、そのシグナルが国内インフラ・暮らし・政策判断のどこに着地するのかを、出典付きで見えるようにすることです。
 
@@ -30,7 +30,7 @@ https://github.com/Oranquelui/japan-economic-security-globe
 
 - Japan-first watchboard briefing
 - terrain-aware operations map
-- Japan-bound tanker watch surface
+- Japan domestic logistics watch surface
 - route and chokepoint overlays
 - source-backed map detail popup
 - evidence and source-license surfaces
@@ -43,7 +43,7 @@ https://github.com/Oranquelui/japan-economic-security-globe
 - not a military target-selection interface
 - not a reusable dataset made from third-party source material
 
-Complete Japan-bound tanker coverage should be treated as a Phase 1 provider integration. It requires a licensed AIS or port-call data provider, explicit coverage limits, and source freshness labeling.
+Complete external maritime AIS support coverage should be treated as a Phase 1 provider integration. It requires a licensed AIS or port-call data provider, explicit coverage limits, and source freshness labeling.
 
 ## License Position
 
@@ -57,7 +57,7 @@ Source-linked seed data is not relicensed as a single corpus. Public and private
 
 日本経済安全保障ウォッチボードを公開しました。
 
-日本向けタンカー watch、海上チョークポイント、国内着地点、出典信頼、地形が読める地図を同じ画面で見られる public MVP です。
+国内物流 watch、港湾後続、道路・鉄道・内航・航空、出典信頼、地形が読める地図を同じ画面で見られる public MVP です。外航AISは補助線として扱います。
 
 「日本が今なにを注視すべきか」を、暮らし・政策・国内インフラに着地させて見せることを狙っています。
 

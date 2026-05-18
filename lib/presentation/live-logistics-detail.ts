@@ -22,13 +22,13 @@ export function buildLiveLogisticsDetail(
     ].join(" "),
     whyItMatters: buildWhyItMatters(item),
     signal: {
-      category: item.laneId === "maritime" ? "日本向けタンカー" : "国内物流接続",
+      category: item.laneId === "maritime" ? "外航AIS補助" : "国内物流接続",
       severity: toSignalSeverity(item.signalTone),
       status: item.statusLabel.toLowerCase().includes("underway") ? "監視中" : "表示対象",
       recommendedAction:
         item.laneId === "maritime"
-          ? "AIS位置、海峡通過、港湾ETA、出典遅延をあわせて確認"
-          : "港湾着地から国内配送・燃料接続への波及を確認",
+          ? "AIS位置、海峡通過、港湾ETA、出典遅延を国内物流への補助線として確認"
+          : "道路・鉄道・内航海運・航空のどの国内モードで着地後の波及が出るか確認",
       watchpoints: [item.corridorLabel, item.etaLabel, item.disclosureLabel].filter(Boolean)
     },
     sources,
@@ -58,10 +58,10 @@ export function buildLiveLogisticsDetail(
 
 function buildWhyItMatters(item: LiveLogisticsItemViewModel) {
   if (item.laneId === "maritime") {
-    return "日本向けタンカーを個別に追跡すると、ホルムズ・マラッカ・日本着地のどこで詰まりが出ているかを早く切り分けられます。";
+    return "外航AISは国内物流面への補助線として扱い、海峡通過・港湾ETA・出典遅延を国内着地点の前段文脈として確認します。";
   }
 
-  return "国内物流接続を分けて見ることで、港湾到着後の燃料・物流ボトルネックを海上ルートと混同せずに確認できます。";
+  return "国内物流を道路・鉄道・内航海運・航空に分けて見ることで、港湾到着後の燃料・物流ボトルネックを外航AISルートと混同せずに確認できます。";
 }
 
 function toSignalSeverity(tone: LiveLogisticsItemViewModel["signalTone"]): DetailViewModel["signal"]["severity"] {
@@ -114,6 +114,10 @@ function getLiveLogisticsSources(
   item: LiveLogisticsItemViewModel,
   linkedFlows: DependencyFlow[]
 ): SourceDocument[] {
+  if (item.laneId !== "maritime") {
+    return buildItemFallbackSource(item);
+  }
+
   const sourceIds = linkedFlows.flatMap((flow) => flow.sourceIds);
   const linkedSources = getSourcesById(graph, sourceIds);
 
@@ -121,6 +125,10 @@ function getLiveLogisticsSources(
     return linkedSources;
   }
 
+  return buildItemFallbackSource(item);
+}
+
+function buildItemFallbackSource(item: LiveLogisticsItemViewModel): SourceDocument[] {
   return [
     {
       id: `${item.id}:source`,
@@ -128,8 +136,9 @@ function getLiveLogisticsSources(
       url: "#",
       publisher: item.sourceLabel,
       accessed: item.lastSeenLabel,
-      description: item.disclosureLabel,
-      accessMode: "api",
+      description: `${item.disclosureLabel} / demo seed, not an official live-provider feed`,
+      official: false,
+      accessMode: "html",
       tier: item.confidenceLabel.includes("高") ? "A" : "B"
     }
   ];

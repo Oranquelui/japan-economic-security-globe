@@ -31,7 +31,7 @@ const maritimeLiveItem = {
   statusLabel: "Underway",
   lastSeenLabel: "Last seen 18分前",
   etaLabel: "ETA 42h",
-  sourceLabel: "AIS provider fixture",
+  sourceLabel: "AIS demo fixture (supporting context)",
   disclosureLabel: "15-60分遅延 / aggregated vessel signal",
   confidenceLabel: "集約信号",
   corridorLabel: "Hormuz → Malacca → Yokohama/Sodegaura",
@@ -42,16 +42,17 @@ const maritimeLiveItem = {
 };
 
 const domesticLiveItem = {
-  id: "live-logistics:domestic-keihin-tokyo",
-  title: "Domestic logistics: Yokohama → Keihin/Sodegaura → Tokyo",
-  kindLabel: "Domestic logistics",
+  id: "live-logistics:road-keihin-tokyo",
+  title: "陸路: 横浜港・京浜/袖ケ浦 → 首都圏配送",
+  kindLabel: "道路物流",
+  laneId: "road",
   statusLabel: "接続監視",
   lastSeenLabel: "Last seen 22分前",
   etaLabel: "次回更新 15分",
-  sourceLabel: "xROAD / Cyber Port fixture",
+  sourceLabel: "Domestic logistics demo fixture (public route-level)",
   disclosureLabel: "公開系統 / route-level only",
-  confidenceLabel: "公式/準公式",
-  corridorLabel: "Yokohama → Keihin/Sodegaura → Tokyo",
+  confidenceLabel: "デモ / 公開粒度",
+  corridorLabel: "横浜港 → 京浜/袖ケ浦 → 東京",
   pointIds: ["port:yokohama", "refinery:keihin", "terminal:sodegaura-lng", "prefecture:tokyo"],
   priority: 94,
   relatedIds: ["flow:japan-linked-maritime-watch"],
@@ -59,23 +60,23 @@ const domesticLiveItem = {
 };
 
 const liveLogistics = {
-  title: "JAPAN-BOUND TANKER WATCH",
-  subtitle: "日本に向かうタンカー捕捉と港湾後続を分けて監視",
-  disclosureLabel: "AIS coverage / 15-60分遅延 / provider-gated",
+  title: "JAPAN DOMESTIC LOGISTICS WATCH",
+  subtitle: "国内物流の着地点と港湾後続を主表示し、道路・鉄道・内航海運・航空を分けて表示する。海上捕捉は補助線として監視",
+  disclosureLabel: "公開系統 / route-level only / 陸路/鉄道/内航/航空 / AIS補助 / 15-60分遅延",
   updatedLabel: "18分前",
-  items: [maritimeLiveItem, domesticLiveItem],
+  items: [domesticLiveItem, maritimeLiveItem],
   lanes: [
     {
-      id: "maritime",
-      title: "日本向けタンカー",
-      subtitle: "AIS・衛星AIS・港湾ETAを海側の捕捉として扱う。",
-      items: [maritimeLiveItem]
+      id: "road",
+      title: "陸路・トラック",
+      subtitle: "高速道路・港湾後背地・トラック配送を国内物流の主レイヤーとして扱う。",
+      items: [domesticLiveItem]
     },
     {
-      id: "domestic",
-      title: "国内接続",
-      subtitle: "港から首都圏の燃料・物流接続として扱う。",
-      items: [domesticLiveItem]
+      id: "maritime",
+      title: "外航海上補助",
+      subtitle: "外航AIS・海峡・港湾ETAは、国内モードへ入る前段の補助線として扱う。",
+      items: [maritimeLiveItem]
     }
   ],
   mapRoutes: []
@@ -284,17 +285,18 @@ describe("map inbox structure", () => {
     const commandPane = screen.getByTestId("command-pane-scroll");
     const text = commandPane.textContent ?? "";
 
-    expect(text).toContain("JAPAN-BOUND TANKER WATCH");
-    expect(text).toContain("日本向けタンカー");
+    expect(text).toContain("JAPAN DOMESTIC LOGISTICS WATCH");
+    expect(text).toContain("陸路・トラック");
+    expect(text).toContain("道路物流");
+    expect(text).toContain("陸路: 横浜港・京浜/袖ケ浦 → 首都圏配送");
+    expect(text).toContain("Domestic logistics demo fixture (public route-level)");
+    expect(text).toContain("外航海上補助");
     expect(text).toContain("AIS tanker");
     expect(text).toContain("Tanker corridor: Hormuz");
     expect(text).toContain("Last seen 18分前");
     expect(text).toContain("ETA 42h");
-    expect(text).toContain("国内接続");
-    expect(text).toContain("Domestic logistics");
-    expect(text).toContain("xROAD / Cyber Port fixture");
-    expect(text.indexOf("日本向けタンカー")).toBeLessThan(text.indexOf("国内接続"));
-    expect(text.indexOf("JAPAN-BOUND TANKER WATCH")).toBeLessThan(text.indexOf("近接監視"));
+    expect(text.indexOf("陸路・トラック")).toBeLessThan(text.indexOf("外航海上補助"));
+    expect(text.indexOf("JAPAN DOMESTIC LOGISTICS WATCH")).toBeLessThan(text.indexOf("近接監視"));
   });
 
   test("selects an individual live tanker item instead of collapsing to the shared maritime flow", () => {

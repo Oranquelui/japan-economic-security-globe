@@ -22,10 +22,10 @@ export const THEME_REGISTRY: Record<ThemeId, ThemeDefinition> = {
   },
   logistics: {
     accent: "#4ea4bf",
-    headline: "港・海峡・海運の揺れは、日本の供給と生活コストにどう波及するのか。",
+    headline: "港湾・製油所・受入基地から国内物流網への波及は、日本のどこに現れるのか。",
     label: "物流",
-    question: "日本向け物流の変化は、どの港・海峡・国内着地点に先に出るのか。",
-    sublabel: "港湾 / 海運 / チョークポイント",
+    question: "国内物流の着地点と後続接続は、どの港・施設・地域から先に揺れるのか。",
+    sublabel: "国内着地点 / 港湾後続 / 海上補助線",
     title: "物流"
   },
   rice: {

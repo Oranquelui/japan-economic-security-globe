@@ -9,15 +9,15 @@ The default view starts with `Energy`, but `Logistics` is now a first-class them
 ## Public Demo
 
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
-- Launch view: [Japan-bound tanker watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route&selected=flow%3Ajapan-linked-maritime-watch)
+- Launch view: [Japan domestic logistics watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
 - First-screen promise: `What Japan should watch now`
-- Public framing: logistics visibility, Japan-bound tanker watch, official-source trust, bounded near-live overlays, terrain-aware mapping, and Japan-facing domestic impact
+- Public framing: domestic logistics visibility, port follow-through, road/rail/coastal/air lanes, official-source trust, bounded near-live overlays, terrain-aware mapping, and AIS as supporting context
 
 ## Launch Preview
 
-![Japan Watchboard logistics view showing Japan-bound tanker routes, terrain basemap, and evidence detail popup](docs/assets/japan-watchboard-logistics.png)
+![Japan Watchboard logistics view showing domestic logistics lanes, terrain basemap, and evidence detail popup](docs/assets/japan-watchboard-logistics.png)
 
-The current launch surface focuses on a Japan-bound logistics watch: tanker routes, maritime chokepoints, domestic landing points, terrain context, and source confidence are shown together instead of as separate charts.
+The current launch surface focuses on a Japan domestic logistics watch: domestic landing points, port follow-through, road/rail/coastal/air lanes, terrain context, source confidence, and AIS supporting context are shown together instead of as separate charts.
 
 ## Core Question
 
@@ -28,7 +28,7 @@ The app answers that question through six primary layers:
 - `Watchboard briefing`: ranks what Japan should watch now with freshness, confidence, and why-now context.
 - `Japan operations map`: shows ports, LNG terminals, refineries, reservoirs, prefectures, and other domestic landing points.
 - `Bounded watch overlays`: keeps near-live or delayed watch items visible without implying unrestricted live tracking.
-- `Japan-bound tanker watch`: separates maritime tanker movement from domestic logistics follow-through, with freshness and provider limitations shown in the UI.
+- `Domestic logistics watch`: foregrounds domestic road, rail, coastal, air, and port follow-through while keeping maritime AIS as a supporting context with freshness and provider limitations shown in the UI.
 - `Evidence graph`: connects policy, budgets, laws, organizations, and source documents.
 - `Operations table`: lists routes, signals, and domestic landing points in an operational reading order.
 
@@ -60,7 +60,7 @@ The MVP includes a thin but coherent slice for each theme:
 - `Defense`: a budget-flow example from FY2026 defense spending into stand-off defense capability.
 - `Semiconductors`: advanced semiconductor dependency flows linking Taiwan, South Korea, the Netherlands, the United States, China, and Japan.
 
-For Phase 0, the logistics surface is intentionally bounded. The public model covers sea chokepoints, import routes, Japan-bound tanker watch items, Japanese ports, LNG receiving terminals, refineries, bounded maritime watch overlays, and a small disaster-lifeline watch slice. It does not yet claim complete real-time AIS coverage of every tanker heading to Japan; that requires a licensed AIS/provider integration.
+For Phase 0, the logistics surface is intentionally bounded. The public model covers domestic road, rail, coastal, and air follow-through, Japanese ports, LNG receiving terminals, refineries, supporting sea chokepoints and import routes, bounded maritime watch overlays, and a small disaster-lifeline watch slice. It does not yet claim complete real-time AIS coverage of every tanker heading to Japan; that requires a licensed AIS/provider integration.
 
 ## Roadmap
 
@@ -79,7 +79,7 @@ For Phase 0, the logistics surface is intentionally bounded. The public model co
 - expand neighboring-country context only where it helps explain Japanese impact
 - widen routes, ports, facilities, and source-document coverage
 - begin repeatable ingestion and validation
-- evaluate licensed AIS and port-call providers for complete Japan-bound tanker coverage
+- evaluate licensed AIS and port-call providers for external maritime supporting coverage
 
 `Phase 2`: institutional intelligence product
 

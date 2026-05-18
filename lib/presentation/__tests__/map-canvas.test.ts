@@ -97,8 +97,8 @@ describe("japan map canvas model", () => {
           relatedIds: ["flow:japan-linked-maritime-watch"]
         },
         {
-          id: "live-logistics:domestic-keihin-tokyo",
-          label: "Domestic logistics: Yokohama → Keihin/Sodegaura → Tokyo",
+          id: "live-logistics:road-keihin-tokyo",
+          label: "陸路: 横浜港・京浜/袖ケ浦 → 首都圏配送",
           pointIds: ["port:yokohama", "refinery:keihin", "terminal:sodegaura-lng", "prefecture:tokyo"],
           relatedIds: ["flow:japan-linked-maritime-watch"]
         }
@@ -113,7 +113,7 @@ describe("japan map canvas model", () => {
     );
 
     expect(model.liveRoutes.map((route: { id: string }) => route.id)).toEqual(
-      expect.arrayContaining(["live-logistics:tanker-qatar-tokyo-bay", "live-logistics:domestic-keihin-tokyo"])
+      expect.arrayContaining(["live-logistics:tanker-qatar-tokyo-bay", "live-logistics:road-keihin-tokyo"])
     );
     expect(model.livePoints.map((point: { id: string }) => point.id)).toEqual(
       expect.arrayContaining(["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng", "refinery:keihin", "prefecture:tokyo"])
@@ -121,7 +121,7 @@ describe("japan map canvas model", () => {
     expect(model.liveVessels).toEqual([
       expect.objectContaining({
         id: "live-vessel:tanker-qatar-tokyo-bay",
-        kind: "Japan-bound tanker",
+        kind: "AIS supporting context",
         label: "AIS tanker 042",
         lat: 12.4,
         lon: 110.8,

@@ -414,7 +414,9 @@ function resolveActiveId(
     return selectedId;
   }
 
-  return view.flows[0]?.id ?? view.observations[0]?.id ?? view.entities[0]?.id ?? "country:japan";
+  const defaultLiveLogisticsId = view.id === "logistics" ? liveLogistics?.items[0]?.id : undefined;
+
+  return defaultLiveLogisticsId ?? view.flows[0]?.id ?? view.observations[0]?.id ?? view.entities[0]?.id ?? "country:japan";
 }
 
 function resolveSelectableId(

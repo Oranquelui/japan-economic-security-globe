@@ -242,7 +242,7 @@ function buildLiveVessels(liveLogistics: LiveLogisticsViewModel | null | undefin
 
   return liveLogistics.mapVessels.map((vessel) => ({
     id: vessel.id,
-    kind: "Japan-bound tanker",
+    kind: "AIS supporting context",
     label: vessel.label,
     lat: vessel.lat,
     lon: vessel.lon,
