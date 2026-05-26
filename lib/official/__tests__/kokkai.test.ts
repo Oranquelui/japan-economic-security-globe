@@ -91,6 +91,16 @@ describe("kokkai official adapter", () => {
     const result = await fetchKokkaiSpeeches({ any: "経済安全保障", maximumRecords: 1 }, fetcher);
 
     expect(fetcher).toHaveBeenCalledTimes(1);
+    const [url, init] = fetcher.mock.calls[0];
+    expect(String(url)).toContain("kokkai.ndl.go.jp/api/speech");
+    expect(String(url)).toContain("recordPacking=json");
+    expect(init).toEqual(
+      expect.objectContaining({
+        cache: "no-store",
+        headers: expect.objectContaining({ Accept: "application/json" }),
+        signal: expect.any(AbortSignal)
+      })
+    );
     expect(result.totalRecords).toBe(1);
     expect(result.returnedRecords).toBe(1);
     expect(result.nextStartRecord).toBe(2);

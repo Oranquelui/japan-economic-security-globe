@@ -1,3 +1,5 @@
+import { fetchOfficialJson, type OfficialFetcher } from "./request";
+
 export type KokkaiSpeechSearchParams = {
   any?: string;
   speaker?: string;
@@ -92,14 +94,13 @@ export function normalizeKokkaiSpeechRecord(record: KokkaiSpeechRecord): KokkaiS
 
 export async function fetchKokkaiSpeeches(
   params: KokkaiSpeechSearchParams,
-  fetcher: typeof fetch = fetch
+  fetcher: OfficialFetcher = fetch
 ): Promise<KokkaiSpeechSearchResult> {
-  const response = await fetcher(buildKokkaiSpeechUrl(params));
-  if (!response.ok) {
-    throw new Error(`Kokkai API request failed: ${response.status}`);
-  }
-
-  const payload = (await response.json()) as KokkaiSpeechResponse;
+  const payload = await fetchOfficialJson<KokkaiSpeechResponse>({
+    serviceName: "Kokkai API",
+    url: buildKokkaiSpeechUrl(params),
+    fetcher
+  });
   const items = (payload.speechRecord ?? []).map(normalizeKokkaiSpeechRecord);
 
   return {

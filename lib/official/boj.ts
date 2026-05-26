@@ -1,3 +1,5 @@
+import { fetchOfficialJson, type OfficialFetcher } from "./request";
+
 export type BojApiEndpoint = "getMetadata" | "getDataCode" | "getDataLayer";
 
 export type BojApiParams = Record<string, string | number | boolean | undefined>;
@@ -76,14 +78,13 @@ export function normalizeBojMetadataRecord(record: BojMetadataRecord): BojMetada
 
 export async function fetchBojMetadata(
   params: BojApiParams,
-  fetcher: typeof fetch = fetch
+  fetcher: OfficialFetcher = fetch
 ): Promise<BojMetadataResult> {
-  const response = await fetcher(buildBojApiUrl("getMetadata", params));
-  if (!response.ok) {
-    throw new Error(`BOJ API request failed: ${response.status}`);
-  }
-
-  const payload = (await response.json()) as BojMetadataResponse;
+  const payload = await fetchOfficialJson<BojMetadataResponse>({
+    serviceName: "BOJ API",
+    url: buildBojApiUrl("getMetadata", params),
+    fetcher
+  });
 
   return {
     status: payload.STATUS,
