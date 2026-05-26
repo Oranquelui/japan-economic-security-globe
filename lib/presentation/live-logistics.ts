@@ -39,7 +39,7 @@ const LIVE_LOGISTICS_LANES: Array<{
   },
   {
     id: "maritime",
-    subtitle: "外航AIS・海峡・港湾ETAは、国内モードへ入る前段の補助線として扱う。",
+    subtitle: "外航船・港湾ETA・公開集約情報を、国内モードへ入る前段の補助線として扱う。",
     title: "外航海上補助"
   }
 ];
@@ -176,7 +176,7 @@ function getLanePriority(item: LiveLogisticsItemViewModel, themeId: ThemeId) {
 
 function getSurfaceDisclosureLabel(themeId: ThemeId) {
   if (themeId === "logistics") {
-    return "公開系統 / route-level only / 陸路/鉄道/内航/航空貨物/空港運用 / AIS補助 / 15-60分遅延";
+    return "公開系統 / route-level only / 陸路/鉄道/内航/航空貨物/空港運用 / 一般貨物補助 / 15-60分遅延";
   }
 
   return "AIS coverage / 15-60分遅延 / provider-gated";
@@ -184,10 +184,10 @@ function getSurfaceDisclosureLabel(themeId: ThemeId) {
 
 function getSurfaceSubtitle(themeId: ThemeId) {
   if (themeId === "logistics") {
-    return "国内物流の着地点と港湾後続を主表示し、道路・鉄道・内航海運・航空貨物・空港運用を分けて表示する。海上捕捉は補助線として監視";
+    return "国内物流の着地点と港湾後続を主表示し、道路・鉄道・内航海運・航空貨物・空港運用を分けて表示する。エネルギー系タンカーは Energy 側で扱う";
   }
 
-  return "外航AIS捕捉と港湾後続を、国内物流の前段補助線として監視";
+  return "エネルギー系タンカーの公開集約・遅延AIS文脈を、Energy theme の補助線として監視";
 }
 
 function getSurfaceTitle(themeId: ThemeId) {

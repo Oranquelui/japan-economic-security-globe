@@ -37,7 +37,7 @@ describe("operations metrics", () => {
           id: "domestic-impacts",
           label: "国内主要地域",
           description: "e-Stat の主食用収穫量と供給拠点で見る、コメの国内基盤",
-          value: 48
+          value: 47
         })
       ])
     );
