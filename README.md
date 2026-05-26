@@ -8,10 +8,15 @@ The default view starts with `Energy`, but `Logistics` is now a first-class them
 
 ## Public Demo
 
+- Version: `0.2.0`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
 - Launch view: [Japan domestic logistics watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
 - First-screen promise: `What Japan should watch now`
-- Public framing: domestic logistics visibility, port follow-through, road/rail/coastal/air lanes, official-source trust, bounded near-live overlays, terrain-aware mapping, and AIS as supporting context
+- Public framing: domestic logistics visibility, port follow-through, road/rail/coastal/air lanes, official-source trust, source-status freshness, bounded near-live overlays, terrain-aware mapping, and AIS as supporting context
+
+## Current Version
+
+`v0.2.0` is the public watchboard release. It foregrounds the domestic logistics watch, keeps energy import routes in the Energy theme, adds an active-theme source status strip, and hardens official e-Stat, BOJ, and Kokkai fetch paths with timeout-aware request handling.
 
 ## Launch Preview
 
@@ -23,12 +28,13 @@ The current launch surface focuses on a Japan domestic logistics watch: domestic
 
 > What should Japan watch now, and where do those signals land in everyday life, public spending, and domestic infrastructure?
 
-The app answers that question through six primary layers:
+The app answers that question through seven primary surfaces:
 
 - `Watchboard briefing`: ranks what Japan should watch now with freshness, confidence, and why-now context.
 - `Japan operations map`: shows ports, LNG terminals, refineries, reservoirs, prefectures, and other domestic landing points.
 - `Bounded watch overlays`: keeps near-live or delayed watch items visible without implying unrestricted live tracking.
 - `Domestic logistics watch`: foregrounds domestic road, rail, coastal, air, and port follow-through while keeping maritime AIS as a supporting context with freshness and provider limitations shown in the UI.
+- `Source status strip`: summarizes official/API/document source coverage and freshness for the active theme.
 - `Evidence graph`: connects policy, budgets, laws, organizations, and source documents.
 - `Operations table`: lists routes, signals, and domestic landing points in an operational reading order.
 
@@ -55,6 +61,7 @@ Each detail panel is designed to show a summary, why it matters in Japan, source
 The MVP includes a thin but coherent slice for each theme:
 
 - `Energy`: crude oil, LNG, coal, Gulf routes, the Strait of Hormuz, the Strait of Malacca, Yokohama Port, the Sodegaura LNG terminal, and the Keihin refinery area.
+- `Logistics`: domestic road, rail, coastal, air, port follow-through, bounded maritime watch overlays, and operational status signals without claiming complete real-time vessel coverage.
 - `Rice`: rice price pressure, reserve and policy signals, and how energy or fertilizer inputs can translate into household food burden.
 - `Water`: a water-stress example centered on Tokyo and the Ogochi Reservoir.
 - `Defense`: a budget-flow example from FY2026 defense spending into stand-off defense capability.

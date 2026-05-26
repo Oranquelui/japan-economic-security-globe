@@ -8,10 +8,15 @@
 
 ## 公開デモ
 
+- Version: `0.2.0`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
 - Launch view: [国内物流 watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
 - 最初の約束: `日本が今なにを注視すべきか`
-- 公開 framing: 国内物流の見え方、港湾後続、道路・鉄道・内航・航空、公式ソース信頼、bounded な near-live overlay、地形が読める地図、AIS補助線
+- 公開 framing: 国内物流の見え方、港湾後続、道路・鉄道・内航・航空、公式ソース信頼、出典 freshness、bounded な near-live overlay、地形が読める地図、AIS補助線
+
+## 現在のバージョン
+
+`v0.2.0` は public watchboard release です。国内 logistics watch を前面に出しつつ、海外燃料供給ルートは Energy theme に残します。また、active theme の出典状態バーを追加し、e-Stat、BOJ、国会会議録の公式 fetch 経路を timeout-aware な共通 request helper で堅牢化しています。
 
 ## 公開プレビュー
 
@@ -29,6 +34,7 @@
 - `Japan operations map`: コメ、水、貯水池、港湾、LNG受入基地、製油所、都道府県など、国内に着地する影響を主画面で見せる。
 - `Bounded watch overlays`: 公開可能な範囲に限定した、近接監視・遅延監視の情報を重ねる。
 - `Domestic logistics watch`: 国内の道路・鉄道・内航・航空と港湾後続を主表示し、外航AISは補助線として freshness と provider limitation を UI 上に明示する。
+- `Source status strip`: active theme の公式/API/文書ソース coverage と freshness を要約する。
 - `Global supporting layer`: 原油、LNG、石炭、半導体、供給国、海上輸送路、チョークポイントなど、世界依存の関係を日本への補助文脈として見せる。
 - `Evidence graph`: 政策、予算、法令、組織、出典文書、provenance の関係を見せる。
 - `Operations table`: 依存ルート、観測シグナル、国内着地点を運用リストとして並べ、Palantir 的な意思決定画面の情報構造に寄せる。
@@ -54,6 +60,7 @@
 MVP では、各テーマについて薄いが一貫した一連の導線を入れています。
 
 - `Energy`: 原油、LNG、石炭、湾岸ルート、ホルムズ海峡、マラッカ海峡、横浜港、袖ケ浦LNG受入基地、京浜製油所エリア。
+- `Logistics`: 国内道路、鉄道、内航、航空、港湾後続、bounded な海運 watch overlay、運用ステータスシグナル。全船舶の完全リアルタイム coverage は主張しない。
 - `Rice`: コメ価格圧力、備蓄・政策シグナル、エネルギーや肥料投入が家計の食料負担へつながる流れ。
 - `Water`: 東京都と小河内貯水池を使った水ストレス例。
 - `Defense`: 2026年度防衛予算からスタンド・オフ防衛能力への予算フロー例。
