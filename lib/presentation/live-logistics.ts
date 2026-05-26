@@ -68,7 +68,7 @@ export function buildLiveLogisticsView(
   return {
     disclosureLabel: getSurfaceDisclosureLabel(themeId),
     items,
-    lanes: buildLiveLogisticsLanes(items),
+    lanes: buildLiveLogisticsLanes(items, themeId),
     mapRoutes: items
       .filter((item) => item.pointIds.length >= 2)
       .map((item) => ({
@@ -116,11 +116,26 @@ function toViewItem(event: LiveLogisticsEvent, now: Date): LiveLogisticsItemView
   };
 }
 
-function buildLiveLogisticsLanes(items: LiveLogisticsItemViewModel[]): LiveLogisticsLaneViewModel[] {
+function buildLiveLogisticsLanes(items: LiveLogisticsItemViewModel[], themeId: ThemeId): LiveLogisticsLaneViewModel[] {
   return LIVE_LOGISTICS_LANES.map((lane) => ({
-    ...lane,
+    ...formatLaneForTheme(lane, themeId),
     items: items.filter((item) => item.laneId === lane.id)
   })).filter((lane) => lane.items.length > 0);
+}
+
+function formatLaneForTheme(
+  lane: (typeof LIVE_LOGISTICS_LANES)[number],
+  themeId: ThemeId
+): Omit<LiveLogisticsLaneViewModel, "items"> {
+  if (themeId === "logistics" && lane.id === "maritime") {
+    return {
+      id: lane.id,
+      subtitle: "非エネルギー一般貨物の港湾到着前後を、国内モードへ入る前段の補助線として扱う。",
+      title: "一般貨物・港湾前後"
+    };
+  }
+
+  return lane;
 }
 
 function inferLiveLogisticsLane(event: LiveLogisticsEvent): LiveLogisticsLaneId {

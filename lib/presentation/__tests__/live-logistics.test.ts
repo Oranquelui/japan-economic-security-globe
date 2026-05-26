@@ -152,7 +152,7 @@ describe("live logistics view", () => {
       "鉄道貨物",
       "内航海運・港湾後続",
       "航空貨物・空港運用",
-      "外航海上補助"
+      "一般貨物・港湾前後"
     ]);
     expect(view?.lanes[0].items.map((item) => item.kindLabel)).toEqual(["道路物流"]);
     expect(view?.lanes[1].items.map((item) => item.kindLabel)).toEqual(["鉄道物流"]);
