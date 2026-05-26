@@ -179,6 +179,7 @@ describe("AppShell url sync", () => {
     );
 
     expect(screen.getByRole("banner")).toBeTruthy();
+    expect(screen.getByRole("status", { name: "出典状態" })).toBeTruthy();
     expect(screen.getByTestId("layout-navigation-rail")).toBeTruthy();
     expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
     expect(screen.getByTestId("layout-map-section")).toBeTruthy();

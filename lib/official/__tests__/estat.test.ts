@@ -294,6 +294,15 @@ describe("estat official adapter", () => {
     );
 
     expect(fetcher).toHaveBeenCalledTimes(1);
+    const [url, init] = fetcher.mock.calls[0];
+    expect(String(url)).toContain("/3.0/app/json/getStatsList");
+    expect(init).toEqual(
+      expect.objectContaining({
+        cache: "no-store",
+        headers: expect.objectContaining({ Accept: "application/json" }),
+        signal: expect.any(AbortSignal)
+      })
+    );
     expect(result.items[0]?.statsDataId).toBe("0003412313");
     expect(result.nextKey).toBe("2");
   });

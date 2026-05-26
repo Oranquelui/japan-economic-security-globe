@@ -81,6 +81,15 @@ describe("boj official adapter", () => {
     );
 
     expect(fetcher).toHaveBeenCalledTimes(1);
+    const [url, init] = fetcher.mock.calls[0];
+    expect(String(url)).toContain("/api/v1/getMetadata");
+    expect(init).toEqual(
+      expect.objectContaining({
+        cache: "no-store",
+        headers: expect.objectContaining({ Accept: "application/json" }),
+        signal: expect.any(AbortSignal)
+      })
+    );
     expect(result.status).toBe(0);
     expect(result.database).toBe("pr01");
     expect(result.items).toEqual([

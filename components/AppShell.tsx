@@ -31,12 +31,14 @@ import {
 } from "../lib/presentation/url-state";
 import { getThemeLabel, localizeAnyLabel, localizeKind } from "../lib/presentation/japanese";
 import { getRouteStatus } from "../lib/presentation/route-status";
+import { summarizeSourceStatus } from "../lib/official/source-freshness";
 import { ActionBar } from "./ActionBar";
 import { InitialNoticeModal } from "./InitialNoticeModal";
 import { JapanMainMap } from "./JapanMainMap";
 import { MapInboxPanel } from "./MapInboxPanel";
 import { NavigationRail } from "./NavigationRail";
 import { OperationsSignalTable } from "./OperationsSignalTable";
+import { SourceStatusBar } from "./SourceStatusBar";
 import { WatchboardBriefing } from "./WatchboardBriefing";
 
 interface AppShellProps {
@@ -88,6 +90,7 @@ export function AppShell({
   const [, startTransition] = useTransition();
   const initialSerializedRef = useRef(serializeOperationsUrlState(resolvedInitialState));
   const view = getThemeView(graph, themeId);
+  const sourceStatusSummary = summarizeSourceStatus(view.sources, new Date(rankingNowRef.current));
   const inboxDecision = rankingSignals.length
     ? buildRankingDecision({
         surfaceId: "inbox",
@@ -215,7 +218,7 @@ export function AppShell({
   }
 
   return (
-    <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 lg:grid lg:grid-rows-[56px,minmax(0,1fr)]" style={shellStyle}>
+    <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 lg:grid lg:grid-rows-[56px,auto,minmax(0,1fr)]" style={shellStyle}>
       <InitialNoticeModal homepageMode={homepageMode} locale={locale} />
 
       <ActionBar
@@ -230,6 +233,8 @@ export function AppShell({
         themeLabel={themeLabel}
         themePalette={themePalette}
       />
+
+      <SourceStatusBar summary={sourceStatusSummary} themePalette={themePalette} />
 
       <div className="h-full min-h-0 min-w-0 overflow-x-hidden overflow-y-auto lg:overflow-hidden">
         <div className="relative hidden h-full min-h-0 lg:block">

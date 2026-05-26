@@ -1,3 +1,5 @@
+import { fetchOfficialJson, type OfficialFetcher } from "./request";
+
 export type EstatApiEndpoint =
   | "getStatsList"
   | "getMetaInfo"
@@ -223,7 +225,7 @@ export function normalizeEstatStatsDataResponse(payload: EstatStatsDataPayload):
 
 export async function fetchEstatStatsList(
   params: EstatApiParams,
-  fetcher: typeof fetch = fetch,
+  fetcher: OfficialFetcher = fetch,
   envAppId = process.env.ESTAT_APP_ID
 ): Promise<EstatStatsListResult> {
   const payload = await fetchEstatJson("getStatsList", params, fetcher, envAppId);
@@ -232,7 +234,7 @@ export async function fetchEstatStatsList(
 
 export async function fetchEstatMetaInfo(
   params: EstatApiParams,
-  fetcher: typeof fetch = fetch,
+  fetcher: OfficialFetcher = fetch,
   envAppId = process.env.ESTAT_APP_ID
 ): Promise<EstatMetaInfoResult> {
   const payload = await fetchEstatJson("getMetaInfo", params, fetcher, envAppId);
@@ -241,7 +243,7 @@ export async function fetchEstatMetaInfo(
 
 export async function fetchEstatStatsData(
   params: EstatApiParams,
-  fetcher: typeof fetch = fetch,
+  fetcher: OfficialFetcher = fetch,
   envAppId = process.env.ESTAT_APP_ID
 ): Promise<EstatStatsDataResult> {
   const payload = await fetchEstatJson("getStatsData", params, fetcher, envAppId);
@@ -251,15 +253,14 @@ export async function fetchEstatStatsData(
 async function fetchEstatJson(
   endpoint: EstatApiEndpoint,
   params: EstatApiParams,
-  fetcher: typeof fetch,
+  fetcher: OfficialFetcher,
   envAppId = process.env.ESTAT_APP_ID
 ): Promise<unknown> {
-  const response = await fetcher(buildEstatApiUrl(endpoint, params, undefined, undefined, envAppId));
-  if (!response.ok) {
-    throw new Error(`e-Stat API request failed: ${response.status}`);
-  }
-
-  return response.json();
+  return fetchOfficialJson({
+    serviceName: "e-Stat API",
+    url: buildEstatApiUrl(endpoint, params, undefined, undefined, envAppId),
+    fetcher
+  });
 }
 
 function normalizeEstatTableSummary(table: EstatTableInf): EstatTableSummary {
