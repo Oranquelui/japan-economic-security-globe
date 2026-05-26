@@ -266,6 +266,60 @@
     }
   },
   {
+    "id": "airport:narita",
+    "kind": "Airport",
+    "label": "Narita International Airport",
+    "labelJa": "成田国際空港",
+    "summary": "公開空港情報と気象文脈から、国際航空貨物の空港単位の運用状態を把握するための物流拠点。",
+    "whyItMatters": "成田は国際航空貨物の主要着地点であり、空港単位の公開集約は日本国内の在庫・配送・代替輸送への影響を説明する。",
+    "themes": [
+      "logistics"
+    ],
+    "coordinates": {
+      "lat": 35.7767,
+      "lon": 140.3189
+    },
+    "sourceIds": [
+      "source:mlit-cab-airport-info",
+      "source:jma-public-weather-context"
+    ],
+    "provenance": [
+      "source:mlit-cab-airport-info",
+      "source:jma-public-weather-context"
+    ],
+    "properties": {
+      "displayPriority": 90,
+      "airportCode": "NRT"
+    }
+  },
+  {
+    "id": "airport:haneda",
+    "kind": "Airport",
+    "label": "Tokyo Haneda Airport",
+    "labelJa": "東京国際空港（羽田）",
+    "summary": "公開空港情報と気象文脈から、首都圏航空貨物の空港単位の運用状態を把握するための物流拠点。",
+    "whyItMatters": "羽田は国内航空貨物と高付加価値品の配送に関わるため、個別便ではなく空港単位の公開集約として見ることで日本側の物流影響を説明できる。",
+    "themes": [
+      "logistics"
+    ],
+    "coordinates": {
+      "lat": 35.5494,
+      "lon": 139.7798
+    },
+    "sourceIds": [
+      "source:mlit-cab-airport-info",
+      "source:jma-public-weather-context"
+    ],
+    "provenance": [
+      "source:mlit-cab-airport-info",
+      "source:jma-public-weather-context"
+    ],
+    "properties": {
+      "displayPriority": 91,
+      "airportCode": "HND"
+    }
+  },
+  {
     "id": "terminal:sodegaura-lng",
     "kind": "Terminal",
     "label": "Sodegaura LNG Terminal",

@@ -129,4 +129,38 @@ describe("japan map canvas model", () => {
       })
     ]);
   });
+
+  test("renders airport operations as facility points without aircraft markers", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const liveLogistics = {
+      mapVessels: [],
+      mapRoutes: [
+        {
+          id: "live-logistics:airport-haneda-narita-ops",
+          label: "空港運用",
+          pointIds: ["airport:haneda", "airport:narita", "prefecture:tokyo"],
+          relatedIds: ["airport:haneda", "airport:narita"]
+        }
+      ]
+    };
+
+    const model = (buildJapanMapCanvasModel as any)(
+      graph,
+      view,
+      "live-logistics:airport-haneda-narita-ops",
+      liveLogistics
+    );
+
+    expect(model.liveRoutes.map((route: { id: string }) => route.id)).toEqual([
+      "live-logistics:airport-haneda-narita-ops"
+    ]);
+    expect(model.livePoints.map((point: { id: string; kind: string }) => [point.id, point.kind])).toEqual(
+      expect.arrayContaining([
+        ["airport:haneda", "Airport"],
+        ["airport:narita", "Airport"]
+      ])
+    );
+    expect(model.liveVessels).toEqual([]);
+  });
 });

@@ -25,7 +25,7 @@ export function getThemeView(graph: SemanticGraph, themeId: ThemeId): ThemeView 
     observations,
     sources: graph.sources.filter((source) => sourceIds.has(source.id)),
     japanImpacts: entities.filter((entity) =>
-      ["Prefecture", "Port", "Terminal", "Refinery", "Reservoir", "Facility", "BudgetLine"].includes(
+      ["Prefecture", "Port", "Airport", "Terminal", "Refinery", "Reservoir", "Facility", "BudgetLine"].includes(
         entity.kind
       )
     ),

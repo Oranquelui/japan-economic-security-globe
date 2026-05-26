@@ -22,13 +22,10 @@ export function buildLiveLogisticsDetail(
     ].join(" "),
     whyItMatters: buildWhyItMatters(item),
     signal: {
-      category: item.laneId === "maritime" ? "外航AIS補助" : "国内物流接続",
+      category: getSignalCategory(item),
       severity: toSignalSeverity(item.signalTone),
       status: item.statusLabel.toLowerCase().includes("underway") ? "監視中" : "表示対象",
-      recommendedAction:
-        item.laneId === "maritime"
-          ? "AIS位置、海峡通過、港湾ETA、出典遅延を国内物流への補助線として確認"
-          : "道路・鉄道・内航海運・航空のどの国内モードで着地後の波及が出るか確認",
+      recommendedAction: getRecommendedAction(item),
       watchpoints: [item.corridorLabel, item.etaLabel, item.disclosureLabel].filter(Boolean)
     },
     sources,
@@ -61,7 +58,31 @@ function buildWhyItMatters(item: LiveLogisticsItemViewModel) {
     return "外航AISは国内物流面への補助線として扱い、海峡通過・港湾ETA・出典遅延を国内着地点の前段文脈として確認します。";
   }
 
+  if (item.kindLabel === "空港運用") {
+    return "空港運用は、個別便ではなく airport-level の公開集約として扱い、航空貨物と国内配送への波及を人物・個別便追跡と切り離して確認します。";
+  }
+
   return "国内物流を道路・鉄道・内航海運・航空に分けて見ることで、港湾到着後の燃料・物流ボトルネックを外航AISルートと混同せずに確認できます。";
+}
+
+function getSignalCategory(item: LiveLogisticsItemViewModel) {
+  if (item.laneId === "maritime") {
+    return "外航AIS補助";
+  }
+
+  return item.kindLabel === "空港運用" ? "空港運用・航空貨物" : "国内物流接続";
+}
+
+function getRecommendedAction(item: LiveLogisticsItemViewModel) {
+  if (item.laneId === "maritime") {
+    return "AIS位置、海峡通過、港湾ETA、出典遅延を国内物流への補助線として確認";
+  }
+
+  if (item.kindLabel === "空港運用") {
+    return "公開空港情報と気象文脈を airport-level で確認。個別旅客・個別便・軍用機は対象外";
+  }
+
+  return "道路・鉄道・内航海運・航空のどの国内モードで着地後の波及が出るか確認";
 }
 
 function toSignalSeverity(tone: LiveLogisticsItemViewModel["signalTone"]): DetailViewModel["signal"]["severity"] {

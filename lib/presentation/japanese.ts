@@ -3,6 +3,7 @@ import type { ThemeId } from "../../types/semantic";
 
 const KIND_LABELS: Record<string, string> = {
   Observation: "観測",
+  Airport: "空港",
   BudgetLine: "予算項目",
   CapabilityArea: "能力領域",
   Chokepoint: "チョークポイント",
@@ -46,6 +47,8 @@ const ENTITY_LABELS: Record<string, string> = {
   "country:south-korea": "韓国",
   "country:taiwan": "台湾",
   "country:united-states": "米国",
+  "airport:haneda": "東京国際空港（羽田）",
+  "airport:narita": "成田国際空港",
   "org:mod": "防衛省",
   "policy:semiconductor-industrial-base": "AI・半導体産業基盤フレーム",
   "port:yokohama": "横浜港",

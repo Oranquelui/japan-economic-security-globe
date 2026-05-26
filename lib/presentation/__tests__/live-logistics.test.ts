@@ -98,6 +98,24 @@ const events: LiveLogisticsEvent[] = [
     laneId: "air",
     signalTone: "normal",
     priority: 82
+  },
+  {
+    id: "live-logistics:airport-haneda-narita-ops",
+    themeIds: ["logistics"],
+    title: "空港運用: 羽田・成田 貨物/滑走路集約",
+    kindLabel: "空港運用",
+    statusLabel: "公開集約監視",
+    lastSeenLabel: "55分前",
+    etaLabel: "次回更新 60分",
+    sourceLabel: "MLIT/CAB public airport information + JMA public weather context",
+    disclosureLabel: "公開集約 / airport-level only / delayed",
+    confidenceLabel: "公的公開情報 / 集約粒度",
+    corridorLabel: "羽田/成田 → 首都圏航空貨物",
+    pointIds: ["airport:haneda", "airport:narita", "prefecture:tokyo"],
+    relatedIds: ["flow:japan-linked-maritime-watch", "airport:haneda", "airport:narita"],
+    laneId: "air",
+    signalTone: "monitoring",
+    priority: 88
   }
 ];
 
@@ -106,20 +124,21 @@ describe("live logistics view", () => {
     const view = buildLiveLogisticsView("logistics", "flow:japan-linked-maritime-watch", events, new Date("2026-05-11T00:30:00.000Z"));
 
     expect(view?.title).toBe("JAPAN DOMESTIC LOGISTICS WATCH");
-    expect(view?.subtitle).toContain("道路・鉄道・内航海運・航空");
-    expect(view?.disclosureLabel).toContain("陸路/鉄道/内航/航空");
-    expect(view?.items.map((item) => item.kindLabel)).toEqual(["道路物流", "鉄道物流", "内航海運", "航空物流", "外航海上補助"]);
+    expect(view?.subtitle).toContain("道路・鉄道・内航海運・航空貨物・空港運用");
+    expect(view?.disclosureLabel).toContain("陸路/鉄道/内航/航空貨物/空港運用");
+    expect(view?.items.map((item) => item.kindLabel)).toEqual(["道路物流", "鉄道物流", "内航海運", "空港運用", "航空物流", "外航海上補助"]);
     expect(view?.lanes.map((lane) => lane.title)).toEqual([
       "陸路・トラック",
       "鉄道貨物",
       "内航海運・港湾後続",
-      "航空貨物",
+      "航空貨物・空港運用",
       "外航海上補助"
     ]);
     expect(view?.lanes[0].items.map((item) => item.kindLabel)).toEqual(["道路物流"]);
     expect(view?.lanes[1].items.map((item) => item.kindLabel)).toEqual(["鉄道物流"]);
     expect(view?.lanes[2].items.map((item) => item.kindLabel)).toEqual(["内航海運"]);
-    expect(view?.lanes[3].items.map((item) => item.kindLabel)).toEqual(["航空物流"]);
+    expect(view?.lanes[3].subtitle).toContain("空港運用");
+    expect(view?.lanes[3].items.map((item) => item.kindLabel)).toEqual(["空港運用", "航空物流"]);
     expect(view?.lanes[4].items.map((item) => item.kindLabel)).toEqual(["外航海上補助"]);
     expect(view?.items[0].sourceLabel).toBe("Domestic logistics demo fixture (public route-level)");
     expect(view?.mapVessels).toEqual([
@@ -142,6 +161,7 @@ describe("live logistics view", () => {
       "live-logistics:road-keihin-tokyo",
       "live-logistics:rail-tokyo-osaka",
       "live-logistics:coastal-tokyo-osaka",
+      "live-logistics:airport-haneda-narita-ops",
       "live-logistics:air-tokyo-fukuoka",
       "live-logistics:tanker-qatar-tokyo-bay"
     ]);

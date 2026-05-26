@@ -63,4 +63,31 @@ describe("live logistics detail", () => {
     ]);
     expect(detail.sources[0].description).toContain("not an official live-provider feed");
   });
+
+  test("frames airport operations as public aggregate logistics rather than flight tracking", () => {
+    const graph = loadSeedGraph();
+    const detail = buildLiveLogisticsDetail(graph, {
+      ...item,
+      confidenceLabel: "公的公開情報 / 集約粒度",
+      corridorLabel: "羽田/成田 → 首都圏航空貨物",
+      disclosureLabel: "公開集約 / airport-level only / delayed",
+      etaLabel: "次回更新 60分",
+      id: "live-logistics:airport-haneda-narita-ops",
+      kindLabel: "空港運用",
+      laneId: "air",
+      lastSeenLabel: "55分前",
+      pointIds: ["airport:haneda", "airport:narita", "prefecture:tokyo"],
+      relatedIds: ["airport:haneda", "airport:narita"],
+      sourceLabel: "MLIT/CAB public airport information + JMA public weather context",
+      statusLabel: "公開集約監視",
+      title: "空港運用: 羽田・成田 貨物/滑走路集約"
+    });
+
+    expect(detail.signal.category).toBe("空港運用・航空貨物");
+    expect(detail.whyItMatters).toContain("個別便ではなく airport-level の公開集約");
+    expect(detail.signal.recommendedAction).toContain("個別旅客・個別便・軍用機は対象外");
+    expect(detail.relatedEntities.map((entity) => entity.id)).toEqual(
+      expect.arrayContaining(["airport:haneda", "airport:narita", "prefecture:tokyo"])
+    );
+  });
 });

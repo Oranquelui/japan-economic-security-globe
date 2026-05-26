@@ -29,8 +29,8 @@ const LIVE_LOGISTICS_LANES: Array<{
   },
   {
     id: "air",
-    subtitle: "航空貨物・緊急配送・高付加価値品の国内空路を route-level で見る。",
-    title: "航空貨物"
+    subtitle: "航空貨物・空港運用・高付加価値品の国内空路を airport-level / route-level で見る。",
+    title: "航空貨物・空港運用"
   },
   {
     id: "domestic",
@@ -176,7 +176,7 @@ function getLanePriority(item: LiveLogisticsItemViewModel, themeId: ThemeId) {
 
 function getSurfaceDisclosureLabel(themeId: ThemeId) {
   if (themeId === "logistics") {
-    return "公開系統 / route-level only / 陸路/鉄道/内航/航空 / AIS補助 / 15-60分遅延";
+    return "公開系統 / route-level only / 陸路/鉄道/内航/航空貨物/空港運用 / AIS補助 / 15-60分遅延";
   }
 
   return "AIS coverage / 15-60分遅延 / provider-gated";
@@ -184,7 +184,7 @@ function getSurfaceDisclosureLabel(themeId: ThemeId) {
 
 function getSurfaceSubtitle(themeId: ThemeId) {
   if (themeId === "logistics") {
-    return "国内物流の着地点と港湾後続を主表示し、道路・鉄道・内航海運・航空を分けて表示する。海上捕捉は補助線として監視";
+    return "国内物流の着地点と港湾後続を主表示し、道路・鉄道・内航海運・航空貨物・空港運用を分けて表示する。海上捕捉は補助線として監視";
   }
 
   return "外航AIS捕捉と港湾後続を、国内物流の前段補助線として監視";
