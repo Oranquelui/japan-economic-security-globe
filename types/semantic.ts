@@ -23,6 +23,7 @@ export type EntityKind =
   | "Facility"
   | "Route"
   | "Chokepoint"
+  | "Airport"
   | "Port"
   | "Terminal"
   | "Refinery"

@@ -300,6 +300,7 @@ function isRouteSelectableEntity(kind: SemanticEntity["kind"]) {
   return [
     "Country",
     "Chokepoint",
+    "Airport",
     "Port",
     "Terminal",
     "Refinery",
@@ -366,7 +367,7 @@ function classifyDomesticTone(entity: SemanticEntity): JapanMapPoint["tone"] {
     return "critical";
   }
 
-  if (entity.kind === "Port" || entity.kind === "Prefecture") {
+  if (entity.kind === "Airport" || entity.kind === "Port" || entity.kind === "Prefecture") {
     return "watch";
   }
 
@@ -420,7 +421,7 @@ function classifyLiveTone(entity: SemanticEntity): JapanMapPoint["tone"] {
     return "critical";
   }
 
-  if (entity.kind === "Port" || entity.kind === "Country" || entity.kind === "Prefecture") {
+  if (entity.kind === "Airport" || entity.kind === "Port" || entity.kind === "Country" || entity.kind === "Prefecture") {
     return "watch";
   }
 

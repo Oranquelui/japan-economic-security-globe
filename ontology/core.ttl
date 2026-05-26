@@ -21,6 +21,7 @@ jpsdg:Law a owl:Class ; rdfs:subClassOf jpsdg:PolicyDocument .
 jpsdg:BudgetLine a owl:Class ; rdfs:subClassOf jpsdg:Entity .
 jpsdg:Organization a owl:Class ; rdfs:subClassOf jpsdg:Entity .
 jpsdg:Facility a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:Airport a owl:Class ; rdfs:subClassOf jpsdg:Facility .
 jpsdg:Port a owl:Class ; rdfs:subClassOf jpsdg:Facility .
 jpsdg:Terminal a owl:Class ; rdfs:subClassOf jpsdg:Facility .
 jpsdg:Refinery a owl:Class ; rdfs:subClassOf jpsdg:Facility .

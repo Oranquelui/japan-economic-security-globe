@@ -292,5 +292,27 @@
     "official": false,
     "accessMode": "html",
     "tier": "B"
+  },
+  {
+    "id": "source:mlit-cab-airport-info",
+    "label": "国土交通省 航空局 空港情報",
+    "url": "https://www.mlit.go.jp/koku/",
+    "publisher": "国土交通省 航空局",
+    "accessed": "2026-05-26",
+    "description": "国内空港・航空行政に関する公的公開情報。物流レイヤーでは空港単位の公開集約文脈として扱い、個別便・個別機体情報には接続しない。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:jma-public-weather-context",
+    "label": "気象庁 防災気象情報（空港運用の気象文脈）",
+    "url": "https://www.jma.go.jp/bosai/map.html",
+    "publisher": "気象庁",
+    "accessed": "2026-05-26",
+    "description": "空港・航空貨物への影響を説明するための公的な気象文脈。空港単位の公開集約に限定し、個別便・個別機体情報には接続しない。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "B"
   }
 ]
