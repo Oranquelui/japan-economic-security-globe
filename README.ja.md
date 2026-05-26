@@ -8,7 +8,7 @@
 
 ## 公開デモ
 
-- Version: `0.2.0`
+- Version: `0.3.0`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
 - Launch view: [国内物流 watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
 - 最初の約束: `日本が今なにを注視すべきか`
@@ -16,7 +16,9 @@
 
 ## 現在のバージョン
 
-`v0.2.0` は public watchboard release です。国内 logistics watch を前面に出しつつ、海外燃料供給ルートは Energy theme に残します。また、active theme の出典状態バーを追加し、e-Stat、BOJ、国会会議録の公式 fetch 経路を timeout-aware な共通 request helper で堅牢化しています。
+`v0.3.0` は Logistics + Airport operational layer release です。原油、LNG、石炭、エネルギー系タンカーは `Energy` を主所属に残しつつ、`Logistics` では国内道路、鉄道、内航、港湾後続、bounded な一般貨物、航空貨物、空港運用を扱います。空港シグナルは公開・集約・遅延された infrastructure/cargo 文脈に限定し、個別機体、個別便、旅客、軍用機追跡、CCTV、threat dashboard 的な表現は対象外です。
+
+`v0.2.0` では、active theme の出典状態バーを追加し、e-Stat、BOJ、国会会議録の公式 fetch 経路を timeout-aware な共通 request helper で堅牢化しました。
 
 ## 公開プレビュー
 
