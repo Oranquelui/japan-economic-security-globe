@@ -23,9 +23,9 @@ const THEME_COPY: Partial<Record<ThemeId, DomesticImpactCopy>> = {
   },
   logistics: {
     label: "国内物流着地点",
-    description: "港湾・ターミナル・国内ボトルネックから見る、国内物流の着地点",
+    description: "港湾・空港・国内ボトルネックから見る、国内物流の着地点",
     subject: "国内物流着地点",
-    action: "港湾後続・製油所・受入基地から国内供給への接続を確認"
+    action: "港湾後続・道路・鉄道・空港運用から国内配送への接続を確認"
   },
   rice: {
     label: "国内主要地域",

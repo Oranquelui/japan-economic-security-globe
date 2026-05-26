@@ -55,7 +55,9 @@ export function buildLiveLogisticsDetail(
 
 function buildWhyItMatters(item: LiveLogisticsItemViewModel) {
   if (item.laneId === "maritime") {
-    return "外航AISは国内物流面への補助線として扱い、海峡通過・港湾ETA・出典遅延を国内着地点の前段文脈として確認します。";
+    return item.kindLabel === "外航海上補助"
+      ? "外航AISは Energy theme の補助線として扱い、海峡通過・港湾ETA・出典遅延をエネルギー着地点の前段文脈として確認します。"
+      : "非エネルギー一般貨物は、港湾到着前後の公開集約として扱い、港湾後続と国内配送への波及を確認します。";
   }
 
   if (item.kindLabel === "空港運用") {
@@ -67,7 +69,7 @@ function buildWhyItMatters(item: LiveLogisticsItemViewModel) {
 
 function getSignalCategory(item: LiveLogisticsItemViewModel) {
   if (item.laneId === "maritime") {
-    return "外航AIS補助";
+    return item.kindLabel === "外航海上補助" ? "外航AIS補助" : "一般貨物・港湾後続";
   }
 
   return item.kindLabel === "空港運用" ? "空港運用・航空貨物" : "国内物流接続";
@@ -75,7 +77,9 @@ function getSignalCategory(item: LiveLogisticsItemViewModel) {
 
 function getRecommendedAction(item: LiveLogisticsItemViewModel) {
   if (item.laneId === "maritime") {
-    return "AIS位置、海峡通過、港湾ETA、出典遅延を国内物流への補助線として確認";
+    return item.kindLabel === "外航海上補助"
+      ? "AIS位置、海峡通過、港湾ETA、出典遅延を Energy theme の補助線として確認"
+      : "港湾到着前後の公開集約と、道路・鉄道・内航・空港への後続接続を確認";
   }
 
   if (item.kindLabel === "空港運用") {

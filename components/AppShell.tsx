@@ -124,7 +124,7 @@ export function AppShell({
     ? buildSelectedRankingExplanation(activeId, rankingSignals, inboxDecision, rankingNowRef.current)
     : null;
   const watchboardBriefing = homepageDecision
-    ? buildWatchboardBriefing(graph, rankingSignals, homepageDecision, rankingNowRef.current)
+    ? buildWatchboardBriefing(graph, rankingSignals, homepageDecision, rankingNowRef.current, themeId)
     : null;
   const watchOverlays = buildWatchOverlayItems(themeId, activeId, new Date(rankingNowRef.current));
   const liveLogistics = buildLiveLogisticsView(themeId, activeId, liveLogisticsEvents, new Date(rankingNowRef.current));
