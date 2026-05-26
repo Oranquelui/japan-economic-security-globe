@@ -8,7 +8,7 @@ The default view starts with `Energy`, but `Logistics` is now a first-class them
 
 ## Public Demo
 
-- Version: `0.2.0`
+- Version: `0.3.0`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
 - Launch view: [Japan domestic logistics watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
 - First-screen promise: `What Japan should watch now`
@@ -16,7 +16,9 @@ The default view starts with `Energy`, but `Logistics` is now a first-class them
 
 ## Current Version
 
-`v0.2.0` is the public watchboard release. It foregrounds the domestic logistics watch, keeps energy import routes in the Energy theme, adds an active-theme source status strip, and hardens official e-Stat, BOJ, and Kokkai fetch paths with timeout-aware request handling.
+`v0.3.0` is the Logistics + Airport operational layer release. It keeps crude, LNG, coal, and energy tankers primary under `Energy`, while `Logistics` now includes Japan-side road, rail, coastal, port follow-through, bounded general cargo, air cargo, and airport operations. Airport signals are public, aggregate, delayed, and infrastructure/cargo oriented; individual aircraft, individual flights, passengers, military tracking, CCTV, and threat-dashboard behavior are explicitly out of scope.
+
+`v0.2.0` introduced the source status strip and hardened official e-Stat, BOJ, and Kokkai fetch paths with timeout-aware request handling.
 
 ## Launch Preview
 
