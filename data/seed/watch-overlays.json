@@ -1,20 +1,20 @@
 [
   {
     "id": "overlay:japan-maritime-watch",
-    "themeIds": ["logistics", "energy"],
-    "title": "日本関係海運ウォッチ",
-    "summary": "ホルムズ海峡からマラッカ海峡を経て、日本の港湾・受入基地へ着地するルートを1日遅延で監視する。",
-    "relatedIds": ["flow:japan-linked-maritime-watch", "port:yokohama", "terminal:sodegaura-lng"],
-    "sourceIds": ["source:customs-trade-statistics", "source:enecho-energy-trends"],
+    "themeIds": ["logistics"],
+    "title": "港湾後続ウォッチ",
+    "summary": "非エネルギー一般貨物が横浜港から首都圏配送へ進む港湾後続を、公開統計とデモ fixture で監視する。",
+    "relatedIds": ["flow:japan-linked-maritime-watch", "port:yokohama", "prefecture:tokyo"],
+    "sourceIds": ["source:customs-trade-statistics"],
     "updatedAt": "2026-04-25T00:00:00.000Z",
-    "disclosureLabel": "1日遅延 / bounded overlay"
+    "disclosureLabel": "公開統計 / bounded overlay"
   },
   {
     "id": "overlay:tokyo-bay-landing-watch",
-    "themeIds": ["logistics", "water"],
-    "title": "東京湾着地点ウォッチ",
-    "summary": "横浜港と袖ケ浦LNG受入基地を、日本向けエネルギー・物流の着地点として並べて監視する。",
-    "relatedIds": ["port:yokohama", "terminal:sodegaura-lng", "flow:qatar-lng-japan"],
+    "themeIds": ["energy"],
+    "title": "東京湾エネルギー着地点ウォッチ",
+    "summary": "袖ケ浦LNG受入基地を、日本向けエネルギーの着地点として監視する。",
+    "relatedIds": ["terminal:sodegaura-lng", "flow:qatar-lng-japan"],
     "sourceIds": ["source:enecho-energy-trends", "source:meti-2026-energy-taskforce"],
     "updatedAt": "2026-04-25T00:00:00.000Z",
     "disclosureLabel": "公式資料ベース / bounded overlay"

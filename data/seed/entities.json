@@ -21,7 +21,6 @@
     "countryCode": "JP",
     "flagEmoji": "🇯🇵",
     "provenance": [
-      "source:enecho-energy-trends",
       "source:customs-trade-statistics"
     ]
   },
@@ -193,11 +192,9 @@
     "kind": "Chokepoint",
     "label": "Strait of Hormuz",
     "summary": "A critical maritime chokepoint for Gulf energy shipments.",
-    "whyItMatters": "For Japanese users, Hormuz matters when route risk becomes fuel, electricity, logistics, and food input pressure.",
+    "whyItMatters": "For Japanese users, Hormuz matters when route risk becomes fuel and electricity exposure.",
     "themes": [
-      "energy",
-      "logistics",
-      "rice"
+      "energy"
     ],
     "coordinates": {
       "lat": 26.5667,
@@ -212,8 +209,8 @@
     "id": "chokepoint:malacca",
     "kind": "Chokepoint",
     "label": "Strait of Malacca",
-    "summary": "A maritime route connecting Indian Ocean energy flows to East Asia.",
-    "whyItMatters": "Malacca helps explain why sea-lane disruption can become a Japanese domestic supply story.",
+    "summary": "A maritime chokepoint connecting Indian Ocean shipping to East Asia.",
+    "whyItMatters": "Malacca helps explain why sea-lane disruption can become a Japanese domestic supply, technology, and energy story.",
     "themes": [
       "energy",
       "logistics",
@@ -224,7 +221,6 @@
       "lon": 101
     },
     "provenance": [
-      "source:enecho-energy-trends",
       "source:customs-trade-statistics"
     ]
   },
@@ -235,9 +231,7 @@
     "summary": "A simplified MVP sea lane from Gulf suppliers through Hormuz and Malacca to Japan.",
     "whyItMatters": "It connects a faraway crisis to Japanese domestic energy exposure.",
     "themes": [
-      "energy",
-      "logistics",
-      "rice"
+      "energy"
     ],
     "provenance": [
       "source:meti-2026-energy-taskforce"
@@ -259,7 +253,7 @@
       "lon": 139.65
     },
     "provenance": [
-      "source:meti-2026-energy-taskforce"
+      "source:customs-trade-statistics"
     ],
     "properties": {
       "displayPriority": 74
@@ -326,9 +320,7 @@
     "summary": "Representative LNG receiving infrastructure in the Tokyo Bay energy system.",
     "whyItMatters": "LNG receiving terminals make global gas dependency visible inside Japan.",
     "themes": [
-      "energy",
-      "logistics",
-      "water"
+      "energy"
     ],
     "coordinates": {
       "lat": 35.45,
@@ -347,11 +339,9 @@
     "kind": "Refinery",
     "label": "Keihin refinery area",
     "summary": "Representative refinery cluster for domestic oil-product exposure.",
-    "whyItMatters": "Refineries translate crude supply risk into Japanese fuel and logistics exposure.",
+    "whyItMatters": "Refineries translate crude supply risk into Japanese fuel exposure.",
     "themes": [
-      "energy",
-      "logistics",
-      "rice"
+      "energy"
     ],
     "coordinates": {
       "lat": 35.52,

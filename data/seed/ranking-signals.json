@@ -69,13 +69,13 @@
   },
   {
     "id": "ranking-signal:logistics-japan-maritime-watch",
-    "label": "日本関係海運の監視優先",
-    "importanceAxes": ["logistics", "energy"],
+    "label": "非エネルギー一般貨物の港湾後続優先",
+    "importanceAxes": ["logistics"],
     "canonicalRefs": [
       { "kind": "flow", "id": "flow:japan-linked-maritime-watch" },
-      { "kind": "entity", "id": "chokepoint:malacca" }
+      { "kind": "entity", "id": "port:yokohama" }
     ],
-    "sourceIds": ["source:enecho-energy-trends", "source:customs-trade-statistics"],
+    "sourceIds": ["source:customs-trade-statistics"],
     "componentInputs": {
       "nationalImportance": 0.8,
       "disruptionDepth": 0.83,

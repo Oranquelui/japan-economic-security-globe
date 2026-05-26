@@ -6,7 +6,7 @@ import { buildLiveLogisticsView } from "../live-logistics";
 const events: LiveLogisticsEvent[] = [
   {
     id: "live-logistics:tanker-qatar-tokyo-bay",
-    themeIds: ["logistics", "energy"],
+    themeIds: ["energy"],
     title: "Tanker corridor: Hormuz → Malacca → Tokyo Bay",
     currentPosition: {
       lat: 12.4,
@@ -29,8 +29,8 @@ const events: LiveLogisticsEvent[] = [
   },
   {
     id: "live-logistics:road-keihin-tokyo",
-    themeIds: ["logistics", "energy"],
-    title: "陸路: 横浜港・京浜 → 首都圏配送",
+    themeIds: ["logistics"],
+    title: "陸路: 横浜港 → 首都圏配送",
     kindLabel: "道路物流",
     statusLabel: "接続監視",
     lastSeenLabel: "22分前",
@@ -38,8 +38,8 @@ const events: LiveLogisticsEvent[] = [
     sourceLabel: "Domestic logistics demo fixture (public route-level)",
     disclosureLabel: "公開系統 / route-level only",
     confidenceLabel: "デモ / 公開粒度",
-    corridorLabel: "横浜港 → 京浜 → 東京",
-    pointIds: ["port:yokohama", "refinery:keihin", "prefecture:tokyo"],
+    corridorLabel: "横浜港 → 東京",
+    pointIds: ["port:yokohama", "prefecture:tokyo"],
     relatedIds: ["flow:japan-linked-maritime-watch"],
     laneId: "road",
     signalTone: "monitoring",
@@ -116,6 +116,24 @@ const events: LiveLogisticsEvent[] = [
     laneId: "air",
     signalTone: "monitoring",
     priority: 88
+  },
+  {
+    id: "live-logistics:container-asia-yokohama",
+    themeIds: ["logistics"],
+    title: "コンテナ一般貨物: 東アジア → 横浜港 → 首都圏配送",
+    kindLabel: "コンテナ一般貨物",
+    statusLabel: "港湾到着前後の公開集約",
+    lastSeenLabel: "64分前",
+    etaLabel: "港湾後続 +12h",
+    sourceLabel: "Public port/logistics aggregate demo fixture (non-energy cargo)",
+    disclosureLabel: "公開集約 / cargo-category only / delayed",
+    confidenceLabel: "デモ / 公開粒度",
+    corridorLabel: "東アジア航路 → 横浜港 → 首都圏",
+    pointIds: ["chokepoint:malacca", "port:yokohama", "prefecture:tokyo"],
+    relatedIds: ["flow:japan-linked-maritime-watch", "port:yokohama", "prefecture:tokyo"],
+    laneId: "maritime",
+    signalTone: "normal",
+    priority: 86
   }
 ];
 
@@ -125,8 +143,10 @@ describe("live logistics view", () => {
 
     expect(view?.title).toBe("JAPAN DOMESTIC LOGISTICS WATCH");
     expect(view?.subtitle).toContain("道路・鉄道・内航海運・航空貨物・空港運用");
+    expect(view?.subtitle).toContain("エネルギー系タンカーは Energy 側で扱う");
     expect(view?.disclosureLabel).toContain("陸路/鉄道/内航/航空貨物/空港運用");
-    expect(view?.items.map((item) => item.kindLabel)).toEqual(["道路物流", "鉄道物流", "内航海運", "空港運用", "航空物流", "外航海上補助"]);
+    expect(view?.disclosureLabel).toContain("一般貨物補助");
+    expect(view?.items.map((item) => item.kindLabel)).toEqual(["道路物流", "鉄道物流", "内航海運", "空港運用", "航空物流", "コンテナ一般貨物"]);
     expect(view?.lanes.map((lane) => lane.title)).toEqual([
       "陸路・トラック",
       "鉄道貨物",
@@ -139,23 +159,12 @@ describe("live logistics view", () => {
     expect(view?.lanes[2].items.map((item) => item.kindLabel)).toEqual(["内航海運"]);
     expect(view?.lanes[3].subtitle).toContain("空港運用");
     expect(view?.lanes[3].items.map((item) => item.kindLabel)).toEqual(["空港運用", "航空物流"]);
-    expect(view?.lanes[4].items.map((item) => item.kindLabel)).toEqual(["外航海上補助"]);
+    expect(view?.lanes[4].items.map((item) => item.kindLabel)).toEqual(["コンテナ一般貨物"]);
     expect(view?.items[0].sourceLabel).toBe("Domestic logistics demo fixture (public route-level)");
-    expect(view?.mapVessels).toEqual([
-      {
-        id: "live-vessel:tanker-qatar-tokyo-bay",
-        label: "AIS tanker 042",
-        lat: 12.4,
-        lon: 110.8,
-        relatedIds: ["live-logistics:tanker-qatar-tokyo-bay", "flow:japan-linked-maritime-watch"],
-        selectionId: "live-logistics:tanker-qatar-tokyo-bay",
-        etaLabel: "ETA 42h",
-        lastSeenLabel: "18分前"
-      }
-    ]);
+    expect(view?.mapVessels).toEqual([]);
     expect(view?.mapRoutes[0]).toMatchObject({
       id: "live-logistics:road-keihin-tokyo",
-      pointIds: ["port:yokohama", "refinery:keihin", "prefecture:tokyo"]
+      pointIds: ["port:yokohama", "prefecture:tokyo"]
     });
     expect(view?.mapRoutes.map((route) => route.id)).toEqual([
       "live-logistics:road-keihin-tokyo",
@@ -163,7 +172,7 @@ describe("live logistics view", () => {
       "live-logistics:coastal-tokyo-osaka",
       "live-logistics:airport-haneda-narita-ops",
       "live-logistics:air-tokyo-fukuoka",
-      "live-logistics:tanker-qatar-tokyo-bay"
+      "live-logistics:container-asia-yokohama"
     ]);
   });
 

@@ -8,15 +8,17 @@
 
 ## 公開デモ
 
-- Version: `0.3.0`
+- Version: `0.3.1`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
 - Launch view: [国内物流 watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
 - 最初の約束: `日本が今なにを注視すべきか`
-- 公開 framing: 国内物流の見え方、港湾後続、道路・鉄道・内航・航空貨物・空港運用、公式ソース信頼、出典 freshness、bounded な near-live overlay、地形が読める地図、AIS補助線
+- 公開 framing: 国内物流の見え方、港湾後続、道路・鉄道・内航・航空貨物・空港運用、非エネルギー一般貨物の補助線、公式ソース信頼、出典 freshness、bounded な near-live overlay、地形が読める地図
 
 ## 現在のバージョン
 
-`v0.3.0` は Logistics + Airport operational layer release です。原油、LNG、石炭、エネルギー系タンカーは `Energy` を主所属に残しつつ、`Logistics` では国内道路、鉄道、内航、港湾後続、bounded な一般貨物、航空貨物、空港運用を扱います。空港シグナルは公開・集約・遅延された infrastructure/cargo 文脈に限定し、個別機体、個別便、旅客、軍用機追跡、CCTV、threat dashboard 的な表現は対象外です。
+`v0.3.1` は theme boundary correction release です。エネルギー系タンカー、原油、LNG、石炭、LNG carrier、エネルギー受入ルートは `Energy` だけで表示します。`Logistics` は国内道路、鉄道、内航、港湾後続、bounded な非エネルギー一般貨物、航空貨物、空港運用に限定します。
+
+`v0.3.0` では Logistics + Airport operational layer を追加しました。空港シグナルは公開・集約・遅延された infrastructure/cargo 文脈に限定し、個別機体、個別便、旅客、軍用機追跡、CCTV、threat dashboard 的な表現は対象外です。
 
 `v0.2.0` では、active theme の出典状態バーを追加し、e-Stat、BOJ、国会会議録の公式 fetch 経路を timeout-aware な共通 request helper で堅牢化しました。
 
@@ -24,7 +26,7 @@
 
 ![Japan Watchboard logistics view showing domestic logistics lanes, terrain basemap, and evidence detail popup](docs/assets/japan-watchboard-logistics.png)
 
-現在の公開面では、国内 logistics watch を前面に出しています。港湾着地点、道路・鉄道・内航・航空貨物・空港運用の国内後続、地形文脈、出典信頼、AIS補助線を別々の図ではなく同じ画面で確認できます。
+現在の公開面では、国内 logistics watch を前面に出しています。港湾着地点、道路・鉄道・内航・航空貨物・空港運用の国内後続、地形文脈、出典信頼、bounded な非エネルギー一般貨物の補助線を別々の図ではなく同じ画面で確認できます。
 
 ## 中心となる問い
 
@@ -35,7 +37,7 @@
 - `Watchboard briefing`: 国家的重要度、freshness、confidence、why now を先に出す。
 - `Japan operations map`: コメ、水、貯水池、港湾、LNG受入基地、製油所、都道府県など、国内に着地する影響を主画面で見せる。
 - `Bounded watch overlays`: 公開可能な範囲に限定した、近接監視・遅延監視の情報を重ねる。
-- `Domestic logistics watch`: 国内の道路・鉄道・内航・航空貨物・空港運用と港湾後続を主表示し、外航AISは補助線として freshness と provider limitation を UI 上に明示する。
+- `Domestic logistics watch`: 国内の道路・鉄道・内航・航空貨物・空港運用、港湾後続、bounded な非エネルギー一般貨物を主表示する。エネルギー系タンカーと LNG/原油ルートは `Energy` theme に残す。
 - `Source status strip`: active theme の公式/API/文書ソース coverage と freshness を要約する。
 - `Global supporting layer`: 原油、LNG、石炭、半導体、供給国、海上輸送路、チョークポイントなど、世界依存の関係を日本への補助文脈として見せる。
 - `Evidence graph`: 政策、予算、法令、組織、出典文書、provenance の関係を見せる。
@@ -62,13 +64,13 @@
 MVP では、各テーマについて薄いが一貫した一連の導線を入れています。
 
 - `Energy`: 原油、LNG、石炭、湾岸ルート、ホルムズ海峡、マラッカ海峡、横浜港、袖ケ浦LNG受入基地、京浜製油所エリア。
-- `Logistics`: 国内道路、鉄道、内航、航空貨物、空港運用、港湾後続、bounded な海運 watch overlay、運用ステータスシグナル。全船舶の完全リアルタイム coverage や個別便・個別機体情報の coverage は主張しない。
+- `Logistics`: 国内道路、鉄道、内航、航空貨物、空港運用、港湾後続、bounded な非エネルギー一般貨物 overlay、運用ステータスシグナル。全船舶の完全リアルタイム coverage や個別便・個別機体情報の coverage は主張しない。
 - `Rice`: コメ価格圧力、備蓄・政策シグナル、エネルギーや肥料投入が家計の食料負担へつながる流れ。
 - `Water`: 東京都と小河内貯水池を使った水ストレス例。
 - `Defense`: 2026年度防衛予算からスタンド・オフ防衛能力への予算フロー例。
 - `Semiconductors`: 台湾、韓国、オランダ、米国、中国と日本を結ぶ先端半導体依存フロー。
 
-Phase 0 の物流面は、意図的に bounded にしています。国内の道路・鉄道・内航・航空貨物・空港運用、港湾後続、日本側の港湾・空港、LNG受入基地、製油所、海上チョークポイントと輸入ルートの補助線、bounded な海運 watch overlay、小さな災害ライフライン watch slice までを扱います。ただし、日本に向かう全タンカーの完全リアルタイム AIS coverage や個別便・個別機体情報の coverage を主張するものではありません。それには licensed provider integration が必要です。
+Phase 0 の物流面は、意図的に bounded にしています。国内の道路・鉄道・内航・航空貨物・空港運用、港湾後続、日本側の港湾・空港、非エネルギー一般貨物、bounded な港湾後続 overlay、小さな災害ライフライン watch slice までを扱います。LNG受入基地、製油所、エネルギー系タンカー、LNG/原油ルートは `Energy` の対象です。全船舶の完全リアルタイム coverage や個別便・個別機体情報の coverage は主張しません。それには licensed provider integration が必要です。
 
 ## ロードマップ
 
@@ -87,7 +89,7 @@ Phase 0 の物流面は、意図的に bounded にしています。国内の道
 - 日本への影響説明に必要な範囲で、地政学的隣国との関係を追加する。
 - ルート、港湾、施設、出典文書の対象範囲を増やす。
 - 繰り返し可能な取り込み処理と検証を始める。
-- 外航海上補助 coverage のため、licensed AIS と port-call provider を評価する。
+- 非エネルギー物流 coverage のため、licensed port-call / cargo-status provider を評価し、energy AIS / tanker coverage は Energy theme に残す。
 
 `Phase 2`: 法人・組織向け intelligence product
 

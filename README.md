@@ -8,15 +8,17 @@ The default view starts with `Energy`, but `Logistics` is now a first-class them
 
 ## Public Demo
 
-- Version: `0.3.0`
+- Version: `0.3.1`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
 - Launch view: [Japan domestic logistics watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
 - First-screen promise: `What Japan should watch now`
-- Public framing: domestic logistics visibility, port follow-through, road/rail/coastal/air-cargo/airport-operations lanes, official-source trust, source-status freshness, bounded near-live overlays, terrain-aware mapping, and AIS as supporting context
+- Public framing: domestic logistics visibility, port follow-through, road/rail/coastal/air-cargo/airport-operations lanes, non-energy general cargo support, official-source trust, source-status freshness, bounded near-live overlays, and terrain-aware mapping
 
 ## Current Version
 
-`v0.3.0` is the Logistics + Airport operational layer release. It keeps crude, LNG, coal, and energy tankers primary under `Energy`, while `Logistics` now includes Japan-side road, rail, coastal, port follow-through, bounded general cargo, air cargo, and airport operations. Airport signals are public, aggregate, delayed, and infrastructure/cargo oriented; individual aircraft, individual flights, passengers, military tracking, CCTV, and threat-dashboard behavior are explicitly out of scope.
+`v0.3.1` is a theme-boundary correction release. Energy tankers, crude, LNG, coal, LNG carriers, and energy receiving routes are shown only under `Energy`. `Logistics` is reserved for Japan-side road, rail, coastal, port follow-through, bounded non-energy general cargo, air cargo, and airport operations.
+
+`v0.3.0` introduced the Logistics + Airport operational layer. Airport signals remain public, aggregate, delayed, and infrastructure/cargo oriented; individual aircraft, individual flights, passengers, military tracking, CCTV, and threat-dashboard behavior are explicitly out of scope.
 
 `v0.2.0` introduced the source status strip and hardened official e-Stat, BOJ, and Kokkai fetch paths with timeout-aware request handling.
 
@@ -24,7 +26,7 @@ The default view starts with `Energy`, but `Logistics` is now a first-class them
 
 ![Japan Watchboard logistics view showing domestic logistics lanes, terrain basemap, and evidence detail popup](docs/assets/japan-watchboard-logistics.png)
 
-The current launch surface focuses on a Japan domestic logistics watch: domestic landing points, port follow-through, road/rail/coastal/air-cargo/airport-operations lanes, terrain context, source confidence, and AIS supporting context are shown together instead of as separate charts.
+The current launch surface focuses on a Japan domestic logistics watch: domestic landing points, port follow-through, road/rail/coastal/air-cargo/airport-operations lanes, terrain context, source confidence, and bounded non-energy general cargo support are shown together instead of as separate charts.
 
 ## Core Question
 
@@ -35,7 +37,7 @@ The app answers that question through seven primary surfaces:
 - `Watchboard briefing`: ranks what Japan should watch now with freshness, confidence, and why-now context.
 - `Japan operations map`: shows ports, LNG terminals, refineries, reservoirs, prefectures, and other domestic landing points.
 - `Bounded watch overlays`: keeps near-live or delayed watch items visible without implying unrestricted live tracking.
-- `Domestic logistics watch`: foregrounds domestic road, rail, coastal, air cargo, airport operations, and port follow-through while keeping maritime AIS as a supporting context with freshness and provider limitations shown in the UI.
+- `Domestic logistics watch`: foregrounds domestic road, rail, coastal, air cargo, airport operations, port follow-through, and bounded non-energy general cargo. Energy tankers and LNG/crude routes stay in the `Energy` theme.
 - `Source status strip`: summarizes official/API/document source coverage and freshness for the active theme.
 - `Evidence graph`: connects policy, budgets, laws, organizations, and source documents.
 - `Operations table`: lists routes, signals, and domestic landing points in an operational reading order.
@@ -63,13 +65,13 @@ Each detail panel is designed to show a summary, why it matters in Japan, source
 The MVP includes a thin but coherent slice for each theme:
 
 - `Energy`: crude oil, LNG, coal, Gulf routes, the Strait of Hormuz, the Strait of Malacca, Yokohama Port, the Sodegaura LNG terminal, and the Keihin refinery area.
-- `Logistics`: domestic road, rail, coastal, air cargo, airport operations, port follow-through, bounded maritime watch overlays, and operational status signals without claiming complete real-time vessel or individual flight/aircraft coverage.
+- `Logistics`: domestic road, rail, coastal, air cargo, airport operations, port follow-through, bounded non-energy general cargo overlays, and operational status signals without claiming complete real-time vessel or individual flight/aircraft coverage.
 - `Rice`: rice price pressure, reserve and policy signals, and how energy or fertilizer inputs can translate into household food burden.
 - `Water`: a water-stress example centered on Tokyo and the Ogochi Reservoir.
 - `Defense`: a budget-flow example from FY2026 defense spending into stand-off defense capability.
 - `Semiconductors`: advanced semiconductor dependency flows linking Taiwan, South Korea, the Netherlands, the United States, China, and Japan.
 
-For Phase 0, the logistics surface is intentionally bounded. The public model covers domestic road, rail, coastal, air cargo, airport operations, Japanese ports and airports, LNG receiving terminals, refineries, supporting sea chokepoints and import routes, bounded maritime watch overlays, and a small disaster-lifeline watch slice. It does not claim complete real-time AIS coverage of every tanker heading to Japan or individual flight/aircraft coverage; that requires licensed provider integration and is outside this public MVP.
+For Phase 0, the logistics surface is intentionally bounded. The public model covers domestic road, rail, coastal, air cargo, airport operations, Japanese ports and airports, non-energy general cargo, bounded port-follow-through overlays, and a small disaster-lifeline watch slice. LNG receiving terminals, refineries, energy tankers, and LNG/crude routes belong to `Energy`. The app does not claim complete real-time vessel coverage or individual flight/aircraft coverage; that requires licensed provider integration and is outside this public MVP.
 
 ## Roadmap
 
@@ -88,7 +90,7 @@ For Phase 0, the logistics surface is intentionally bounded. The public model co
 - expand neighboring-country context only where it helps explain Japanese impact
 - widen routes, ports, facilities, and source-document coverage
 - begin repeatable ingestion and validation
-- evaluate licensed AIS and port-call providers for external maritime supporting coverage
+- evaluate licensed port-call and cargo-status providers for non-energy logistics coverage, while keeping energy AIS/tanker coverage in the Energy theme
 
 `Phase 2`: institutional intelligence product
 

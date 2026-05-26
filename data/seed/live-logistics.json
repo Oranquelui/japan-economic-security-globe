@@ -1,8 +1,8 @@
 [
   {
     "id": "live-logistics:road-keihin-tokyo",
-    "themeIds": ["logistics", "energy"],
-    "title": "陸路: 横浜港・京浜/袖ケ浦 → 首都圏配送",
+    "themeIds": ["logistics"],
+    "title": "陸路: 横浜港 → 首都圏配送",
     "kindLabel": "道路物流",
     "laneId": "road",
     "statusLabel": "接続監視",
@@ -11,9 +11,9 @@
     "sourceLabel": "Domestic logistics demo fixture (public route-level)",
     "disclosureLabel": "公開系統 / route-level only",
     "confidenceLabel": "デモ / 公開粒度",
-    "corridorLabel": "横浜港 → 京浜/袖ケ浦 → 東京",
-    "pointIds": ["port:yokohama", "refinery:keihin", "terminal:sodegaura-lng", "prefecture:tokyo"],
-    "relatedIds": ["flow:japan-linked-maritime-watch", "flow:saudi-oil-japan", "flow:qatar-lng-japan", "port:yokohama"],
+    "corridorLabel": "横浜港 → 東京",
+    "pointIds": ["port:yokohama", "prefecture:tokyo"],
+    "relatedIds": ["flow:japan-linked-maritime-watch", "port:yokohama", "prefecture:tokyo"],
     "signalTone": "monitoring",
     "priority": 94
   },
@@ -37,8 +37,8 @@
   },
   {
     "id": "live-logistics:coastal-tokyo-bay-hanshin",
-    "themeIds": ["logistics", "energy", "water"],
-    "title": "内航海運・港湾後続: 東京湾 → 阪神圏",
+    "themeIds": ["logistics"],
+    "title": "内航海運・港湾後続: 横浜港 → 阪神圏",
     "kindLabel": "内航海運",
     "laneId": "coastal",
     "statusLabel": "港湾後続",
@@ -47,9 +47,9 @@
     "sourceLabel": "Domestic logistics demo fixture (port follow-through)",
     "disclosureLabel": "公開系統 / route-level only",
     "confidenceLabel": "デモ / 公開粒度",
-    "corridorLabel": "横浜港/袖ケ浦 → 大阪圏",
-    "pointIds": ["port:yokohama", "terminal:sodegaura-lng", "prefecture:osaka"],
-    "relatedIds": ["flow:japan-linked-maritime-watch", "flow:qatar-lng-japan", "terminal:sodegaura-lng"],
+    "corridorLabel": "横浜港 → 大阪圏",
+    "pointIds": ["port:yokohama", "prefecture:osaka"],
+    "relatedIds": ["flow:japan-linked-maritime-watch", "port:yokohama", "prefecture:osaka"],
     "signalTone": "normal",
     "priority": 83
   },
@@ -109,7 +109,7 @@
   },
   {
     "id": "live-logistics:tanker-qatar-tokyo-bay",
-    "themeIds": ["logistics", "energy"],
+    "themeIds": ["energy"],
     "title": "Tanker corridor: Hormuz → Malacca → Tokyo Bay",
     "currentPosition": {
       "lat": 12.4,
@@ -126,13 +126,13 @@
     "confidenceLabel": "集約信号",
     "corridorLabel": "Hormuz → Malacca → Yokohama/Sodegaura",
     "pointIds": ["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng"],
-    "relatedIds": ["flow:japan-linked-maritime-watch", "flow:qatar-lng-japan", "chokepoint:hormuz", "chokepoint:malacca"],
+    "relatedIds": ["flow:qatar-lng-japan", "chokepoint:hormuz", "chokepoint:malacca"],
     "signalTone": "watch",
     "priority": 98
   },
   {
     "id": "live-logistics:tanker-saudi-kashima",
-    "themeIds": ["logistics", "energy"],
+    "themeIds": ["energy"],
     "title": "Crude tanker: Ras Tanura → Malacca → Kashima",
     "currentPosition": {
       "lat": 7.6,
@@ -149,13 +149,13 @@
     "confidenceLabel": "衛星AIS補完",
     "corridorLabel": "Ras Tanura → Malacca → Kashima",
     "pointIds": ["country:saudi-arabia", "chokepoint:hormuz", "chokepoint:malacca", "country:japan"],
-    "relatedIds": ["flow:japan-linked-maritime-watch", "flow:saudi-oil-japan", "chokepoint:hormuz", "chokepoint:malacca"],
+    "relatedIds": ["flow:saudi-oil-japan", "chokepoint:hormuz", "chokepoint:malacca"],
     "signalTone": "watch",
     "priority": 97
   },
   {
     "id": "live-logistics:tanker-australia-sodegaura",
-    "themeIds": ["logistics", "energy"],
+    "themeIds": ["energy"],
     "title": "LNG tanker: North West Shelf → Sodegaura",
     "currentPosition": {
       "lat": 19.2,
@@ -172,13 +172,13 @@
     "confidenceLabel": "沿岸AIS近接",
     "corridorLabel": "North West Shelf → Sodegaura LNG",
     "pointIds": ["country:australia", "terminal:sodegaura-lng"],
-    "relatedIds": ["flow:japan-linked-maritime-watch", "flow:qatar-lng-japan", "terminal:sodegaura-lng"],
+    "relatedIds": ["flow:qatar-lng-japan", "terminal:sodegaura-lng"],
     "signalTone": "monitoring",
     "priority": 96
   },
   {
     "id": "live-logistics:tanker-singapore-yokohama",
-    "themeIds": ["logistics", "energy"],
+    "themeIds": ["energy"],
     "title": "Product tanker: Singapore → Yokohama",
     "currentPosition": {
       "lat": 24.7,
@@ -195,7 +195,7 @@
     "confidenceLabel": "集約信号",
     "corridorLabel": "Singapore → Okinawa approach → Yokohama",
     "pointIds": ["chokepoint:malacca", "port:yokohama"],
-    "relatedIds": ["flow:japan-linked-maritime-watch", "port:yokohama", "chokepoint:malacca"],
+    "relatedIds": ["port:yokohama", "chokepoint:malacca"],
     "signalTone": "normal",
     "priority": 89
   }

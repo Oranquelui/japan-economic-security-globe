@@ -34,7 +34,6 @@ describe("japan map canvas model", () => {
 
     expect(model.points.map((point) => point.id)).toEqual(
       expect.arrayContaining([
-        "refinery:keihin",
         "prefecture:niigata",
         "prefecture:hokkaido",
         "prefecture:akita",
@@ -78,28 +77,18 @@ describe("japan map canvas model", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "logistics");
     const liveLogistics = {
-      mapVessels: [
-        {
-          id: "live-vessel:tanker-qatar-tokyo-bay",
-          label: "AIS tanker 042",
-          lat: 12.4,
-          lon: 110.8,
-          relatedIds: ["flow:japan-linked-maritime-watch"],
-          etaLabel: "ETA 42h",
-          lastSeenLabel: "18分前"
-        }
-      ],
+      mapVessels: [],
       mapRoutes: [
         {
-          id: "live-logistics:tanker-qatar-tokyo-bay",
-          label: "AIS tanker corridor",
-          pointIds: ["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng"],
+          id: "live-logistics:container-asia-yokohama",
+          label: "コンテナ一般貨物: 東アジア → 横浜港 → 首都圏配送",
+          pointIds: ["chokepoint:malacca", "port:yokohama", "prefecture:tokyo"],
           relatedIds: ["flow:japan-linked-maritime-watch"]
         },
         {
           id: "live-logistics:road-keihin-tokyo",
-          label: "陸路: 横浜港・京浜/袖ケ浦 → 首都圏配送",
-          pointIds: ["port:yokohama", "refinery:keihin", "terminal:sodegaura-lng", "prefecture:tokyo"],
+          label: "陸路: 横浜港 → 首都圏配送",
+          pointIds: ["port:yokohama", "prefecture:tokyo"],
           relatedIds: ["flow:japan-linked-maritime-watch"]
         }
       ]
@@ -113,21 +102,12 @@ describe("japan map canvas model", () => {
     );
 
     expect(model.liveRoutes.map((route: { id: string }) => route.id)).toEqual(
-      expect.arrayContaining(["live-logistics:tanker-qatar-tokyo-bay", "live-logistics:road-keihin-tokyo"])
+      expect.arrayContaining(["live-logistics:container-asia-yokohama", "live-logistics:road-keihin-tokyo"])
     );
     expect(model.livePoints.map((point: { id: string }) => point.id)).toEqual(
-      expect.arrayContaining(["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng", "refinery:keihin", "prefecture:tokyo"])
+      expect.arrayContaining(["chokepoint:malacca", "port:yokohama", "prefecture:tokyo"])
     );
-    expect(model.liveVessels).toEqual([
-      expect.objectContaining({
-        id: "live-vessel:tanker-qatar-tokyo-bay",
-        kind: "AIS supporting context",
-        label: "AIS tanker 042",
-        lat: 12.4,
-        lon: 110.8,
-        selectionId: "live-logistics:tanker-qatar-tokyo-bay"
-      })
-    ]);
+    expect(model.liveVessels).toEqual([]);
   });
 
   test("renders airport operations as facility points without aircraft markers", () => {
