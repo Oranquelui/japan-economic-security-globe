@@ -32,4 +32,28 @@ describe("watchboard presentation", () => {
     );
     expect(briefing?.proofSourceLabels).toEqual(["METI", "MAFF", "JMA", "Trade Statistics"]);
   });
+
+  test("can scope the briefing to the active logistics theme", () => {
+    const graph = loadSeedGraph();
+    const signals = loadSeedRankingSignals();
+    const decision = buildRankingDecision({
+      surfaceId: "homepage",
+      signals,
+      now: "2026-04-26T00:00:00.000Z"
+    });
+
+    const briefing = buildWatchboardBriefing(graph, signals, decision, "2026-04-26T00:00:00.000Z", "logistics");
+
+    expect(briefing).toEqual(
+      expect.objectContaining({
+        rankLabel: "#5",
+        themeId: "logistics",
+        themeLabel: "物流",
+        title: "一般貨物・港湾後続 → 首都圏",
+        sourceProofLabel: "根拠: Trade Statistics"
+      })
+    );
+    expect(briefing?.proofSourceLabels).toEqual(["Trade Statistics"]);
+    expect(briefing?.title).not.toMatch(/LNG|原油|タンカー|ホルムズ/);
+  });
 });

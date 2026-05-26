@@ -15,7 +15,7 @@ const item: LiveLogisticsItemViewModel = {
   lastSeenLabel: "18分前",
   pointIds: ["country:qatar", "chokepoint:hormuz", "chokepoint:malacca", "port:yokohama", "terminal:sodegaura-lng"],
   priority: 98,
-  relatedIds: ["flow:japan-linked-maritime-watch"],
+  relatedIds: ["flow:qatar-lng-japan"],
   signalTone: "watch",
   sourceLabel: "AIS demo fixture (supporting context)",
   statusLabel: "Underway",
@@ -31,13 +31,36 @@ describe("live logistics detail", () => {
     expect(detail.label).toBe("Tanker corridor: Hormuz → Malacca → Tokyo Bay");
     expect(detail.kind).toBe("外航海上補助");
     expect(detail.summary).toContain("Hormuz → Malacca");
-    expect(detail.whyItMatters).toContain("外航AISは国内物流面への補助線");
+    expect(detail.whyItMatters).toContain("外航AISは Energy theme の補助線");
     expect(detail.signal.category).toBe("外航AIS補助");
-    expect(detail.linkedFlows.map((flow) => flow.id)).toContain("flow:japan-linked-maritime-watch");
+    expect(detail.linkedFlows.map((flow) => flow.id)).toContain("flow:qatar-lng-japan");
     expect(detail.relatedEntities.map((entity) => entity.id)).toEqual(
       expect.arrayContaining(["chokepoint:hormuz", "chokepoint:malacca", "port:yokohama"])
     );
     expect(detail.sources.length).toBeGreaterThan(0);
+  });
+
+  test("frames non-energy maritime cargo as port follow-through rather than AIS tracking", () => {
+    const graph = loadSeedGraph();
+    const detail = buildLiveLogisticsDetail(graph, {
+      ...item,
+      confidenceLabel: "デモ / 公開粒度",
+      corridorLabel: "東アジア航路 → 横浜港 → 首都圏",
+      disclosureLabel: "公開集約 / cargo-category only / delayed",
+      etaLabel: "港湾後続 +12h",
+      id: "live-logistics:container-asia-yokohama",
+      kindLabel: "コンテナ一般貨物",
+      pointIds: ["chokepoint:malacca", "port:yokohama", "prefecture:tokyo"],
+      relatedIds: ["flow:japan-linked-maritime-watch", "port:yokohama", "prefecture:tokyo"],
+      sourceLabel: "Public port/logistics aggregate demo fixture (non-energy cargo)",
+      statusLabel: "港湾到着前後の公開集約",
+      title: "コンテナ一般貨物: 東アジア → 横浜港 → 首都圏配送"
+    });
+
+    expect(detail.signal.category).toBe("一般貨物・港湾後続");
+    expect(detail.whyItMatters).toContain("非エネルギー一般貨物");
+    expect(detail.signal.recommendedAction).toContain("港湾到着前後の公開集約");
+    expect(detail.whyItMatters).not.toMatch(/AIS|タンカー|LNG|ホルムズ/);
   });
 
   test("marks domestic demo fallback sources as non-official", () => {
@@ -49,9 +72,9 @@ describe("live logistics detail", () => {
       id: "live-logistics:road-keihin-tokyo",
       kindLabel: "道路物流",
       laneId: "road",
-      pointIds: ["port:yokohama", "refinery:keihin", "terminal:sodegaura-lng", "prefecture:tokyo"],
+      pointIds: ["port:yokohama", "prefecture:tokyo"],
       sourceLabel: "Domestic logistics demo fixture (public route-level)",
-      title: "陸路: 横浜港・京浜/袖ケ浦 → 首都圏配送"
+      title: "陸路: 横浜港 → 首都圏配送"
     });
 
     expect(detail.sources).toEqual([

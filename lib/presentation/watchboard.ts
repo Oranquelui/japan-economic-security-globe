@@ -31,9 +31,10 @@ export function buildWatchboardBriefing(
   graph: SemanticGraph,
   signals: RankingSignal[],
   decision: RankingDecision,
-  now: string
+  now: string,
+  themeFilter?: ThemeId
 ): WatchboardBriefingViewModel | null {
-  const topItem = decision.items[0];
+  const topItem = selectDecisionItem(graph, signals, decision, themeFilter);
 
   if (!topItem) {
     return null;
@@ -53,7 +54,7 @@ export function buildWatchboardBriefing(
     now
   });
   const detail = selectedId ? safelyGetDetail(graph, selectedId) : null;
-  const proofSourceLabels = buildProofSourceLabels(graph, signals, decision);
+  const proofSourceLabels = buildProofSourceLabels(graph, signals, themeFilter ? [topItem] : decision.items);
 
   return {
     confidenceLabel: explanation.confidence.label,
@@ -73,10 +74,31 @@ export function buildWatchboardBriefing(
   };
 }
 
-function buildProofSourceLabels(graph: SemanticGraph, signals: RankingSignal[], decision: RankingDecision) {
+function selectDecisionItem(
+  graph: SemanticGraph,
+  signals: RankingSignal[],
+  decision: RankingDecision,
+  themeFilter?: ThemeId
+) {
+  if (!themeFilter) {
+    return decision.items[0];
+  }
+
+  return decision.items.find((item) => {
+    const signal = signals.find((candidate) => candidate.id === item.signalId);
+
+    return signal ? resolveRankingThemeId(graph, signal) === themeFilter : false;
+  }) ?? decision.items[0];
+}
+
+function buildProofSourceLabels(
+  graph: SemanticGraph,
+  signals: RankingSignal[],
+  decisionItems: RankingDecision["items"]
+) {
   const sourceIds = new Set<string>();
 
-  for (const item of decision.items) {
+  for (const item of decisionItems) {
     const signal = signals.find((candidate) => candidate.id === item.signalId);
 
     for (const sourceId of signal?.sourceIds ?? []) {

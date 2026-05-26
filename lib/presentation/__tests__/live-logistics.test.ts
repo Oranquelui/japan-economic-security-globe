@@ -143,7 +143,7 @@ describe("live logistics view", () => {
 
     expect(view?.title).toBe("JAPAN DOMESTIC LOGISTICS WATCH");
     expect(view?.subtitle).toContain("道路・鉄道・内航海運・航空貨物・空港運用");
-    expect(view?.subtitle).toContain("エネルギー系タンカーは Energy 側で扱う");
+    expect(view?.subtitle).toContain("エネルギー系の海上輸送は Energy 側で扱う");
     expect(view?.disclosureLabel).toContain("陸路/鉄道/内航/航空貨物/空港運用");
     expect(view?.disclosureLabel).toContain("一般貨物補助");
     expect(view?.items.map((item) => item.kindLabel)).toEqual(["道路物流", "鉄道物流", "内航海運", "空港運用", "航空物流", "コンテナ一般貨物"]);

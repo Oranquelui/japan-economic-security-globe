@@ -184,7 +184,7 @@ function getSurfaceDisclosureLabel(themeId: ThemeId) {
 
 function getSurfaceSubtitle(themeId: ThemeId) {
   if (themeId === "logistics") {
-    return "国内物流の着地点と港湾後続を主表示し、道路・鉄道・内航海運・航空貨物・空港運用を分けて表示する。エネルギー系タンカーは Energy 側で扱う";
+    return "国内物流の着地点と港湾後続を主表示し、道路・鉄道・内航海運・航空貨物・空港運用を分けて表示する。エネルギー系の海上輸送は Energy 側で扱う";
   }
 
   return "エネルギー系タンカーの公開集約・遅延AIS文脈を、Energy theme の補助線として監視";
