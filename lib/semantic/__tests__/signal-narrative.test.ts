@@ -35,6 +35,20 @@ describe("signal narratives", () => {
     expect(narrative.watchpoints).toEqual(expect.arrayContaining(["ホルムズ海峡", "マラッカ海峡", "燃料費調整", "国内着地点"]));
   });
 
+  test("turns logistics maritime watch data into non-energy port follow-through", () => {
+    const graph = loadSeedGraph();
+    const flow = graph.flows.find((item) => item.id === "flow:japan-linked-maritime-watch");
+
+    expect(flow).toBeDefined();
+
+    const narrative = buildSignalNarrativeForFlow(flow!);
+
+    expect(narrative.category).toBe("一般貨物・港湾後続");
+    expect(narrative.recommendedAction).toContain("国内配送");
+    expect(`${narrative.recommendedAction} ${narrative.watchpoints.join(" ")}`).not.toMatch(/LNG|ホルムズ|受入基地|製油所|タンカー/);
+    expect(narrative.watchpoints).toEqual(expect.arrayContaining(["横浜港", "国内配送", "公開統計"]));
+  });
+
   test("turns rice input data into an input-cost pass-through signal", () => {
     const graph = loadSeedGraph();
     const flow = graph.flows.find((item) => item.id === "flow:energy-inputs-rice");

@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import watchOverlaySeeds from "../../../data/seed/watch-overlays.json";
 import { loadSeedGraph, loadSeedLiveLogistics } from "../../data/seed-loader";
+import { buildOperationRows } from "../../presentation/operations";
 import { buildWatchOverlayItems } from "../../presentation/watch-overlays";
 import { loadRankingSignals } from "../../ranking/ranking-loader";
 import { buildLiveLogisticsView } from "../../presentation/live-logistics";
@@ -106,6 +107,8 @@ describe("logistics airport boundary", () => {
     const graph = loadSeedGraph();
     const logisticsFlow = graph.flows.find((flow) => flow.id === "flow:japan-linked-maritime-watch");
     const logisticsThemeView = getThemeView(graph, "logistics");
+    const logisticsRows = buildOperationRows(logisticsThemeView);
+    const logisticsFlowRow = logisticsRows.find((row) => row.id === "flow:japan-linked-maritime-watch");
     const logisticsOverlays = buildWatchOverlayItems("logistics", null, new Date("2026-05-01T00:00:00.000Z"));
     const rawLogisticsOverlays = watchOverlaySeeds.filter((overlay) => overlay.themeIds.includes("logistics"));
     const logisticsSignal = loadRankingSignals().find(
@@ -115,6 +118,11 @@ describe("logistics airport boundary", () => {
     expect(logisticsFlow).toBeDefined();
     expect(logisticsFlow?.theme).toBe("logistics");
     expect(logisticsFlow?.resourceId).toBeUndefined();
+    expect(logisticsFlowRow).toMatchObject({
+      type: "一般貨物・港湾後続",
+      action: "港湾後続、道路・鉄道・空港運用から国内配送への接続を確認"
+    });
+    expect(`${logisticsFlowRow?.type} ${logisticsFlowRow?.action}`).not.toMatch(/LNG|ホルムズ|受入基地|製油所|タンカー/);
     expect(logisticsThemeView.entities.map((entity) => entity.id)).not.toEqual(
       expect.arrayContaining(["chokepoint:hormuz", "route:gulf-to-japan", "terminal:sodegaura-lng", "refinery:keihin"])
     );

@@ -44,15 +44,15 @@ export function buildSignalNarrativeForFlow(flow: DependencyFlow): SignalNarrati
 
   if (flow.theme === "logistics") {
     return {
-      category: "日本関係海運",
+      category: "一般貨物・港湾後続",
       severity: "高",
       status: "監視中",
-      recommendedAction: "港湾着地、海峡通過、国内受入拠点への波及を確認",
+      recommendedAction: "港湾後続、道路・鉄道・空港運用から国内配送への接続を確認",
       watchpoints: dedupeWatchpoints([
-        flow.routeIds.includes("chokepoint:hormuz") ? "ホルムズ海峡" : null,
         flow.routeIds.includes("chokepoint:malacca") ? "マラッカ海峡" : null,
         flow.routeIds.includes("port:yokohama") ? "横浜港" : null,
-        "国内着地点"
+        "国内配送",
+        "公開統計"
       ])
     };
   }
