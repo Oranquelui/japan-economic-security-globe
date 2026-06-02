@@ -58,6 +58,8 @@ describe("live logistics detail", () => {
     });
 
     expect(detail.signal.category).toBe("一般貨物・港湾後続");
+    expect(detail.summary).toContain("公開集約シグナル");
+    expect(detail.summary).not.toContain("ライブ監視");
     expect(detail.whyItMatters).toContain("非エネルギー一般貨物");
     expect(detail.signal.recommendedAction).toContain("港湾到着前後の公開集約");
     expect(detail.whyItMatters).not.toMatch(/AIS|タンカー|LNG|ホルムズ/);
@@ -107,6 +109,8 @@ describe("live logistics detail", () => {
     });
 
     expect(detail.signal.category).toBe("空港運用・航空貨物");
+    expect(detail.summary).toContain("airport-level公開集約シグナル");
+    expect(detail.summary).not.toContain("ライブ監視");
     expect(detail.whyItMatters).toContain("個別便ではなく airport-level の公開集約");
     expect(detail.signal.recommendedAction).toContain("個別旅客・個別便・軍用機は対象外");
     expect(detail.relatedEntities.map((entity) => entity.id)).toEqual(

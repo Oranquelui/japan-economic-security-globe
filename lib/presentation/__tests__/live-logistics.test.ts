@@ -176,6 +176,26 @@ describe("live logistics view", () => {
     ]);
   });
 
+  test("keeps logistics cargo positions on route overlays instead of live vessel overlays", () => {
+    const eventsWithGeneralCargoPosition = events.map((event) => event.id === "live-logistics:container-asia-yokohama"
+      ? {
+        ...event,
+        currentPosition: {
+          lat: 35.45,
+          lon: 139.64,
+          label: "横浜港 一般貨物公開集約"
+        }
+      }
+      : event);
+
+    const logisticsView = buildLiveLogisticsView("logistics", null, eventsWithGeneralCargoPosition, new Date("2026-05-11T00:30:00.000Z"));
+    const energyView = buildLiveLogisticsView("energy", null, eventsWithGeneralCargoPosition, new Date("2026-05-11T00:30:00.000Z"));
+
+    expect(logisticsView?.mapVessels).toEqual([]);
+    expect(logisticsView?.mapRoutes.map((route) => route.id)).toContain("live-logistics:container-asia-yokohama");
+    expect(energyView?.mapVessels.map((vessel) => vessel.selectionId)).toContain("live-logistics:tanker-qatar-tokyo-bay");
+  });
+
   test("returns no surface for themes with no live logistics feed", () => {
     expect(buildLiveLogisticsView("defense", null, events)).toBeNull();
   });

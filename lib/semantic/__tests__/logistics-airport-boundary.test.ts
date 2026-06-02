@@ -37,6 +37,11 @@ const forbiddenEnergyLogisticsRefs = [
   "source:tepco-2026-april-power"
 ];
 
+const forbiddenLogisticsLiveRoutePointIds = [
+  ...forbiddenEnergyLogisticsRefs,
+  "chokepoint:malacca"
+];
+
 describe("logistics airport boundary", () => {
   test("models airport operations as logistics-only public aggregate infrastructure", () => {
     const graph = loadSeedGraph();
@@ -151,6 +156,33 @@ describe("logistics airport boundary", () => {
     expect(logisticsSignal?.importanceAxes).toEqual(["logistics"]);
     expect(logisticsSignal?.sourceIds).not.toEqual(expect.arrayContaining(forbiddenEnergyLogisticsRefs));
     expect(logisticsSignal?.canonicalRefs.map((ref) => ref.id)).not.toEqual(expect.arrayContaining(forbiddenEnergyLogisticsRefs));
+  });
+
+  test("keeps energy ranking signals from claiming the logistics axis", () => {
+    const signals = loadRankingSignals();
+    const energySignals = signals.filter((signal) =>
+      [...signal.sourceIds, ...signal.canonicalRefs.map((ref) => ref.id)].some((id) =>
+        forbiddenEnergyLogisticsRefs.includes(id)
+      )
+    );
+
+    expect(energySignals.map((signal) => signal.id)).toEqual(
+      expect.arrayContaining(["ranking-signal:energy-middle-east-route", "ranking-signal:energy-lng-terminal-exposure"])
+    );
+
+    for (const signal of energySignals) {
+      expect(signal.importanceAxes).not.toContain("logistics");
+    }
+  });
+
+  test("keeps logistics live events Japan-side and free of energy maritime route points", () => {
+    const logisticsEvents = loadSeedLiveLogistics().filter((event) => event.themeIds.includes("logistics"));
+
+    for (const event of logisticsEvents) {
+      for (const forbiddenId of forbiddenLogisticsLiveRoutePointIds) {
+        expect([...event.pointIds, ...event.relatedIds]).not.toContain(forbiddenId);
+      }
+    }
   });
 
   test("does not introduce prohibited OSINT, CCTV, cyber, or threat-dashboard wording into public seeds", () => {

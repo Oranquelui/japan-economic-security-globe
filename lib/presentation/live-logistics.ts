@@ -77,18 +77,7 @@ export function buildLiveLogisticsView(
         pointIds: item.pointIds,
         relatedIds: [item.id, ...item.relatedIds]
       })),
-    mapVessels: items
-      .filter((item) => item.currentPosition)
-      .map((item) => ({
-        id: item.id.replace("live-logistics:", "live-vessel:"),
-        label: item.currentPosition?.label ?? item.kindLabel,
-        lat: item.currentPosition!.lat,
-        lon: item.currentPosition!.lon,
-        relatedIds: [item.id, ...item.relatedIds],
-        selectionId: item.id,
-        etaLabel: item.etaLabel,
-        lastSeenLabel: item.lastSeenLabel
-      })),
+    mapVessels: buildLiveMapVessels(items, themeId),
     subtitle: getSurfaceSubtitle(themeId),
     title: getSurfaceTitle(themeId),
     updatedLabel: items[0]?.lastSeenLabel ?? "更新待ち"
@@ -121,6 +110,28 @@ function buildLiveLogisticsLanes(items: LiveLogisticsItemViewModel[], themeId: T
     ...formatLaneForTheme(lane, themeId),
     items: items.filter((item) => item.laneId === lane.id)
   })).filter((lane) => lane.items.length > 0);
+}
+
+function buildLiveMapVessels(
+  items: LiveLogisticsItemViewModel[],
+  themeId: ThemeId
+): LiveLogisticsViewModel["mapVessels"] {
+  if (themeId === "logistics") {
+    return [];
+  }
+
+  return items
+    .filter((item) => item.currentPosition)
+    .map((item) => ({
+      id: item.id.replace("live-logistics:", "live-vessel:"),
+      label: item.currentPosition?.label ?? item.kindLabel,
+      lat: item.currentPosition!.lat,
+      lon: item.currentPosition!.lon,
+      relatedIds: [item.id, ...item.relatedIds],
+      selectionId: item.id,
+      etaLabel: item.etaLabel,
+      lastSeenLabel: item.lastSeenLabel
+    }));
 }
 
 function formatLaneForTheme(

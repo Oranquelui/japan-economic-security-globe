@@ -17,7 +17,7 @@ export function buildLiveLogisticsDetail(
     label: item.title,
     kind: item.kindLabel,
     summary: [
-      `${item.corridorLabel} を通る ${item.kindLabel} のライブ監視シグナルです。`,
+      `${item.corridorLabel} を通る ${item.kindLabel} の ${getSummarySignalLabel(item)} です。`,
       `${item.statusLabel} / ${item.etaLabel} / ${item.lastSeenLabel}`
     ].join(" "),
     whyItMatters: buildWhyItMatters(item),
@@ -51,6 +51,18 @@ export function buildLiveLogisticsDetail(
       ].join("\n")
     }
   };
+}
+
+function getSummarySignalLabel(item: LiveLogisticsItemViewModel) {
+  if (item.kindLabel === "空港運用") {
+    return "airport-level公開集約シグナル";
+  }
+
+  if (item.laneId === "maritime") {
+    return item.kindLabel === "外航海上補助" ? "遅延AIS補助シグナル" : "公開集約シグナル";
+  }
+
+  return "国内物流公開シグナル";
 }
 
 function buildWhyItMatters(item: LiveLogisticsItemViewModel) {

@@ -104,9 +104,12 @@ describe("japan map canvas model", () => {
     expect(model.liveRoutes.map((route: { id: string }) => route.id)).toEqual(
       expect.arrayContaining(["live-logistics:container-asia-yokohama", "live-logistics:road-keihin-tokyo"])
     );
+    const containerRoute = model.liveRoutes.find((route: { id: string }) => route.id === "live-logistics:container-asia-yokohama");
+    expect(containerRoute?.pointIds).toEqual(["port:yokohama", "prefecture:tokyo"]);
     expect(model.livePoints.map((point: { id: string }) => point.id)).toEqual(
-      expect.arrayContaining(["chokepoint:malacca", "port:yokohama", "prefecture:tokyo"])
+      expect.arrayContaining(["port:yokohama", "prefecture:tokyo"])
     );
+    expect(model.livePoints.map((point: { id: string }) => point.id)).not.toContain("chokepoint:malacca");
     expect(model.liveVessels).toEqual([]);
   });
 

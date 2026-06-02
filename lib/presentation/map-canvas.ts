@@ -105,7 +105,7 @@ export function buildJapanMapCanvasModel(
 
   const globalPoints = buildGlobalPoints(routeScopedFlows, graph, japanEntity);
   const globalRoutes = buildGlobalRoutes(routeScopedFlows, graph, globalPoints, japanEntity);
-  const liveRoutes = buildLiveRoutes(liveLogistics, graph);
+  const liveRoutes = buildLiveRoutes(liveLogistics, graph, view.id);
   const livePoints = buildLivePoints(liveRoutes, graph);
   const liveVessels = buildLiveVessels(liveLogistics);
 
@@ -200,7 +200,8 @@ function buildGlobalRoutes(
 
 function buildLiveRoutes(
   liveLogistics: LiveLogisticsViewModel | null | undefined,
-  graph: SemanticGraph
+  graph: SemanticGraph,
+  themeId: ThemeView["id"]
 ): JapanMapRoute[] {
   if (!liveLogistics) {
     return [];
@@ -208,7 +209,11 @@ function buildLiveRoutes(
 
   return liveLogistics.mapRoutes
     .map((route) => {
-      const pointIds = route.pointIds.filter((pointId) => hasCoordinates(graph.entities.find((entity) => entity.id === pointId)));
+      const pointIds = route.pointIds
+        .map((pointId) => graph.entities.find((entity) => entity.id === pointId))
+        .filter((entity): entity is SemanticEntity => Boolean(entity) && hasCoordinates(entity))
+        .filter((entity) => isLiveRoutePointVisibleForTheme(entity, themeId))
+        .map((entity) => entity.id);
 
       if (pointIds.length < 2) {
         return null;
@@ -222,6 +227,14 @@ function buildLiveRoutes(
       };
     })
     .filter((route): route is JapanMapRoute => route !== null);
+}
+
+function isLiveRoutePointVisibleForTheme(entity: SemanticEntity, themeId: ThemeView["id"]) {
+  if (themeId !== "logistics") {
+    return true;
+  }
+
+  return entity.kind !== "Country" && entity.kind !== "Chokepoint" && entity.kind !== "SeaLane";
 }
 
 function buildLivePoints(liveRoutes: JapanMapRoute[], graph: SemanticGraph): JapanMapPoint[] {

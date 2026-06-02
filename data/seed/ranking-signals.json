@@ -2,7 +2,7 @@
   {
     "id": "ranking-signal:energy-middle-east-route",
     "label": "中東エネルギー輸送路の圧力",
-    "importanceAxes": ["energy", "logistics"],
+    "importanceAxes": ["energy"],
     "canonicalRefs": [
       { "kind": "flow", "id": "flow:saudi-oil-japan" },
       { "kind": "entity", "id": "chokepoint:hormuz" }

@@ -102,7 +102,7 @@
     "disclosureLabel": "公開集約 / cargo-category only / delayed",
     "confidenceLabel": "デモ / 公開粒度",
     "corridorLabel": "東アジア航路 → 横浜港 → 首都圏",
-    "pointIds": ["chokepoint:malacca", "port:yokohama", "prefecture:tokyo"],
+    "pointIds": ["port:yokohama", "prefecture:tokyo"],
     "relatedIds": ["flow:japan-linked-maritime-watch", "port:yokohama", "prefecture:tokyo"],
     "signalTone": "normal",
     "priority": 86

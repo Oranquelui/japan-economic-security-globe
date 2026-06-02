@@ -17,6 +17,7 @@ coverage
 .worktrees
 
 # Local agent / planning state should stay out of the public repo.
+.hermes/
 .claude/
 .superpowers/
 .taskmaster/
