@@ -117,6 +117,15 @@ describe("japan map canvas model", () => {
     expect(model.logisticsImpactRoutes.map((route: { id: string }) => route.id)).toEqual(
       expect.arrayContaining(["live-logistics:container-asia-yokohama", "live-logistics:road-keihin-tokyo"])
     );
+    expect(model.logisticsImpactCorridors.map((corridor: { id: string }) => corridor.id)).toEqual(
+      expect.arrayContaining([
+        "corridor-band:tomei-shin-tomei-meishin",
+        "corridor-band:tokaido-rail-freight",
+        "corridor-band:yokohama-tokyo-port-hinterland"
+      ])
+    );
+    expect(model.logisticsImpactCorridors[0].geometry.type).toBe("Polygon");
+    expect(model.logisticsImpactCorridors[0].geometry.coordinates[0].length).toBeGreaterThan(8);
   });
 
   test("renders airport operations as facility points without aircraft markers", () => {

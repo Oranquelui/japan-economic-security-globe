@@ -30,6 +30,18 @@ export type JapanMapRegion = {
   value: number;
 };
 
+export type JapanMapCorridor = {
+  id: string;
+  kind: "highway" | "rail" | "port-hinterland";
+  label: string;
+  selectionId: string;
+  value: number;
+  geometry: {
+    type: "Polygon";
+    coordinates: Array<Array<[number, number]>>;
+  };
+};
+
 export type ForeignWindowEntity = {
   id: string;
   label: string;
@@ -48,6 +60,7 @@ export type JapanMapCanvasModel = {
   liveVessels?: JapanMapPoint[];
   logisticsImpactRegions?: JapanMapRegion[];
   logisticsImpactRoutes?: JapanMapRoute[];
+  logisticsImpactCorridors?: JapanMapCorridor[];
   foreignWindow?: {
     title: string;
     entities: ForeignWindowEntity[];
@@ -112,6 +125,7 @@ export function buildJapanMapCanvasModel(
   const liveVessels = buildLiveVessels(liveLogistics);
   const logisticsImpactRegions = buildLogisticsImpactRegions(graph, view.id);
   const logisticsImpactRoutes = view.id === "logistics" ? liveRoutes : [];
+  const logisticsImpactCorridors = buildLogisticsImpactCorridors(view.id);
 
   return {
     points: visiblePoints,
@@ -124,6 +138,7 @@ export function buildJapanMapCanvasModel(
     liveVessels,
     logisticsImpactRegions,
     logisticsImpactRoutes,
+    logisticsImpactCorridors,
     foreignWindow: buildForeignWindow(graph, routeScopedFlows, activeId)
   };
 }
@@ -295,6 +310,87 @@ function buildLogisticsImpactRegions(graph: SemanticGraph, themeId: ThemeView["i
       };
     })
     .filter((region): region is JapanMapRegion => region !== null);
+}
+
+function buildLogisticsImpactCorridors(themeId: ThemeView["id"]): JapanMapCorridor[] {
+  if (themeId !== "logistics") {
+    return [];
+  }
+
+  return [
+    {
+      id: "corridor-band:tomei-shin-tomei-meishin",
+      kind: "highway",
+      label: "東名・新東名・名神 物流帯",
+      selectionId: "live-logistics:road-keihin-tokyo",
+      value: 92,
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          buildCorridorBand(
+            [
+              [139.66, 35.45],
+              [139.28, 35.38],
+              [138.92, 35.30],
+              [138.48, 34.98],
+              [137.73, 34.80],
+              [136.90, 35.15],
+              [136.18, 35.06],
+              [135.50, 34.70]
+            ],
+            0.085
+          )
+        ]
+      }
+    },
+    {
+      id: "corridor-band:tokaido-rail-freight",
+      kind: "rail",
+      label: "東海道鉄道貨物 代替余力帯",
+      selectionId: "live-logistics:rail-tokyo-aichi-osaka",
+      value: 76,
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          buildCorridorBand(
+            [
+              [139.75, 35.62],
+              [139.42, 35.48],
+              [138.66, 35.13],
+              [137.56, 34.91],
+              [136.89, 35.18],
+              [136.00, 35.01],
+              [135.49, 34.72]
+            ],
+            0.055
+          )
+        ]
+      }
+    },
+    {
+      id: "corridor-band:yokohama-tokyo-port-hinterland",
+      kind: "port-hinterland",
+      label: "横浜港湾後背地",
+      selectionId: "live-logistics:road-keihin-tokyo",
+      value: 96,
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [139.54, 35.36],
+            [139.64, 35.31],
+            [139.84, 35.43],
+            [139.88, 35.58],
+            [139.75, 35.72],
+            [139.55, 35.70],
+            [139.42, 35.56],
+            [139.44, 35.43],
+            [139.54, 35.36]
+          ]
+        ]
+      }
+    }
+  ];
 }
 
 function resolveLiveVesselSelectionId(
@@ -476,6 +572,43 @@ function classifyLiveTone(entity: SemanticEntity): JapanMapPoint["tone"] {
   }
 
   return "normal";
+}
+
+function buildCorridorBand(path: Array<[number, number]>, widthDegrees: number): Array<[number, number]> {
+  if (path.length < 2) {
+    return path;
+  }
+
+  const left = path.map((point, index) => {
+    const previous = path[Math.max(0, index - 1)];
+    const next = path[Math.min(path.length - 1, index + 1)];
+    const normal = getNormalizedNormal(previous, next);
+
+    return [point[0] + normal[0] * widthDegrees, point[1] + normal[1] * widthDegrees] as [number, number];
+  });
+  const right = path
+    .map((point, index) => {
+      const previous = path[Math.max(0, index - 1)];
+      const next = path[Math.min(path.length - 1, index + 1)];
+      const normal = getNormalizedNormal(previous, next);
+
+      return [point[0] - normal[0] * widthDegrees, point[1] - normal[1] * widthDegrees] as [number, number];
+    })
+    .toReversed();
+  const ring = [...left, ...right];
+
+  return [...ring, ring[0]];
+}
+
+function getNormalizedNormal(
+  previous: [number, number],
+  next: [number, number]
+): [number, number] {
+  const dx = next[0] - previous[0];
+  const dy = next[1] - previous[1];
+  const length = Math.hypot(dx, dy) || 1;
+
+  return [-dy / length, dx / length];
 }
 
 function dedupeById<T extends { id: string }>(items: T[]): T[] {

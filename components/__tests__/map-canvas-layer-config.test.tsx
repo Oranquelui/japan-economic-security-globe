@@ -280,6 +280,90 @@ describe("map canvas layer config", () => {
     expect(liveRoutes.features[0].properties.selected).toBe(true);
   });
 
+  test("renders logistics impact corridors as filled polygons instead of route-only dotted lines", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="live-logistics:road-keihin-tokyo"
+        focusTargetId={null}
+        mapMode="route"
+        model={
+          {
+            ...model,
+            logisticsImpactCorridors: [
+              {
+                id: "corridor-band:tomei-shin-tomei-meishin",
+                kind: "highway",
+                label: "東名・新東名・名神 物流帯",
+                selectionId: "live-logistics:road-keihin-tokyo",
+                value: 92,
+                geometry: {
+                  type: "Polygon",
+                  coordinates: [
+                    [
+                      [139.66, 35.48],
+                      [138.4, 35.0],
+                      [136.9, 35.2],
+                      [135.5, 34.7],
+                      [135.45, 34.55],
+                      [136.85, 35.05],
+                      [138.35, 34.85],
+                      [139.72, 35.36],
+                      [139.66, 35.48]
+                    ]
+                  ]
+                }
+              }
+            ],
+            logisticsImpactRoutes: [
+              {
+                id: "live-logistics:road-keihin-tokyo",
+                label: "陸路: 横浜港 → 首都圏配送",
+                pointIds: ["port:yokohama"],
+                relatedIds: ["flow:japan-linked-maritime-watch"]
+              }
+            ]
+          } as JapanMapCanvasModel
+        }
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("logistics-impact-corridors")).toBe(true);
+    });
+
+    const corridorSource = addedSources.get("logistics-impact-corridors") as {
+      features: Array<{ geometry: { type: string }; properties: { selected: boolean; kind: string } }>;
+    };
+    const fillLayer = addedLayers.find((layer) => layer.id === "logistics-impact-corridor-fill") as any;
+    const routeLine = addedLayers.find((layer) => layer.id === "logistics-impact-route-line") as any;
+    const livePulseLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-pulse") as any;
+
+    expect(corridorSource.features[0].geometry.type).toBe("Polygon");
+    expect(corridorSource.features[0].properties.selected).toBe(true);
+    expect(corridorSource.features[0].properties.kind).toBe("highway");
+    expect(fillLayer).toMatchObject({
+      id: "logistics-impact-corridor-fill",
+      type: "fill",
+      source: "logistics-impact-corridors"
+    });
+    expect(routeLine.paint["line-opacity"]).toBeLessThanOrEqual(0.2);
+    expect(routeLine.paint["line-dasharray"]).toBeUndefined();
+    expect(livePulseLayer.paint["line-opacity"]).toEqual([
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      2,
+      0.12,
+      6,
+      0.1,
+      10,
+      0.08
+    ]);
+  });
+
   test("adds live tanker position markers that select the individual tanker item", async () => {
     render(
       <JapanOperationsMapCanvas
