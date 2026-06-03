@@ -44,13 +44,13 @@
     "label": "Japan-side port follow-through watch",
     "originId": "port:yokohama",
     "destinationId": "prefecture:tokyo",
-    "routeIds": ["port:yokohama", "prefecture:tokyo"],
+    "routeIds": ["port:yokohama", "corridor:yokohama-tokyo-hinterland", "highway:keihin-tokyo", "prefecture:tokyo", "railfreight:tokyo-aichi-osaka", "prefecture:aichi", "prefecture:osaka"],
     "mapLineKind": "route",
-    "sourceIds": ["source:customs-trade-statistics"],
+    "sourceIds": ["source:customs-trade-statistics", "source:mlit-road-traffic-public", "source:jrfreight-public-status"],
     "period": "2026",
-    "summary": "A logistics-first flow showing non-energy general cargo after port landing, from Yokohama into Japan-side distribution corridors.",
-    "magnitudeLabel": "General cargo follow-through",
-    "riskLabel": "Port and domestic corridor exposure"
+    "summary": "A logistics-first flow showing non-energy general cargo after port landing, from Yokohama into Japan-side highway, rail freight, and distribution corridors.",
+    "magnitudeLabel": "Port hinterland and inland corridor exposure",
+    "riskLabel": "Domestic economic impact via road and rail freight"
   },
   {
     "id": "flow:australia-coal-japan",

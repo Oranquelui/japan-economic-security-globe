@@ -13,6 +13,7 @@ import type { ThemePalette } from "../lib/presentation/palette";
 import type { WatchboardBriefingViewModel } from "../lib/presentation/watchboard";
 import type { WatchOverlayItemViewModel } from "../lib/presentation/watch-overlays";
 import type { ThemeId } from "../types/semantic";
+import { LogisticsImpactBoard } from "./LogisticsImpactBoard";
 import { WatchboardBriefing } from "./WatchboardBriefing";
 
 interface MapInboxPanelProps {
@@ -23,6 +24,7 @@ interface MapInboxPanelProps {
   query: string;
   rows: OperationRow[];
   liveLogistics?: LiveLogisticsViewModel | null;
+  showLogisticsImpactBoard?: boolean;
   themeId: ThemeId;
   themeLabel: string;
   themePalette: ThemePalette;
@@ -37,6 +39,7 @@ export function MapInboxPanel({
   query,
   rows,
   liveLogistics = null,
+  showLogisticsImpactBoard = true,
   themeId,
   themeLabel,
   themePalette,
@@ -54,6 +57,15 @@ export function MapInboxPanel({
           <section className="border-b p-3" style={{ borderColor: themePalette.borderSubtle }}>
             <WatchboardBriefing briefing={briefing} themePalette={themePalette} variant="pane" />
           </section>
+        ) : null}
+
+        {showLogisticsImpactBoard && themeId === "logistics" && liveLogistics ? (
+          <LogisticsImpactBoard
+            activeId={activeId}
+            liveLogistics={liveLogistics}
+            onSelect={onSelect}
+            themePalette={themePalette}
+          />
         ) : null}
 
         {liveLogistics ? (

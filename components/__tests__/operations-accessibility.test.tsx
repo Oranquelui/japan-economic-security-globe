@@ -185,6 +185,38 @@ describe("operations accessibility", () => {
     expect(screen.getByText("国家的重要度が高く、日本向けの監視優先度が高い。")).toBeTruthy();
   });
 
+  test("uses logistics impact language in the operations grid", () => {
+    render(
+      <OperationsSignalTable
+        activeId=""
+        collapsed={false}
+        onSelect={() => undefined}
+        onToggleCollapsed={() => undefined}
+        query=""
+        rows={[
+          {
+            id: "flow:japan-linked-maritime-watch",
+            type: "港湾後続",
+            label: "横浜港 → 首都圏配送",
+            subject: "横浜港湾後背地",
+            urgency: "中",
+            status: "監視中",
+            action: "高速道路・鉄道貨物の代替余力を確認",
+            period: "2026"
+          }
+        ]}
+        statusPalette={statusPalette}
+        themeId="logistics"
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    expect(screen.getByText("国内物流インパクト")).toBeTruthy();
+    expect(screen.getByText("影響種別")).toBeTruthy();
+    expect(screen.getByText("経済影響")).toBeTruthy();
+    expect(screen.getByText("地域/コリドー")).toBeTruthy();
+  });
+
   test("supports keyboard selection in the evidence graph", () => {
     const onSelect = vi.fn();
 

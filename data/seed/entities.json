@@ -260,6 +260,85 @@
     }
   },
   {
+    "id": "corridor:yokohama-tokyo-hinterland",
+    "kind": "PortHinterlandCorridor",
+    "label": "Yokohama Port Hinterland Corridor",
+    "labelJa": "横浜港湾後背地コリドー",
+    "summary": "横浜港から首都圏の高速道路・配送拠点へつながる、非エネルギー一般貨物の港湾後続コリドー。",
+    "whyItMatters": "港湾で発生した遅延や処理制約が、首都圏の小売、部品、EC、工場補給へ波及する地点を経済影響として説明できる。",
+    "themes": [
+      "logistics"
+    ],
+    "coordinates": {
+      "lat": 35.55,
+      "lon": 139.73
+    },
+    "sourceIds": [
+      "source:customs-trade-statistics",
+      "source:mlit-road-traffic-public",
+      "source:jrfreight-public-status"
+    ],
+    "provenance": [
+      "source:customs-trade-statistics",
+      "source:mlit-road-traffic-public",
+      "source:jrfreight-public-status"
+    ],
+    "properties": {
+      "displayPriority": 96,
+      "impactRole": "port_hinterland"
+    }
+  },
+  {
+    "id": "highway:keihin-tokyo",
+    "kind": "HighwaySegment",
+    "label": "Keihin to Tokyo Highway Segment",
+    "labelJa": "京浜・首都圏高速道路区間",
+    "summary": "横浜港湾後続から首都圏配送へ入る高速道路・トラック輸送の代表区間。",
+    "whyItMatters": "港湾後続の詰まりは、高速道路とトラック配送の制約に変換されて消費地と生産地へ波及する。",
+    "themes": [
+      "logistics"
+    ],
+    "coordinates": {
+      "lat": 35.62,
+      "lon": 139.78
+    },
+    "sourceIds": [
+      "source:mlit-road-traffic-public"
+    ],
+    "provenance": [
+      "source:mlit-road-traffic-public"
+    ],
+    "properties": {
+      "displayPriority": 95,
+      "impactRole": "highway"
+    }
+  },
+  {
+    "id": "railfreight:tokyo-aichi-osaka",
+    "kind": "RailFreightCorridor",
+    "label": "Tokyo - Aichi - Osaka Rail Freight Corridor",
+    "labelJa": "東京・愛知・大阪 鉄道貨物コリドー",
+    "summary": "首都圏から中京圏・関西圏へ向かう鉄道貨物の代表的な幹線コリドー。",
+    "whyItMatters": "高速道路の余力が不足する時、鉄道貨物の代替余力が国内物流の経済影響を左右する。",
+    "themes": [
+      "logistics"
+    ],
+    "coordinates": {
+      "lat": 35.2,
+      "lon": 136.9
+    },
+    "sourceIds": [
+      "source:jrfreight-public-status"
+    ],
+    "provenance": [
+      "source:jrfreight-public-status"
+    ],
+    "properties": {
+      "displayPriority": 89,
+      "impactRole": "rail_freight"
+    }
+  },
+  {
     "id": "airport:narita",
     "kind": "Airport",
     "label": "Narita International Airport",

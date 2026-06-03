@@ -114,6 +114,16 @@ export function JapanOperationsMapCanvas({
           data: routesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId)
         });
 
+        map.addSource("logistics-impact-regions", {
+          type: "geojson",
+          data: regionsToFeatureCollection(model.logisticsImpactRegions ?? [], activeId)
+        });
+
+        map.addSource("logistics-impact-routes", {
+          type: "geojson",
+          data: routesToFeatureCollection(model.logisticsImpactRoutes ?? [], model.livePoints ?? [], activeId)
+        });
+
         map.addSource("live-vessels", {
           type: "geojson",
           data: pointsToFeatureCollection(model.liveVessels ?? [], activeId)
@@ -185,6 +195,50 @@ export function JapanOperationsMapCanvas({
             "text-halo-color": "rgba(250,252,255,0.94)",
             "text-halo-width": 1.2,
             "text-opacity": mapMode === "route" ? 0.9 : 0.72
+          }
+        });
+
+        map.addLayer({
+          id: "logistics-impact-region-fill",
+          type: "fill",
+          source: "logistics-impact-regions",
+          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          paint: {
+            "fill-color": statusPalette.watch,
+            "fill-opacity": [
+              "interpolate",
+              ["linear"],
+              ["get", "value"],
+              35,
+              0.08,
+              100,
+              0.22
+            ]
+          }
+        });
+
+        map.addLayer({
+          id: "logistics-impact-region-outline",
+          type: "line",
+          source: "logistics-impact-regions",
+          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          paint: {
+            "line-color": statusPalette.watch,
+            "line-opacity": 0.45,
+            "line-width": 1.1
+          }
+        });
+
+        map.addLayer({
+          id: "logistics-impact-route-line",
+          type: "line",
+          source: "logistics-impact-routes",
+          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          paint: {
+            "line-color": statusPalette.selected,
+            "line-dasharray": [0.4, 1.1],
+            "line-opacity": mapMode === "route" ? 0.86 : 0.62,
+            "line-width": mapMode === "route" ? 4 : 2.8
           }
         });
 
@@ -617,6 +671,8 @@ export function JapanOperationsMapCanvas({
     updateSource(map, "global-points", pointsToFeatureCollection(model.globalPoints, activeId));
     updateSource(map, "global-routes", routesToFeatureCollection(model.globalRoutes, model.globalPoints, activeId));
     updateSource(map, "live-logistics-routes", routesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId));
+    updateSource(map, "logistics-impact-regions", regionsToFeatureCollection(model.logisticsImpactRegions ?? [], activeId));
+    updateSource(map, "logistics-impact-routes", routesToFeatureCollection(model.logisticsImpactRoutes ?? [], model.livePoints ?? [], activeId));
     updateSource(map, "live-vessels", pointsToFeatureCollection(model.liveVessels ?? [], activeId));
     updateSource(map, "jp-points", pointsToFeatureCollection(model.points, activeId));
     updateSource(map, "jp-points-cluster", pointsToFeatureCollection(model.points, activeId));
@@ -673,6 +729,9 @@ function applyModeVisibility(map: any, mapMode: OperationMapMode) {
   map.setLayoutProperty("global-route-direction", "visibility", visibility(showRoutes));
   map.setLayoutProperty("live-logistics-route-pulse", "visibility", visibility(showRoutes));
   map.setLayoutProperty("live-logistics-route-label", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("logistics-impact-route-line", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("logistics-impact-region-fill", "visibility", visibility(showRoutes || showRegions));
+  map.setLayoutProperty("logistics-impact-region-outline", "visibility", visibility(showRoutes || showRegions));
   map.setLayoutProperty("live-vessel-halo", "visibility", visibility(showRoutes));
   map.setLayoutProperty("live-vessel-marker", "visibility", visibility(showRoutes));
   map.setLayoutProperty("live-vessel-label", "visibility", visibility(showRoutes));

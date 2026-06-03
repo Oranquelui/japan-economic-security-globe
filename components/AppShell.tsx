@@ -35,6 +35,7 @@ import { summarizeSourceStatus } from "../lib/official/source-freshness";
 import { ActionBar } from "./ActionBar";
 import { InitialNoticeModal } from "./InitialNoticeModal";
 import { JapanMainMap } from "./JapanMainMap";
+import { LogisticsImpactBoard } from "./LogisticsImpactBoard";
 import { MapInboxPanel } from "./MapInboxPanel";
 import { NavigationRail } from "./NavigationRail";
 import { OperationsSignalTable } from "./OperationsSignalTable";
@@ -317,6 +318,7 @@ export function AppShell({
               query={searchQuery}
               rows={filteredOperationRows}
               statusPalette={statusPalette}
+              themeId={themeId}
               themePalette={themePalette}
               onToggleCollapsed={() => setCompareOpen((value) => !value)}
             />
@@ -324,7 +326,17 @@ export function AppShell({
         </div>
 
         <div className="min-w-0 space-y-4 overflow-x-hidden pb-6 lg:hidden">
-          {watchboardBriefing ? (
+          {themeId === "logistics" && liveLogistics ? (
+            <section className="pt-4">
+              <LogisticsImpactBoard
+                activeId={activeId}
+                liveLogistics={liveLogistics}
+                onSelect={handleSelect}
+                themePalette={themePalette}
+              />
+            </section>
+          ) : null}
+          {themeId !== "logistics" && watchboardBriefing ? (
             <section className="px-4 pt-4">
               <WatchboardBriefing briefing={watchboardBriefing} themePalette={themePalette} />
             </section>
@@ -386,6 +398,7 @@ export function AppShell({
             query={searchQuery}
             rows={filteredOperationRows}
             liveLogistics={liveLogistics}
+            showLogisticsImpactBoard={false}
             themeId={themeId}
             themeLabel={themeLabel}
             themePalette={themePalette}
@@ -399,6 +412,7 @@ export function AppShell({
             query={searchQuery}
             rows={filteredOperationRows}
             statusPalette={statusPalette}
+            themeId={themeId}
             themePalette={themePalette}
             onToggleCollapsed={() => undefined}
           />

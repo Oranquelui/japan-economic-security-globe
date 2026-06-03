@@ -17,5 +17,9 @@ describe("deploy workflow", () => {
     expect(workflow).toContain("Validate Cloudflare deploy secrets");
     expect(workflow).toContain("Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID");
     expect(workflow).toContain("npm run deploy");
+    expect(workflow).toContain("actions/checkout@v6");
+    expect(workflow).toContain("actions/setup-node@v6");
+    expect(workflow).not.toContain("actions/checkout@v4");
+    expect(workflow).not.toContain("actions/setup-node@v4");
   });
 });

@@ -272,6 +272,28 @@
     "tier": "B"
   },
   {
+    "id": "source:mlit-road-traffic-public",
+    "label": "国土交通省 道路交通・物流公開情報",
+    "url": "https://www.mlit.go.jp/road/",
+    "publisher": "国土交通省 道路局",
+    "accessed": "2026-06-03",
+    "description": "高速道路・道路交通・物流影響を説明するための公的公開情報。Logisticsでは路線・地域単位の集約文脈として扱い、個別車両やカメラ映像には接続しない。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:jrfreight-public-status",
+    "label": "JR貨物 公開情報",
+    "url": "https://www.jrfreight.co.jp/",
+    "publisher": "日本貨物鉄道株式会社",
+    "accessed": "2026-06-03",
+    "description": "鉄道貨物の公開情報を、国内物流の代替余力と幹線影響の説明に使う。個別貨物・顧客・車両追跡には接続しない。",
+    "official": false,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
     "id": "source:micron-hiroshima",
     "label": "Micron 広島拠点",
     "url": "https://jp.micron.com/about/press/news/micron-memory-japan-set-to-receive-grant-from-meti",

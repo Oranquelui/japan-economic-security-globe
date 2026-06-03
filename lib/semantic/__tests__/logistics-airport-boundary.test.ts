@@ -9,7 +9,8 @@ import { buildLiveLogisticsView } from "../../presentation/live-logistics";
 import { getThemeView } from "../selectors";
 
 const forbiddenPublicLayerPatterns = [
-  /CCTV/i,
+  /raw CCTV/i,
+  /live CCTV/i,
   /threat dashboard/i,
   /\brecon\b/i,
   /\bcyber\b/i,
@@ -193,5 +194,21 @@ describe("logistics airport boundary", () => {
     for (const pattern of forbiddenPublicLayerPatterns) {
       expect(publicSeedText).not.toMatch(pattern);
     }
+  });
+
+  test("allows future aggregate visual observations but forbids raw camera identity fields", () => {
+    const graph = loadSeedGraph();
+    const logisticsObservations = graph.observations.filter((observation) => observation.theme === "logistics");
+    const visualObservation = logisticsObservations.find((observation) => observation.kind === "VisualObservation");
+    const publicSeedText = JSON.stringify({ graph, liveLogistics: loadSeedLiveLogistics() });
+
+    expect(visualObservation).toMatchObject({
+      subjectId: "corridor:yokohama-tokyo-hinterland",
+      metric: "congestion_level_bucket",
+      value: "moderate"
+    });
+    expect(publicSeedText).toContain("VisualObservation");
+    expect(publicSeedText).toContain("集約VisualObservation");
+    expect(publicSeedText).not.toMatch(/cameraUrl|videoUrl|face|licensePlate|vehicleId|personId|rawCamera|liveCamera/i);
   });
 });

@@ -85,22 +85,31 @@ export function buildLiveLogisticsView(
 }
 
 function toViewItem(event: LiveLogisticsEvent, now: Date): LiveLogisticsItemViewModel {
+  const laneId = event.laneId ?? inferLiveLogisticsLane(event);
+  const operationClass = event.operationClass ?? inferOperationClass(event, laneId);
+
   return {
+    affectedRegions: event.affectedRegions ?? inferAffectedRegions(event, laneId),
     confidenceLabel: event.confidenceLabel,
     corridorLabel: event.corridorLabel,
     currentPosition: event.currentPosition,
     disclosureLabel: event.disclosureLabel,
     etaLabel: event.etaLabel,
+    evidenceClass: event.evidenceClass ?? inferEvidenceClass(event, laneId),
     id: event.id,
+    impactScope: event.impactScope ?? inferImpactScope(event, laneId),
     kindLabel: event.kindLabel,
-    laneId: event.laneId ?? inferLiveLogisticsLane(event),
+    laneId,
     lastSeenLabel: event.lastSeenLabel ?? formatRelativeTime(event.lastSeenAt, now),
+    operationClass,
     pointIds: event.pointIds,
     priority: event.priority ?? getTonePriority(event.signalTone),
     relatedIds: event.relatedIds,
     signalTone: event.signalTone,
     sourceLabel: event.sourceLabel,
+    sourceFreshness: event.sourceFreshness ?? inferSourceFreshness(event, laneId),
     statusLabel: event.statusLabel,
+    substitutionCapacity: event.substitutionCapacity ?? inferSubstitutionCapacity(event, laneId),
     title: event.title
   };
 }
@@ -238,6 +247,117 @@ function getTonePriority(tone: LiveLogisticsItemViewModel["signalTone"]) {
   }
 
   return 50;
+}
+
+function inferOperationClass(
+  event: LiveLogisticsEvent,
+  laneId: LiveLogisticsLaneId
+): LiveLogisticsItemViewModel["operationClass"] {
+  if (event.kindLabel.includes("コンテナ") || event.kindLabel.includes("一般貨物")) {
+    return "maritime_general_cargo";
+  }
+
+  switch (laneId) {
+    case "road":
+      return "port_hinterland_highway";
+    case "rail":
+      return "rail_freight_corridor";
+    case "coastal":
+      return "coastal_port_follow_through";
+    case "air":
+      return "air_cargo_airport_ops";
+    case "maritime":
+      return event.themeIds.includes("energy") ? "energy_maritime_support" : "maritime_general_cargo";
+    case "domestic":
+      return "port_hinterland_highway";
+  }
+}
+
+function inferAffectedRegions(event: LiveLogisticsEvent, laneId: LiveLogisticsLaneId): string[] {
+  const marker = `${event.corridorLabel} ${event.title}`;
+  const regions = [
+    marker.includes("東京") || marker.includes("首都圏") ? "首都圏" : null,
+    marker.includes("愛知") || marker.includes("名古屋") || marker.includes("中京") ? "中京圏" : null,
+    marker.includes("大阪") || marker.includes("阪神") || marker.includes("関西") ? "関西圏" : null,
+    marker.includes("福岡") ? "九州北部" : null
+  ].filter((region): region is string => Boolean(region));
+
+  if (regions.length > 0) {
+    return regions;
+  }
+
+  return laneId === "air" ? ["首都圏"] : ["国内主要圏"];
+}
+
+function inferImpactScope(event: LiveLogisticsEvent, laneId: LiveLogisticsLaneId): string {
+  if (laneId === "road") {
+    return "首都圏の小売・部品・港湾後背地配送";
+  }
+
+  if (laneId === "rail") {
+    return "中京・関西向け幹線貨物と翌日配送";
+  }
+
+  if (laneId === "coastal") {
+    return "関西圏向けの港湾後続と長距離代替輸送";
+  }
+
+  if (laneId === "air") {
+    return event.kindLabel === "空港運用" ? "高付加価値品・医薬品・航空貨物の首都圏接続" : "高付加価値品の国内即日/翌日配送";
+  }
+
+  if (event.kindLabel.includes("コンテナ") || event.kindLabel.includes("一般貨物")) {
+    return "非エネルギー一般貨物の港湾到着前後と国内引き込み";
+  }
+
+  return "国内物流ネットワークへの波及";
+}
+
+function inferSubstitutionCapacity(event: LiveLogisticsEvent, laneId: LiveLogisticsLaneId): string {
+  if (laneId === "road") {
+    return "鉄道貨物・内航へ一部迂回可 / 即時代替は限定";
+  }
+
+  if (laneId === "rail") {
+    return "トラックへ一部代替可 / 長距離幹線は容量制約あり";
+  }
+
+  if (laneId === "coastal") {
+    return "陸路へ一部代替可 / 港湾処理と長距離輸送費に制約";
+  }
+
+  if (laneId === "air") {
+    return "陸路・海上へ代替可 / リードタイムは延びる";
+  }
+
+  return event.themeIds.includes("energy") ? "Energy側で評価" : "港湾後続・陸路へ接続して評価";
+}
+
+function inferSourceFreshness(event: LiveLogisticsEvent, laneId: LiveLogisticsLaneId): string {
+  if (event.lastSeenLabel?.includes("分") || event.etaLabel.includes("15分")) {
+    return "15分級";
+  }
+
+  if (laneId === "rail" || laneId === "air") {
+    return "30-60分級";
+  }
+
+  return "60分級";
+}
+
+function inferEvidenceClass(
+  event: LiveLogisticsEvent,
+  laneId: LiveLogisticsLaneId
+): LiveLogisticsItemViewModel["evidenceClass"] {
+  if (event.sourceLabel.includes("MLIT") || event.sourceLabel.includes("JMA")) {
+    return "official_public";
+  }
+
+  if (event.themeIds.includes("energy")) {
+    return "public_aggregate_demo";
+  }
+
+  return laneId === "road" ? "official_public_plus_demo" : "public_aggregate_demo";
 }
 
 function formatRelativeTime(isoTimestamp: string | undefined, now: Date) {

@@ -6,7 +6,7 @@ Japan Watchboard for Economic Security is now public:
 
 https://economic-security.quadrillionaaa.com/
 
-The launch view focuses on Japan domestic logistics: domestic landing points, port follow-through, road/rail/coastal/air lanes, source trust, and a terrain-aware map. Tanker routes and maritime chokepoints remain visible as supporting context, not the primary surface. The goal is not to make another geopolitical map. The goal is to show what Japan should watch now, why it matters domestically, and which public sources support the signal.
+The launch view focuses on Japan domestic logistics impact: port follow-through from Yokohama into highway, rail freight, coastal shipping, and distribution corridors, source trust, and a terrain-aware map. Energy tankers, LNG, crude, coal, and receiving terminals remain owned by the Energy theme. The goal is not to make another geopolitical map or a generic transport dashboard. The goal is to show which logistics signal can affect Japan's economy, where it lands domestically, and which public sources support the signal.
 
 Repository:
 
@@ -18,7 +18,7 @@ https://github.com/Oranquelui/japan-economic-security-globe
 
 https://economic-security.quadrillionaaa.com/
 
-今回の公開面では、国内 logistics watch を前面に出しています。国内着地点、港湾後続、道路・鉄道・内航・航空、出典信頼、地形が読める地図を同じ画面で確認できます。タンカールートと海上チョークポイントは補助線として残します。
+今回の公開面では、国内 logistics impact watch を前面に出しています。港湾後続から高速道路・鉄道貨物・内航・配送地域へどう波及するか、影響地域、詰まりの場所、代替余力、出典信頼、地形が読める地図を同じ画面で確認できます。タンカー、LNG、原油、石炭、受入基地は Energy theme の主担当として分離します。
 
 目的は、単なる地政学マップを作ることではありません。日本が今なにを注視すべきか、そのシグナルが国内インフラ・暮らし・政策判断のどこに着地するのかを、出典付きで見えるようにすることです。
 
@@ -30,7 +30,7 @@ https://github.com/Oranquelui/japan-economic-security-globe
 
 - Japan-first watchboard briefing
 - terrain-aware operations map
-- Japan domestic logistics watch surface
+- Japan domestic logistics impact board
 - route and chokepoint overlays
 - source-backed map detail popup
 - evidence and source-license surfaces
@@ -41,9 +41,11 @@ https://github.com/Oranquelui/japan-economic-security-globe
 - not complete real-time AIS coverage of every tanker heading to Japan
 - not a live operational intelligence system for real-world decisions
 - not a military target-selection interface
+- not a raw/live camera, passenger, person, vehicle-id, or license-plate tracking surface
 - not a reusable dataset made from third-party source material
 
 Complete external maritime AIS support coverage should be treated as a Phase 1 provider integration. It requires a licensed AIS or port-call data provider, explicit coverage limits, and source freshness labeling.
+Future visual inputs should be modeled only as aggregate `VisualObservation` buckets such as congestion level, lane blocked, queue length bucket, visibility status, and last verified time. Public UI must not expose raw video, live camera URLs, people, plates, or vehicle identities.
 
 ## License Position
 
@@ -57,7 +59,7 @@ Source-linked seed data is not relicensed as a single corpus. Public and private
 
 日本経済安全保障ウォッチボードを公開しました。
 
-国内物流 watch、港湾後続、道路・鉄道・内航・航空、出典信頼、地形が読める地図を同じ画面で見られる public MVP です。外航AISは補助線として扱います。
+国内物流 impact watch、港湾後続、高速道路、鉄道貨物、内航、影響地域、代替余力、出典信頼、地形が読める地図を同じ画面で見られる public MVP です。Energy系タンカーやLNGは物流ではなくEnergy側に分けます。
 
 「日本が今なにを注視すべきか」を、暮らし・政策・国内インフラに着地させて見せることを狙っています。
 
@@ -65,4 +67,3 @@ https://economic-security.quadrillionaaa.com/
 
 Repo:
 https://github.com/Oranquelui/japan-economic-security-globe
-

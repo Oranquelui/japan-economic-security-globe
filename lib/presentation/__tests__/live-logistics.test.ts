@@ -161,6 +161,14 @@ describe("live logistics view", () => {
     expect(view?.lanes[3].items.map((item) => item.kindLabel)).toEqual(["空港運用", "航空物流"]);
     expect(view?.lanes[4].items.map((item) => item.kindLabel)).toEqual(["コンテナ一般貨物"]);
     expect(view?.items[0].sourceLabel).toBe("Domestic logistics demo fixture (public route-level)");
+    expect(view?.items[0]).toMatchObject({
+      operationClass: "port_hinterland_highway",
+      impactScope: "首都圏の小売・部品・港湾後背地配送",
+      affectedRegions: ["首都圏"],
+      substitutionCapacity: "鉄道貨物・内航へ一部迂回可 / 即時代替は限定",
+      sourceFreshness: "15分級",
+      evidenceClass: "official_public_plus_demo"
+    });
     expect(view?.mapVessels).toEqual([]);
     expect(view?.mapRoutes[0]).toMatchObject({
       id: "live-logistics:road-keihin-tokyo",

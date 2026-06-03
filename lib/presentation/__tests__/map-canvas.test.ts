@@ -111,6 +111,12 @@ describe("japan map canvas model", () => {
     );
     expect(model.livePoints.map((point: { id: string }) => point.id)).not.toContain("chokepoint:malacca");
     expect(model.liveVessels).toEqual([]);
+    expect(model.logisticsImpactRegions.map((region: { id: string }) => region.id)).toEqual(
+      expect.arrayContaining(["prefecture:tokyo", "prefecture:aichi", "prefecture:osaka"])
+    );
+    expect(model.logisticsImpactRoutes.map((route: { id: string }) => route.id)).toEqual(
+      expect.arrayContaining(["live-logistics:container-asia-yokohama", "live-logistics:road-keihin-tokyo"])
+    );
   });
 
   test("renders airport operations as facility points without aircraft markers", () => {

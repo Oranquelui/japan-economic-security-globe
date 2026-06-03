@@ -250,5 +250,56 @@
         "retrievedAt": "2026-04-11"
       }
     ]
+  },
+  {
+    "id": "observation:logistics-yokohama-hinterland-impact-2026",
+    "kind": "LogisticsImpactSignal",
+    "theme": "logistics",
+    "subjectId": "corridor:yokohama-tokyo-hinterland",
+    "label": "Yokohama hinterland economic impact signal",
+    "metric": "domestic_logistics_impact",
+    "value": "elevated",
+    "unit": "qualitative",
+    "period": "2026-06-03",
+    "sourceIds": [
+      "source:customs-trade-statistics",
+      "source:mlit-road-traffic-public",
+      "source:jrfreight-public-status"
+    ],
+    "summary": "A logistics impact signal connecting non-energy cargo landing at Yokohama to highway, rail freight, and domestic distribution exposure in the capital, Chukyo, and Kansai regions.",
+    "provenance": [
+      {
+        "sourceId": "source:customs-trade-statistics",
+        "claim": "Trade-statistics anchor for non-energy cargo categories entering Japan-side logistics.",
+        "retrievedAt": "2026-06-03"
+      },
+      {
+        "sourceId": "source:mlit-road-traffic-public",
+        "claim": "Public road information is used at route/corridor granularity only.",
+        "retrievedAt": "2026-06-03"
+      }
+    ]
+  },
+  {
+    "id": "observation:visual-yokohama-hinterland-aggregate-2026",
+    "kind": "VisualObservation",
+    "theme": "logistics",
+    "subjectId": "corridor:yokohama-tokyo-hinterland",
+    "label": "Aggregate visual logistics observation",
+    "metric": "congestion_level_bucket",
+    "value": "moderate",
+    "unit": "bucket",
+    "period": "future-provider-gated",
+    "sourceIds": [
+      "source:mlit-road-traffic-public"
+    ],
+    "summary": "将来のprovider-gated入力を想定した集約VisualObservation。公開面では混雑度・通行可否・待機列バケットだけを扱い、raw/live camera feed、人物、ナンバー、車両IDは扱わない。",
+    "provenance": [
+      {
+        "sourceId": "source:mlit-road-traffic-public",
+        "claim": "Visual observations are modeled as aggregate non-identifying buckets only.",
+        "retrievedAt": "2026-06-03"
+      }
+    ]
   }
 ]

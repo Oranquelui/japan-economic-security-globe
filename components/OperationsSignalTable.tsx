@@ -3,6 +3,7 @@
 import type { OperationRow } from "../lib/presentation/operations";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
 import { getStatusTone, getUrgencyTone, resolveToneColor } from "../lib/presentation/palette";
+import type { ThemeId } from "../types/semantic";
 
 interface OperationsSignalTableProps {
   activeId: string;
@@ -13,6 +14,7 @@ interface OperationsSignalTableProps {
   query: string;
   rows: OperationRow[];
   statusPalette: StatusPalette;
+  themeId?: ThemeId;
   themePalette: ThemePalette;
 }
 
@@ -25,8 +27,13 @@ export function OperationsSignalTable({
   query,
   rows,
   statusPalette,
+  themeId,
   themePalette
 }: OperationsSignalTableProps) {
+  const isLogistics = themeId === "logistics";
+  const title = isLogistics ? "国内物流インパクト" : "日本向け依存シグナル";
+  const eyebrow = isLogistics ? "Impact Matrix" : "比較表";
+
   if (collapsible && collapsed) {
     return (
       <section
@@ -39,9 +46,9 @@ export function OperationsSignalTable({
         <div className="flex items-center justify-between gap-4 px-4 py-3">
           <div>
             <p className="font-mono text-[0.62rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
-              比較表
+              {eyebrow}
             </p>
-            <div className="mt-1 text-sm font-semibold text-white">日本向け依存シグナル {rows.length}件</div>
+            <div className="mt-1 text-sm font-semibold text-white">{title} {rows.length}件</div>
           </div>
           <button
             type="button"
@@ -77,9 +84,9 @@ export function OperationsSignalTable({
       >
         <div>
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
-            比較表
+            {eyebrow}
           </p>
-          <h2 className="mt-1 text-base font-semibold text-white">日本向け依存シグナル</h2>
+          <h2 className="mt-1 text-base font-semibold text-white">{title}</h2>
         </div>
         <div className="flex items-center gap-2 font-mono text-[0.68rem] uppercase tracking-[0.2em]" style={{ color: themePalette.textMuted }}>
           <span
@@ -136,9 +143,9 @@ export function OperationsSignalTable({
           >
             <tr>
               <th className="px-4 py-3 font-medium">優先</th>
-              <th className="px-4 py-3 font-medium">種別</th>
-              <th className="px-4 py-3 font-medium">シグナル</th>
-              <th className="px-4 py-3 font-medium">対象</th>
+              <th className="px-4 py-3 font-medium">{isLogistics ? "影響種別" : "種別"}</th>
+              <th className="px-4 py-3 font-medium">{isLogistics ? "経済影響" : "シグナル"}</th>
+              <th className="px-4 py-3 font-medium">{isLogistics ? "地域/コリドー" : "対象"}</th>
               <th className="px-4 py-3 font-medium">緊急度</th>
               <th className="px-4 py-3 font-medium">状態</th>
               <th className="px-4 py-3 font-medium">信頼</th>

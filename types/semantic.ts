@@ -22,6 +22,11 @@ export type EntityKind =
   | "Organization"
   | "Facility"
   | "Route"
+  | "TransportCorridor"
+  | "PortHinterlandCorridor"
+  | "HighwaySegment"
+  | "RailFreightCorridor"
+  | "DomesticDistributionNode"
   | "Chokepoint"
   | "Airport"
   | "Port"
@@ -39,7 +44,9 @@ export type ObservationKind =
   | "WaterObservation"
   | "BudgetObservation"
   | "DependencyObservation"
-  | "PolicySignal";
+  | "PolicySignal"
+  | "LogisticsImpactSignal"
+  | "VisualObservation";
 
 export interface GeoPoint {
   lat: number;

@@ -299,6 +299,35 @@ describe("map inbox structure", () => {
     expect(text.indexOf("JAPAN DOMESTIC LOGISTICS WATCH")).toBeLessThan(text.indexOf("近接監視"));
   });
 
+  test("renders a logistics impact board before the live lane list", () => {
+    render(
+      <MapInboxPanel
+        activeId="live-logistics:road-keihin-tokyo"
+        liveLogistics={liveLogistics as never}
+        onQueryChange={vi.fn()}
+        onSelect={vi.fn()}
+        query=""
+        rows={[]}
+        themeId="logistics"
+        themeLabel="物流"
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    const commandPane = screen.getByTestId("command-pane-scroll");
+    const text = commandPane.textContent ?? "";
+
+    expect(text).toContain("JAPAN LOGISTICS IMPACT BOARD");
+    expect(text).toContain("今日の国内物流インパクト");
+    expect(text).toContain("首都圏の小売・部品・港湾後背地配送");
+    expect(text).toContain("詰まりの場所");
+    expect(text).toContain("代替余力");
+    expect(text).toContain("根拠ソース");
+    expect(text.indexOf("JAPAN LOGISTICS IMPACT BOARD")).toBeLessThan(
+      text.indexOf("JAPAN DOMESTIC LOGISTICS WATCH")
+    );
+  });
+
   test("selects an individual live tanker item instead of collapsing to the shared maritime flow", () => {
     const onSelect = vi.fn();
 

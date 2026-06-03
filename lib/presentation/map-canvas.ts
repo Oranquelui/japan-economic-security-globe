@@ -46,6 +46,8 @@ export type JapanMapCanvasModel = {
   livePoints?: JapanMapPoint[];
   liveRoutes?: JapanMapRoute[];
   liveVessels?: JapanMapPoint[];
+  logisticsImpactRegions?: JapanMapRegion[];
+  logisticsImpactRoutes?: JapanMapRoute[];
   foreignWindow?: {
     title: string;
     entities: ForeignWindowEntity[];
@@ -108,6 +110,8 @@ export function buildJapanMapCanvasModel(
   const liveRoutes = buildLiveRoutes(liveLogistics, graph, view.id);
   const livePoints = buildLivePoints(liveRoutes, graph);
   const liveVessels = buildLiveVessels(liveLogistics);
+  const logisticsImpactRegions = buildLogisticsImpactRegions(graph, view.id);
+  const logisticsImpactRoutes = view.id === "logistics" ? liveRoutes : [];
 
   return {
     points: visiblePoints,
@@ -118,6 +122,8 @@ export function buildJapanMapCanvasModel(
     livePoints,
     liveRoutes,
     liveVessels,
+    logisticsImpactRegions,
+    logisticsImpactRoutes,
     foreignWindow: buildForeignWindow(graph, routeScopedFlows, activeId)
   };
 }
@@ -265,6 +271,32 @@ function buildLiveVessels(liveLogistics: LiveLogisticsViewModel | null | undefin
   }));
 }
 
+function buildLogisticsImpactRegions(graph: SemanticGraph, themeId: ThemeView["id"]): JapanMapRegion[] {
+  if (themeId !== "logistics") {
+    return [];
+  }
+
+  const regionIds = ["prefecture:tokyo", "prefecture:aichi", "prefecture:osaka"];
+
+  return regionIds
+    .map((id, index) => {
+      const entity = graph.entities.find((candidate) => candidate.id === id);
+
+      if (!entity?.coordinates) {
+        return null;
+      }
+
+      return {
+        id: entity.id,
+        label: localizeAnyLabel(entity.id, entity.label),
+        lat: entity.coordinates.lat,
+        lon: entity.coordinates.lon,
+        value: [92, 76, 68][index] ?? 60
+      };
+    })
+    .filter((region): region is JapanMapRegion => region !== null);
+}
+
 function resolveLiveVesselSelectionId(
   vessel: LiveLogisticsViewModel["mapVessels"][number]
 ) {
@@ -321,6 +353,11 @@ function isRouteSelectableEntity(kind: SemanticEntity["kind"]) {
     "Facility",
     "Reservoir",
     "Route",
+    "TransportCorridor",
+    "PortHinterlandCorridor",
+    "HighwaySegment",
+    "RailFreightCorridor",
+    "DomesticDistributionNode",
     "SeaLane"
   ].includes(kind);
 }
