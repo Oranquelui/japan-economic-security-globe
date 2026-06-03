@@ -234,5 +234,51 @@
     "relatedIds": ["port:yokohama", "chokepoint:malacca"],
     "signalTone": "normal",
     "priority": 89
+  },
+  {
+    "id": "live-logistics:tanker-us-gulf-keihin",
+    "themeIds": ["energy"],
+    "title": "US Gulf energy tanker: Gulf Coast → Keihin",
+    "currentPosition": {
+      "lat": 27.8,
+      "lon": -91.2,
+      "label": "US energy tanker aggregate"
+    },
+    "kindLabel": "外航海上補助",
+    "laneId": "maritime",
+    "statusLabel": "Japan-bound planning",
+    "lastSeenLabel": "33分前",
+    "etaLabel": "ETA 18-24d",
+    "sourceLabel": "Customs/METI public aggregate demo fixture (supporting context)",
+    "disclosureLabel": "15-60分遅延 / aggregated route signal / no vessel ID",
+    "confidenceLabel": "公開統計 + 政策根拠",
+    "corridorLabel": "US Gulf Coast → Panama/Pacific → Keihin",
+    "pointIds": ["country:united-states", "country:japan", "refinery:keihin"],
+    "relatedIds": ["flow:us-gulf-energy-japan", "country:united-states", "refinery:keihin"],
+    "signalTone": "monitoring",
+    "priority": 95
+  },
+  {
+    "id": "live-logistics:tanker-canada-kitimat-tomakomai",
+    "themeIds": ["energy"],
+    "title": "Canadian LNG tanker: Kitimat → Tomakomai",
+    "currentPosition": {
+      "lat": 50.7,
+      "lon": -134.6,
+      "label": "Canada LNG aggregate"
+    },
+    "kindLabel": "外航海上補助",
+    "laneId": "maritime",
+    "statusLabel": "Pacific route watch",
+    "lastSeenLabel": "47分前",
+    "etaLabel": "ETA 8-12d",
+    "sourceLabel": "METI/NRCan public aggregate demo fixture (supporting context)",
+    "disclosureLabel": "15-60分遅延 / aggregated route signal / no vessel ID",
+    "confidenceLabel": "政府間根拠 + 公開統計",
+    "corridorLabel": "Kitimat/LNG Canada → North Pacific → Tomakomai LNG",
+    "pointIds": ["country:canada", "country:japan", "terminal:tomakomai-lng"],
+    "relatedIds": ["flow:canada-lng-japan", "country:canada", "terminal:tomakomai-lng"],
+    "signalTone": "monitoring",
+    "priority": 94
   }
 ]

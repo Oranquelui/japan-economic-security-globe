@@ -38,10 +38,10 @@ describe("official source registry", () => {
 
     const coverage = buildThemeOfficialCoverage(graph, "energy");
 
-    expect(coverage.totalSources).toBe(4);
-    expect(coverage.officialSources).toBe(3);
+    expect(coverage.totalSources).toBe(6);
+    expect(coverage.officialSources).toBe(5);
     expect(coverage.apiLikeSources).toBe(0);
-    expect(coverage.documentSources).toBe(4);
+    expect(coverage.documentSources).toBe(6);
     expect(coverage.primaryModes).toEqual(expect.arrayContaining(["html", "pdf"]));
   });
 });

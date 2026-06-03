@@ -100,13 +100,32 @@ describe("logistics airport boundary", () => {
       "live-logistics:tanker-qatar-tokyo-bay",
       "live-logistics:tanker-saudi-kashima",
       "live-logistics:tanker-australia-sodegaura",
-      "live-logistics:tanker-singapore-yokohama"
+      "live-logistics:tanker-singapore-yokohama",
+      "live-logistics:tanker-us-gulf-keihin",
+      "live-logistics:tanker-canada-kitimat-tomakomai"
     ]);
     expect(tankerEvents.every((event) => event.themeIds.length === 1 && event.themeIds[0] === "energy")).toBe(true);
     expect(tankerEvents.flatMap((event) => event.relatedIds)).not.toContain("flow:japan-linked-maritime-watch");
     expect(logisticsView?.items.map((item) => item.id)).not.toEqual(expect.arrayContaining(tankerIds));
     expect(logisticsView?.mapVessels).toEqual([]);
     expect(energyView?.items.map((item) => item.id)).toEqual(expect.arrayContaining(tankerIds));
+  });
+
+  test("surfaces North America energy tanker support in Energy without leaking into Logistics", () => {
+    const graph = loadSeedGraph();
+    const events = loadSeedLiveLogistics();
+    const logisticsView = buildLiveLogisticsView("logistics", null, events);
+    const energyView = buildLiveLogisticsView("energy", null, events);
+    const northAmericaTankerIds = [
+      "live-logistics:tanker-us-gulf-keihin",
+      "live-logistics:tanker-canada-kitimat-tomakomai"
+    ];
+
+    expect(graph.entities.find((entity) => entity.id === "country:united-states")?.themes).toContain("energy");
+    expect(graph.entities.find((entity) => entity.id === "country:canada")?.themes).toContain("energy");
+    expect(events.map((event) => event.id)).toEqual(expect.arrayContaining(northAmericaTankerIds));
+    expect(energyView?.items.map((item) => item.id)).toEqual(expect.arrayContaining(northAmericaTankerIds));
+    expect(logisticsView?.items.map((item) => item.id)).not.toEqual(expect.arrayContaining(northAmericaTankerIds));
   });
 
   test("keeps the logistics semantic maritime watch free of energy resources and tanker routes", () => {

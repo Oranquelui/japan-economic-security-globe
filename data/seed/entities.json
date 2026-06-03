@@ -149,10 +149,11 @@
     "id": "country:united-states",
     "kind": "Country",
     "label": "United States",
-    "summary": "A strategic partner in semiconductor and defense-related dependency stories.",
-    "whyItMatters": "Japan's economic security often depends on US-linked technology, defense, and industrial policy coordination.",
+    "summary": "A strategic partner in semiconductor, defense, and North America energy dependency stories.",
+    "whyItMatters": "Japan's economic security often depends on US-linked technology, defense, industrial policy, and energy supply diversification.",
     "themes": [
       "defense",
+      "energy",
       "semiconductors"
     ],
     "coordinates": {
@@ -162,9 +163,30 @@
     "countryCode": "US",
     "flagEmoji": "🇺🇸",
     "provenance": [
-      "source:meti-semiconductor-frame",
       "source:customs-trade-statistics",
+      "source:meti-us-energy-cooperation-2026",
+      "source:meti-semiconductor-frame",
       "source:mod-fy2026-budget"
+    ]
+  },
+  {
+    "id": "country:canada",
+    "kind": "Country",
+    "label": "Canada",
+    "summary": "A North America LNG supplier and energy-security partner for Japan and Asia.",
+    "whyItMatters": "Canadian LNG supply gives Japan a Pacific-facing alternative to Middle East and Southeast Asia chokepoint exposure.",
+    "themes": [
+      "energy"
+    ],
+    "coordinates": {
+      "lat": 56.1304,
+      "lon": -106.3468
+    },
+    "countryCode": "CA",
+    "flagEmoji": "🇨🇦",
+    "provenance": [
+      "source:meti-nrcan-canada-lng-2025",
+      "source:customs-trade-statistics"
     ]
   },
   {

@@ -39,6 +39,7 @@ const ENTITY_LABELS: Record<string, string> = {
   "chokepoint:hormuz": "ホルムズ海峡",
   "chokepoint:malacca": "マラッカ海峡",
   "country:australia": "オーストラリア",
+  "country:canada": "カナダ",
   "country:china": "中国",
   "country:japan": "日本",
   "country:netherlands": "オランダ",
@@ -82,6 +83,8 @@ const FLOW_LABELS: Record<string, string> = {
   "flow:netherlands-equipment-japan": "オランダ半導体装置 → 日本",
   "flow:qatar-lng-japan": "カタールLNG → 日本",
   "flow:saudi-oil-japan": "サウジ原油 → 日本",
+  "flow:us-gulf-energy-japan": "米国湾岸エネルギー貨物 → 日本",
+  "flow:canada-lng-japan": "カナダLNG → 日本",
   "flow:taiwan-semiconductors-japan": "台湾半導体 → 日本",
   "flow:us-semiconductor-policy-japan": "米国技術・政策連携 → 日本"
 };
@@ -103,6 +106,8 @@ const SUMMARY_LABELS: Record<string, string> = {
   "flow:qatar-lng-japan": "湾岸から日本へ入るLNGの簡易フロー。電気代や国内エネルギー供給への影響を説明する入口。",
   "flow:saudi-oil-japan": "湾岸原油とホルムズ海峡・マラッカ海峡を通る日本向けルートの簡易フロー。",
   "flow:australia-coal-japan": "オーストラリアからの石炭供給を通じ、日本のエネルギー依存が中東だけではないことを示すフロー。",
+  "flow:us-gulf-energy-japan": "米国湾岸からの原油・石油製品・LNGを、北米エネルギー供給多角化の補助フローとして示す。",
+  "flow:canada-lng-japan": "カナダ西海岸LNGを、日本向け太平洋ルートと国内LNG受入拠点へ接続する補助フロー。",
   "flow:energy-inputs-rice": "エネルギー価格や肥料原料が、コメ価格や家計負担へ波及することを示す橋渡しフロー。",
   "flow:japan-linked-maritime-watch": "横浜港へ入った非エネルギー一般貨物が、首都圏配送へ移る港湾後続の監視フロー。",
   "flow:defense-budget-standoff": "2026年度防衛予算の一部を能力領域と結びつけ、予算の流れを市民向けに説明する例。",

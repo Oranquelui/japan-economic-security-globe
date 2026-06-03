@@ -72,6 +72,44 @@
     "riskLabel": "Supplier concentration"
   },
   {
+    "id": "flow:us-gulf-energy-japan",
+    "theme": "energy",
+    "label": "US Gulf energy cargo to Japan",
+    "originId": "country:united-states",
+    "destinationId": "country:japan",
+    "resourceId": "resource:crude-oil",
+    "routeIds": ["refinery:keihin"],
+    "mapLineKind": "route",
+    "sourceIds": [
+      "source:customs-trade-statistics",
+      "source:meti-us-energy-cooperation-2026",
+      "source:meti-2026-energy-taskforce"
+    ],
+    "period": "2026",
+    "summary": "A simplified North America energy flow showing US crude, petroleum product, and LNG diversification exposure for Japan.",
+    "magnitudeLabel": "North America supplier route",
+    "riskLabel": "Diversification and long-haul tanker exposure"
+  },
+  {
+    "id": "flow:canada-lng-japan",
+    "theme": "energy",
+    "label": "Canadian LNG to Japan",
+    "originId": "country:canada",
+    "destinationId": "country:japan",
+    "resourceId": "resource:lng",
+    "routeIds": ["terminal:tomakomai-lng"],
+    "mapLineKind": "route",
+    "sourceIds": [
+      "source:customs-trade-statistics",
+      "source:meti-nrcan-canada-lng-2025",
+      "source:enecho-energy-trends"
+    ],
+    "period": "2026",
+    "summary": "A simplified Pacific LNG flow connecting Canada's west coast LNG supply to Japan-side receiving capacity.",
+    "magnitudeLabel": "Pacific LNG route",
+    "riskLabel": "Pacific diversification and receiving-terminal exposure"
+  },
+  {
     "id": "flow:energy-inputs-rice",
     "theme": "rice",
     "label": "Energy and fertilizer inputs into rice prices",

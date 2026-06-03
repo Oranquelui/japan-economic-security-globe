@@ -78,6 +78,30 @@
     "tier": "B"
   },
   {
+    "id": "source:meti-us-energy-cooperation-2026",
+    "label": "Japan-U.S. energy cooperation announcement",
+    "url": "https://www.meti.go.jp/english/press/2026/0320_001.html",
+    "publisher": "経済産業省",
+    "published": "2026-03-20",
+    "accessed": "2026-06-03",
+    "description": "日米首脳会談の経済分野成果として、米国産原油調達や日本国内備蓄を含むエネルギー安定供給協力を示す公式発表。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:meti-nrcan-canada-lng-2025",
+    "label": "METI-NRCan energy cooperation statement",
+    "url": "https://www.meti.go.jp/press/2025/11/20251104003/20251104003-c.pdf",
+    "publisher": "経済産業省 / Natural Resources Canada",
+    "published": "2025-10-31",
+    "accessed": "2026-06-03",
+    "description": "LNG Canada の初出荷と、カナダ西海岸LNGが日本・アジアのエネルギー安全保障へ持つ意義を示す政府間共同文書。",
+    "official": true,
+    "accessMode": "pdf",
+    "tier": "B"
+  },
+  {
     "id": "source:meti-2026-energy-taskforce",
     "label": "中東情勢関連対策ポータル",
     "url": "https://www.kanto.meti.go.jp/press/20260402chuto_josei_press.html",
