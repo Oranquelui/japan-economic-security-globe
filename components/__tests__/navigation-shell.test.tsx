@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import { act, cleanup, render, screen, within } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { ActionBar } from "../ActionBar";
 import { JapanMainMap } from "../JapanMainMap";
@@ -17,14 +17,6 @@ afterEach(() => {
   cleanup();
 });
 
-beforeEach(() => {
-  vi.useFakeTimers();
-});
-
-afterEach(() => {
-  vi.useRealTimers();
-});
-
 const themePalette = getThemePalette("energy");
 const statusPalette = getStatusPalette();
 
@@ -37,7 +29,7 @@ const mapModel: JapanMapCanvasModel = {
 };
 
 describe("navigation shell", () => {
-  test("defers map canvas mount until after the first paint", () => {
+  test("mounts map canvas during the initial render", () => {
     render(
       <JapanMainMap
         activeId="flow:saudi-oil-japan"
@@ -49,13 +41,6 @@ describe("navigation shell", () => {
         themePalette={themePalette}
       />
     );
-
-    expect(screen.getByText("地図を準備中")).toBeTruthy();
-    expect(screen.queryByTestId("ops-canvas")).toBeNull();
-
-    act(() => {
-      vi.runOnlyPendingTimers();
-    });
 
     expect(screen.queryByText("地図を準備中")).toBeNull();
     expect(screen.getByTestId("ops-canvas")).toBeTruthy();
