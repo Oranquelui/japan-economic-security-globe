@@ -108,6 +108,20 @@ function observationToRow(observation: Observation, entities: SemanticEntity[]):
 }
 
 function impactToRow(impact: SemanticEntity, themeId: ThemeView["id"]): OperationRow {
+  if (impact.kind === "StrategicLayer") {
+    return {
+      id: impact.id,
+      type: localizeKind(impact.kind),
+      label: localizeAnyLabel(impact.id, impact.label),
+      subject: "重複しない横断整理",
+      urgency: "中",
+      status: "表示対象",
+      action: "関連能力・観測・出典へ渡る",
+      period: "戦略レイヤー",
+      sortValue: getImpactSortValue(impact)
+    };
+  }
+
   const domesticCopy = getDomesticImpactCopy(themeId);
 
   return {

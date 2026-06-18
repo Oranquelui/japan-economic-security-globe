@@ -19,6 +19,7 @@ export type EntityKind =
   | "Law"
   | "BudgetLine"
   | "CapabilityArea"
+  | "StrategicLayer"
   | "Organization"
   | "Facility"
   | "Route"

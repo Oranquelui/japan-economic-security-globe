@@ -36,6 +36,7 @@ export function MapDetailPopup({
   themeTitle
 }: MapDetailPopupProps) {
   const relatedEntities = detail.relatedEntities.slice(0, 4);
+  const linkedFlows = detail.linkedFlows.filter((flow) => flow.id !== detail.id).slice(0, 4);
   const sources = detail.sources.slice(0, 2);
 
   return (
@@ -128,6 +129,31 @@ export function MapDetailPopup({
                 <span className="font-semibold text-slate-100">{localizeSourceLabel(source.id, source.label)}</span>
                 <span> / {localizePublisher(source.publisher)}</span>
               </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {linkedFlows.length ? (
+        <section className="mt-4 border-t pt-3" style={{ borderColor: themePalette.borderSubtle }}>
+          <div className="font-mono text-[0.56rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+            NEXT FLOWS
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {linkedFlows.map((flow) => (
+              <button
+                key={flow.id}
+                aria-label={`関連フロー: ${localizeAnyLabel(flow.id, flow.label)}`}
+                className="rounded-full border px-2.5 py-1.5 text-[0.66rem] transition hover:bg-white/5"
+                onClick={() => onSelect(flow.id)}
+                style={{
+                  borderColor: themePalette.borderSubtle,
+                  color: themePalette.textMuted
+                }}
+                type="button"
+              >
+                {localizeAnyLabel(flow.id, flow.label)}
+              </button>
             ))}
           </div>
         </section>

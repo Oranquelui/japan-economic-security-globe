@@ -118,5 +118,47 @@
       "publicAttention": 0.34
     },
     "retrievedAt": "2026-04-26T00:00:00.000Z"
+  },
+  {
+    "id": "ranking-signal:defense-industrial-base-layer",
+    "label": "防衛産業基盤の横断監視",
+    "importanceAxes": ["defense_industrial_base", "logistics"],
+    "canonicalRefs": [
+      { "kind": "entity", "id": "layer:defense-industrial-base" },
+      { "kind": "flow", "id": "flow:defense-industrial-base-shipbuilding" },
+      { "kind": "observation", "id": "observation:defense-industrial-base-layer-2026" }
+    ],
+    "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
+    "componentInputs": {
+      "nationalImportance": 0.5,
+      "disruptionDepth": 0.45,
+      "sourceConfidence": 0.75,
+      "publicAttention": 0.18
+    },
+    "retrievedAt": "2026-04-11T00:00:00.000Z"
+  },
+  {
+    "id": "ranking-signal:strategic-autonomy-layer",
+    "label": "戦略的自立性の横断監視",
+    "importanceAxes": ["defense_industrial_base", "energy", "food", "semiconductors"],
+    "canonicalRefs": [
+      { "kind": "entity", "id": "layer:strategic-autonomy" },
+      { "kind": "observation", "id": "observation:strategic-autonomy-layer-2026" }
+    ],
+    "sourceIds": [
+      "source:customs-trade-statistics",
+      "source:enecho-energy-trends",
+      "source:maff-rice-policy",
+      "source:mlit-drought-portal",
+      "source:mod-fy2026-budget",
+      "source:meti-semiconductor-frame"
+    ],
+    "componentInputs": {
+      "nationalImportance": 0.52,
+      "disruptionDepth": 0.4,
+      "sourceConfidence": 0.75,
+      "publicAttention": 0.16
+    },
+    "retrievedAt": "2026-04-11T00:00:00.000Z"
   }
 ]

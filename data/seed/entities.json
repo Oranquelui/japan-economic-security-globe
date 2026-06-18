@@ -2479,5 +2479,111 @@
     "properties": {
       "displayPriority": 94
     }
+  },
+  {
+    "id": "layer:defense-industrial-base",
+    "kind": "StrategicLayer",
+    "label": "Defense industrial base layer",
+    "labelJa": "防衛産業基盤Layer",
+    "summary": "A non-theme strategic layer that groups defense-relevant production, sustainment, munitions, and hardened infrastructure without duplicating the Defense theme.",
+    "whyItMatters": "Japan's defense exposure is not only a budget question; it also depends on whether domestic industry can build, sustain, harden, and replenish critical capabilities.",
+    "themes": [
+      "defense"
+    ],
+    "sourceIds": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ],
+    "provenance": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ],
+    "properties": {
+      "displayPriority": 99,
+      "primaryTheme": "defense",
+      "layerBoundary": "defense_industrial_base"
+    }
+  },
+  {
+    "id": "layer:strategic-autonomy",
+    "kind": "StrategicLayer",
+    "label": "Strategic autonomy layer",
+    "labelJa": "戦略的自立性Layer",
+    "summary": "A cross-theme strategic layer for reading energy, food, water, defense, semiconductors, and logistics through domestic endurance and fallback capacity.",
+    "whyItMatters": "Strategic autonomy keeps the app from duplicating themes: the same question is asked across existing themes instead of becoming a separate theme.",
+    "themes": [
+      "energy",
+      "logistics",
+      "rice",
+      "water",
+      "defense",
+      "semiconductors"
+    ],
+    "sourceIds": [
+      "source:customs-trade-statistics",
+      "source:enecho-energy-trends",
+      "source:maff-rice-policy",
+      "source:mlit-drought-portal",
+      "source:mod-fy2026-budget",
+      "source:meti-semiconductor-frame"
+    ],
+    "provenance": [
+      "source:customs-trade-statistics",
+      "source:enecho-energy-trends",
+      "source:maff-rice-policy",
+      "source:mlit-drought-portal",
+      "source:mod-fy2026-budget",
+      "source:meti-semiconductor-frame"
+    ],
+    "properties": {
+      "displayPriority": 98,
+      "primaryTheme": "defense",
+      "layerBoundary": "cross_theme_autonomy"
+    }
+  },
+  {
+    "id": "capability:shipbuilding-sustainment",
+    "kind": "CapabilityArea",
+    "label": "Shipbuilding and fleet sustainment",
+    "labelJa": "造船・艦艇維持",
+    "summary": "A capability-area node for reading shipbuilding and sustainment as part of Japan's defense industrial base.",
+    "whyItMatters": "Japan's sea-lane and maritime-defense exposure depends on whether ships and maritime platforms can be built, repaired, and sustained domestically.",
+    "themes": [
+      "defense"
+    ],
+    "provenance": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ]
+  },
+  {
+    "id": "capability:munitions-stockpile",
+    "kind": "CapabilityArea",
+    "label": "Munitions and sustainment stockpile",
+    "labelJa": "弾薬・継戦備蓄",
+    "summary": "A capability-area node for reading munitions, replenishment, and sustainment depth as part of the defense industrial base.",
+    "whyItMatters": "Defense capability is brittle if platforms exist but munitions and replenishment depth are too shallow.",
+    "themes": [
+      "defense"
+    ],
+    "provenance": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ]
+  },
+  {
+    "id": "capability:base-hardening",
+    "kind": "CapabilityArea",
+    "label": "Base and infrastructure hardening",
+    "labelJa": "基地・施設抗たん性",
+    "summary": "A capability-area node for reading hardened bases, tunnels, storage, and protected infrastructure as operational endurance.",
+    "whyItMatters": "Japan's defense posture needs physical resilience, not only high-end weapons or headline budget lines.",
+    "themes": [
+      "defense"
+    ],
+    "provenance": [
+      "source:mod-fy2026-budget",
+      "source:mof-fy2026-budget"
+    ]
   }
 ]

@@ -223,6 +223,63 @@
     ]
   },
   {
+    "id": "observation:defense-industrial-base-layer-2026",
+    "kind": "PolicySignal",
+    "theme": "defense",
+    "subjectId": "layer:defense-industrial-base",
+    "label": "Defense industrial base layer signal",
+    "metric": "defense_industrial_base_watch",
+    "value": "active",
+    "unit": "qualitative",
+    "period": "2026",
+    "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
+    "summary": "A policy signal that groups shipbuilding, munitions depth, and hardened infrastructure as a non-duplicative defense industrial base layer.",
+    "provenance": [
+      {
+        "sourceId": "source:mod-fy2026-budget",
+        "claim": "Manual seed observation for defense industrial base interpretation using official defense budget provenance.",
+        "retrievedAt": "2026-06-18"
+      },
+      {
+        "sourceId": "source:mof-fy2026-budget",
+        "claim": "Fiscal provenance anchor for future budget-line expansion.",
+        "retrievedAt": "2026-06-18"
+      }
+    ]
+  },
+  {
+    "id": "observation:strategic-autonomy-layer-2026",
+    "kind": "PolicySignal",
+    "theme": "defense",
+    "subjectId": "layer:strategic-autonomy",
+    "label": "Strategic autonomy cross-theme layer signal",
+    "metric": "cross_theme_autonomy_watch",
+    "value": "active",
+    "unit": "qualitative",
+    "period": "2026",
+    "sourceIds": [
+      "source:customs-trade-statistics",
+      "source:enecho-energy-trends",
+      "source:maff-rice-policy",
+      "source:mlit-drought-portal",
+      "source:mod-fy2026-budget",
+      "source:meti-semiconductor-frame"
+    ],
+    "summary": "A cross-theme policy signal that asks the same autonomy question across existing themes instead of creating a duplicate theme.",
+    "provenance": [
+      {
+        "sourceId": "source:customs-trade-statistics",
+        "claim": "Trade-statistics provenance anchors import-dependency components of the strategic autonomy lens.",
+        "retrievedAt": "2026-06-18"
+      },
+      {
+        "sourceId": "source:mod-fy2026-budget",
+        "claim": "Defense budget provenance anchors the defense side of the strategic autonomy lens.",
+        "retrievedAt": "2026-06-18"
+      }
+    ]
+  },
+  {
     "id": "observation:semiconductor-policy-signal-2026",
     "kind": "PolicySignal",
     "theme": "semiconductors",

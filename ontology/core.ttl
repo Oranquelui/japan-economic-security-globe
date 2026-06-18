@@ -19,6 +19,7 @@ jpsdg:DependencyFlow a owl:Class ; rdfs:subClassOf jpsdg:Entity .
 jpsdg:PolicyDocument a owl:Class ; rdfs:subClassOf jpsdg:Entity .
 jpsdg:Law a owl:Class ; rdfs:subClassOf jpsdg:PolicyDocument .
 jpsdg:BudgetLine a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:StrategicLayer a owl:Class ; rdfs:subClassOf jpsdg:Entity .
 jpsdg:Organization a owl:Class ; rdfs:subClassOf jpsdg:Entity .
 jpsdg:Facility a owl:Class ; rdfs:subClassOf jpsdg:Entity .
 jpsdg:Airport a owl:Class ; rdfs:subClassOf jpsdg:Facility .

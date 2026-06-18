@@ -27,7 +27,8 @@ export function getThemeView(graph: SemanticGraph, themeId: ThemeId): ThemeView 
     japanImpacts: entities.filter((entity) =>
       ["Prefecture", "Port", "Airport", "Terminal", "Refinery", "Reservoir", "Facility", "BudgetLine"].includes(
         entity.kind
-      )
+      ) ||
+      (entity.kind === "StrategicLayer" && entity.properties?.primaryTheme === themeId)
     ),
     evidenceEdges
   };

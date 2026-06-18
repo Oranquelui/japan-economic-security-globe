@@ -53,4 +53,28 @@ describe("MapDetailPopup", () => {
     fireEvent.click(screen.getByRole("button", { name: "地図詳細を閉じる" }));
     expect(onClose).toHaveBeenCalled();
   });
+
+  test("renders linked flows so abstract layer nodes are easier to traverse", () => {
+    const graph = loadSeedGraph();
+    const detail = getDetailView(graph, "layer:defense-industrial-base");
+    const onSelect = vi.fn();
+
+    render(
+      <MapDetailPopup
+        detail={detail}
+        onClose={vi.fn()}
+        onSelect={onSelect}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("defense")}
+        themeTitle="防衛"
+      />
+    );
+
+    expect(screen.getByText("NEXT FLOWS")).toBeTruthy();
+
+    const linkedFlow = screen.getByRole("button", { name: /関連フロー: 防衛産業基盤 → 造船・艦艇維持/i });
+    fireEvent.click(linkedFlow);
+
+    expect(onSelect).toHaveBeenCalledWith("flow:defense-industrial-base-shipbuilding");
+  });
 });

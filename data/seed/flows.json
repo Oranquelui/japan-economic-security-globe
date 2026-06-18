@@ -172,6 +172,45 @@
     "riskLabel": "Autonomy and surveillance explanation"
   },
   {
+    "id": "flow:defense-industrial-base-shipbuilding",
+    "theme": "defense",
+    "label": "Defense industrial base to shipbuilding sustainment",
+    "originId": "layer:defense-industrial-base",
+    "destinationId": "capability:shipbuilding-sustainment",
+    "routeIds": [],
+    "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
+    "period": "2026",
+    "summary": "A bridge flow that keeps shipbuilding and fleet sustainment inside the defense industrial base layer instead of creating a duplicate theme.",
+    "magnitudeLabel": "Industrial-base bridge",
+    "riskLabel": "Maritime sustainment capacity"
+  },
+  {
+    "id": "flow:defense-industrial-base-munitions",
+    "theme": "defense",
+    "label": "Defense industrial base to munitions stockpile",
+    "originId": "layer:defense-industrial-base",
+    "destinationId": "capability:munitions-stockpile",
+    "routeIds": [],
+    "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
+    "period": "2026",
+    "summary": "A bridge flow that reads munitions and replenishment depth as domestic endurance rather than as a separate theme.",
+    "magnitudeLabel": "Industrial-base bridge",
+    "riskLabel": "Sustainment and replenishment depth"
+  },
+  {
+    "id": "flow:defense-industrial-base-hardening",
+    "theme": "defense",
+    "label": "Defense industrial base to base and infrastructure hardening",
+    "originId": "layer:defense-industrial-base",
+    "destinationId": "capability:base-hardening",
+    "routeIds": [],
+    "sourceIds": ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
+    "period": "2026",
+    "summary": "A bridge flow that keeps base hardening and protected infrastructure connected to defense industrial capacity.",
+    "magnitudeLabel": "Industrial-base bridge",
+    "riskLabel": "Infrastructure resilience"
+  },
+  {
     "id": "flow:taiwan-semiconductors-japan",
     "theme": "semiconductors",
     "label": "Taiwan semiconductor dependency to Japan",

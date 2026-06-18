@@ -58,6 +58,16 @@ export function buildSignalNarrativeForFlow(flow: DependencyFlow): SignalNarrati
   }
 
   if (flow.theme === "defense") {
+    if (flow.id.startsWith("flow:defense-industrial-base-")) {
+      return {
+        category: "産業基盤接続",
+        severity: "中",
+        status: "表示対象",
+        recommendedAction: "防衛予算から国内産業・継戦能力へ渡って確認",
+        watchpoints: ["産業基盤", "国内供給力", "継続能力"]
+      };
+    }
+
     if (flow.id === "flow:defense-budget-standoff") {
       return {
         category: "能力優先配分",
@@ -297,6 +307,16 @@ export function buildSignalNarrativeForObservation(observation: Observation): Si
 }
 
 export function buildSignalNarrativeForEntity(entity: SemanticEntity): SignalNarrativeViewModel {
+  if (entity.kind === "StrategicLayer") {
+    return {
+      category: "横断レイヤー",
+      severity: "中",
+      status: "表示対象",
+      recommendedAction: "重複テーマを増やさず、関連能力・観測・出典へ渡って確認",
+      watchpoints: ["境界", "関連能力", "出典", "次の遷移先"]
+    };
+  }
+
   if (entity.kind === "Country" && entity.id !== "country:japan") {
     return {
       category: "対外依存先",
@@ -427,6 +447,12 @@ function buildFlowClaim(flow: DependencyFlow) {
       return { sourceId, claim: "FY2026で約5,091億円が一体防空・ミサイル防衛能力へ配分されている。"};
     case "flow:defense-budget-unmanned":
       return { sourceId, claim: "FY2026で約2,773億円が無人防衛能力へ配分されている。"};
+    case "flow:defense-industrial-base-shipbuilding":
+      return { sourceId, claim: "防衛産業基盤Layerは、海洋国家としての造船・艦艇維持能力を防衛テーマの中で読む入口になる。"};
+    case "flow:defense-industrial-base-munitions":
+      return { sourceId, claim: "防衛産業基盤Layerは、弾薬・継戦備蓄を予算額だけでなく国内供給力として読む入口になる。"};
+    case "flow:defense-industrial-base-hardening":
+      return { sourceId, claim: "防衛産業基盤Layerは、基地・施設抗たん性を国内インフラ能力として読む入口になる。"};
     case "flow:netherlands-equipment-japan":
       return { sourceId, claim: "日本の先端半導体基盤はオランダの装置供給に依存する側面がある。"};
     case "flow:taiwan-semiconductors-japan":
@@ -456,6 +482,12 @@ function buildFlowClaimsForSource(flow: DependencyFlow, source: SourceDocument):
       return buildDefenseFlowClaims(source.id, "一体防空・ミサイル防衛", "約5,091億円");
     case "flow:defense-budget-unmanned":
       return buildDefenseFlowClaims(source.id, "無人防衛能力", "約2,773億円");
+    case "flow:defense-industrial-base-shipbuilding":
+      return buildDefenseIndustrialBaseClaims(source.id, "造船・艦艇維持");
+    case "flow:defense-industrial-base-munitions":
+      return buildDefenseIndustrialBaseClaims(source.id, "弾薬・継戦備蓄");
+    case "flow:defense-industrial-base-hardening":
+      return buildDefenseIndustrialBaseClaims(source.id, "基地・施設抗たん性");
     case "flow:taiwan-semiconductors-japan":
       return buildSemiconductorFlowClaims(source.id, "台湾", "先端製造");
     case "flow:korea-semiconductors-japan":
@@ -560,6 +592,17 @@ function buildDefenseFlowClaims(sourceId: string, capability: string, amount: st
       return [{ sourceId, claim: `防衛省資料は${capability}へ${amount}規模の配分を示す。` }];
     case "source:mof-fy2026-budget":
       return [{ sourceId, claim: `${capability}の配分を財政文書側から照合する一次資料になる。` }];
+    default:
+      return [];
+  }
+}
+
+function buildDefenseIndustrialBaseClaims(sourceId: string, capability: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:mod-fy2026-budget":
+      return [{ sourceId, claim: `防衛省予算資料を、${capability}に関わる国内能力の入口として接続する。` }];
+    case "source:mof-fy2026-budget":
+      return [{ sourceId, claim: `${capability}を財政文書側で照合するための予算 provenance を残す。` }];
     default:
       return [];
   }
