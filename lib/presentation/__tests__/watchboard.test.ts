@@ -56,4 +56,28 @@ describe("watchboard presentation", () => {
     expect(briefing?.proofSourceLabels).toEqual(["Trade Statistics"]);
     expect(briefing?.title).not.toMatch(/LNG|原油|タンカー|ホルムズ/);
   });
+
+  test("uses regional-security framing and source proof for the active regional-security theme", () => {
+    const graph = loadSeedGraph();
+    const signals = loadSeedRankingSignals();
+    const decision = buildRankingDecision({
+      surfaceId: "homepage",
+      signals,
+      now: "2026-06-19T00:00:00.000Z"
+    });
+
+    const briefing = buildWatchboardBriefing(graph, signals, decision, "2026-06-19T00:00:00.000Z", "regional-security");
+
+    expect(briefing).toEqual(
+      expect.objectContaining({
+        themeId: "regional-security",
+        themeLabel: "地域安全保障",
+        title: "北朝鮮ミサイル履歴 → 日本周辺",
+        strategicQuestion: "日本周辺のミサイル・航空・海上活動は、どの地域と政策判断に接続するか？",
+        sourceProofLabel: "根拠: MOD / CNS/NTI / Open Source Ref",
+        safetyLabel: "公開情報 / 履歴・集約 / 非ライブ警報・非追跡"
+      })
+    );
+    expect(briefing?.proofSourceLabels).toEqual(["MOD", "CNS/NTI", "Open Source Ref"]);
+  });
 });

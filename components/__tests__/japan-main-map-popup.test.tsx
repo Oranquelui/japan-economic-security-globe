@@ -51,4 +51,33 @@ describe("JapanMainMap popup placement", () => {
     expect(anchor.getAttribute("style")).toContain("left: 420px");
     expect(anchor.getAttribute("style")).toContain("translate(16px, -50%)");
   });
+
+  test("shows a regional-security map disclosure when provided", () => {
+    render(
+      <div style={{ height: 720, width: 1024 }}>
+        <JapanMainMap
+          activeId="flow:nk-missile-history-japan-watch"
+          focusTargetId={null}
+          mapDisclosure={{
+            title: "代表軌道",
+            body: "公開情報 / 履歴・集約 / ライブ追跡ではありません"
+          }}
+          mapMode="route"
+          model={{
+            points: [],
+            routes: [],
+            regions: [],
+            globalPoints: [],
+            globalRoutes: []
+          }}
+          onSelect={vi.fn()}
+          statusPalette={getStatusPalette()}
+          themePalette={getThemePalette("regional-security")}
+        />
+      </div>
+    );
+
+    expect(screen.getByText("代表軌道")).toBeTruthy();
+    expect(screen.getByText("公開情報 / 履歴・集約 / ライブ追跡ではありません")).toBeTruthy();
+  });
 });

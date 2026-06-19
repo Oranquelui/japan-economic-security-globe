@@ -6,9 +6,12 @@ import type { ThemePalette } from "../lib/presentation/palette";
 interface SourceStatusBarProps {
   summary: SourceStatusSummary;
   themePalette: ThemePalette;
+  variant?: "default" | "public-history";
 }
 
-export function SourceStatusBar({ summary, themePalette }: SourceStatusBarProps) {
+export function SourceStatusBar({ summary, themePalette, variant = "default" }: SourceStatusBarProps) {
+  const publicHistory = variant === "public-history";
+
   return (
     <section
       role="status"
@@ -31,15 +34,28 @@ export function SourceStatusBar({ summary, themePalette }: SourceStatusBarProps)
         <StatusChip borderColor={themePalette.accent} textColor={themePalette.textPrimary}>
           公式 {summary.officialSources}/{summary.totalSources}
         </StatusChip>
-        <StatusChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
-          API {summary.apiLikeSources}
-        </StatusChip>
-        <StatusChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
-          文書 {summary.documentSources}
-        </StatusChip>
-        <StatusChip borderColor={getStaleBorderColor(summary, themePalette)} textColor={getStaleTextColor(summary, themePalette)}>
-          古い出典 {summary.staleSources}
-        </StatusChip>
+        {publicHistory ? (
+          <>
+            <StatusChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+              公開資料 {summary.documentSources}
+            </StatusChip>
+            <StatusChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+              履歴資料
+            </StatusChip>
+          </>
+        ) : (
+          <>
+            <StatusChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+              API {summary.apiLikeSources}
+            </StatusChip>
+            <StatusChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+              文書 {summary.documentSources}
+            </StatusChip>
+            <StatusChip borderColor={getStaleBorderColor(summary, themePalette)} textColor={getStaleTextColor(summary, themePalette)}>
+              古い出典 {summary.staleSources}
+            </StatusChip>
+          </>
+        )}
         <StatusChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
           {summary.freshestAccessed ? `最終確認 ${summary.freshestAccessed}` : "確認日なし"}
         </StatusChip>

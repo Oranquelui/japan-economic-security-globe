@@ -136,6 +136,13 @@ export function AppShell({
     : getDetailView(graph, activeId);
   const routeStatus = getRouteStatus(detail);
   const mapModel = buildJapanMapCanvasModel(graph, view, activeId, liveLogistics);
+  const mapDisclosure =
+    themeId === "regional-security"
+      ? {
+          title: "代表軌道",
+          body: "公開情報 / 履歴・集約 / ライブ追跡ではありません"
+        }
+      : null;
   const mapDetailPopup = validSelectedId
     ? {
         detail,
@@ -235,7 +242,11 @@ export function AppShell({
         themePalette={themePalette}
       />
 
-      <SourceStatusBar summary={sourceStatusSummary} themePalette={themePalette} />
+      <SourceStatusBar
+        summary={sourceStatusSummary}
+        themePalette={themePalette}
+        variant={themeId === "regional-security" ? "public-history" : "default"}
+      />
 
       <div className="h-full min-h-0 min-w-0 overflow-x-hidden overflow-y-auto lg:overflow-hidden">
         <div className="relative hidden h-full min-h-0 lg:block">
@@ -244,6 +255,7 @@ export function AppShell({
               activeId={activeId}
               detailPopup={mapDetailPopup}
               focusTargetId={focusTargetId}
+              mapDisclosure={mapDisclosure}
               mapMode={mapMode}
               model={mapModel}
               overlayInsets={mapOverlayInsets}
@@ -346,6 +358,7 @@ export function AppShell({
               activeId={activeId}
               detailPopup={mapDetailPopup}
               focusTargetId={focusTargetId}
+              mapDisclosure={mapDisclosure}
               mapMode={mapMode}
               model={mapModel}
               overlayInsets={{

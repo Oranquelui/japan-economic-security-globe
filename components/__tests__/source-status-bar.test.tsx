@@ -35,4 +35,28 @@ describe("SourceStatusBar", () => {
     expect(screen.getByText("古い出典 3")).toBeTruthy();
     expect(screen.getByText("最終確認 2026-04-18")).toBeTruthy();
   });
+
+  test("can present a public-history status strip for regional-security sources", () => {
+    render(
+      <SourceStatusBar
+        summary={{
+          totalSources: 6,
+          officialSources: 4,
+          apiLikeSources: 0,
+          documentSources: 6,
+          staleSources: 2,
+          freshestAccessed: "2026-06-19",
+          oldestAccessed: "2026-06-01",
+          overallTone: "stale"
+        }}
+        themePalette={getThemePalette("regional-security")}
+        variant="public-history"
+      />
+    );
+
+    expect(screen.getByText("公開資料 6")).toBeTruthy();
+    expect(screen.getByText("履歴資料")).toBeTruthy();
+    expect(screen.queryByText("API 0")).toBeNull();
+    expect(screen.queryByText("古い出典 2")).toBeNull();
+  });
 });

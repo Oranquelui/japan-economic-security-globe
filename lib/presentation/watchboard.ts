@@ -1,7 +1,7 @@
 import { buildRankingExplanation } from "../ranking/explain";
 import { computeRankingScore } from "../ranking/score";
 import { getDetailView } from "../semantic/detail";
-import { getThemeLabel, localizeAnyLabel } from "./japanese";
+import { getThemeLabel, localizeAnyLabel, localizeWhyItMatters } from "./japanese";
 import { resolveRankingThemeId, resolveSelectableCanonicalId } from "./ranking";
 import type { RankingDecision, RankingSignal } from "../../types/ranking";
 import type { SemanticGraph, ThemeId } from "../../types/semantic";
@@ -25,7 +25,25 @@ export interface WatchboardBriefingViewModel {
 
 const STRATEGIC_QUESTION = "日本のどのライフラインが、エネルギー・物流・食料ルートの変化に晒されるか？";
 const SAFETY_LABEL = "公開情報のみ / 遅延・bounded overlay";
-const PROOF_SOURCE_PRIORITY = ["METI", "MAFF", "JMA", "Trade Statistics", "MLIT", "Cabinet Office", "TEPCO"] as const;
+const THEME_BRIEFING_CONTEXT: Partial<Record<ThemeId, { safetyLabel: string; strategicQuestion: string }>> = {
+  "regional-security": {
+    strategicQuestion: "日本周辺のミサイル・航空・海上活動は、どの地域と政策判断に接続するか？",
+    safetyLabel: "公開情報 / 履歴・集約 / 非ライブ警報・非追跡"
+  }
+};
+const PROOF_SOURCE_PRIORITY = [
+  "METI",
+  "MAFF",
+  "JMA",
+  "Trade Statistics",
+  "MLIT",
+  "Cabinet Office",
+  "TEPCO",
+  "MOD",
+  "Joint Staff",
+  "CNS/NTI",
+  "Open Source Ref"
+] as const;
 
 export function buildWatchboardBriefing(
   graph: SemanticGraph,
@@ -55,18 +73,19 @@ export function buildWatchboardBriefing(
   });
   const detail = selectedId ? safelyGetDetail(graph, selectedId) : null;
   const proofSourceLabels = buildProofSourceLabels(graph, signals, themeFilter ? [topItem] : decision.items);
+  const themeContext = THEME_BRIEFING_CONTEXT[themeId];
 
   return {
     confidenceLabel: explanation.confidence.label,
     freshnessLabel: explanation.freshness.label,
-    japanImpact: detail?.whyItMatters ?? "日本向けの供給・生活・政策判断への影響を優先して監視する。",
+    japanImpact: detail ? localizeWhyItMatters(detail.id, detail.whyItMatters) : "日本向けの供給・生活・政策判断への影響を優先して監視する。",
     proofSourceLabels,
     priorityTierLabel: explanation.priorityTierLabel,
     rankLabel: explanation.rankLabel ?? `#${topItem.rank}`,
-    safetyLabel: SAFETY_LABEL,
+    safetyLabel: themeContext?.safetyLabel ?? SAFETY_LABEL,
     selectedId,
     sourceProofLabel: proofSourceLabels.length ? `根拠: ${proofSourceLabels.join(" / ")}` : "根拠: 公開出典",
-    strategicQuestion: STRATEGIC_QUESTION,
+    strategicQuestion: themeContext?.strategicQuestion ?? STRATEGIC_QUESTION,
     themeId,
     themeLabel: getThemeLabel(themeId).label,
     title: detail ? localizeAnyLabel(detail.id, detail.label) : signal.label,
@@ -149,6 +168,22 @@ function getProofSourceLabel(sourceId: string, searchableText: string) {
 
   if (text.includes("tepco") || text.includes("東京電力")) {
     return "TEPCO";
+  }
+
+  if (text.includes("joint staff") || text.includes("統合幕僚")) {
+    return "Joint Staff";
+  }
+
+  if (text.includes("mod") || text.includes("防衛省")) {
+    return "MOD";
+  }
+
+  if (text.includes("cns") || text.includes("nti") || text.includes("nonproliferation")) {
+    return "CNS/NTI";
+  }
+
+  if (text.includes("nagix") || text.includes("github")) {
+    return "Open Source Ref";
   }
 
   return null;

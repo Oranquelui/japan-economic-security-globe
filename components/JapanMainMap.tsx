@@ -21,6 +21,10 @@ interface JapanMainMapProps {
     themeTitle: string;
   } | null;
   focusTargetId: string | null;
+  mapDisclosure?: {
+    body: string;
+    title: string;
+  } | null;
   mapMode: OperationMapMode;
   model: JapanMapCanvasModel;
   overlayInsets?: {
@@ -40,6 +44,7 @@ export function JapanMainMap({
   activeId,
   detailPopup = null,
   focusTargetId,
+  mapDisclosure = null,
   mapMode,
   model,
   overlayInsets = {
@@ -128,6 +133,23 @@ export function JapanMainMap({
               </div>
             ))}
           </div>
+        </aside>
+      ) : null}
+      {mapDisclosure ? (
+        <aside
+          data-testid="map-disclosure"
+          className="pointer-events-none absolute z-20 max-w-xs rounded-xl border px-3 py-2 shadow-lg backdrop-blur-xl"
+          style={{
+            left: overlayInsets.left + 56,
+            top: overlayInsets.top,
+            borderColor: themePalette.borderSubtle,
+            background: "color-mix(in srgb, var(--ops-surface-panel) 92%, rgba(9,13,18,0.88) 8%)"
+          }}
+        >
+          <div className="font-mono text-[0.56rem] uppercase tracking-[0.26em]" style={{ color: themePalette.textMuted }}>
+            {mapDisclosure.title}
+          </div>
+          <div className="mt-1 text-[0.68rem] leading-5 text-slate-100">{mapDisclosure.body}</div>
         </aside>
       ) : null}
       {detailPopup ? (
