@@ -4,6 +4,16 @@ import type { DependencyFlow, Observation, SemanticEntity, SourceDocument } from
 type SourceHighlight = { sourceId: string; claim: string };
 
 export function buildSignalNarrativeForFlow(flow: DependencyFlow): SignalNarrativeViewModel {
+  if (flow.theme === "regional-security") {
+    return {
+      category: flow.id.includes("missile") ? "ミサイル履歴" : "海空域活動",
+      severity: "高",
+      status: "監視中",
+      recommendedAction: "公開情報、履歴・集約文脈、防衛能力との接続を確認",
+      watchpoints: ["公開情報", "履歴・集約", "防空・ミサイル防衛", "非リアルタイム"]
+    };
+  }
+
   if (flow.theme === "energy") {
     if (flow.id.includes("qatar") || flow.id.includes("saudi") || flow.routeIds.some((id) => id.includes("hormuz") || id.includes("malacca"))) {
       return {
@@ -177,6 +187,16 @@ export function buildSignalNarrativeForFlow(flow: DependencyFlow): SignalNarrati
 }
 
 export function buildSignalNarrativeForObservation(observation: Observation): SignalNarrativeViewModel {
+  if (observation.kind === "RegionalSecurityObservation") {
+    return {
+      category: observation.id.includes("missile") ? "ミサイル履歴" : "航空活動",
+      severity: "高",
+      status: "監視中",
+      recommendedAction: "公式・公開情報の出典と非ライブ境界を確認",
+      watchpoints: ["公開情報", "履歴・集約", "非リアルタイム", "出典"]
+    };
+  }
+
   if (observation.id === "observation:rice-price-signal-2026") {
     return {
       category: "価格圧力",
@@ -307,6 +327,23 @@ export function buildSignalNarrativeForObservation(observation: Observation): Si
 }
 
 export function buildSignalNarrativeForEntity(entity: SemanticEntity): SignalNarrativeViewModel {
+  if (
+    entity.kind === "SecurityActivity" ||
+    entity.kind === "MissileTest" ||
+    entity.kind === "MilitaryActivityRoute" ||
+    entity.kind === "ImpactArea" ||
+    entity.kind === "PublicAlertSignal" ||
+    entity.kind === "LaunchSite"
+  ) {
+    return {
+      category: entity.kind === "MissileTest" ? "ミサイル履歴" : "公開警戒文脈",
+      severity: "高",
+      status: "監視中",
+      recommendedAction: "公開情報、履歴・集約文脈、防衛能力との接続を確認",
+      watchpoints: ["公開情報", "履歴・集約", "非リアルタイム", "日本周辺"]
+    };
+  }
+
   if (entity.kind === "StrategicLayer") {
     return {
       category: "横断レイヤー",
@@ -433,6 +470,8 @@ function buildFlowClaim(flow: DependencyFlow) {
   const sourceId = flow.sourceIds[0] ?? "source:unknown";
 
   switch (flow.id) {
+    case "flow:nk-missile-history-japan-watch":
+      return { sourceId, claim: "北朝鮮ミサイル履歴は公開・履歴・集約文脈として扱い、ライブ警報や追跡には使わない。"};
     case "flow:qatar-lng-japan":
       return { sourceId, claim: "カタールLNGはホルムズ海峡とマラッカ海峡を経由して日本へ向かう。"};
     case "flow:saudi-oil-japan":
@@ -468,6 +507,8 @@ function buildFlowClaim(flow: DependencyFlow) {
 
 function buildFlowClaimsForSource(flow: DependencyFlow, source: SourceDocument): SourceHighlight[] {
   switch (flow.id) {
+    case "flow:nk-missile-history-japan-watch":
+      return buildRegionalSecurityFlowClaims(source.id);
     case "flow:qatar-lng-japan":
       return buildQatarLngClaims(source.id);
     case "flow:saudi-oil-japan":
@@ -503,8 +544,24 @@ function buildFlowClaimsForSource(flow: DependencyFlow, source: SourceDocument):
   }
 }
 
+function buildRegionalSecurityFlowClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:cns-north-korea-missile-test-database":
+      return [{ sourceId, claim: "CNS/NTIの公開履歴データを、北朝鮮ミサイル発射履歴の source group として扱う。" }];
+    case "source:mod-dprk-missile-nuclear-development":
+      return [{ sourceId, claim: "防衛省資料は、日本向けの公式公開文脈として北朝鮮の核・弾道ミサイル開発を説明する。" }];
+    case "source:nagix-nk-missile-tests":
+      return [{ sourceId, claim: "nagix/nk-missile-tests は可視化と実装参考であり、単独のcanonical sourceにはしない。" }];
+    default:
+      return [];
+  }
+}
+
 function buildObservationClaimsForSource(observation: Observation, source: SourceDocument): SourceHighlight[] {
   switch (observation.id) {
+    case "observation:nk-missile-history-watch":
+    case "observation:china-air-activity-public-watch":
+      return buildRegionalSecurityObservationClaims(source.id);
     case "observation:lng-electricity-april-2026":
       return buildLngElectricityClaims(source.id);
     case "observation:rice-price-signal-2026":
@@ -525,6 +582,19 @@ function buildObservationClaimsForSource(observation: Observation, source: Sourc
       return buildDefenseObservationClaims(source.id, "無人防衛能力", "約2,773億円");
     case "observation:semiconductor-policy-signal-2026":
       return buildSemiconductorPolicyClaims(source.id);
+    default:
+      return [];
+  }
+}
+
+function buildRegionalSecurityObservationClaims(sourceId: string): SourceHighlight[] {
+  switch (sourceId) {
+    case "source:cns-north-korea-missile-test-database":
+      return [{ sourceId, claim: "ミサイル履歴は公開・履歴・集約の観測として扱い、ライブ警報には使わない。" }];
+    case "source:mod-dprk-missile-nuclear-development":
+      return [{ sourceId, claim: "防衛省資料を日本向けの公式公開文脈として使う。" }];
+    case "source:mod-joint-staff-air-activity":
+      return [{ sourceId, claim: "統合幕僚監部の公開発表は、公式・公開・集約の航空活動文脈として扱う。" }];
     default:
       return [];
   }

@@ -19,6 +19,7 @@ const AXIS_THEME_MAP: Partial<Record<ImportanceAxis, ThemeId>> = {
   energy: "energy",
   food: "rice",
   logistics: "logistics",
+  regional_security: "regional-security",
   semiconductors: "semiconductors"
 };
 

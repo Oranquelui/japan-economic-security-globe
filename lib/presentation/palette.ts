@@ -44,15 +44,10 @@ const THEME_PALETTES: Record<ThemeId, Pick<ThemePalette, "accent" | "accentSoft"
     accentSoft: "rgba(66, 166, 189, 0.14)",
     accentText: "#d5f1f6"
   },
-  rice: {
-    accent: "#a88a56",
-    accentSoft: "rgba(168, 138, 86, 0.12)",
-    accentText: "#efe0bc"
-  },
-  water: {
-    accent: "#5a9fc2",
-    accentSoft: "rgba(90, 159, 194, 0.12)",
-    accentText: "#d2ebf8"
+  "regional-security": {
+    accent: "#b35f55",
+    accentSoft: "rgba(179, 95, 85, 0.14)",
+    accentText: "#f2d0ca"
   },
   defense: {
     accent: "#8b6773",
@@ -63,6 +58,16 @@ const THEME_PALETTES: Record<ThemeId, Pick<ThemePalette, "accent" | "accentSoft"
     accent: "#5aae9d",
     accentSoft: "rgba(90, 174, 157, 0.12)",
     accentText: "#d9f4ee"
+  },
+  rice: {
+    accent: "#a88a56",
+    accentSoft: "rgba(168, 138, 86, 0.12)",
+    accentText: "#efe0bc"
+  },
+  water: {
+    accent: "#5a9fc2",
+    accentSoft: "rgba(90, 159, 194, 0.12)",
+    accentText: "#d2ebf8"
   }
 };
 

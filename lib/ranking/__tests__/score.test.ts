@@ -57,10 +57,12 @@ describe("ranking policy registry", () => {
       "food",
       "semiconductors",
       "logistics",
+      "regional_security",
       "disaster_infrastructure",
       "defense_industrial_base",
       "household_cost"
     ]);
+    expect(IMPORTANCE_AXIS_LABELS.regional_security).toBe("地域安全保障");
     expect(IMPORTANCE_AXIS_LABELS.disaster_infrastructure).toBe("災害基盤");
   });
 

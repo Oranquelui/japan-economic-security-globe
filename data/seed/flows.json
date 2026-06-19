@@ -283,5 +283,28 @@
     "summary": "A simplified MVP flow for China-linked supply-chain exposure.",
     "magnitudeLabel": "Neighboring dependency",
     "riskLabel": "Strategic exposure"
+  },
+  {
+    "id": "flow:nk-missile-history-japan-watch",
+    "theme": "regional-security",
+    "label": "North Korea missile history to Japan watch",
+    "originId": "country:north-korea",
+    "destinationId": "country:japan",
+    "productId": "activity:north-korea-missile-test-history",
+    "routeIds": [
+      "launch-site:north-korea-representative",
+      "activity-route:nk-missile-representative-arc",
+      "impact-area:sea-of-japan"
+    ],
+    "mapLineKind": "route",
+    "sourceIds": [
+      "source:cns-north-korea-missile-test-database",
+      "source:mod-dprk-missile-nuclear-development",
+      "source:nagix-nk-missile-tests"
+    ],
+    "period": "1984-2026 public-history context",
+    "summary": "A simplified non-live regional security flow linking North Korean missile-test history to Japan-facing public safety and maritime context.",
+    "magnitudeLabel": "Historical public missile activity",
+    "riskLabel": "Public / historical / non-live"
   }
 ]

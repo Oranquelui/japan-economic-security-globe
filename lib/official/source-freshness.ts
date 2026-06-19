@@ -22,7 +22,7 @@ export interface SourceStatusSummary {
   overallTone: SourceFreshnessTone;
 }
 
-const API_LIKE_MODES = new Set<NonNullable<SourceDocument["accessMode"]>>(["api", "sparql"]);
+const API_LIKE_MODES = new Set<NonNullable<SourceDocument["accessMode"]>>(["api", "sparql", "ckan", "geojson", "tile"]);
 const DOCUMENT_MODES = new Set<NonNullable<SourceDocument["accessMode"]>>(["html", "pdf", "csv", "excel"]);
 
 export function getSourceFreshness(

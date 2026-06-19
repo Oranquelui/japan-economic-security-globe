@@ -10,7 +10,7 @@ import {
   resolveRankingThemeId
 } from "../../presentation/ranking";
 import { getThemeView } from "../../semantic/selectors";
-import type { RankingOverride, RankingSignal } from "../../../types/ranking";
+import { IMPORTANCE_AXES, type RankingOverride, type RankingSignal } from "../../../types/ranking";
 import { THEME_IDS } from "../../../types/semantic";
 import { buildRankingDecision } from "../decision";
 
@@ -186,5 +186,30 @@ describe("ranking presentation helpers", () => {
 
     expect(logisticsSignal).toBeDefined();
     expect(resolveRankingThemeId(graph, logisticsSignal!)).toBe("logistics");
+  });
+
+  test("maps regional security ranking signals to the regional security theme", () => {
+    const graph = loadSeedGraph();
+    const regionalSignal = loadSeedRankingSignals().find((signal) => signal.id === "ranking-signal:regional-security-nk-missile-watch");
+    const view = getThemeView(graph, "regional-security");
+    const rows = buildOperationRows(view);
+    const decision = buildRankingDecision({
+      surfaceId: "inbox",
+      signals: regionalSignal ? [regionalSignal] : [],
+      now: "2026-06-19T00:00:00.000Z"
+    });
+
+    expect(IMPORTANCE_AXES).toContain("regional_security");
+    expect(regionalSignal).toBeDefined();
+    expect(resolveRankingThemeId(graph, regionalSignal!)).toBe("regional-security");
+    expect(applyRankingToOperationRows(rows, [regionalSignal!], decision)[0]).toEqual(
+      expect.objectContaining({
+        id: "flow:nk-missile-history-japan-watch",
+        ranking: expect.objectContaining({
+          signalId: "ranking-signal:regional-security-nk-missile-watch",
+          primaryAxis: "regional_security"
+        })
+      })
+    );
   });
 });

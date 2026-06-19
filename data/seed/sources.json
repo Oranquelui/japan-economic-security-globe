@@ -360,5 +360,49 @@
     "official": true,
     "accessMode": "html",
     "tier": "B"
+  },
+  {
+    "id": "source:cns-north-korea-missile-test-database",
+    "label": "CNS North Korea Missile Test Database",
+    "url": "https://www.nti.org/analysis/articles/cns-north-korea-missile-test-database/",
+    "publisher": "James Martin Center for Nonproliferation Studies / NTI",
+    "accessed": "2026-06-19",
+    "description": "North Korean missile-test history database used as a public historical source group. It is not treated as a live warning feed.",
+    "official": false,
+    "accessMode": "html",
+    "tier": "B"
+  },
+  {
+    "id": "source:nagix-nk-missile-tests",
+    "label": "nagix/nk-missile-tests",
+    "url": "https://github.com/nagix/nk-missile-tests",
+    "publisher": "nagix / GitHub",
+    "accessed": "2026-06-19",
+    "description": "Apache-2.0 open-source visualization reference for North Korean missile-test data. It is code/reference material, not the sole canonical data source.",
+    "official": false,
+    "accessMode": "html",
+    "tier": "C"
+  },
+  {
+    "id": "source:mod-dprk-missile-nuclear-development",
+    "label": "北朝鮮による核・弾道ミサイル開発について",
+    "url": "https://www.mod.go.jp/j/surround/pdf/dprk_bm_b.pdf",
+    "publisher": "防衛省",
+    "accessed": "2026-06-19",
+    "description": "北朝鮮の核・弾道ミサイル開発を説明する防衛省公式資料。地域安全保障テーマでは公開・履歴・集約文脈として扱う。",
+    "official": true,
+    "accessMode": "pdf",
+    "tier": "C"
+  },
+  {
+    "id": "source:mod-joint-staff-air-activity",
+    "label": "統合幕僚監部 報道発表資料",
+    "url": "https://www.mod.go.jp/js/press/",
+    "publisher": "防衛省 統合幕僚監部",
+    "accessed": "2026-06-19",
+    "description": "日本周辺の航空・海上活動に関する統合幕僚監部の公開発表入口。個別機体やライブ追跡には接続しない。",
+    "official": true,
+    "accessMode": "html",
+    "tier": "B"
   }
 ]

@@ -7,7 +7,7 @@ describe("operations url state", () => {
   test("uses a single runtime theme id list for validation", () => {
     const themeIds = (semanticModule as Record<string, unknown>).THEME_IDS;
 
-    expect(themeIds).toEqual(["energy", "logistics", "rice", "water", "defense", "semiconductors"]);
+    expect(themeIds).toEqual(["energy", "logistics", "regional-security", "defense", "semiconductors", "rice", "water"]);
 
     for (const themeId of themeIds as string[]) {
       expect(parseOperationsUrlState({ theme: themeId }).themeId).toBe(themeId);

@@ -161,4 +161,31 @@ describe("japan map canvas model", () => {
     );
     expect(model.liveVessels).toEqual([]);
   });
+
+  test("renders regional security historical routes without live tracking points", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "regional-security");
+
+    const model = buildJapanMapCanvasModel(graph, view, "flow:nk-missile-history-japan-watch");
+
+    expect(model.globalRoutes.find((route) => route.id === "flow:nk-missile-history-japan-watch")?.pointIds).toEqual([
+      "country:north-korea",
+      "launch-site:north-korea-representative",
+      "activity-route:nk-missile-representative-arc",
+      "impact-area:sea-of-japan",
+      "country:japan"
+    ]);
+    expect(model.globalPoints.map((point) => point.id)).toEqual(
+      expect.arrayContaining([
+        "country:north-korea",
+        "launch-site:north-korea-representative",
+        "activity-route:nk-missile-representative-arc",
+        "impact-area:sea-of-japan",
+        "country:japan"
+      ])
+    );
+    expect(model.livePoints).toEqual([]);
+    expect(model.liveRoutes).toEqual([]);
+    expect(model.liveVessels).toEqual([]);
+  });
 });

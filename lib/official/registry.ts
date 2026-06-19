@@ -38,7 +38,7 @@ export function buildThemeOfficialCoverage(graph: SemanticGraph, themeId: ThemeI
     .map((sourceId) => graph.sources.find((source) => source.id === sourceId))
     .filter((source): source is SourceDocument => Boolean(source));
 
-  const apiLikeModes = new Set<NonNullable<SourceDocument["accessMode"]>>(["api", "sparql"]);
+  const apiLikeModes = new Set<NonNullable<SourceDocument["accessMode"]>>(["api", "sparql", "ckan", "geojson", "tile"]);
   const documentModes = new Set<NonNullable<SourceDocument["accessMode"]>>(["html", "pdf", "csv", "excel"]);
   const primaryModes = [...new Set(themeSources.map((source) => source.accessMode).filter(Boolean))] as Array<
     NonNullable<SourceDocument["accessMode"]>

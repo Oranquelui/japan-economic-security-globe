@@ -28,21 +28,13 @@ export const THEME_REGISTRY: Record<ThemeId, ThemeDefinition> = {
     sublabel: "国内着地点 / 港湾後続 / 一般貨物",
     title: "物流"
   },
-  rice: {
-    accent: "#d9b45b",
-    headline: "価格、備蓄、水、政策シグナルは、食卓にどうつながるのか。",
-    label: "コメ",
-    question: "コメ価格と備蓄の揺れは、日本の暮らしにどう跳ね返るのか。",
-    sublabel: "価格 / 備蓄 / 政策",
-    title: "コメ"
-  },
-  water: {
-    accent: "#39c6ff",
-    headline: "水不足が生活問題になる前に、どの地域と貯水池に兆候が出るのか。",
-    label: "水",
-    question: "水ストレスと貯水率の低下は、日本のどこに先に現れるのか。",
-    sublabel: "貯水池 / 渇水兆候",
-    title: "水"
+  "regional-security": {
+    accent: "#e05243",
+    headline: "日本周辺のミサイル・航空・海上活動は、どの地域に緊張を生むのか。",
+    label: "地域安全保障",
+    question: "日本周辺のミサイル・航空・海上活動は、どの地域に緊張を生むのか。",
+    sublabel: "ミサイル / 航空活動 / 海空域",
+    title: "地域安全保障"
   },
   defense: {
     accent: "#d85d68",
@@ -59,6 +51,22 @@ export const THEME_REGISTRY: Record<ThemeId, ThemeDefinition> = {
     question: "半導体供給網の依存は、日本の産業基盤にどう効いているのか。",
     sublabel: "供給網 / 産業基盤",
     title: "半導体"
+  },
+  rice: {
+    accent: "#d9b45b",
+    headline: "価格、備蓄、水、政策シグナルは、食卓にどうつながるのか。",
+    label: "コメ",
+    question: "コメ価格と備蓄の揺れは、日本の暮らしにどう跳ね返るのか。",
+    sublabel: "価格 / 備蓄 / 政策",
+    title: "コメ"
+  },
+  water: {
+    accent: "#39c6ff",
+    headline: "水不足が生活問題になる前に、どの地域と貯水池に兆候が出るのか。",
+    label: "水",
+    question: "水ストレスと貯水率の低下は、日本のどこに先に現れるのか。",
+    sublabel: "貯水池 / 渇水兆候",
+    title: "水"
   }
 };
 

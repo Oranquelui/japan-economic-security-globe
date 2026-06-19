@@ -32,6 +32,12 @@ jpsdg:SeaLane a owl:Class ; rdfs:subClassOf jpsdg:Route .
 jpsdg:Chokepoint a owl:Class ; rdfs:subClassOf jpsdg:Route .
 jpsdg:WaterIndicator a owl:Class ; rdfs:subClassOf jpsdg:Observation .
 jpsdg:PolicySignal a owl:Class ; rdfs:subClassOf jpsdg:Observation .
+jpsdg:SecurityActivity a owl:Class ; rdfs:subClassOf jpsdg:Entity .
+jpsdg:MissileTest a owl:Class ; rdfs:subClassOf jpsdg:SecurityActivity .
+jpsdg:LaunchSite a owl:Class ; rdfs:subClassOf jpsdg:Facility .
+jpsdg:ImpactArea a owl:Class ; rdfs:subClassOf jpsdg:Region .
+jpsdg:MilitaryActivityRoute a owl:Class ; rdfs:subClassOf jpsdg:Route .
+jpsdg:PublicAlertSignal a owl:Class ; rdfs:subClassOf jpsdg:Observation .
 jpsdg:SourceDocument a owl:Class .
 
 jpsdg:importsFrom a owl:ObjectProperty ;

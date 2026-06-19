@@ -3,6 +3,7 @@ export const IMPORTANCE_AXES = [
   "food",
   "semiconductors",
   "logistics",
+  "regional_security",
   "disaster_infrastructure",
   "defense_industrial_base",
   "household_cost"

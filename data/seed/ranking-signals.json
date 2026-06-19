@@ -160,5 +160,27 @@
       "publicAttention": 0.16
     },
     "retrievedAt": "2026-04-11T00:00:00.000Z"
+  },
+  {
+    "id": "ranking-signal:regional-security-nk-missile-watch",
+    "label": "北朝鮮ミサイル履歴の地域安全保障監視",
+    "importanceAxes": ["regional_security"],
+    "canonicalRefs": [
+      { "kind": "flow", "id": "flow:nk-missile-history-japan-watch" },
+      { "kind": "entity", "id": "activity:north-korea-missile-test-history" },
+      { "kind": "observation", "id": "observation:nk-missile-history-watch" }
+    ],
+    "sourceIds": [
+      "source:cns-north-korea-missile-test-database",
+      "source:mod-dprk-missile-nuclear-development",
+      "source:nagix-nk-missile-tests"
+    ],
+    "componentInputs": {
+      "nationalImportance": 0.76,
+      "disruptionDepth": 0.68,
+      "sourceConfidence": 0.86,
+      "publicAttention": 0.22
+    },
+    "retrievedAt": "2026-06-19T00:00:00.000Z"
   }
 ]

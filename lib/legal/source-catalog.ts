@@ -28,8 +28,11 @@ export interface SourcesLicenseCatalog {
 const ACCESS_MODE_LABELS: Record<NonNullable<SourceDocument["accessMode"]>, string> = {
   api: "API",
   sparql: "SPARQL",
+  ckan: "CKAN",
   csv: "CSV",
   excel: "Excel",
+  geojson: "GeoJSON",
+  tile: "Tile",
   pdf: "PDF",
   html: "HTML"
 };

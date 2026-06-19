@@ -4,17 +4,19 @@ English | [日本語](README.ja.md)
 
 Japan Economic Security Globe is a public-interest Japan Watchboard MVP. It explains what Japan should watch now through a Japan-first operations map, a ranking-led briefing layer, bounded watch overlays, an evidence graph, and an operations table.
 
-The default view starts with `Energy`, but `Logistics` is now a first-class theme rather than a hidden sub-story. As of April 2026, oil, LNG, chokepoints, ports, electricity costs, and disaster-relevant lifeline stress are still the strongest public entry points. This project is not meant to end as a one-off news visualization, though. `Rice`, `Water`, `Defense`, and `Semiconductors` are already modeled on the same ontology.
+The default view starts with `Energy`, but `Logistics` is now a first-class theme rather than a hidden sub-story. As of April 2026, oil, LNG, chokepoints, ports, electricity costs, and disaster-relevant lifeline stress are still the strongest public entry points. This project is not meant to end as a one-off news visualization, though. `Rice`, `Water`, `Defense`, `Semiconductors`, and `Regional Security` are already modeled on the same ontology.
 
 ## Public Demo
 
-- Version: `0.3.1`
+- Version: `0.4.0`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
 - Launch view: [Japan domestic logistics watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
 - First-screen promise: `What Japan should watch now`
 - Public framing: domestic logistics visibility, port follow-through, road/rail/coastal/air-cargo/airport-operations lanes, non-energy general cargo support, official-source trust, source-status freshness, bounded near-live overlays, and terrain-aware mapping
 
 ## Current Version
+
+`v0.4.0` introduces the `Regional Security` theme and the source-adapter foundation for public-data layers. The initial slice covers North Korea missile-test history, representative launch/impact/route context, and public aggregate placeholders for neighboring air and maritime activity. It is deliberately historical, public, delayed, and aggregate; it does not claim live warning, operational tracking, targeting, or complete threat coverage.
 
 `v0.3.1` is a theme-boundary correction release. Energy tankers, crude, LNG, coal, LNG carriers, and energy receiving routes are shown only under `Energy`. `Logistics` is reserved for Japan-side road, rail, coastal, port follow-through, bounded non-energy general cargo, air cargo, and airport operations.
 
@@ -32,12 +34,13 @@ The current launch surface focuses on a Japan domestic logistics watch: domestic
 
 > What should Japan watch now, and where do those signals land in everyday life, public spending, and domestic infrastructure?
 
-The app answers that question through seven primary surfaces:
+The app answers that question through eight primary surfaces:
 
 - `Watchboard briefing`: ranks what Japan should watch now with freshness, confidence, and why-now context.
 - `Japan operations map`: shows ports, LNG terminals, refineries, reservoirs, prefectures, and other domestic landing points.
 - `Bounded watch overlays`: keeps near-live or delayed watch items visible without implying unrestricted live tracking.
 - `Domestic logistics watch`: foregrounds domestic road, rail, coastal, air cargo, airport operations, port follow-through, and bounded non-energy general cargo. Energy tankers and LNG/crude routes stay in the `Energy` theme.
+- `Regional security watch`: shows Japan-facing missile history and neighboring air/maritime activity context only as public, historical, delayed, or aggregate evidence.
 - `Source status strip`: summarizes official/API/document source coverage and freshness for the active theme.
 - `Evidence graph`: connects policy, budgets, laws, organizations, and source documents.
 - `Operations table`: lists routes, signals, and domestic landing points in an operational reading order.
@@ -55,7 +58,7 @@ The current MVP already separates the main layers:
 - `types/semantic.ts`: meaning model for countries, regions, resources, products, flows, observations, sources, and graph edges.
 - `data/seed/`: Phase 0 seed JSON with provenance fields designed to map cleanly into `prov:wasDerivedFrom`.
 - `ontology/`: initial Turtle files for the ontology shape.
-- `queries/`: SPARQL examples for the five public stories.
+- `queries/`: SPARQL examples for the theme-specific public stories, including regional security.
 - `lib/semantic/`: selectors, detail views, provenance helpers, SPARQL previews, and presentation view models.
 
 Each detail panel is designed to show a summary, why it matters in Japan, source documents, related entities, and a future SPARQL preview.
@@ -66,6 +69,7 @@ The MVP includes a thin but coherent slice for each theme:
 
 - `Energy`: crude oil, LNG, coal, Gulf routes, the Strait of Hormuz, the Strait of Malacca, Yokohama Port, the Sodegaura LNG terminal, and the Keihin refinery area.
 - `Logistics`: domestic road, rail, coastal, air cargo, airport operations, port follow-through, bounded non-energy general cargo overlays, and operational status signals without claiming complete real-time vessel or individual flight/aircraft coverage.
+- `Regional Security`: North Korea missile-test history, representative launch/impact/route context, public aggregate air/maritime activity placeholders, and evidence links to MOD, Joint Staff, J-Alert-adjacent materials, CNS/NTI, and reviewed open-source references.
 - `Rice`: rice price pressure, reserve and policy signals, and how energy or fertilizer inputs can translate into household food burden.
 - `Water`: a water-stress example centered on Tokyo and the Ogochi Reservoir.
 - `Defense`: a budget-flow example from FY2026 defense spending into stand-off defense capability.
@@ -90,6 +94,7 @@ For Phase 0, the logistics surface is intentionally bounded. The public model co
 - expand neighboring-country context only where it helps explain Japanese impact
 - widen routes, ports, facilities, and source-document coverage
 - begin repeatable ingestion and validation
+- expand source adapters for official public APIs, CKAN catalogs, GeoJSON/tiles, reviewed CSV/Excel datasets, and publication pages
 - evaluate licensed port-call and cargo-status providers for non-energy logistics coverage, while keeping energy AIS/tanker coverage in the Energy theme
 
 `Phase 2`: institutional intelligence product
@@ -229,7 +234,7 @@ types/                  semantic and presentation types
 
 ## Data and Provenance
 
-At this stage the project still uses manual seed data. It is not a real-time public-data delivery system, and it is not an operational intelligence system for live decisions.
+At this stage the project still uses manual seed data. It is not a real-time public-data delivery system, and it is not an operational intelligence system for live decisions. The `Regional Security` layer follows the same boundary: public evidence, historical or aggregate context, and no live warning or tracking claims.
 
 That said, each entity, flow, and observation is already designed with source references. The long-term direction is to map those references into RDF triples with `prov:wasDerivedFrom`, validate them with SHACL, and expose them through a SPARQL endpoint.
 

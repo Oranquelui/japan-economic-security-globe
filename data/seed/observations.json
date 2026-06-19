@@ -358,5 +358,56 @@
         "retrievedAt": "2026-06-03"
       }
     ]
+  },
+  {
+    "id": "observation:nk-missile-history-watch",
+    "kind": "RegionalSecurityObservation",
+    "theme": "regional-security",
+    "subjectId": "activity:north-korea-missile-test-history",
+    "label": "North Korea missile history public watch",
+    "metric": "historical_public_activity",
+    "value": "non-live historical watch",
+    "unit": "qualitative",
+    "period": "1984-2026 public-history context",
+    "sourceIds": [
+      "source:cns-north-korea-missile-test-database",
+      "source:mod-dprk-missile-nuclear-development",
+      "source:nagix-nk-missile-tests"
+    ],
+    "summary": "A non-live observation that groups public historical North Korean missile-test context for Japan-facing regional security.",
+    "provenance": [
+      {
+        "sourceId": "source:cns-north-korea-missile-test-database",
+        "claim": "Public historical missile-test data is used as a source group, not as a live warning feed.",
+        "retrievedAt": "2026-06-19"
+      },
+      {
+        "sourceId": "source:mod-dprk-missile-nuclear-development",
+        "claim": "MOD material anchors Japan-facing official public context for DPRK missile development.",
+        "retrievedAt": "2026-06-19"
+      }
+    ]
+  },
+  {
+    "id": "observation:china-air-activity-public-watch",
+    "kind": "RegionalSecurityObservation",
+    "theme": "regional-security",
+    "subjectId": "activity-route:china-air-activity-east-china-sea-public",
+    "label": "China air activity public aggregate watch",
+    "metric": "official_public_aggregate_activity",
+    "value": "non-live public aggregate",
+    "unit": "qualitative",
+    "period": "public-release context",
+    "sourceIds": [
+      "source:mod-joint-staff-air-activity"
+    ],
+    "summary": "A placeholder-safe public/aggregate observation for China-related air activity around Japan. It does not use live flight tracking.",
+    "provenance": [
+      {
+        "sourceId": "source:mod-joint-staff-air-activity",
+        "claim": "Joint Staff public releases are used at official/public aggregate level only.",
+        "retrievedAt": "2026-06-19"
+      }
+    ]
   }
 ]

@@ -1,10 +1,11 @@
 export const THEME_IDS = [
   "energy",
   "logistics",
-  "rice",
-  "water",
+  "regional-security",
   "defense",
-  "semiconductors"
+  "semiconductors",
+  "rice",
+  "water"
 ] as const;
 
 export type ThemeId = (typeof THEME_IDS)[number];
@@ -20,6 +21,12 @@ export type EntityKind =
   | "BudgetLine"
   | "CapabilityArea"
   | "StrategicLayer"
+  | "SecurityActivity"
+  | "MissileTest"
+  | "LaunchSite"
+  | "ImpactArea"
+  | "MilitaryActivityRoute"
+  | "PublicAlertSignal"
   | "Organization"
   | "Facility"
   | "Route"
@@ -46,6 +53,7 @@ export type ObservationKind =
   | "BudgetObservation"
   | "DependencyObservation"
   | "PolicySignal"
+  | "RegionalSecurityObservation"
   | "LogisticsImpactSignal"
   | "VisualObservation";
 
@@ -118,7 +126,7 @@ export interface SourceDocument {
   accessed: string;
   description?: string;
   official?: boolean;
-  accessMode?: "api" | "sparql" | "csv" | "excel" | "pdf" | "html";
+  accessMode?: "api" | "sparql" | "ckan" | "csv" | "excel" | "geojson" | "tile" | "pdf" | "html";
   tier?: "A" | "B" | "C";
 }
 

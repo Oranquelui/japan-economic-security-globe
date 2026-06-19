@@ -5,6 +5,7 @@ import { useState, type ReactNode } from "react";
 import { getSourceFreshness } from "../lib/official/source-freshness";
 import type { RankingExplanationViewModel } from "../lib/ranking/explain";
 import type { DetailViewModel, EvidenceGraphViewModel } from "../types/presentation";
+import type { SourceDocument } from "../types/semantic";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
 import { getSignalTrend } from "../lib/presentation/trends";
 import {
@@ -505,16 +506,22 @@ export function EvidencePanel({
   );
 }
 
-function getSourceModeLabel(mode: "api" | "sparql" | "csv" | "excel" | "pdf" | "html") {
+function getSourceModeLabel(mode: NonNullable<SourceDocument["accessMode"]>) {
   switch (mode) {
     case "api":
       return "API";
     case "sparql":
       return "データ接続";
+    case "ckan":
+      return "CKAN";
     case "csv":
       return "CSV";
     case "excel":
       return "Excel";
+    case "geojson":
+      return "GeoJSON";
+    case "tile":
+      return "タイル";
     case "pdf":
       return "PDF";
     case "html":

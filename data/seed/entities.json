@@ -126,6 +126,35 @@
     ]
   },
   {
+    "id": "country:north-korea",
+    "kind": "Country",
+    "label": "North Korea",
+    "labelJa": "北朝鮮",
+    "summary": "A regional security actor used for public historical missile-test context around Japan.",
+    "whyItMatters": "North Korean missile launches and related public alerts are one of the clearest Japan-facing regional security stories.",
+    "themes": [
+      "regional-security"
+    ],
+    "coordinates": {
+      "lat": 40.3399,
+      "lon": 127.5101
+    },
+    "countryCode": "KP",
+    "flagEmoji": "🇰🇵",
+    "sourceIds": [
+      "source:cns-north-korea-missile-test-database",
+      "source:mod-dprk-missile-nuclear-development"
+    ],
+    "provenance": [
+      "source:cns-north-korea-missile-test-database",
+      "source:mod-dprk-missile-nuclear-development"
+    ],
+    "properties": {
+      "coverageClass": "historical_public_aggregate",
+      "liveTracking": false
+    }
+  },
+  {
     "id": "country:netherlands",
     "kind": "Country",
     "label": "Netherlands",
@@ -196,6 +225,7 @@
     "summary": "A neighboring economic and strategic dependency variable for Japan.",
     "whyItMatters": "China is relevant to Japan's supply-chain, market, and strategic risk explanations.",
     "themes": [
+      "regional-security",
       "semiconductors"
     ],
     "coordinates": {
@@ -206,7 +236,8 @@
     "flagEmoji": "🇨🇳",
     "provenance": [
       "source:meti-semiconductor-frame",
-      "source:customs-trade-statistics"
+      "source:customs-trade-statistics",
+      "source:mod-joint-staff-air-activity"
     ]
   },
   {
@@ -245,6 +276,144 @@
     "provenance": [
       "source:customs-trade-statistics"
     ]
+  },
+  {
+    "id": "activity:north-korea-missile-test-history",
+    "kind": "MissileTest",
+    "label": "North Korea missile test history",
+    "labelJa": "北朝鮮ミサイル発射履歴",
+    "summary": "A public historical missile-test watch item based on official and public historical source groups.",
+    "whyItMatters": "This gives the regional-security theme a clear non-live Japan-facing missile story without creating a tactical warning tool.",
+    "themes": [
+      "regional-security"
+    ],
+    "coordinates": {
+      "lat": 39.5,
+      "lon": 128.5
+    },
+    "sourceIds": [
+      "source:cns-north-korea-missile-test-database",
+      "source:mod-dprk-missile-nuclear-development",
+      "source:nagix-nk-missile-tests"
+    ],
+    "provenance": [
+      "source:cns-north-korea-missile-test-database",
+      "source:mod-dprk-missile-nuclear-development",
+      "source:nagix-nk-missile-tests"
+    ],
+    "properties": {
+      "coverageClass": "historical_public_aggregate",
+      "liveTracking": false,
+      "displayPriority": 96
+    }
+  },
+  {
+    "id": "launch-site:north-korea-representative",
+    "kind": "LaunchSite",
+    "label": "Representative North Korea launch area",
+    "labelJa": "北朝鮮代表発射地域",
+    "summary": "A deliberately approximate launch-area node for historical public missile-test explanation.",
+    "whyItMatters": "Approximate geography is enough for education and policy context while avoiding operational precision.",
+    "themes": [
+      "regional-security"
+    ],
+    "coordinates": {
+      "lat": 39.8,
+      "lon": 127.2
+    },
+    "sourceIds": [
+      "source:cns-north-korea-missile-test-database",
+      "source:mod-dprk-missile-nuclear-development"
+    ],
+    "provenance": [
+      "source:cns-north-korea-missile-test-database",
+      "source:mod-dprk-missile-nuclear-development"
+    ],
+    "properties": {
+      "precision": "representative_area",
+      "liveTracking": false
+    }
+  },
+  {
+    "id": "impact-area:sea-of-japan",
+    "kind": "ImpactArea",
+    "label": "Sea of Japan representative impact area",
+    "labelJa": "日本海代表落下・影響推定区域",
+    "summary": "A representative public impact-area node for Japan-facing North Korea missile history.",
+    "whyItMatters": "Impact or splash-area context is how missile history becomes a Japan-facing public safety and maritime story.",
+    "themes": [
+      "regional-security"
+    ],
+    "coordinates": {
+      "lat": 40.2,
+      "lon": 135.2
+    },
+    "sourceIds": [
+      "source:cns-north-korea-missile-test-database",
+      "source:mod-dprk-missile-nuclear-development"
+    ],
+    "provenance": [
+      "source:cns-north-korea-missile-test-database",
+      "source:mod-dprk-missile-nuclear-development"
+    ],
+    "properties": {
+      "precision": "representative_area",
+      "liveTracking": false
+    }
+  },
+  {
+    "id": "activity-route:nk-missile-representative-arc",
+    "kind": "MilitaryActivityRoute",
+    "label": "Representative North Korea missile arc",
+    "labelJa": "北朝鮮ミサイル代表軌道",
+    "summary": "A simplified historical route for map explanation, not a live trajectory.",
+    "whyItMatters": "A representative arc lets users understand regional exposure without implying warning or interception guidance.",
+    "themes": [
+      "regional-security"
+    ],
+    "coordinates": {
+      "lat": 40.0,
+      "lon": 131.8
+    },
+    "sourceIds": [
+      "source:cns-north-korea-missile-test-database",
+      "source:nagix-nk-missile-tests"
+    ],
+    "provenance": [
+      "source:cns-north-korea-missile-test-database",
+      "source:nagix-nk-missile-tests"
+    ],
+    "properties": {
+      "coverageClass": "historical_public_aggregate",
+      "liveTracking": false,
+      "displayPriority": 95
+    }
+  },
+  {
+    "id": "activity-route:china-air-activity-east-china-sea-public",
+    "kind": "MilitaryActivityRoute",
+    "label": "China air activity public corridor near East China Sea",
+    "labelJa": "東シナ海周辺の中国航空活動公開文脈",
+    "summary": "A placeholder-safe representative corridor sourced from official/public Japan-facing releases, not live aircraft tracking.",
+    "whyItMatters": "China-related air activity should be visible as regional-security context while preserving a strict non-live boundary.",
+    "themes": [
+      "regional-security"
+    ],
+    "coordinates": {
+      "lat": 28.5,
+      "lon": 126.5
+    },
+    "sourceIds": [
+      "source:mod-joint-staff-air-activity"
+    ],
+    "provenance": [
+      "source:mod-joint-staff-air-activity"
+    ],
+    "properties": {
+      "coverageClass": "official_public_aggregate",
+      "liveTracking": false,
+      "displayPriority": 80
+    }
   },
   {
     "id": "route:gulf-to-japan",

@@ -63,10 +63,16 @@ function localizeSourceMode(mode: NonNullable<SourceDocument["accessMode"]>) {
       return "API";
     case "sparql":
       return "SPARQL";
+    case "ckan":
+      return "CKAN";
     case "csv":
       return "CSV";
     case "excel":
       return "Excel";
+    case "geojson":
+      return "GeoJSON";
+    case "tile":
+      return "タイル";
     case "pdf":
       return "PDF";
     case "html":

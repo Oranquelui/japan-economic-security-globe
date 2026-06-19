@@ -8,6 +8,7 @@ export const IMPORTANCE_AXIS_LABELS: Record<ImportanceAxis, string> = {
   food: "食料",
   semiconductors: "半導体",
   logistics: "物流",
+  regional_security: "地域安全保障",
   disaster_infrastructure: "災害基盤",
   defense_industrial_base: "防衛産業基盤",
   household_cost: "家計負担"

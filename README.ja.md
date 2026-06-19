@@ -4,17 +4,19 @@
 
 日本経済安全保障グローブは、「日本が今なにを注視すべきか」を主語にした公共目的の Watchboard MVP です。日本中心の運用マップ、ランキング主導の briefing、bounded な watch overlay、根拠グラフ、オペレーション表を通じて、日本の戦略的依存を説明します。
 
-最初の表示は `Energy` を中心にしていますが、`Logistics` はもう隠れた補助テーマではなく、独立した public theme です。2026年4月時点では、原油、LNG、海上輸送路、港湾、電気代、災害時の生活基盤ストレスが、もっとも直感的な入口です。ただし、このプロジェクトは一時的なニュース可視化で終わらせません。`Rice`、`Water`、`Defense`、`Semiconductors` も同じオントロジー上に最初から載せています。
+最初の表示は `Energy` を中心にしていますが、`Logistics` はもう隠れた補助テーマではなく、独立した public theme です。2026年4月時点では、原油、LNG、海上輸送路、港湾、電気代、災害時の生活基盤ストレスが、もっとも直感的な入口です。ただし、このプロジェクトは一時的なニュース可視化で終わらせません。`Rice`、`Water`、`Defense`、`Semiconductors`、`Regional Security / 地域安全保障` も同じオントロジー上に最初から載せています。
 
 ## 公開デモ
 
-- Version: `0.3.1`
+- Version: `0.4.0`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
 - Launch view: [国内物流 watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
 - 最初の約束: `日本が今なにを注視すべきか`
 - 公開 framing: 国内物流の見え方、港湾後続、道路・鉄道・内航・航空貨物・空港運用、非エネルギー一般貨物の補助線、公式ソース信頼、出典 freshness、bounded な near-live overlay、地形が読める地図
 
 ## 現在のバージョン
+
+`v0.4.0` では `Regional Security / 地域安全保障` theme と、公式公開データを重複なく取り込むための source adapter foundation を追加しました。初期 slice は、北朝鮮ミサイル発射履歴、代表発射地域・落下/影響推定区域・代表軌道、中国など周辺航空・海上活動の公開集約 placeholder を扱います。公開・履歴・遅延・集約情報に限定し、ライブ警報、作戦追跡、ターゲティング、完全な脅威 coverage は主張しません。
 
 `v0.3.1` は theme boundary correction release です。エネルギー系タンカー、原油、LNG、石炭、LNG carrier、エネルギー受入ルートは `Energy` だけで表示します。`Logistics` は国内道路、鉄道、内航、港湾後続、bounded な非エネルギー一般貨物、航空貨物、空港運用に限定します。
 
@@ -38,6 +40,7 @@
 - `Japan operations map`: コメ、水、貯水池、港湾、LNG受入基地、製油所、都道府県など、国内に着地する影響を主画面で見せる。
 - `Bounded watch overlays`: 公開可能な範囲に限定した、近接監視・遅延監視の情報を重ねる。
 - `Domestic logistics watch`: 国内の道路・鉄道・内航・航空貨物・空港運用、港湾後続、bounded な非エネルギー一般貨物を主表示する。エネルギー系タンカーと LNG/原油ルートは `Energy` theme に残す。
+- `Regional security watch`: 日本周辺のミサイル履歴と航空・海上活動文脈を、公開・履歴・遅延・集約された根拠としてだけ表示する。
 - `Source status strip`: active theme の公式/API/文書ソース coverage と freshness を要約する。
 - `Global supporting layer`: 原油、LNG、石炭、半導体、供給国、海上輸送路、チョークポイントなど、世界依存の関係を日本への補助文脈として見せる。
 - `Evidence graph`: 政策、予算、法令、組織、出典文書、provenance の関係を見せる。
@@ -54,7 +57,7 @@
 - `types/semantic.ts`: 国、地域、資源、製品、依存フロー、観測値、出典、グラフエッジの意味モデル。
 - `data/seed/`: Phase 0 用のローカル seed JSON。各項目に provenance を持たせ、将来の `prov:wasDerivedFrom` に対応しやすくしている。
 - `ontology/`: OWL/RDF 化を前提にした初期 Turtle ファイル。
-- `queries/`: 5つの公共ストーリーに対応する SPARQL クエリ例。
+- `queries/`: 地域安全保障を含む theme-specific な公共ストーリーに対応する SPARQL クエリ例。
 - `lib/semantic/`: テーマ別 selector、detail view、provenance helper、SPARQL preview、表示用 view model。
 
 各詳細パネルには、概要、日本にとっての意味、出典文書、関連エンティティ、将来の SPARQL クエリ案を表示します。
@@ -65,6 +68,7 @@ MVP では、各テーマについて薄いが一貫した一連の導線を入�
 
 - `Energy`: 原油、LNG、石炭、湾岸ルート、ホルムズ海峡、マラッカ海峡、横浜港、袖ケ浦LNG受入基地、京浜製油所エリア。
 - `Logistics`: 国内道路、鉄道、内航、航空貨物、空港運用、港湾後続、bounded な非エネルギー一般貨物 overlay、運用ステータスシグナル。全船舶の完全リアルタイム coverage や個別便・個別機体情報の coverage は主張しない。
+- `Regional Security / 地域安全保障`: 北朝鮮ミサイル発射履歴、代表発射地域、落下/影響推定区域、代表軌道、中国など周辺航空・海上活動の公開集約 placeholder、防衛省・統幕・J-Alert 関連資料・CNS/NTI・reviewed open-source reference への出典接続。
 - `Rice`: コメ価格圧力、備蓄・政策シグナル、エネルギーや肥料投入が家計の食料負担へつながる流れ。
 - `Water`: 東京都と小河内貯水池を使った水ストレス例。
 - `Defense`: 2026年度防衛予算からスタンド・オフ防衛能力への予算フロー例。
@@ -89,6 +93,7 @@ Phase 0 の物流面は、意図的に bounded にしています。国内の道
 - 日本への影響説明に必要な範囲で、地政学的隣国との関係を追加する。
 - ルート、港湾、施設、出典文書の対象範囲を増やす。
 - 繰り返し可能な取り込み処理と検証を始める。
+- 公式公開API、CKAN catalog、GeoJSON/tile、reviewed CSV/Excel dataset、公開ページを source adapter として拡張する。
 - 非エネルギー物流 coverage のため、licensed port-call / cargo-status provider を評価し、energy AIS / tanker coverage は Energy theme に残す。
 
 `Phase 2`: 法人・組織向け intelligence product
@@ -236,7 +241,7 @@ types/                  semantic type と presentation type
 
 ## データと provenance
 
-現時点では手動 seed data の MVP です。リアルタイムの公共データ配信でも、運用判断に使うインテリジェンスシステムでもありません。
+現時点では手動 seed data の MVP です。リアルタイムの公共データ配信でも、運用判断に使うインテリジェンスシステムでもありません。`Regional Security / 地域安全保障` も同じ境界で扱い、公開根拠、履歴・集約文脈、非ライブ警報・非ライブ追跡を明示します。
 
 ただし、各 entity、flow、observation は出典参照を持つ設計です。長期的には、この出典参照を `prov:wasDerivedFrom` を使った RDF triple に変換し、SHACL で検証し、SPARQL endpoint から提供することを目指します。
 

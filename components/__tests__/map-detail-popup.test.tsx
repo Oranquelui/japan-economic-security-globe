@@ -77,4 +77,24 @@ describe("MapDetailPopup", () => {
 
     expect(onSelect).toHaveBeenCalledWith("flow:defense-industrial-base-shipbuilding");
   });
+
+  test("renders regional security detail with non-live disclosure", () => {
+    const graph = loadSeedGraph();
+    const detail = getDetailView(graph, "flow:nk-missile-history-japan-watch");
+
+    render(
+      <MapDetailPopup
+        detail={detail}
+        onClose={vi.fn()}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("regional-security")}
+        themeTitle="地域安全保障"
+      />
+    );
+
+    expect(screen.getByText("地域安全保障")).toBeTruthy();
+    expect(screen.getByText("公開情報 / 履歴・集約 / ライブ追跡ではありません")).toBeTruthy();
+    expect(screen.getByText("ミサイル履歴")).toBeTruthy();
+  });
 });

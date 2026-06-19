@@ -1,0 +1,10 @@
+PREFIX jpsdg: <https://data.jp-strategic-dependency-graph.org/ontology#>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?activity ?label ?source WHERE {
+  ?activity a jpsdg:MissileTest ;
+    jpsdg:theme "regional-security" ;
+    rdfs:label ?label .
+  OPTIONAL { ?activity prov:wasDerivedFrom ?source . }
+}

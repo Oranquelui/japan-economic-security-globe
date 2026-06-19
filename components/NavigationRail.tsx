@@ -18,6 +18,7 @@ const RAIL_LABELS: Record<ThemeId, string> = {
   defense: "防衛",
   energy: "エネ",
   logistics: "物流",
+  "regional-security": "安保",
   rice: "コメ",
   semiconductors: "半導",
   water: "水"

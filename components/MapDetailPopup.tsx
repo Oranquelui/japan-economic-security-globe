@@ -38,6 +38,7 @@ export function MapDetailPopup({
   const relatedEntities = detail.relatedEntities.slice(0, 4);
   const linkedFlows = detail.linkedFlows.filter((flow) => flow.id !== detail.id).slice(0, 4);
   const sources = detail.sources.slice(0, 2);
+  const isRegionalSecurityDetail = themeTitle === "地域安全保障";
 
   return (
     <aside
@@ -90,6 +91,9 @@ export function MapDetailPopup({
           {localizeKind(detail.kind)}
         </PopupChip>
         <PopupChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+          {detail.signal.category}
+        </PopupChip>
+        <PopupChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
           {detail.sources.length} 出典
         </PopupChip>
         <PopupChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
@@ -103,6 +107,12 @@ export function MapDetailPopup({
       <p className="mt-2 text-[0.72rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
         {localizeWhyItMatters(detail.id, detail.whyItMatters)}
       </p>
+
+      {isRegionalSecurityDetail ? (
+        <p className="mt-2 rounded-md border px-2.5 py-2 text-[0.68rem] leading-5" style={{ borderColor: themePalette.borderSubtle, color: themePalette.textMuted }}>
+          公開情報 / 履歴・集約 / ライブ追跡ではありません
+        </p>
+      ) : null}
 
       {rankingExplanation ? (
         <section className="mt-4 border-t pt-3" style={{ borderColor: themePalette.borderSubtle }}>

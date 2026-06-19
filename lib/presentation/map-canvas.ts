@@ -178,6 +178,9 @@ function buildGlobalPoints(
           entity.coordinates &&
           (entity.kind === "Country" ||
             entity.kind === "Chokepoint" ||
+            entity.kind === "LaunchSite" ||
+            entity.kind === "ImpactArea" ||
+            entity.kind === "MilitaryActivityRoute" ||
             entity.kind === "Port" ||
             entity.kind === "Terminal" ||
             entity.kind === "Refinery")
@@ -454,7 +457,10 @@ function isRouteSelectableEntity(kind: SemanticEntity["kind"]) {
     "HighwaySegment",
     "RailFreightCorridor",
     "DomesticDistributionNode",
-    "SeaLane"
+    "SeaLane",
+    "LaunchSite",
+    "ImpactArea",
+    "MilitaryActivityRoute"
   ].includes(kind);
 }
 
@@ -553,6 +559,14 @@ function normalizeRegionalMetrics(metrics: number[], themeId: ThemeView["id"]): 
 function classifyGlobalTone(entity: SemanticEntity): JapanMapPoint["tone"] {
   if (entity.kind === "Chokepoint" || entity.kind === "Terminal" || entity.kind === "Refinery") {
     return "critical";
+  }
+
+  if (entity.kind === "ImpactArea" || entity.kind === "LaunchSite") {
+    return "critical";
+  }
+
+  if (entity.kind === "MilitaryActivityRoute") {
+    return "watch";
   }
 
   if (entity.kind === "Country" || entity.kind === "Port") {

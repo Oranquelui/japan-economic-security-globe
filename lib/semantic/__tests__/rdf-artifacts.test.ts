@@ -10,6 +10,7 @@ describe("RDF artifacts", () => {
     const observations = readFileSync(join(root, "ontology/observations.ttl"), "utf8");
     const energyQuery = readFileSync(join(root, "queries/energy-route-evidence.rq"), "utf8");
     const riceQuery = readFileSync(join(root, "queries/rice-policy-impact.rq"), "utf8");
+    const regionalSecurityQuery = readFileSync(join(root, "queries/regional-security-evidence.rq"), "utf8");
 
     expect(ontology).toContain("jpsdg:DependencyFlow");
     expect(ontology).toContain("prov:wasDerivedFrom");
@@ -18,5 +19,8 @@ describe("RDF artifacts", () => {
     expect(energyQuery).toContain("jpsdg:transitsVia");
     expect(energyQuery).toContain("Strait of Hormuz");
     expect(riceQuery).toContain("jpsdg:PolicySignal");
+    expect(regionalSecurityQuery).toContain('jpsdg:theme "regional-security"');
+    expect(regionalSecurityQuery).toContain("prov:wasDerivedFrom");
+    expect(regionalSecurityQuery).toContain("jpsdg:MissileTest");
   });
 });
