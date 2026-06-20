@@ -2,7 +2,7 @@ import type { DetailViewModel } from "../../types/presentation";
 import type { DependencyFlow, EntityKind } from "../../types/semantic";
 
 export type RouteStatusViewModel = {
-  kind: "route-linked" | "domestic-only" | "bridge" | "none";
+  kind: "route-linked" | "domestic-only" | "bridge" | "impact-area" | "none";
   chipLabel: string;
   description: string;
 };
@@ -17,7 +17,11 @@ const DOMESTIC_INFRA_KINDS = new Set<EntityKind>([
 ]);
 
 export function isRenderableMapRoute(flow: DependencyFlow) {
-  return flow.routeIds.length > 0 && flow.mapLineKind !== "bridge";
+  return flow.routeIds.length > 0 && flow.mapLineKind !== "bridge" && flow.mapLineKind !== "impact-area";
+}
+
+export function isImpactAreaMapFlow(flow: DependencyFlow) {
+  return flow.routeIds.length > 0 && flow.mapLineKind === "impact-area";
 }
 
 export function getRouteStatus(detail: DetailViewModel): RouteStatusViewModel | null {
@@ -31,6 +35,14 @@ export function getRouteStatus(detail: DetailViewModel): RouteStatusViewModel | 
         kind: "bridge",
         chipLabel: "概念連関",
         description: "この選択は投入コストや政策波及の説明用連関で、海外物流ルートではありません。"
+      };
+    }
+
+    if (isImpactAreaMapFlow(selectedFlow)) {
+      return {
+        kind: "impact-area",
+        chipLabel: "影響区域",
+        description: "この選択は線形ルートではなく、公開情報に基づく落下推定地点と影響推定半径を表示します。"
       };
     }
 

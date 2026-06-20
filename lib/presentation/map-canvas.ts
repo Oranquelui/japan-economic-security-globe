@@ -2,7 +2,7 @@ import type { ThemeView } from "../../types/presentation";
 import type { LiveLogisticsViewModel } from "../../types/logistics";
 import type { DependencyFlow, SemanticEntity, SemanticGraph } from "../../types/semantic";
 import { localizeAnyLabel } from "./japanese";
-import { isRenderableMapRoute } from "./route-status";
+import { isImpactAreaMapFlow, isRenderableMapRoute } from "./route-status";
 
 export type JapanMapPoint = {
   id: string;
@@ -42,6 +42,17 @@ export type JapanMapCorridor = {
   };
 };
 
+export type JapanMapSecurityImpactArea = {
+  id: string;
+  label: string;
+  lat: number;
+  lon: number;
+  radiusKm: number;
+  radiusLabel: string;
+  selectionId: string;
+  value: number;
+};
+
 export type ForeignWindowEntity = {
   id: string;
   label: string;
@@ -61,6 +72,7 @@ export type JapanMapCanvasModel = {
   logisticsImpactRegions?: JapanMapRegion[];
   logisticsImpactRoutes?: JapanMapRoute[];
   logisticsImpactCorridors?: JapanMapCorridor[];
+  securityImpactAreas?: JapanMapSecurityImpactArea[];
   foreignWindow?: {
     title: string;
     entities: ForeignWindowEntity[];
@@ -75,13 +87,15 @@ export function buildJapanMapCanvasModel(
 ): JapanMapCanvasModel {
   const japanEntity = graph.entities.find((entity) => entity.id === "country:japan");
   const routeScopedFlows = getRouteScopedFlows(graph, view, activeId);
+  const impactScopedFlows = getImpactAreaScopedFlows(graph, view, activeId);
   const domesticPoints = dedupeById(
     view.japanImpacts
       .filter((entity) => entity.coordinates)
       .map((entity) => toPoint(entity, classifyDomesticTone(entity)))
   );
+  const hasSecurityImpactOverlay = view.id === "regional-security" && impactScopedFlows.length > 0;
   const visiblePoints =
-    domesticPoints.length > 0 || !japanEntity?.coordinates
+    domesticPoints.length > 0 || hasSecurityImpactOverlay || !japanEntity?.coordinates
       ? domesticPoints
       : [toPoint(japanEntity, "watch")];
 
@@ -126,6 +140,7 @@ export function buildJapanMapCanvasModel(
   const logisticsImpactRegions = buildLogisticsImpactRegions(graph, view.id);
   const logisticsImpactRoutes = view.id === "logistics" ? liveRoutes : [];
   const logisticsImpactCorridors = buildLogisticsImpactCorridors(view.id);
+  const securityImpactAreas = buildSecurityImpactAreas(graph, impactScopedFlows);
 
   return {
     points: visiblePoints,
@@ -139,7 +154,8 @@ export function buildJapanMapCanvasModel(
     logisticsImpactRegions,
     logisticsImpactRoutes,
     logisticsImpactCorridors,
-    foreignWindow: buildForeignWindow(graph, routeScopedFlows, activeId)
+    securityImpactAreas,
+    foreignWindow: buildForeignWindow(graph, [...routeScopedFlows, ...impactScopedFlows], activeId)
   };
 }
 
@@ -159,6 +175,27 @@ function getRouteScopedFlows(graph: SemanticGraph, view: ThemeView, activeId: st
       isRenderableMapRoute(flow) &&
       (flow.originId === activeId ||
         flow.destinationId === activeId ||
+        flow.routeIds.includes(activeId))
+  );
+}
+
+function getImpactAreaScopedFlows(graph: SemanticGraph, view: ThemeView, activeId: string): DependencyFlow[] {
+  const activeFlow = view.flows.find((flow) => flow.id === activeId);
+  if (activeFlow) {
+    return isImpactAreaMapFlow(activeFlow) ? [activeFlow] : [];
+  }
+
+  const activeEntity = graph.entities.find((entity) => entity.id === activeId);
+  if (!activeEntity || !isRouteSelectableEntity(activeEntity.kind)) {
+    return [];
+  }
+
+  return view.flows.filter(
+    (flow) =>
+      isImpactAreaMapFlow(flow) &&
+      (flow.originId === activeId ||
+        flow.destinationId === activeId ||
+        flow.productId === activeId ||
         flow.routeIds.includes(activeId))
   );
 }
@@ -187,7 +224,7 @@ function buildGlobalPoints(
       )
   );
 
-  if (japanEntity?.coordinates && !globalEntities.some((entity) => entity.id === japanEntity.id)) {
+  if (routeScopedFlows.length > 0 && japanEntity?.coordinates && !globalEntities.some((entity) => entity.id === japanEntity.id)) {
     globalEntities.push(japanEntity);
   }
 
@@ -220,6 +257,34 @@ function buildGlobalRoutes(
       };
     })
     .filter((route): route is JapanMapRoute => route !== null);
+}
+
+function buildSecurityImpactAreas(
+  graph: SemanticGraph,
+  impactScopedFlows: DependencyFlow[]
+): JapanMapSecurityImpactArea[] {
+  return dedupeById(
+    impactScopedFlows.flatMap((flow) =>
+      flow.routeIds
+        .map((id) => graph.entities.find((entity) => entity.id === id))
+        .filter((entity): entity is SemanticEntity => Boolean(entity))
+        .filter((entity) => entity.kind === "ImpactArea" && hasCoordinates(entity))
+        .map((entity) => {
+          const radiusKm = getImpactRadiusKm(entity);
+
+          return {
+            id: entity.id,
+            label: localizeAnyLabel(entity.id, entity.label),
+            lat: entity.coordinates!.lat,
+            lon: entity.coordinates!.lon,
+            radiusKm,
+            radiusLabel: `影響推定半径 約${radiusKm}km`,
+            selectionId: flow.id,
+            value: getImpactAreaValue(radiusKm)
+          };
+        })
+    )
+  );
 }
 
 function buildLiveRoutes(
@@ -404,6 +469,20 @@ function resolveLiveVesselSelectionId(
     ?? vessel.relatedIds.find((id) => id.startsWith("live-logistics:"))
     ?? (vessel.id.startsWith("live-vessel:") ? vessel.id.replace("live-vessel:", "live-logistics:") : vessel.id)
   );
+}
+
+function getImpactRadiusKm(entity: SemanticEntity) {
+  const radius = entity.properties?.estimatedImpactRadiusKm;
+
+  if (typeof radius === "number" && Number.isFinite(radius) && radius > 0) {
+    return radius;
+  }
+
+  return 160;
+}
+
+function getImpactAreaValue(radiusKm: number) {
+  return Math.min(100, Math.max(45, Math.round(45 + radiusKm / 4.2)));
 }
 
 function buildForeignWindow(

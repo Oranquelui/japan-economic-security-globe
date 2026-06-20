@@ -442,9 +442,14 @@ Files:
 - [ ] Update signal narrative logic for:
   - `regional-security`
   - `MissileTest`
-  - `MilitaryActivityRoute`
+  - `MilitaryActivityRoute` for future air/maritime corridors only
   - `ImpactArea`
   - `PublicAlertSignal`
+
+- [ ] Render missile context as `ImpactArea` overlays:
+  - no line-connected route from North Korea to Japan
+  - show representative landing/impact point
+  - show public-history impact radius as an approximate overlay
 
 Recommended categories:
 

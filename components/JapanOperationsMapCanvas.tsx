@@ -3,7 +3,14 @@
 import { useEffect, useEffectEvent, useRef } from "react";
 
 import type { OperationMapMode } from "../lib/presentation/operations";
-import type { JapanMapCanvasModel, JapanMapCorridor, JapanMapPoint, JapanMapRegion, JapanMapRoute } from "../lib/presentation/map-canvas";
+import type {
+  JapanMapCanvasModel,
+  JapanMapCorridor,
+  JapanMapPoint,
+  JapanMapRegion,
+  JapanMapRoute,
+  JapanMapSecurityImpactArea
+} from "../lib/presentation/map-canvas";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
 import type { MapPopupAnchor } from "../types/presentation";
 import { buildOperationsBasemapStyle } from "../lib/presentation/basemap-style";
@@ -109,6 +116,16 @@ export function JapanOperationsMapCanvas({
           data: routesToFeatureCollection(model.globalRoutes, model.globalPoints, activeId)
         });
 
+        map.addSource("regional-security-impact-areas", {
+          type: "geojson",
+          data: impactAreasToFeatureCollection(model.securityImpactAreas ?? [], activeId)
+        });
+
+        map.addSource("regional-security-impact-points", {
+          type: "geojson",
+          data: impactAreaPointsToFeatureCollection(model.securityImpactAreas ?? [], activeId)
+        });
+
         map.addSource("live-logistics-routes", {
           type: "geojson",
           data: routesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId)
@@ -172,6 +189,85 @@ export function JapanOperationsMapCanvas({
               themePalette.accent
             ],
             "text-opacity": mapMode === "route" ? 0.88 : 0.74
+          }
+        });
+
+        map.addLayer({
+          id: "regional-security-impact-area-fill",
+          type: "fill",
+          source: "regional-security-impact-areas",
+          paint: {
+            "fill-color": getSecurityImpactAreaFillColor(statusPalette),
+            "fill-opacity": [
+              "case",
+              ["boolean", ["get", "selected"], false],
+              0.28,
+              0.17
+            ]
+          }
+        });
+
+        map.addLayer({
+          id: "regional-security-impact-area-outline",
+          type: "line",
+          source: "regional-security-impact-areas",
+          paint: {
+            "line-color": statusPalette.high,
+            "line-opacity": [
+              "case",
+              ["boolean", ["get", "selected"], false],
+              0.86,
+              0.58
+            ],
+            "line-width": [
+              "case",
+              ["boolean", ["get", "selected"], false],
+              2,
+              1.2
+            ],
+            "line-dasharray": [1.2, 1.1]
+          }
+        });
+
+        map.addLayer({
+          id: "regional-security-impact-center",
+          type: "circle",
+          source: "regional-security-impact-points",
+          paint: {
+            "circle-color": statusPalette.high,
+            "circle-opacity": 0.94,
+            "circle-radius": [
+              "case",
+              ["boolean", ["get", "selected"], false],
+              7.5,
+              5.8
+            ],
+            "circle-stroke-color": "rgba(25, 31, 39, 0.92)",
+            "circle-stroke-width": [
+              "case",
+              ["boolean", ["get", "selected"], false],
+              2,
+              1.1
+            ]
+          }
+        });
+
+        map.addLayer({
+          id: "regional-security-impact-label",
+          type: "symbol",
+          source: "regional-security-impact-points",
+          layout: {
+            "text-field": ["get", "displayLabel"],
+            "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+            "text-size": 11,
+            "text-offset": [0.9, 0.1],
+            "text-anchor": "left"
+          },
+          paint: {
+            "text-color": "#27313b",
+            "text-halo-color": "rgba(250,252,255,0.96)",
+            "text-halo-width": 1.4,
+            "text-opacity": mapMode === "route" ? 0.94 : 0.76
           }
         });
 
@@ -584,7 +680,7 @@ export function JapanOperationsMapCanvas({
           }
         });
 
-        for (const layerId of ["jp-point-circle", "jp-route-line", "jp-region-fill", "jp-cluster-circle", "global-point-circle", "global-route-line", "live-logistics-route-pulse", "live-logistics-route-label", "logistics-impact-corridor-fill", "logistics-impact-corridor-outline", "logistics-impact-corridor-label", "live-vessel-halo", "live-vessel-marker", "live-vessel-label"]) {
+        for (const layerId of ["jp-point-circle", "jp-route-line", "jp-region-fill", "jp-cluster-circle", "global-point-circle", "global-route-line", "regional-security-impact-area-fill", "regional-security-impact-area-outline", "regional-security-impact-center", "regional-security-impact-label", "live-logistics-route-pulse", "live-logistics-route-label", "logistics-impact-corridor-fill", "logistics-impact-corridor-outline", "logistics-impact-corridor-label", "live-vessel-halo", "live-vessel-marker", "live-vessel-label"]) {
           map.on("mouseenter", layerId, () => {
             map.getCanvas().style.cursor = "pointer";
           });
@@ -598,6 +694,10 @@ export function JapanOperationsMapCanvas({
         map.on("click", "jp-region-fill", (event: any) => selectFeatureId(event, handleSelect, map));
         map.on("click", "global-point-circle", (event: any) => selectFeatureId(event, handleSelect, map));
         map.on("click", "global-route-line", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "regional-security-impact-area-fill", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "regional-security-impact-area-outline", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "regional-security-impact-center", (event: any) => selectFeatureId(event, handleSelect, map));
+        map.on("click", "regional-security-impact-label", (event: any) => selectFeatureId(event, handleSelect, map));
         map.on("click", "live-logistics-route-pulse", (event: any) => selectFeatureId(event, handleSelect, map));
         map.on("click", "live-logistics-route-label", (event: any) => selectFeatureId(event, handleSelect, map));
         map.on("click", "logistics-impact-corridor-fill", (event: any) => selectFeatureId(event, handleSelect, map));
@@ -677,19 +777,23 @@ export function JapanOperationsMapCanvas({
       themePalette.accent
     ]);
     map.setPaintProperty("global-route-direction", "text-opacity", mapMode === "route" ? 0.88 : 0.74);
+    map.setPaintProperty("regional-security-impact-area-fill", "fill-color", getSecurityImpactAreaFillColor(statusPalette));
+    map.setPaintProperty("regional-security-impact-area-outline", "line-color", statusPalette.high);
+    map.setPaintProperty("regional-security-impact-center", "circle-color", statusPalette.high);
+    map.setPaintProperty("regional-security-impact-label", "text-opacity", mapMode === "route" ? 0.94 : 0.76);
     map.setPaintProperty("live-logistics-route-pulse", "line-color", getLiveLogisticsRoutePaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))["line-color"]);
     map.setPaintProperty("live-logistics-route-pulse", "line-width", getLiveLogisticsRoutePaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))["line-width"]);
     map.setPaintProperty("live-logistics-route-pulse", "line-opacity", getLiveLogisticsRoutePaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))["line-opacity"]);
     map.setPaintProperty("live-logistics-route-pulse", "line-dasharray", getLiveLogisticsRoutePaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))["line-dasharray"]);
     map.setPaintProperty("live-logistics-route-label", "text-color", statusPalette.monitoring);
     map.setPaintProperty("live-logistics-route-label", "text-opacity", hasFilledLogisticsCorridors(model) ? 0 : mapMode === "route" ? 0.9 : 0.72);
-  map.setPaintProperty("logistics-impact-route-line", "line-color", statusPalette.selected);
-  map.setPaintProperty("logistics-impact-route-line", "line-opacity", mapMode === "route" ? 0.18 : 0.1);
-  map.setPaintProperty("logistics-impact-route-line", "line-width", mapMode === "route" ? 1.6 : 1);
-  map.setPaintProperty("logistics-impact-corridor-fill", "fill-color", getLogisticsCorridorFillColor(statusPalette));
-  map.setPaintProperty("logistics-impact-corridor-outline", "line-color", getLogisticsCorridorOutlineColor(statusPalette));
-  map.setPaintProperty("logistics-impact-corridor-label", "text-opacity", mapMode === "route" ? 0.78 : 0.52);
-  map.setPaintProperty("live-vessel-halo", "circle-color", statusPalette.selected);
+    map.setPaintProperty("logistics-impact-route-line", "line-color", statusPalette.selected);
+    map.setPaintProperty("logistics-impact-route-line", "line-opacity", mapMode === "route" ? 0.18 : 0.1);
+    map.setPaintProperty("logistics-impact-route-line", "line-width", mapMode === "route" ? 1.6 : 1);
+    map.setPaintProperty("logistics-impact-corridor-fill", "fill-color", getLogisticsCorridorFillColor(statusPalette));
+    map.setPaintProperty("logistics-impact-corridor-outline", "line-color", getLogisticsCorridorOutlineColor(statusPalette));
+    map.setPaintProperty("logistics-impact-corridor-label", "text-opacity", mapMode === "route" ? 0.78 : 0.52);
+    map.setPaintProperty("live-vessel-halo", "circle-color", statusPalette.selected);
     map.setPaintProperty("live-vessel-marker", "circle-color", statusPalette.selected);
     map.setPaintProperty("live-vessel-label", "text-opacity", mapMode === "route" ? 0.95 : 0.76);
     map.setPaintProperty("global-point-circle", "circle-color", [
@@ -740,6 +844,8 @@ export function JapanOperationsMapCanvas({
 
     updateSource(map, "global-points", pointsToFeatureCollection(model.globalPoints, activeId));
     updateSource(map, "global-routes", routesToFeatureCollection(model.globalRoutes, model.globalPoints, activeId));
+    updateSource(map, "regional-security-impact-areas", impactAreasToFeatureCollection(model.securityImpactAreas ?? [], activeId));
+    updateSource(map, "regional-security-impact-points", impactAreaPointsToFeatureCollection(model.securityImpactAreas ?? [], activeId));
     updateSource(map, "live-logistics-routes", routesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId));
     updateSource(map, "logistics-impact-regions", regionsToFeatureCollection(model.logisticsImpactRegions ?? [], activeId));
     updateSource(map, "logistics-impact-routes", routesToFeatureCollection(model.logisticsImpactRoutes ?? [], model.livePoints ?? [], activeId));
@@ -798,6 +904,10 @@ function applyModeVisibility(map: any, mapMode: OperationMapMode) {
   map.setLayoutProperty("global-route-line", "visibility", visibility(showRoutes));
   map.setLayoutProperty("global-route-highlight", "visibility", visibility(showRoutes));
   map.setLayoutProperty("global-route-direction", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("regional-security-impact-area-fill", "visibility", visibility(showRoutes || showRegions || showPoints));
+  map.setLayoutProperty("regional-security-impact-area-outline", "visibility", visibility(showRoutes || showRegions || showPoints));
+  map.setLayoutProperty("regional-security-impact-center", "visibility", visibility(showRoutes || showPoints));
+  map.setLayoutProperty("regional-security-impact-label", "visibility", visibility(showRoutes || showPoints));
   map.setLayoutProperty("live-logistics-route-pulse", "visibility", visibility(showRoutes));
   map.setLayoutProperty("live-logistics-route-label", "visibility", visibility(showRoutes));
   map.setLayoutProperty("logistics-impact-route-line", "visibility", visibility(showRoutes));
@@ -942,6 +1052,15 @@ function getLogisticsCorridorOutlineColor(statusPalette: StatusPalette): any {
   ];
 }
 
+function getSecurityImpactAreaFillColor(statusPalette: StatusPalette): any {
+  return [
+    "case",
+    ["boolean", ["get", "selected"], false],
+    statusPalette.high,
+    statusPalette.watch
+  ];
+}
+
 function getDomesticRoutePaint(themePalette: ThemePalette, statusPalette: StatusPalette, mapMode: OperationMapMode): any {
   const routeFocused = mapMode === "route";
 
@@ -1053,6 +1172,51 @@ function routesToFeatureCollection(routes: JapanMapRoute[], points: JapanMapPoin
   };
 }
 
+function impactAreasToFeatureCollection(areas: JapanMapSecurityImpactArea[], activeId: string) {
+  return {
+    type: "FeatureCollection" as const,
+    features: areas.map((area) => ({
+      type: "Feature" as const,
+      geometry: {
+        type: "Polygon" as const,
+        coordinates: [createCirclePolygon(area.lon, area.lat, area.radiusKm)]
+      },
+      properties: {
+        id: area.id,
+        label: area.label,
+        radiusKm: area.radiusKm,
+        radiusLabel: area.radiusLabel,
+        selectionId: area.selectionId,
+        selected: area.id === activeId || area.selectionId === activeId,
+        value: area.value
+      }
+    }))
+  };
+}
+
+function impactAreaPointsToFeatureCollection(areas: JapanMapSecurityImpactArea[], activeId: string) {
+  return {
+    type: "FeatureCollection" as const,
+    features: areas.map((area) => ({
+      type: "Feature" as const,
+      geometry: {
+        type: "Point" as const,
+        coordinates: [area.lon, area.lat]
+      },
+      properties: {
+        id: area.id,
+        label: area.label,
+        displayLabel: `${area.label}\n${area.radiusLabel}`,
+        radiusKm: area.radiusKm,
+        radiusLabel: area.radiusLabel,
+        selectionId: area.selectionId,
+        selected: area.id === activeId || area.selectionId === activeId,
+        value: area.value
+      }
+    }))
+  };
+}
+
 function corridorsToFeatureCollection(corridors: JapanMapCorridor[], activeId: string) {
   return {
     type: "FeatureCollection" as const,
@@ -1122,6 +1286,7 @@ function getResponsiveFitPadding(map: any, prefersGlobal: boolean) {
   const width = getCanvasDimension(canvas?.clientWidth, canvas?.width, 1024);
   const height = getCanvasDimension(canvas?.clientHeight, canvas?.height, 720);
   const horizontal = Math.min(120, Math.max(32, Math.floor(width * 0.12)));
+  const left = prefersGlobal && width >= 900 ? Math.min(540, Math.max(horizontal, 496)) : horizontal;
   const top = Math.min(180, Math.max(44, Math.floor(height * 0.16)));
   const bottom = Math.min(prefersGlobal ? 200 : 260, Math.max(56, Math.floor(height * 0.2)));
 
@@ -1129,7 +1294,7 @@ function getResponsiveFitPadding(map: any, prefersGlobal: boolean) {
     top,
     right: horizontal,
     bottom,
-    left: horizontal
+    left
   };
 }
 
@@ -1157,6 +1322,7 @@ function focusMapOnSelection(
   const activeGlobalPoint = model.globalPoints.find((point) => point.id === activeId);
   const activeLiveRoute = model.liveRoutes?.find((route) => routeMatchesSelection(route, activeId));
   const activeLiveVessel = model.liveVessels?.find((point) => point.id === activeId || point.selectionId === activeId);
+  const activeSecurityImpactArea = model.securityImpactAreas?.find((area) => area.id === activeId || area.selectionId === activeId);
   const globalRoutePoints = activeGlobalRoute
     ? activeGlobalRoute.pointIds
         .map((pointId) => model.globalPoints.find((point) => point.id === pointId))
@@ -1172,15 +1338,17 @@ function focusMapOnSelection(
         .map((pointId) => model.points.find((point) => point.id === pointId))
         .filter((point): point is JapanMapPoint => Boolean(point))
     : [];
-  const prefersGlobalRoute = mapMode === "route" && Boolean(activeGlobalRoute || activeLiveRoute || activeLiveVessel);
+  const prefersGlobalRoute = mapMode === "route" && Boolean(activeGlobalRoute || activeLiveRoute || activeLiveVessel || activeSecurityImpactArea);
   const prefersGlobal = Boolean(
     prefersGlobalRoute ||
-      (!activeRoute && !activePoint && !activeRegion && (activeGlobalRoute || activeGlobalPoint || activeLiveRoute || activeLiveVessel)) ||
+      (!activeRoute && !activePoint && !activeRegion && (activeGlobalRoute || activeGlobalPoint || activeLiveRoute || activeLiveVessel || activeSecurityImpactArea)) ||
       currentZoom <= GLOBAL_CONTEXT_MAX_ZOOM + 0.15
   );
 
   const focusPoints = liveRoutePoints.length > 0 || activeLiveVessel
     ? resolveLiveFocusPoints(model, activeLiveVessel, liveRoutePoints)
+    : activeSecurityImpactArea
+      ? resolveSecurityImpactFocusPoints(activeSecurityImpactArea)
     : prefersGlobal
       ? resolveGlobalFocusPoints(model, activeGlobalPoint, globalRoutePoints)
     : resolveDomesticFocusPoints(model, activePoint, activeRegion, domesticRoutePoints);
@@ -1288,4 +1456,29 @@ function resolveLiveFocusPoints(
   }
 
   return [...(model.livePoints ?? []), ...(model.liveVessels ?? [])];
+}
+
+function resolveSecurityImpactFocusPoints(area: JapanMapSecurityImpactArea): JapanMapPoint[] {
+  const latRadius = area.radiusKm / 111.32;
+  const lonRadius = area.radiusKm / (111.32 * Math.cos((area.lat * Math.PI) / 180));
+
+  return [
+    impactAreaFocusPoint(area, area.lat, area.lon),
+    impactAreaFocusPoint(area, area.lat + latRadius, area.lon),
+    impactAreaFocusPoint(area, area.lat - latRadius, area.lon),
+    impactAreaFocusPoint(area, area.lat, area.lon + lonRadius),
+    impactAreaFocusPoint(area, area.lat, area.lon - lonRadius)
+  ];
+}
+
+function impactAreaFocusPoint(area: JapanMapSecurityImpactArea, lat: number, lon: number): JapanMapPoint {
+  return {
+    id: area.id,
+    kind: "ImpactArea",
+    label: area.label,
+    lat,
+    lon,
+    selectionId: area.selectionId,
+    tone: "critical"
+  };
 }

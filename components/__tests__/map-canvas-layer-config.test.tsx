@@ -364,6 +364,69 @@ describe("map canvas layer config", () => {
     ]);
   });
 
+  test("renders regional security missile impact areas without a global route line feature", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="flow:nk-missile-history-japan-watch"
+        focusTargetId="flow:nk-missile-history-japan-watch"
+        mapMode="route"
+        model={
+          {
+            ...model,
+            globalPoints: [],
+            globalRoutes: [],
+            securityImpactAreas: [
+              {
+                id: "impact-area:sea-of-japan",
+                label: "日本海代表落下・影響推定区域",
+                lat: 40.2,
+                lon: 135.2,
+                radiusKm: 180,
+                radiusLabel: "影響推定半径 約180km",
+                selectionId: "flow:nk-missile-history-japan-watch",
+                value: 86
+              }
+            ]
+          } as JapanMapCanvasModel
+        }
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("regional-security")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("regional-security-impact-areas")).toBe(true);
+    });
+
+    const impactAreaSource = addedSources.get("regional-security-impact-areas") as {
+      features: Array<{ geometry: { type: string }; properties: { radiusLabel: string; selected: boolean } }>;
+    };
+    const globalRouteSource = addedSources.get("global-routes") as {
+      features: Array<unknown>;
+    };
+    const fillLayer = addedLayers.find((layer) => layer.id === "regional-security-impact-area-fill") as any;
+    const centerLayer = addedLayers.find((layer) => layer.id === "regional-security-impact-center") as any;
+    const labelLayer = addedLayers.find((layer) => layer.id === "regional-security-impact-label") as any;
+
+    expect(globalRouteSource.features).toHaveLength(0);
+    expect(impactAreaSource.features[0].geometry.type).toBe("Polygon");
+    expect(impactAreaSource.features[0].properties.radiusLabel).toBe("影響推定半径 約180km");
+    expect(impactAreaSource.features[0].properties.selected).toBe(true);
+    expect(fillLayer).toMatchObject({
+      id: "regional-security-impact-area-fill",
+      type: "fill",
+      source: "regional-security-impact-areas"
+    });
+    expect(centerLayer).toMatchObject({
+      id: "regional-security-impact-center",
+      type: "circle",
+      source: "regional-security-impact-points"
+    });
+    expect(labelLayer).toBeTruthy();
+    expect(lastMap?.fitBounds.mock.calls.at(-1)?.[1].padding.left).toBeGreaterThanOrEqual(496);
+  });
+
   test("adds live tanker position markers that select the individual tanker item", async () => {
     render(
       <JapanOperationsMapCanvas

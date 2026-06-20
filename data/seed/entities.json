@@ -358,7 +358,9 @@
     ],
     "properties": {
       "precision": "representative_area",
-      "liveTracking": false
+      "liveTracking": false,
+      "estimatedImpactRadiusKm": 180,
+      "estimateClass": "representative_public_history_radius"
     }
   },
   {

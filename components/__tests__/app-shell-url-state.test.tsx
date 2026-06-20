@@ -240,6 +240,23 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
   });
 
+  test("focuses the default regional security impact area in route mode", () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "regional-security",
+          mapMode: "route",
+          selectedId: null
+        }}
+      />
+    );
+
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("flow:nk-missile-history-japan-watch");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("flow:nk-missile-history-japan-watch");
+  });
+
   test("disables pointer hits on the closed inbox pane and reopens it from the rail toggle", async () => {
     const user = userEvent.setup();
 

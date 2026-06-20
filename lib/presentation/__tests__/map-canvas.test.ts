@@ -162,28 +162,24 @@ describe("japan map canvas model", () => {
     expect(model.liveVessels).toEqual([]);
   });
 
-  test("renders regional security historical routes without live tracking points", () => {
+  test("renders regional security missile context as an impact area instead of a route line", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "regional-security");
 
     const model = buildJapanMapCanvasModel(graph, view, "flow:nk-missile-history-japan-watch");
 
-    expect(model.globalRoutes.find((route) => route.id === "flow:nk-missile-history-japan-watch")?.pointIds).toEqual([
-      "country:north-korea",
-      "launch-site:north-korea-representative",
-      "activity-route:nk-missile-representative-arc",
-      "impact-area:sea-of-japan",
-      "country:japan"
+    expect(model.globalRoutes.find((route) => route.id === "flow:nk-missile-history-japan-watch")).toBeUndefined();
+    expect(model.points.map((point) => point.id)).not.toContain("country:japan");
+    expect(model.globalPoints.map((point) => point.id)).not.toContain("country:japan");
+    expect(model.securityImpactAreas).toEqual([
+      expect.objectContaining({
+        id: "impact-area:sea-of-japan",
+        label: "日本海代表落下・影響推定区域",
+        radiusKm: 180,
+        radiusLabel: "影響推定半径 約180km",
+        selectionId: "flow:nk-missile-history-japan-watch"
+      })
     ]);
-    expect(model.globalPoints.map((point) => point.id)).toEqual(
-      expect.arrayContaining([
-        "country:north-korea",
-        "launch-site:north-korea-representative",
-        "activity-route:nk-missile-representative-arc",
-        "impact-area:sea-of-japan",
-        "country:japan"
-      ])
-    );
     expect(model.livePoints).toEqual([]);
     expect(model.liveRoutes).toEqual([]);
     expect(model.liveVessels).toEqual([]);

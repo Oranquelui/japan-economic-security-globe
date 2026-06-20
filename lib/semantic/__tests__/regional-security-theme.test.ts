@@ -87,7 +87,14 @@ describe("regional security theme", () => {
         theme: "regional-security",
         originId: "country:north-korea",
         destinationId: "country:japan",
-        mapLineKind: "route"
+        mapLineKind: "impact-area"
+      })
+    );
+    expect(graph.entities.find((entity) => entity.id === "impact-area:sea-of-japan")).toEqual(
+      expect.objectContaining({
+        properties: expect.objectContaining({
+          estimatedImpactRadiusKm: 180
+        })
       })
     );
 

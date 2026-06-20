@@ -188,7 +188,7 @@ impact-area:<slug>
 
 ### `MilitaryActivityRoute`
 
-Representative or official/public route/corridor for air or maritime activity. This supports future China-related air/maritime activity without adding live tracking.
+Representative or official/public route/corridor for air or maritime activity. Missile stories should not use this as a connected line to Japan; they should render `ImpactArea` overlays instead. This supports future China-related air/maritime activity without adding live tracking.
 
 Identifier pattern:
 
@@ -369,8 +369,9 @@ The ranking rail can still reorder by priority, but static fallback should surfa
 
 Map support:
 
-- historical missile trajectories as simplified arcs
-- estimated launch and impact areas
+- historical missile context as estimated landing/impact areas
+- estimated launch areas only where they add context
+- impact-area radius overlays for missile stories instead of line-connected Japan routes
 - representative air/maritime activity corridors
 - Japan-facing regions affected by public alerts or EEZ-adjacent activity
 

@@ -130,7 +130,8 @@ export function AppShell({
   const watchOverlays = buildWatchOverlayItems(themeId, activeId, new Date(rankingNowRef.current));
   const liveLogistics = buildLiveLogisticsView(themeId, activeId, liveLogisticsEvents, new Date(rankingNowRef.current));
   const liveLogisticsDetailItem = liveLogistics?.items.find((item) => item.id === activeId) ?? null;
-  const focusTargetId = validSelectedId;
+  const focusTargetId =
+    validSelectedId ?? (themeId === "regional-security" && mapMode === "route" ? activeId : null);
   const detail = liveLogisticsDetailItem
     ? buildLiveLogisticsDetail(graph, liveLogisticsDetailItem)
     : getDetailView(graph, activeId);
@@ -139,8 +140,8 @@ export function AppShell({
   const mapDisclosure =
     themeId === "regional-security"
       ? {
-          title: "代表軌道",
-          body: "公開情報 / 履歴・集約 / ライブ追跡ではありません"
+          title: "落下推定区域",
+          body: "公開情報 / 履歴・集約 / 影響推定半径の参考表示"
         }
       : null;
   const mapDetailPopup = validSelectedId

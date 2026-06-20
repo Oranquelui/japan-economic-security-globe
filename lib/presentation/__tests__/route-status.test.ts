@@ -45,4 +45,19 @@ describe("route status", () => {
       })
     );
   });
+
+  test("marks regional security missile flow as an impact-area overlay", () => {
+    const graph = loadSeedGraph();
+    const detail = getDetailView(graph, "flow:nk-missile-history-japan-watch");
+
+    expect(isRenderableMapRoute(detail.linkedFlows[0]!)).toBe(false);
+    expect(getRouteStatus(detail)).toEqual(
+      expect.objectContaining({
+        kind: "impact-area",
+        chipLabel: "影響区域"
+      })
+    );
+    expect(getRouteStatus(detail)?.description).toContain("落下推定地点");
+    expect(getRouteStatus(detail)?.description).toContain("影響推定半径");
+  });
 });

@@ -296,7 +296,7 @@
       "activity-route:nk-missile-representative-arc",
       "impact-area:sea-of-japan"
     ],
-    "mapLineKind": "route",
+    "mapLineKind": "impact-area",
     "sourceIds": [
       "source:cns-north-korea-missile-test-database",
       "source:mod-dprk-missile-nuclear-development",
