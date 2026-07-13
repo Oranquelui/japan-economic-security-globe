@@ -6,7 +6,6 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { ActionBar } from "../ActionBar";
 import { JapanMainMap } from "../JapanMainMap";
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
-import type { DetailViewModel } from "../../types/presentation";
 import type { JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
 
 vi.mock("../JapanOperationsMapCanvas", () => ({
@@ -50,9 +49,7 @@ describe("navigation shell", () => {
     render(
       <>
         <ActionBar
-          mapMode="point"
           onClearFilters={() => undefined}
-          onMapModeChange={() => undefined}
           queryActive={false}
           selectedKindLabel="依存フロー"
           selectedLabel="サウジ原油 → 日本"
@@ -65,6 +62,7 @@ describe("navigation shell", () => {
           focusTargetId={null}
           mapMode="point"
           model={mapModel}
+          onMapModeChange={() => undefined}
           onSelect={() => undefined}
           statusPalette={statusPalette}
           themePalette={themePalette}
@@ -77,10 +75,14 @@ describe("navigation shell", () => {
     expect(within(header).queryByRole("button", { name: "比較表" })).toBeNull();
     expect(within(header).queryByRole("button", { name: "根拠" })).toBeNull();
     expect(within(header).getByRole("button", { name: "メニュー" })).toBeTruthy();
-    expect(within(header).getByRole("button", { name: "地点" })).toBeTruthy();
+    expect(within(header).queryByRole("button", { name: "地点" })).toBeNull();
+    expect(within(header).queryByText("表示レイヤー")).toBeNull();
     expect(within(header).queryByText("運用地図")).toBeNull();
-    expect(within(header).getByText("表示レイヤー")).toBeTruthy();
-    expect(screen.queryByText("選択")).toBeNull();
     expect(within(header).getByText("選択中")).toBeTruthy();
+
+    const mapLayerControls = screen.getByTestId("map-layer-controls");
+    expect(within(mapLayerControls).getByText("表示レイヤー")).toBeTruthy();
+    expect(within(mapLayerControls).getByRole("button", { name: "地点" })).toBeTruthy();
+    expect(within(mapLayerControls).getByRole("button", { name: "集約" })).toBeTruthy();
   });
 });

@@ -54,6 +54,8 @@ export function EvidencePanel({
   if (collapsible && collapsed) {
     return (
       <aside
+        data-testid="evidence-panel"
+        data-collapsed="yes"
         className="flex h-full flex-col items-center border-l py-3 backdrop-blur-xl"
         style={{
           borderColor: themePalette.borderSubtle,
@@ -93,7 +95,9 @@ export function EvidencePanel({
   }
 
   return (
-      <aside
+    <aside
+      data-testid="evidence-panel"
+      data-collapsed="no"
       className="h-full overflow-y-auto border-l p-4 backdrop-blur-xl"
       style={{
         borderColor: themePalette.borderSubtle,

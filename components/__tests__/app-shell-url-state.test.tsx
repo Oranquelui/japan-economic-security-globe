@@ -77,6 +77,8 @@ vi.mock("../JapanMainMap", () => ({
     focusTargetId,
     mapMode,
     model,
+    onMapModeChange,
+    onOpenEvidence,
     watchOverlays = []
   }: {
     activeId: string;
@@ -88,6 +90,8 @@ vi.mock("../JapanMainMap", () => ({
     focusTargetId: string | null;
     mapMode: OperationMapMode;
     model?: { liveRoutes?: unknown[] };
+    onMapModeChange?: (mode: OperationMapMode) => void;
+    onOpenEvidence?: () => void;
     watchOverlays?: unknown[];
   }) => (
     <div
@@ -101,6 +105,19 @@ vi.mock("../JapanMainMap", () => ({
       data-ranking={detailPopup?.rankingExplanation?.rankLabel ?? ""}
       data-watch-overlays={watchOverlays.length}
     >
+      <div data-testid="map-layer-controls">
+        <button type="button" onClick={() => onMapModeChange?.("cluster")}>
+          集約
+        </button>
+        <button type="button" onClick={() => onMapModeChange?.("point")}>
+          地点
+        </button>
+      </div>
+      {detailPopup && onOpenEvidence ? (
+        <button type="button" onClick={onOpenEvidence}>
+          根拠パネルを開く
+        </button>
+      ) : null}
       mocked-map
     </div>
   )
@@ -109,16 +126,36 @@ vi.mock("../JapanMainMap", () => ({
 vi.mock("../EvidencePanel", () => ({
   EvidencePanel: ({
     collapsed,
+    detail,
     rankingExplanation
   }: {
     collapsed: boolean;
+    detail?: {
+      summary?: string;
+      whyItMatters?: string;
+      sources?: unknown[];
+      relatedEntities?: unknown[];
+    };
     rankingExplanation?: { rankLabel?: string } | null;
   }) => (
     <div
       data-testid="evidence"
       data-collapsed={collapsed ? "yes" : "no"}
       data-ranking={rankingExplanation?.rankLabel ?? ""}
-    />
+      data-summary={detail?.summary ?? ""}
+      data-why={detail?.whyItMatters ?? ""}
+      data-sources={detail?.sources?.length ?? 0}
+      data-related={detail?.relatedEntities?.length ?? 0}
+    >
+      {!collapsed ? (
+        <>
+          <div data-testid="evidence-summary">{detail?.summary ?? ""}</div>
+          <div data-testid="evidence-why">日本にとっての意味: {detail?.whyItMatters ?? ""}</div>
+          <div data-testid="evidence-sources">出典 {detail?.sources?.length ?? 0}</div>
+          <div data-testid="evidence-related">関連 {detail?.relatedEntities?.length ?? 0}</div>
+        </>
+      ) : null}
+    </div>
   )
 }));
 
@@ -155,7 +192,7 @@ beforeEach(() => {
 });
 
 describe("AppShell url sync", () => {
-  test("renders the shell as a command pane, full map stage, map detail popup surface, and collapsed compare drawer", () => {
+  test("renders the shell as a command pane, full map stage, evidence drawer, and collapsed compare drawer", () => {
     render(
       <AppShell
         graph={loadSeedGraph()}
@@ -179,6 +216,7 @@ describe("AppShell url sync", () => {
     );
 
     expect(screen.getByRole("banner")).toBeTruthy();
+    expect(screen.getByTestId("layout-action-bar")).toBeTruthy();
     expect(screen.getByRole("status", { name: "出典状態" })).toBeTruthy();
     expect(screen.getByTestId("layout-navigation-rail")).toBeTruthy();
     expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
@@ -187,10 +225,13 @@ describe("AppShell url sync", () => {
     expect(screen.getByTestId("inbox-watchboard")).toBeTruthy();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-watch-overlays")).toBe("0");
     expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
-    expect(screen.queryByTestId("layout-evidence-overlay")).toBeNull();
+    expect(screen.getByTestId("layout-evidence-drawer")).toBeTruthy();
+    expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("yes");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("");
     expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("yes");
     expect(screen.queryByRole("dialog")).toBeNull();
+    expect(withinActionBar().queryByText("表示レイヤー")).toBeNull();
+    expect(screen.getAllByTestId("map-layer-controls").length).toBeGreaterThan(0);
   });
 
   test("shows the initial notice only when homepage mode is app", async () => {
@@ -463,7 +504,7 @@ describe("AppShell url sync", () => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice", { scroll: false });
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "集約" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "集約" })[0]);
     await waitFor(() => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice&mode=cluster", { scroll: false });
     });
@@ -476,4 +517,62 @@ describe("AppShell url sync", () => {
       );
     });
   });
+
+  test("opens first-class evidence with summary, why-it-matters, sources, and related after inbox selection", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("yes");
+
+    await user.click(screen.getAllByText("select-rice-from-inbox")[0]);
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("no");
+    });
+
+    const openEvidenceNodes = screen
+      .getAllByTestId("evidence")
+      .filter((node) => node.getAttribute("data-collapsed") === "no");
+    expect(openEvidenceNodes.length).toBeGreaterThan(0);
+    const openEvidence = openEvidenceNodes[0];
+    expect(openEvidence.getAttribute("data-summary")).toBeTruthy();
+    expect(openEvidence.getAttribute("data-why")).toBeTruthy();
+    expect(Number(openEvidence.getAttribute("data-sources") ?? "0")).toBeGreaterThan(0);
+    expect(screen.getAllByTestId("evidence-summary")[0].textContent?.length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId("evidence-why")[0].textContent).toContain("日本にとっての意味");
+    expect(screen.getAllByTestId("evidence-sources")[0].textContent).toMatch(/出典/);
+    expect(screen.getAllByTestId("evidence-related")[0].textContent).toMatch(/関連/);
+  });
+
+  test("opens evidence when a compare-table selection is made", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        initialUrlState={{
+          themeId: "rice",
+          mapMode: "point",
+          selectedId: null
+        }}
+      />
+    );
+
+    await user.click(screen.getAllByText("select-rice-observation")[0]);
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("no");
+    });
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("Rice price pressure signal");
+  });
 });
+
+function withinActionBar() {
+  return {
+    queryByText(text: string) {
+      const bar = screen.getByTestId("layout-action-bar");
+      return Array.from(bar.querySelectorAll("*")).find((node) => node.textContent === text) ?? null;
+    }
+  };
+}

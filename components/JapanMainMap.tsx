@@ -4,6 +4,7 @@ import { useState, type CSSProperties } from "react";
 
 import type { JapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import type { OperationMapMode } from "../lib/presentation/operations";
+import { getOperationModeLabel } from "../lib/presentation/operations";
 import type { RankingExplanationViewModel } from "../lib/ranking/explain";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
 import type { DetailViewModel, MapPopupAnchor } from "../types/presentation";
@@ -27,6 +28,8 @@ interface JapanMainMapProps {
   } | null;
   mapMode: OperationMapMode;
   model: JapanMapCanvasModel;
+  onMapModeChange?: (mode: OperationMapMode) => void;
+  onOpenEvidence?: () => void;
   overlayInsets?: {
     bottom: number;
     left: number;
@@ -40,6 +43,8 @@ interface JapanMainMapProps {
   watchOverlays?: WatchOverlayItemViewModel[];
 }
 
+const MAP_MODES: OperationMapMode[] = ["point", "cluster", "choropleth", "route", "static"];
+
 export function JapanMainMap({
   activeId,
   detailPopup = null,
@@ -47,6 +52,8 @@ export function JapanMainMap({
   mapDisclosure = null,
   mapMode,
   model,
+  onMapModeChange,
+  onOpenEvidence,
   overlayInsets = {
     top: 16,
     right: 16,
@@ -95,6 +102,45 @@ export function JapanMainMap({
         <MapControlButton label="-" ariaLabel="地図を縮小" onClick={() => setCommand({ nonce: Date.now(), type: "zoomOut" })} />
         <MapControlButton label="⌖" ariaLabel="日本中心に戻す" onClick={() => setCommand({ nonce: Date.now(), type: "recenter" })} />
       </div>
+      {onMapModeChange ? (
+        <div
+          data-testid="map-layer-controls"
+          className="absolute z-20 flex max-w-[min(34rem,calc(100%-2rem))] flex-wrap items-center gap-1 rounded-xl border px-2 py-1.5 shadow-md backdrop-blur-md"
+          style={{
+            left: overlayInsets.left + 56,
+            top: overlayInsets.top,
+            borderColor: themePalette.borderSubtle,
+            background: themePalette.surfacePanel
+          }}
+        >
+          <span className="px-1 font-mono text-[0.55rem] uppercase tracking-[0.22em]" style={{ color: themePalette.textMuted }}>
+            表示レイヤー
+          </span>
+          {MAP_MODES.map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => onMapModeChange(mode)}
+              className="rounded-lg border px-2 py-1 text-[0.68rem] transition"
+              style={
+                mode === mapMode
+                  ? {
+                      borderColor: themePalette.accent,
+                      background: themePalette.accentSoft,
+                      color: themePalette.textPrimary
+                    }
+                  : {
+                      borderColor: themePalette.borderSubtle,
+                      background: themePalette.surfacePanelElevated,
+                      color: themePalette.textMuted
+                    }
+              }
+            >
+              {getOperationModeLabel(mode)}
+            </button>
+          ))}
+        </div>
+      ) : null}
       {watchOverlays.length ? (
         <aside
           data-testid="map-watch-overlays"
@@ -163,6 +209,7 @@ export function JapanMainMap({
             <MapDetailPopup
               detail={detailPopup.detail}
               onClose={onCloseDetail ?? (() => undefined)}
+              onOpenEvidence={onOpenEvidence}
               onSelect={onSelect}
               rankingExplanation={detailPopup.rankingExplanation}
               routeStatusLabel={detailPopup.routeStatusLabel}
@@ -180,6 +227,7 @@ export function JapanMainMap({
             <MapDetailPopup
               detail={detailPopup.detail}
               onClose={onCloseDetail ?? (() => undefined)}
+              onOpenEvidence={onOpenEvidence}
               onSelect={onSelect}
               rankingExplanation={detailPopup.rankingExplanation}
               routeStatusLabel={detailPopup.routeStatusLabel}
