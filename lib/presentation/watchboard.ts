@@ -23,9 +23,21 @@ export interface WatchboardBriefingViewModel {
   whyNow: string;
 }
 
-const STRATEGIC_QUESTION = "日本のどのライフラインが、エネルギー・物流・食料ルートの変化に晒されるか？";
-const SAFETY_LABEL = "公開情報のみ / 遅延・bounded overlay";
+const STRATEGIC_QUESTION = "公式統計は、日本の暮らしと産業のどこが揺れやすいかをどう示しているか？";
+const SAFETY_LABEL = "公式統計・公開資料 / 調査周期を明示 / リアルタイム監視ではない";
 const THEME_BRIEFING_CONTEXT: Partial<Record<ThemeId, { safetyLabel: string; strategicQuestion: string }>> = {
+  rice: {
+    strategicQuestion: "公式の収穫量と価格シグナルは、どの産地と家計に効いているか？",
+    safetyLabel: "e-Stat 等の公式統計 / 調査年・単位を明示"
+  },
+  energy: {
+    strategicQuestion: "燃料・電力の国内数字は、家計と産業のどこに着地するか？",
+    safetyLabel: "公式統計が主 / 海上ルートは文脈補助 / 非リアルタイム監視"
+  },
+  logistics: {
+    strategicQuestion: "港湾と国内物流の公式・公開情報は、どの地域の後続に効くか？",
+    safetyLabel: "国内物流の公開系統が主 / AISは補助・遅延表示"
+  },
   "regional-security": {
     strategicQuestion: "日本周辺のミサイル・航空・海上活動は、どの地域と政策判断に接続するか？",
     safetyLabel: "公開情報 / 履歴・集約 / 非ライブ警報・非追跡"

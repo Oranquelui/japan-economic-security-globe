@@ -43,10 +43,10 @@ export function ActionBar({
 
       <div className="min-w-0 max-w-sm">
         <div className="ops-label" style={{ color: themePalette.textMuted }}>
-          日本向け依存インテリジェンス
+          公式統計から読む暮らしと産業
         </div>
         <div className="mt-1 flex items-center gap-2.5">
-          <h1 className="ops-title text-[1.05rem] text-white">日本経済安全保障</h1>
+          <h1 className="ops-title text-[1.05rem] text-white">日本レジリエンス地図</h1>
           <span
             className="ops-chip"
             style={{

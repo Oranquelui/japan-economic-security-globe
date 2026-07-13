@@ -128,10 +128,10 @@ describe("map inbox structure", () => {
     );
 
     const commandPane = screen.getByTestId("command-pane-scroll");
-    expect(commandPane.textContent).toContain("JAPAN WATCHBOARD");
+    expect(commandPane.textContent).toContain("日本レジリエンス");
     expect(commandPane.textContent).toContain("日本のどのライフライン");
     expect(commandPane.textContent).toContain("監視インボックス");
-    expect((commandPane.textContent ?? "").indexOf("JAPAN WATCHBOARD")).toBeLessThan(
+    expect((commandPane.textContent ?? "").indexOf("日本レジリエンス")).toBeLessThan(
       (commandPane.textContent ?? "").indexOf("監視インボックス")
     );
   });

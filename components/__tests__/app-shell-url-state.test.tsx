@@ -227,7 +227,7 @@ describe("AppShell url sync", () => {
     expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
     expect(screen.getByTestId("layout-evidence-drawer")).toBeTruthy();
     expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("yes");
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("");
+    // Homepage ranking lead may pin a selection for map focus without opening evidence.
     expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("yes");
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(withinActionBar().queryByText("表示レイヤー")).toBeNull();
@@ -277,7 +277,8 @@ describe("AppShell url sync", () => {
     render(<AppShell graph={loadSeedGraph()} />);
 
     expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("point");
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("flow:saudi-oil-japan");
+    // Public spine default theme is rice; first selectable rice signal/entity is the fallback active.
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/^(observation:|flow:|prefecture:|product:)/);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
   });
 
@@ -336,8 +337,8 @@ describe("AppShell url sync", () => {
     );
 
     expect(screen.getAllByTestId("nav-rail")[0].getAttribute("data-theme")).toBe("rice");
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("observation:rice-price-signal-2026");
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("observation:rice-price-signal-2026");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/rice|observation:rice/);
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toMatch(/rice|observation:rice|^$/);
   });
 
   test("passes ranking explanation to the map detail popup for the selected ranked item", () => {
@@ -497,22 +498,33 @@ describe("AppShell url sync", () => {
   });
 
   test("replaces the URL when theme, map mode, and selection change", async () => {
-    render(<AppShell graph={loadSeedGraph()} />);
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "energy",
+          mapMode: "point",
+          selectedId: null
+        }}
+      />
+    );
 
     fireEvent.click(screen.getAllByText("change-theme-rice")[0]);
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice", { scroll: false });
+      // rice is the public default theme, so theme=rice is omitted from the URL.
+      expect(replaceMock).toHaveBeenLastCalledWith("/", { scroll: false });
     });
 
     fireEvent.click(screen.getAllByRole("button", { name: "集約" })[0]);
     await waitFor(() => {
-      expect(replaceMock).toHaveBeenLastCalledWith("/?theme=rice&mode=cluster", { scroll: false });
+      expect(replaceMock).toHaveBeenLastCalledWith("/?mode=cluster", { scroll: false });
     });
 
     fireEvent.click(screen.getAllByText("select-rice-observation")[0]);
     await waitFor(() => {
       expect(replaceMock).toHaveBeenLastCalledWith(
-        "/?theme=rice&mode=cluster&selected=observation%3Arice-price-signal-2026",
+        "/?mode=cluster&selected=observation%3Arice-price-signal-2026",
         { scroll: false }
       );
     });

@@ -1,5 +1,5 @@
 import { IMPORTANCE_AXIS_LABELS, SCORE_TIER_THRESHOLDS } from "../config/ranking-registry";
-import { DEFAULT_THEME_ID } from "../config/theme-registry";
+import { DEFAULT_THEME_ID, PUBLIC_SPINE_THEME_IDS } from "../config/theme-registry";
 import { buildRankingExplanation, type RankingExplanationViewModel } from "../ranking/explain";
 import { computeRankingScore } from "../ranking/score";
 import { getThemeView } from "../semantic/selectors";
@@ -95,7 +95,19 @@ export function buildHomepageLeadSelection(
   signals: RankingSignal[],
   decision: RankingDecision
 ): { selectedId: string; themeId: ThemeId } | null {
-  const topItem = decision.items[0];
+  // Prefer public spine themes (rice → energy → logistics) over radar/theater leads.
+  const rankedItems = [...decision.items].sort((left, right) => {
+    const leftSignal = signals.find((candidate) => candidate.id === left.signalId);
+    const rightSignal = signals.find((candidate) => candidate.id === right.signalId);
+    const leftTheme = leftSignal ? resolveRankingThemeId(graph, leftSignal) : DEFAULT_THEME_ID;
+    const rightTheme = rightSignal ? resolveRankingThemeId(graph, rightSignal) : DEFAULT_THEME_ID;
+    const leftSpine = PUBLIC_SPINE_THEME_IDS.indexOf(leftTheme);
+    const rightSpine = PUBLIC_SPINE_THEME_IDS.indexOf(rightTheme);
+    const leftScore = leftSpine === -1 ? 100 + left.rank : leftSpine * 10 + left.rank;
+    const rightScore = rightSpine === -1 ? 100 + right.rank : rightSpine * 10 + right.rank;
+    return leftScore - rightScore;
+  });
+  const topItem = rankedItems[0];
 
   if (!topItem) {
     return null;

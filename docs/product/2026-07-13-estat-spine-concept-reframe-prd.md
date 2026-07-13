@@ -1,9 +1,10 @@
 # PRD: e-Stat Spine Concept Reframe
 
-Status: Approved for planning / validation  
+Status: **Approved (Option A)** — ChatGPT deep research + decision memo  
 Date: 2026-07-13  
 Repository: `jp-strategic-dependency-graph`  
 Decision owner: product  
+Decision memo: `docs/product/2026-07-13-estat-spine-decision-memo.md`  
 
 Related:
 

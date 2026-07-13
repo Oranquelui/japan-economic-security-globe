@@ -108,10 +108,11 @@ describe("logistics airport boundary", () => {
     expect(tankerEvents.flatMap((event) => event.relatedIds)).not.toContain("flow:japan-linked-maritime-watch");
     expect(logisticsView?.items.map((item) => item.id)).not.toEqual(expect.arrayContaining(tankerIds));
     expect(logisticsView?.mapVessels).toEqual([]);
-    expect(energyView?.items.map((item) => item.id)).toEqual(expect.arrayContaining(tankerIds));
+    // Public e-Stat spine: energy surface no longer hosts AIS tanker theater.
+    expect(energyView).toBeNull();
   });
 
-  test("surfaces North America energy tanker support in Energy without leaking into Logistics", () => {
+  test("keeps North America energy tanker fixtures out of Logistics and off the energy public surface", () => {
     const graph = loadSeedGraph();
     const events = loadSeedLiveLogistics();
     const logisticsView = buildLiveLogisticsView("logistics", null, events);
@@ -124,7 +125,7 @@ describe("logistics airport boundary", () => {
     expect(graph.entities.find((entity) => entity.id === "country:united-states")?.themes).toContain("energy");
     expect(graph.entities.find((entity) => entity.id === "country:canada")?.themes).toContain("energy");
     expect(events.map((event) => event.id)).toEqual(expect.arrayContaining(northAmericaTankerIds));
-    expect(energyView?.items.map((item) => item.id)).toEqual(expect.arrayContaining(northAmericaTankerIds));
+    expect(energyView).toBeNull();
     expect(logisticsView?.items.map((item) => item.id)).not.toEqual(expect.arrayContaining(northAmericaTankerIds));
   });
 
