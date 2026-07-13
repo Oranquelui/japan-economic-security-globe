@@ -10,6 +10,7 @@ The default view starts with `Energy`, but `Logistics` is now a first-class them
 
 **Approved (Option A):** public MVP is re-centered on an **e-Stat / official-statistics spine**. Public title direction: **Japan Resilience Map (日本レジリエンス地図)**. Economic security remains a **question lens**, not a strategic radar claim. Global routes and AIS demos stay supporting context and are **not** the homepage lead.
 
+- **Agent handoff (start here in Codex):** [`docs/product/2026-07-13-estat-spine-handoff-prd.md`](docs/product/2026-07-13-estat-spine-handoff-prd.md)
 - Decision memo: [`docs/product/2026-07-13-estat-spine-decision-memo.md`](docs/product/2026-07-13-estat-spine-decision-memo.md)
 - Concept reframe: [`docs/product/2026-07-13-estat-spine-concept-reframe-prd.md`](docs/product/2026-07-13-estat-spine-concept-reframe-prd.md)
 - e-Stat × theme map: [`docs/product/2026-07-13-estat-data-theme-map.md`](docs/product/2026-07-13-estat-data-theme-map.md)
