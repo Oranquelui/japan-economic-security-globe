@@ -143,17 +143,21 @@ describe("map canvas layer config", () => {
     });
 
     const routeLayer = addedLayers.find((layer) => layer.id === "global-route-line") as any;
+    const glowLayer = addedLayers.find((layer) => layer.id === "global-route-glow") as any;
     expect(routeLayer).toBeTruthy();
+    expect(glowLayer).toBeTruthy();
+    expect(glowLayer.paint["line-blur"]).toBeTruthy();
+    expect(routeLayer.paint["line-dasharray"]).toEqual([0.22, 1.35]);
     expect(routeLayer.paint["line-opacity"]).toEqual([
       "interpolate",
       ["linear"],
       ["zoom"],
       2,
-      ["case", ["boolean", ["get", "selected"], false], 0.96, 0.8],
+      ["case", ["boolean", ["get", "selected"], false], 0.98, 0.88],
       6,
-      ["case", ["boolean", ["get", "selected"], false], 0.92, 0.68],
+      ["case", ["boolean", ["get", "selected"], false], 0.95, 0.8],
       10,
-      ["case", ["boolean", ["get", "selected"], false], 0.88, 0.58]
+      ["case", ["boolean", ["get", "selected"], false], 0.92, 0.72]
     ]);
   });
 
@@ -266,15 +270,21 @@ describe("map canvas layer config", () => {
     });
 
     const pulseLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-pulse") as any;
+    const glowLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-glow") as any;
     const labelLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-label") as any;
     const liveRoutes = addedSources.get("live-logistics-routes") as {
       features: Array<{ properties: { id: string; selected: boolean; selectionId: string } }>;
     };
 
     expect(pulseLayer).toBeTruthy();
+    expect(glowLayer).toBeTruthy();
     expect(pulseLayer.source).toBe("live-logistics-routes");
+    expect(glowLayer.source).toBe("live-logistics-routes");
     expect(pulseLayer.paint["line-color"]).toBe(getStatusPalette().monitoring);
+    expect(pulseLayer.paint["line-dasharray"]).toEqual([0.2, 1.2]);
+    expect(glowLayer.paint["line-blur"]).toBeTruthy();
     expect(labelLayer).toBeTruthy();
+    expect(labelLayer.layout["text-field"]).toBe("SCAN");
     expect(liveRoutes.features[0].properties.id).toBe("live-logistics:tanker-saudi-tokyo-bay");
     expect(liveRoutes.features[0].properties.selectionId).toBe("live-logistics:tanker-saudi-tokyo-bay");
     expect(liveRoutes.features[0].properties.selected).toBe(true);
