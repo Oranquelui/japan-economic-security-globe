@@ -10,6 +10,7 @@
 
 公開MVPの骨格を **e-Stat など公式統計** に寄せる方針を **承認** しました（Option A）。公開タイトル方向は **日本レジリエンス地図**。経済安全保障は「監視レーダー製品名」ではなく、**問いのレンズ**です。全球ルートや AIS デモは文脈の補助線で、ホーム初期表示には出しません。
 
+- **エージェント引き継ぎ（Codex 等はここから）:** [`docs/product/2026-07-13-estat-spine-handoff-prd.md`](docs/product/2026-07-13-estat-spine-handoff-prd.md)
 - 決定メモ: [`docs/product/2026-07-13-estat-spine-decision-memo.md`](docs/product/2026-07-13-estat-spine-decision-memo.md)
 - コンセプトリフレーム: [`docs/product/2026-07-13-estat-spine-concept-reframe-prd.md`](docs/product/2026-07-13-estat-spine-concept-reframe-prd.md)
 - e-Stat × テーマ対応: [`docs/product/2026-07-13-estat-data-theme-map.md`](docs/product/2026-07-13-estat-data-theme-map.md)

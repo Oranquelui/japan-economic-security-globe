@@ -46,8 +46,10 @@ Related:
 2. **日本レジリエンス地図** — 脆さ・回復力、公共中立  
 3. **日本経済安全保障**（現行名を残す場合）— メインタイトルではなくバッジ / レンズ名に降格
 
-**Recommendation:** 公開メインタイトルは **「日本の数字マップ」** または **「日本レジリエンス地図」**。  
-「経済安全保障」はテーマ群・レンズ・About 文に残す。
+**Approved public title:** **日本レジリエンス地図**（ChatGPT deep research + product; applied in UI via PR #27）。  
+「経済安全保障」はテーマ群・レンズ・About 文に残す。  
+
+**Agent handoff (full status + next WP2):** `docs/product/2026-07-13-estat-spine-handoff-prd.md`
 
 ---
 
