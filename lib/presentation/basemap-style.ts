@@ -68,7 +68,10 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "raster",
       source: "terrain-shaded-relief",
       paint: {
-        "raster-opacity": 0.46,
+        "raster-opacity": 0.34,
+        "raster-brightness-min": 0.08,
+        "raster-brightness-max": 0.82,
+        "raster-saturation": -0.28,
         "raster-fade-duration": 0
       }
     },
@@ -78,7 +81,10 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       source: "terrain-contours",
       minzoom: 2.4,
       paint: {
-        "raster-opacity": 0.34,
+        "raster-opacity": 0.22,
+        "raster-brightness-min": 0.1,
+        "raster-brightness-max": 0.78,
+        "raster-saturation": -0.35,
         "raster-fade-duration": 0
       }
     },
@@ -87,7 +93,10 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "raster",
       source: "gray-canvas-base",
       paint: {
-        "raster-opacity": 0.58,
+        "raster-opacity": 0.28,
+        "raster-brightness-min": 0.05,
+        "raster-brightness-max": 0.72,
+        "raster-saturation": -0.45,
         "raster-fade-duration": 0
       }
     },
@@ -97,7 +106,10 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       source: "gray-canvas-reference",
       minzoom: 6.6,
       paint: {
-        "raster-opacity": 0.42,
+        "raster-opacity": 0.28,
+        "raster-brightness-min": 0.08,
+        "raster-brightness-max": 0.8,
+        "raster-saturation": -0.3,
         "raster-fade-duration": 0
       }
     },
@@ -106,7 +118,7 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       type: "fill",
       source: "world-land",
       paint: {
-        "fill-color": "rgba(218,229,224,0.16)",
+        "fill-color": "rgba(92, 128, 148, 0.12)",
         "fill-opacity": 1
       }
     }

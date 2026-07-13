@@ -45,19 +45,19 @@ export function MapDetailPopup({
   return (
     <aside
       data-testid="map-detail-popup"
-      className="pointer-events-auto max-h-[min(34rem,calc(100vh-6rem))] overflow-y-auto rounded-2xl border p-4 shadow-2xl backdrop-blur-xl"
+      className="pointer-events-auto max-h-[min(34rem,calc(100vh-6rem))] overflow-y-auto rounded-[18px] border p-4 shadow-2xl backdrop-blur-2xl"
       style={{
         borderColor: themePalette.borderStrong,
-        background: "color-mix(in srgb, var(--ops-surface-panel) 94%, rgba(9,13,18,0.92) 6%)",
-        boxShadow: "0 20px 55px rgba(4, 9, 14, 0.38)"
+        background: "linear-gradient(165deg, rgba(16,24,36,0.96), rgba(8,12,20,0.94))",
+        boxShadow: "0 24px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255,255,255,0.05)"
       }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="font-mono text-[0.58rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
+          <div className="ops-label" style={{ color: themePalette.textMuted }}>
             MAP DETAIL
           </div>
-          <h2 className="mt-2 text-lg font-semibold leading-6 text-white [overflow-wrap:anywhere]">
+          <h2 className="ops-title mt-2 text-lg leading-6 text-white [overflow-wrap:anywhere]">
             {localizeAnyLabel(detail.id, detail.label)}
           </h2>
           <p className="mt-1 text-[0.7rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>

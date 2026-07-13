@@ -105,15 +105,16 @@ export function JapanMainMap({
       {onMapModeChange ? (
         <div
           data-testid="map-layer-controls"
-          className="absolute z-20 flex max-w-[min(34rem,calc(100%-2rem))] flex-wrap items-center gap-1 rounded-xl border px-2 py-1.5 shadow-md backdrop-blur-md"
+          className="absolute z-20 flex max-w-[min(36rem,calc(100%-2rem))] flex-wrap items-center gap-1 rounded-[14px] border px-2 py-1.5 shadow-xl backdrop-blur-xl"
           style={{
             left: overlayInsets.left + 56,
             top: overlayInsets.top,
             borderColor: themePalette.borderSubtle,
-            background: themePalette.surfacePanel
+            background: "rgba(8, 12, 20, 0.82)",
+            boxShadow: "0 12px 36px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)"
           }}
         >
-          <span className="px-1 font-mono text-[0.55rem] uppercase tracking-[0.22em]" style={{ color: themePalette.textMuted }}>
+          <span className="ops-label px-1.5" style={{ color: themePalette.textMuted }}>
             表示レイヤー
           </span>
           {MAP_MODES.map((mode) => (
@@ -121,17 +122,18 @@ export function JapanMainMap({
               key={mode}
               type="button"
               onClick={() => onMapModeChange(mode)}
-              className="rounded-lg border px-2 py-1 text-[0.68rem] transition"
+              className="rounded-[10px] border px-2.5 py-1 text-[0.68rem] transition"
               style={
                 mode === mapMode
                   ? {
-                      borderColor: themePalette.accent,
+                      borderColor: `${themePalette.accent}99`,
                       background: themePalette.accentSoft,
-                      color: themePalette.textPrimary
+                      color: themePalette.textPrimary,
+                      boxShadow: `0 0 0 1px ${themePalette.accent}22`
                     }
                   : {
-                      borderColor: themePalette.borderSubtle,
-                      background: themePalette.surfacePanelElevated,
+                      borderColor: "transparent",
+                      background: "rgba(255,255,255,0.03)",
                       color: themePalette.textMuted
                     }
               }
@@ -266,8 +268,13 @@ function MapControlButton({ ariaLabel, label, onClick }: { ariaLabel: string; la
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className="grid h-10 w-10 place-items-center rounded-md border text-lg text-slate-200 shadow-md backdrop-blur-md transition hover:text-white"
-      style={{ borderColor: "var(--ops-border-subtle)", background: "var(--ops-surface-panel)" }}
+      className="ops-control grid h-10 w-10 place-items-center text-base shadow-lg backdrop-blur-xl"
+      style={{
+        borderColor: "var(--ops-border-subtle)",
+        background: "rgba(8, 12, 20, 0.82)",
+        color: "var(--ops-text-primary)",
+        boxShadow: "0 10px 28px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.04)"
+      }}
     >
       {label}
     </button>

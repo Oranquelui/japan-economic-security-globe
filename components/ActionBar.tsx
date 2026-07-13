@@ -27,24 +27,32 @@ export function ActionBar({
   return (
     <header
       data-testid="layout-action-bar"
-      className="hidden items-center justify-between gap-4 border-b px-4 py-3 lg:flex"
+      className="relative hidden items-center justify-between gap-4 border-b px-5 py-3 lg:flex"
       style={{
         borderColor: themePalette.borderSubtle,
-        background: themePalette.surfacePanel
+        background: `linear-gradient(180deg, ${themePalette.surfacePanelElevated} 0%, ${themePalette.surfacePanel} 100%)`,
+        boxShadow: "0 1px 0 rgba(255,255,255,0.03) inset"
       }}
     >
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${themePalette.accent}88, transparent)`
+        }}
+      />
+
       <div className="min-w-0 max-w-sm">
-        <div className="font-mono text-[0.55rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+        <div className="ops-label" style={{ color: themePalette.textMuted }}>
           日本向け依存インテリジェンス
         </div>
-        <div className="mt-1 flex items-center gap-2">
-          <h1 className="text-[0.95rem] font-semibold text-white">日本経済安全保障</h1>
+        <div className="mt-1 flex items-center gap-2.5">
+          <h1 className="ops-title text-[1.05rem] text-white">日本経済安全保障</h1>
           <span
-            className="rounded-full border px-2 py-0.5 text-[0.62rem]"
+            className="ops-chip"
             style={{
-              borderColor: themePalette.borderSubtle,
-              background: themePalette.surfacePanelElevated,
-              color: themePalette.textMuted
+              borderColor: `${themePalette.accent}55`,
+              background: themePalette.accentSoft,
+              color: themePalette.accentText
             }}
           >
             {themeLabel}
@@ -54,14 +62,15 @@ export function ActionBar({
 
       <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
         <div
-          className="min-w-0 max-w-[28rem] rounded-xl border px-3 py-2"
+          className="min-w-0 max-w-[30rem] rounded-[14px] border px-3.5 py-2"
           style={{
             borderColor: themePalette.borderSubtle,
-            background: themePalette.surfacePanelElevated
+            background: "rgba(8, 12, 20, 0.55)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)"
           }}
         >
           <div className="relative">
-            <div className="font-mono text-[0.55rem] uppercase tracking-[0.22em]" style={{ color: themePalette.textMuted }}>
+            <div className="ops-label" style={{ color: themePalette.textMuted }}>
               選択中
             </div>
             <div
@@ -69,35 +78,39 @@ export function ActionBar({
               tabIndex={0}
               role="region"
               aria-label="選択中の選択内容"
-              className="mt-1 flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap pr-8"
+              className="mt-1.5 flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap pr-8"
             >
               <span
-                className="shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[0.6rem]"
+                className="ops-chip shrink-0"
                 style={{
                   borderColor: themePalette.borderSubtle,
-                  color: themePalette.textMuted
+                  color: themePalette.textMuted,
+                  background: "rgba(255,255,255,0.02)"
                 }}
               >
                 {selectedKindLabel}
               </span>
               {routeStatusLabel ? (
                 <span
-                  className="shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[0.6rem]"
+                  className="ops-chip shrink-0"
                   style={{
-                    borderColor: themePalette.borderSubtle,
-                    color: themePalette.textMuted
+                    borderColor: `${themePalette.accent}40`,
+                    color: themePalette.accentText,
+                    background: themePalette.accentSoft
                   }}
                 >
                   {routeStatusLabel}
                 </span>
               ) : null}
-              <span className="shrink-0 whitespace-nowrap text-[0.78rem] font-medium text-white">{selectedLabel}</span>
+              <span className="shrink-0 whitespace-nowrap text-[0.82rem] font-medium tracking-[-0.01em] text-white">
+                {selectedLabel}
+              </span>
             </div>
             <div
               data-testid="selected-fade"
               className="pointer-events-none absolute right-0 top-0 h-full w-8"
               style={{
-                background: `linear-gradient(to right, transparent, ${themePalette.surfacePanelElevated})`
+                background: "linear-gradient(to right, transparent, rgba(8, 12, 20, 0.92))"
               }}
             />
           </div>
@@ -109,10 +122,9 @@ export function ActionBar({
           type="button"
           onClick={onClearFilters}
           disabled={!queryActive}
-          className="rounded-lg border px-3 py-2 text-[0.72rem] transition disabled:cursor-default disabled:opacity-50"
+          className="ops-control px-3 py-2 text-[0.72rem] disabled:cursor-default disabled:opacity-40"
           style={{
             borderColor: themePalette.borderSubtle,
-            background: themePalette.surfacePanelElevated,
             color: themePalette.textMuted
           }}
         >
