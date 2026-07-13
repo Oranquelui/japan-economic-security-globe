@@ -6,12 +6,20 @@ Japan Economic Security Globe is a public-interest Japan Watchboard MVP. It expl
 
 The default view starts with `Energy`, but `Logistics` is now a first-class theme rather than a hidden sub-story. As of April 2026, oil, LNG, chokepoints, ports, electricity costs, and disaster-relevant lifeline stress are still the strongest public entry points. This project is not meant to end as a one-off news visualization, though. `Rice`, `Water`, `Defense`, `Semiconductors`, and `Regional Security` are already modeled on the same ontology.
 
+## Product direction (updated 2026-07)
+
+The public MVP is being re-centered on an **e-Stat / official-statistics spine**. Economic security remains a **question lens**, not the claim that this app is a full strategic radar. Global routes and AIS demos stay supporting context.
+
+- Concept reframe: [`docs/product/2026-07-13-estat-spine-concept-reframe-prd.md`](docs/product/2026-07-13-estat-spine-concept-reframe-prd.md)
+- e-Stat × theme map: [`docs/product/2026-07-13-estat-data-theme-map.md`](docs/product/2026-07-13-estat-data-theme-map.md)
+- Validation plan: [`docs/product/2026-07-13-estat-validation-plan.md`](docs/product/2026-07-13-estat-validation-plan.md)
+
 ## Public Demo
 
 - Version: `0.4.0`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
 - Launch view: [Japan domestic logistics watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
-- First-screen promise: `What Japan should watch now`
+- First-screen promise: `What Japan should watch now` (being redefined: explain household/industry stress with official numbers)
 - Public framing: domestic logistics visibility, port follow-through, road/rail/coastal/air-cargo/airport-operations lanes, non-energy general cargo support, official-source trust, source-status freshness, bounded near-live overlays, and terrain-aware mapping
 
 ## Current Version

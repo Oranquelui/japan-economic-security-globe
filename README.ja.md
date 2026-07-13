@@ -6,12 +6,20 @@
 
 最初の表示は `Energy` を中心にしていますが、`Logistics` はもう隠れた補助テーマではなく、独立した public theme です。2026年4月時点では、原油、LNG、海上輸送路、港湾、電気代、災害時の生活基盤ストレスが、もっとも直感的な入口です。ただし、このプロジェクトは一時的なニュース可視化で終わらせません。`Rice`、`Water`、`Defense`、`Semiconductors`、`Regional Security / 地域安全保障` も同じオントロジー上に最初から載せています。
 
+## 製品方針（2026-07 更新）
+
+公開MVPの骨格を **e-Stat など公式統計** に寄せる方針を決定しました。経済安全保障は「監視レーダー製品名」ではなく、**問いのレンズ**として残します。全球ルートや AIS デモは文脈の補助線です。
+
+- コンセプトリフレーム: [`docs/product/2026-07-13-estat-spine-concept-reframe-prd.md`](docs/product/2026-07-13-estat-spine-concept-reframe-prd.md)
+- e-Stat × テーマ対応: [`docs/product/2026-07-13-estat-data-theme-map.md`](docs/product/2026-07-13-estat-data-theme-map.md)
+- 検証計画: [`docs/product/2026-07-13-estat-validation-plan.md`](docs/product/2026-07-13-estat-validation-plan.md)
+
 ## 公開デモ
 
 - Version: `0.4.0`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
 - Launch view: [国内物流 watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
-- 最初の約束: `日本が今なにを注視すべきか`
+- 最初の約束: `日本が今なにを注視すべきか`（再定義中: 公式数字で暮らしと産業の脆さを説明する）
 - 公開 framing: 国内物流の見え方、港湾後続、道路・鉄道・内航・航空貨物・空港運用、非エネルギー一般貨物の補助線、公式ソース信頼、出典 freshness、bounded な near-live overlay、地形が読める地図
 
 ## 現在のバージョン
