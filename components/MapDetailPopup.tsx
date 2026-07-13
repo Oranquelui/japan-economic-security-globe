@@ -17,6 +17,7 @@ import {
 interface MapDetailPopupProps {
   detail: DetailViewModel;
   onClose: () => void;
+  onOpenEvidence?: () => void;
   onSelect: (id: string) => void;
   rankingExplanation?: RankingExplanationViewModel | null;
   routeStatusLabel?: string | null;
@@ -28,6 +29,7 @@ interface MapDetailPopupProps {
 export function MapDetailPopup({
   detail,
   onClose,
+  onOpenEvidence,
   onSelect,
   rankingExplanation,
   routeStatusLabel,
@@ -112,6 +114,22 @@ export function MapDetailPopup({
         <p className="mt-2 rounded-md border px-2.5 py-2 text-[0.68rem] leading-5" style={{ borderColor: themePalette.borderSubtle, color: themePalette.textMuted }}>
           公開情報 / 履歴・集約 / ライブ追跡ではありません
         </p>
+      ) : null}
+
+      {onOpenEvidence ? (
+        <button
+          type="button"
+          onClick={onOpenEvidence}
+          data-testid="map-detail-open-evidence"
+          className="mt-3 w-full rounded-xl border px-3 py-2 text-[0.74rem] font-medium transition hover:bg-white/5"
+          style={{
+            borderColor: themePalette.accent,
+            background: themePalette.accentSoft,
+            color: themePalette.textPrimary
+          }}
+        >
+          根拠パネルを開く
+        </button>
       ) : null}
 
       {rankingExplanation ? (

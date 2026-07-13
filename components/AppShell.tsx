@@ -10,6 +10,7 @@ import type { RankingSignal } from "../types/ranking";
 import { THEME_IDS, type SemanticGraph, type ThemeId } from "../types/semantic";
 import { buildRankingDecision } from "../lib/ranking/decision";
 import { getDetailView } from "../lib/semantic/detail";
+import { buildEvidenceGraph } from "../lib/semantic/view-models";
 import { buildJapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import { buildLiveLogisticsDetail } from "../lib/presentation/live-logistics-detail";
 import { buildLiveLogisticsView } from "../lib/presentation/live-logistics";
@@ -33,6 +34,7 @@ import { getThemeLabel, localizeAnyLabel, localizeKind } from "../lib/presentati
 import { getRouteStatus } from "../lib/presentation/route-status";
 import { summarizeSourceStatus } from "../lib/official/source-freshness";
 import { ActionBar } from "./ActionBar";
+import { EvidencePanel } from "./EvidencePanel";
 import { InitialNoticeModal } from "./InitialNoticeModal";
 import { JapanMainMap } from "./JapanMainMap";
 import { LogisticsImpactBoard } from "./LogisticsImpactBoard";
@@ -88,6 +90,7 @@ export function AppShell({
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(true);
   const [isCompareOpen, setCompareOpen] = useState(false);
+  const [isEvidenceOpen, setEvidenceOpen] = useState(Boolean(resolvedInitialState.selectedId));
   const [, startTransition] = useTransition();
   const initialSerializedRef = useRef(serializeOperationsUrlState(resolvedInitialState));
   const view = getThemeView(graph, themeId);
@@ -134,6 +137,7 @@ export function AppShell({
   const detail = liveLogisticsDetailItem
     ? buildLiveLogisticsDetail(graph, liveLogisticsDetailItem)
     : getDetailView(graph, activeId);
+  const evidenceGraph = buildEvidenceGraph(graph, themeId);
   const routeStatus = getRouteStatus(detail);
   const mapModel = buildJapanMapCanvasModel(graph, view, activeId, liveLogistics);
   const mapDisclosure =
@@ -175,14 +179,17 @@ export function AppShell({
   } as CSSProperties;
   const railWidth = 72;
   const paneWidth = 376;
+  const evidenceExpandedWidth = 360;
+  const evidenceCollapsedWidth = 56;
   const visiblePaneWidth = isInboxOpen ? paneWidth : 0;
+  const evidenceWidth = isEvidenceOpen ? evidenceExpandedWidth : evidenceCollapsedWidth;
   const compareExpandedHeight = 264;
   const compareCollapsedHeight = 76;
   const compareHeight = isCompareOpen ? compareExpandedHeight : compareCollapsedHeight;
   const mapOverlayInsets = {
     top: 16,
     left: railWidth + visiblePaneWidth + 16,
-    right: 16,
+    right: evidenceWidth + 16,
     bottom: compareHeight + 16
   };
 
@@ -207,17 +214,20 @@ export function AppShell({
       setSelectedId(null);
       setMapPopupAnchor(null);
       setSearchQuery("");
+      setEvidenceOpen(false);
     });
   }
 
   function handleSelect(nextSelectedId: string) {
     setSelectedId(nextSelectedId);
     setMapPopupAnchor(null);
+    setEvidenceOpen(true);
   }
 
   function handleMapSelect(nextSelectedId: string, anchor?: MapPopupAnchor) {
     setSelectedId(nextSelectedId);
     setMapPopupAnchor(anchor ?? null);
+    setEvidenceOpen(true);
   }
 
   function handleCloseDetail() {
@@ -225,14 +235,27 @@ export function AppShell({
     setMapPopupAnchor(null);
   }
 
+  const evidencePanel = (
+    <EvidencePanel
+      collapsed={!isEvidenceOpen}
+      detail={detail}
+      evidenceGraph={evidenceGraph}
+      onSelect={handleSelect}
+      onToggleCollapsed={() => setEvidenceOpen((value) => !value)}
+      rankingExplanation={liveLogisticsDetailItem ? null : rankingExplanation}
+      selectedId={activeId}
+      statusPalette={statusPalette}
+      themePalette={themePalette}
+      themeTitle={view.title}
+    />
+  );
+
   return (
     <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 lg:grid lg:grid-rows-[56px,auto,minmax(0,1fr)]" style={shellStyle}>
       <InitialNoticeModal homepageMode={homepageMode} locale={locale} />
 
       <ActionBar
-        mapMode={mapMode}
         onClearFilters={() => setSearchQuery("")}
-        onMapModeChange={setMapMode}
         queryActive={searchQuery.length > 0}
         routeStatusLabel={routeStatus?.chipLabel ?? null}
         selectedKindLabel={localizeKind(detail.kind)}
@@ -258,6 +281,8 @@ export function AppShell({
               mapDisclosure={mapDisclosure}
               mapMode={mapMode}
               model={mapModel}
+              onMapModeChange={setMapMode}
+              onOpenEvidence={() => setEvidenceOpen(true)}
               overlayInsets={mapOverlayInsets}
               onCloseDetail={handleCloseDetail}
               onSelect={handleMapSelect}
@@ -314,12 +339,24 @@ export function AppShell({
             </aside>
           ) : null}
 
+          <aside
+            data-testid="layout-evidence-drawer"
+            className="absolute top-0 z-30 min-h-0 overflow-hidden"
+            style={{
+              right: 0,
+              width: evidenceWidth,
+              bottom: 0
+            }}
+          >
+            {evidencePanel}
+          </aside>
+
           <section
             data-testid="layout-compare-drawer"
-            className="absolute bottom-0 right-0 z-30 min-h-0"
+            className="absolute bottom-0 z-30 min-h-0"
             style={{
               left: railWidth + visiblePaneWidth,
-              right: 0,
+              right: evidenceWidth,
               height: compareHeight
             }}
           >
@@ -361,6 +398,8 @@ export function AppShell({
               mapDisclosure={mapDisclosure}
               mapMode={mapMode}
               model={mapModel}
+              onMapModeChange={setMapMode}
+              onOpenEvidence={() => setEvidenceOpen(true)}
               overlayInsets={{
                 top: 16,
                 left: 16,
@@ -417,6 +456,21 @@ export function AppShell({
             themePalette={themePalette}
             watchOverlays={watchOverlays}
           />
+          <section data-testid="layout-evidence-drawer-mobile" className="min-h-[24rem] px-0">
+            <EvidencePanel
+              collapsed={false}
+              collapsible={false}
+              detail={detail}
+              evidenceGraph={evidenceGraph}
+              onSelect={handleSelect}
+              onToggleCollapsed={() => undefined}
+              rankingExplanation={liveLogisticsDetailItem ? null : rankingExplanation}
+              selectedId={activeId}
+              statusPalette={statusPalette}
+              themePalette={themePalette}
+              themeTitle={view.title}
+            />
+          </section>
           <OperationsSignalTable
             activeId={activeId}
             collapsed={false}

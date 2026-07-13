@@ -1,14 +1,10 @@
 "use client";
 
-import type { OperationMapMode } from "../lib/presentation/operations";
 import type { ThemePalette } from "../lib/presentation/palette";
-import { getOperationModeLabel } from "../lib/presentation/operations";
 import { ShellMenu } from "./ShellMenu";
 
 interface ActionBarProps {
-  mapMode: OperationMapMode;
   onClearFilters: () => void;
-  onMapModeChange: (mode: OperationMapMode) => void;
   queryActive: boolean;
   selectedKindLabel: string;
   selectedLabel: string;
@@ -19,9 +15,7 @@ interface ActionBarProps {
 }
 
 export function ActionBar({
-  mapMode,
   onClearFilters,
-  onMapModeChange,
   queryActive,
   selectedKindLabel,
   selectedLabel,
@@ -32,6 +26,7 @@ export function ActionBar({
 }: ActionBarProps) {
   return (
     <header
+      data-testid="layout-action-bar"
       className="hidden items-center justify-between gap-4 border-b px-4 py-3 lg:flex"
       style={{
         borderColor: themePalette.borderSubtle,
@@ -58,39 +53,8 @@ export function ActionBar({
       </div>
 
       <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
-        <div className="flex items-center gap-2 rounded-xl border px-3 py-2" style={{ borderColor: themePalette.borderSubtle }}>
-          <span className="font-mono text-[0.58rem] uppercase tracking-[0.22em]" style={{ color: themePalette.textMuted }}>
-            表示レイヤー
-          </span>
-          <div className="flex items-center gap-1">
-            {(["point", "cluster", "choropleth", "route", "static"] as OperationMapMode[]).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => onMapModeChange(mode)}
-                className="rounded-lg border px-2.5 py-1.5 text-[0.68rem] transition"
-                style={
-                  mode === mapMode
-                    ? {
-                        borderColor: themePalette.accent,
-                        background: themePalette.accentSoft,
-                        color: themePalette.textPrimary
-                      }
-                    : {
-                        borderColor: themePalette.borderSubtle,
-                        background: themePalette.surfacePanelElevated,
-                        color: themePalette.textMuted
-                      }
-                }
-              >
-                {getOperationModeLabel(mode)}
-              </button>
-            ))}
-          </div>
-        </div>
-
         <div
-          className="min-w-0 max-w-[24rem] rounded-xl border px-3 py-2"
+          className="min-w-0 max-w-[28rem] rounded-xl border px-3 py-2"
           style={{
             borderColor: themePalette.borderSubtle,
             background: themePalette.surfacePanelElevated
