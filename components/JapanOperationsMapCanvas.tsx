@@ -5,6 +5,7 @@ import { useEffect, useEffectEvent, useRef } from "react";
 import type { OperationMapMode } from "../lib/presentation/operations";
 import type { JapanMapCanvasModel, JapanMapCorridor, JapanMapPoint, JapanMapRegion, JapanMapRoute } from "../lib/presentation/map-canvas";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
+import { buildMaritimeRouteCoordinates, densifyGeodesicPolyline, type LonLat } from "../lib/presentation/route-geometry";
 import type { MapPopupAnchor } from "../types/presentation";
 import { buildOperationsBasemapStyle } from "../lib/presentation/basemap-style";
 
@@ -1241,14 +1242,16 @@ function routesToFeatureCollection(routes: JapanMapRoute[], points: JapanMapPoin
     type: "FeatureCollection" as const,
     features: routes
       .map((route) => {
-        const coordinates = route.pointIds
+        const anchors = route.pointIds
           .map((pointId) => pointMap.get(pointId))
           .filter((point): point is JapanMapPoint => Boolean(point))
-          .map((point) => [point.lon, point.lat]);
+          .map((point) => [point.lon, point.lat] as LonLat);
 
-        if (coordinates.length < 2) {
+        if (anchors.length < 2) {
           return null;
         }
+
+        const coordinates = buildRouteCoordinates(route, anchors);
 
         return {
           type: "Feature" as const,
@@ -1269,6 +1272,48 @@ function routesToFeatureCollection(routes: JapanMapRoute[], points: JapanMapPoin
       })
       .filter((feature): feature is NonNullable<typeof feature> => Boolean(feature))
   };
+}
+
+function buildRouteCoordinates(route: JapanMapRoute, anchors: LonLat[]): LonLat[] {
+  // Ocean / tanker / energy corridors: sea-lane aware curves.
+  // Domestic road/rail/coastal: geodesic densify only (no ocean detours).
+  const haystack = `${route.id} ${route.label}`;
+  const isDomesticLogistics =
+    /road|rail|coastal|highway|hinterland|airport|air-cargo|航空|道路|鉄道|内航|港湾後続|配送/i.test(haystack) &&
+    !/tanker|lng|maritime|ais|hormuz|malacca|crude|oil|gulf/i.test(haystack);
+
+  const isMaritime =
+    !isDomesticLogistics &&
+    (/tanker|lng|maritime|ais|oil|hormuz|malacca|gulf|crude|carrier/i.test(haystack) ||
+      route.id.startsWith("flow:") ||
+      (route.id.startsWith("live-logistics:") && anchorsSpanOceanicDistance(anchors)));
+
+  if (isMaritime) {
+    return buildMaritimeRouteCoordinates(anchors, { samplesPerSegment: 20 });
+  }
+
+  return densifyGeodesicPolyline(anchors, 10);
+}
+
+function anchorsSpanOceanicDistance(anchors: LonLat[]): boolean {
+  if (anchors.length < 2) {
+    return false;
+  }
+
+  let maxKm = 0;
+  for (let index = 1; index < anchors.length; index += 1) {
+    const [lon1, lat1] = anchors[index - 1];
+    const [lon2, lat2] = anchors[index];
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
+    const km = 6371 * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+    maxKm = Math.max(maxKm, km);
+  }
+
+  return maxKm > 1200;
 }
 
 function corridorsToFeatureCollection(corridors: JapanMapCorridor[], activeId: string) {
