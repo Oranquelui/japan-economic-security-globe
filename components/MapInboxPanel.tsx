@@ -50,11 +50,13 @@ export function MapInboxPanel({
   return (
     <aside
       className="flex h-full w-full min-w-0 flex-col overflow-hidden"
-      style={{ background: themePalette.surfacePanel }}
+      style={{
+        background: `linear-gradient(180deg, ${themePalette.surfacePanelElevated} 0%, ${themePalette.surfacePanel} 100%)`
+      }}
     >
       <div data-testid="command-pane-scroll" className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">
         {briefing ? (
-          <section className="border-b p-3" style={{ borderColor: themePalette.borderSubtle }}>
+          <section className="border-b p-2.5" style={{ borderColor: themePalette.borderSubtle }}>
             <WatchboardBriefing briefing={briefing} themePalette={themePalette} variant="pane" />
           </section>
         ) : null}
@@ -69,23 +71,23 @@ export function MapInboxPanel({
         ) : null}
 
         {liveLogistics ? (
-          <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
-            <div className="flex items-start justify-between gap-3">
+          <section className="border-b px-3 py-3" style={{ borderColor: themePalette.borderSubtle }}>
+            <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.accentText }}>
+                <div className="ops-label" style={{ color: themePalette.accentText }}>
                   {liveLogistics.title}
                 </div>
-                <p className="mt-1 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
+                <p className="mt-1 line-clamp-2 text-[0.66rem] leading-4" style={{ color: themePalette.textMuted }}>
                   {liveLogistics.subtitle}
                 </p>
               </div>
               <PaneBadge themePalette={themePalette}>{liveLogistics.items.length}件</PaneBadge>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <OverlayChip themePalette={themePalette}>{liveLogistics.updatedLabel}</OverlayChip>
               <OverlayChip themePalette={themePalette}>{liveLogistics.disclosureLabel}</OverlayChip>
             </div>
-            <div className="mt-4 space-y-4">
+            <div className="mt-3 space-y-3">
               {getLiveLogisticsLanes(liveLogistics).map((lane) => (
                 <LiveLogisticsLaneSection
                   key={lane.id}
@@ -100,37 +102,32 @@ export function MapInboxPanel({
         ) : null}
 
         {watchOverlays.length ? (
-          <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-                  近接監視
-                </div>
-                <p className="mt-1 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
-                  公開可能な範囲に絞った、bounded な近接監視オーバーレイです。
-                </p>
+          <section className="border-b px-3 py-3" style={{ borderColor: themePalette.borderSubtle }}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="ops-label" style={{ color: themePalette.textMuted }}>
+                近接監視
               </div>
               <PaneBadge themePalette={themePalette}>{watchOverlays.length}件</PaneBadge>
             </div>
-            <div className="mt-3 space-y-2">
+            <div className="mt-2 space-y-1.5">
               {watchOverlays.map((overlay) => (
                 <div
                   key={overlay.id}
-                  className="rounded-xl border px-3 py-3"
+                  className="rounded-[10px] border px-2.5 py-2"
                   style={{
                     borderColor: themePalette.borderSubtle,
-                    background: themePalette.surfacePanelElevated
+                    background: "rgba(255,255,255,0.025)"
                   }}
                 >
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <OverlayChip themePalette={themePalette}>{overlay.freshnessLabel}</OverlayChip>
                     <OverlayChip themePalette={themePalette}>{overlay.trustLabel}</OverlayChip>
                   </div>
-                  <div className="mt-2 text-sm font-semibold text-white">{overlay.title}</div>
-                  <p className="mt-1 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
+                  <div className="mt-1.5 text-[0.8rem] font-semibold leading-5 text-white">{overlay.title}</div>
+                  <p className="mt-1 line-clamp-2 text-[0.68rem] leading-4" style={{ color: themePalette.textMuted }}>
                     {overlay.summary}
                   </p>
-                  <div className="mt-2 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                  <div className="mt-1 text-[0.62rem]" style={{ color: themePalette.textMuted }}>
                     {overlay.disclosureLabel}
                   </div>
                 </div>
@@ -139,19 +136,25 @@ export function MapInboxPanel({
           </section>
         ) : null}
 
-        <div className="flex items-center justify-between gap-3 border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
-          <div>
-            <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-              監視インボックス
-            </p>
-            <div className="mt-1 text-sm font-semibold text-white">{themeLabel}</div>
+        <div
+          className="sticky top-0 z-10 border-b px-3 py-2.5 backdrop-blur-xl"
+          style={{
+            borderColor: themePalette.borderSubtle,
+            background: "rgba(8, 12, 20, 0.88)"
+          }}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="ops-label" style={{ color: themePalette.textMuted }}>
+                監視インボックス
+              </p>
+              <div className="mt-0.5 truncate text-[0.84rem] font-semibold text-white">{themeLabel}</div>
+            </div>
+            <PaneBadge themePalette={themePalette}>{rows.length}件</PaneBadge>
           </div>
-          <PaneBadge themePalette={themePalette}>{rows.length}件</PaneBadge>
-        </div>
 
-        <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
-          <label className="block">
-            <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+          <label className="mt-2 block">
+            <div className="ops-label" style={{ color: themePalette.textMuted }}>
               検索
             </div>
             <input
@@ -159,21 +162,20 @@ export function MapInboxPanel({
               value={query}
               onChange={(event) => onQueryChange(event.target.value)}
               placeholder="LNG、港湾、コメ、予算"
-              className="mt-2 w-full rounded-xl border px-3 py-2.5 text-sm outline-none transition [background-color:var(--map-inbox-input-bg)] [border-color:var(--map-inbox-input-border)] [color:var(--map-inbox-input-text)] placeholder:text-slate-500"
+              className="mt-1.5 w-full rounded-[10px] border px-3 py-2 text-[0.8rem] outline-none transition [background-color:var(--map-inbox-input-bg)] [border-color:var(--map-inbox-input-border)] [color:var(--map-inbox-input-text)] placeholder:text-slate-500"
               style={{
-                "--map-inbox-input-bg": themePalette.surfacePanelElevated,
+                "--map-inbox-input-bg": "rgba(255,255,255,0.03)",
                 "--map-inbox-input-border": themePalette.borderSubtle,
                 "--map-inbox-input-text": themePalette.textPrimary
               } as CSSProperties}
             />
           </label>
-        </section>
 
-        <section className="border-b px-4 py-4" style={{ borderColor: themePalette.borderSubtle }}>
-          <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
-            絞り込み
-          </div>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-2">
+            <div className="ops-label" style={{ color: themePalette.textMuted }}>
+              絞り込み
+            </div>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
             {[
               { label: "全部", value: "" },
               { label: "高リスク", value: "高" },
@@ -186,17 +188,17 @@ export function MapInboxPanel({
                   key={filter.label}
                   type="button"
                   onClick={() => onQueryChange(filter.value)}
-                  className="rounded-full border px-3 py-2 text-[0.68rem] transition"
+                  className="ops-chip transition"
                   style={
                     active
                       ? {
-                          borderColor: themePalette.accent,
+                          borderColor: `${themePalette.accent}99`,
                           background: themePalette.accentSoft,
                           color: themePalette.textPrimary
                         }
                       : {
                           borderColor: themePalette.borderSubtle,
-                          background: themePalette.surfacePanelElevated,
+                          background: "rgba(255,255,255,0.03)",
                           color: themePalette.textMuted
                         }
                   }
@@ -205,34 +207,35 @@ export function MapInboxPanel({
                 </button>
               );
             })}
+            </div>
           </div>
-        </section>
+        </div>
 
-        <section className="px-4 py-4">
+        <section className="px-2.5 py-2.5">
           <div
             data-testid="monitoring-inbox-scroll"
-            className="max-h-[36rem] overflow-y-auto overscroll-contain border"
+            className="max-h-[40rem] overflow-y-auto overscroll-contain rounded-[12px] border"
             style={{
               borderColor: themePalette.borderSubtle,
-              background: themePalette.surfacePanelElevated
+              background: "rgba(0,0,0,0.16)"
             }}
           >
-            <div className="space-y-4 p-3">
+            <div className="space-y-3 p-2">
               {sections.map((section) => (
                 <section key={section.id}>
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center justify-between gap-2 px-1">
                     <div className="min-w-0">
-                      <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.textMuted }}>
+                      <div className="ops-label" style={{ color: themePalette.textMuted }}>
                         {section.label}
                       </div>
-                      <p className="mt-1 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
+                      <p className="mt-0.5 line-clamp-1 text-[0.64rem] leading-4" style={{ color: themePalette.textMuted }}>
                         {section.description}
                       </p>
                     </div>
                     <PaneBadge themePalette={themePalette}>{section.rows.length}件</PaneBadge>
                   </div>
 
-                  <div className="mt-2 overflow-hidden rounded-xl border" style={{ borderColor: themePalette.borderSubtle }}>
+                  <div className="mt-1.5 overflow-hidden rounded-[10px] border" style={{ borderColor: themePalette.borderSubtle }}>
                     {section.rows.map((row) => {
                       const isActive = row.id === activeId;
                       const ranking = row.ranking;
@@ -242,13 +245,13 @@ export function MapInboxPanel({
                           key={`${section.id}-${row.id}`}
                           type="button"
                           onClick={() => onSelect(row.id)}
-                          className="w-full border-b px-3 py-3 text-left transition last:border-b-0"
+                          className="w-full border-b px-2.5 py-2 text-left transition last:border-b-0"
                           style={
                             isActive
                               ? {
                                   borderBottomColor: themePalette.borderSubtle,
                                   borderLeft: `2px solid ${themePalette.accent}`,
-                                  background: themePalette.surfacePanel,
+                                  background: themePalette.accentSoft,
                                   color: themePalette.textPrimary
                                 }
                               : {
@@ -259,30 +262,21 @@ export function MapInboxPanel({
                                 }
                           }
                         >
-                          <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               {ranking ? (
-                                <div className="mb-2 flex flex-wrap items-center gap-2">
+                                <div className="mb-1 flex flex-wrap items-center gap-1">
                                   <span
-                                    className="rounded-full border px-2 py-1 text-[0.62rem] font-semibold"
+                                    className="ops-chip font-semibold"
                                     style={{
-                                      borderColor: themePalette.accent,
+                                      borderColor: `${themePalette.accent}88`,
                                       background: themePalette.accentSoft,
                                       color: themePalette.textPrimary
                                     }}
                                   >
                                     #{ranking.rank}
                                   </span>
-                                  <span
-                                    className="rounded-full border px-2 py-1 text-[0.62rem]"
-                                    style={{
-                                      borderColor: themePalette.borderSubtle,
-                                      background: themePalette.surfacePanelElevated,
-                                      color: themePalette.textMuted
-                                    }}
-                                  >
-                                    {ranking.primaryAxisLabel}
-                                  </span>
+                                  <OverlayChip themePalette={themePalette}>{ranking.primaryAxisLabel}</OverlayChip>
                                   {ranking.freshnessLabel ? (
                                     <OverlayChip themePalette={themePalette}>{ranking.freshnessLabel}</OverlayChip>
                                   ) : null}
@@ -294,12 +288,12 @@ export function MapInboxPanel({
                                   ) : null}
                                 </div>
                               ) : null}
-                              <div className="truncate text-sm font-semibold">{row.label}</div>
-                              <div className="mt-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+                              <div className="truncate text-[0.8rem] font-semibold leading-5">{row.label}</div>
+                              <div className="mt-0.5 truncate text-[0.64rem]" style={{ color: themePalette.textMuted }}>
                                 {row.subject} / {row.status}
                               </div>
                               {ranking ? (
-                                <p className="mt-2 text-[0.68rem] leading-5" style={{ color: themePalette.textMuted }}>
+                                <p className="mt-1 line-clamp-2 text-[0.64rem] leading-4" style={{ color: themePalette.textMuted }}>
                                   {ranking.whyRanked}
                                 </p>
                               ) : null}
@@ -349,17 +343,17 @@ function LiveLogisticsLaneSection({
   themePalette: ThemePalette;
 }) {
   return (
-    <section className="border-t pt-3 first:border-t-0 first:pt-0" style={{ borderColor: themePalette.borderSubtle }}>
-      <div className="flex items-start justify-between gap-3">
+    <section className="border-t pt-2.5 first:border-t-0 first:pt-0" style={{ borderColor: themePalette.borderSubtle }}>
+      <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-[0.72rem] font-semibold leading-5 text-white [overflow-wrap:anywhere]">{lane.title}</div>
-          <p className="mt-0.5 text-[0.66rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
+          <div className="truncate text-[0.72rem] font-semibold leading-4 text-white">{lane.title}</div>
+          <p className="mt-0.5 line-clamp-1 text-[0.62rem] leading-4" style={{ color: themePalette.textMuted }}>
             {lane.subtitle}
           </p>
         </div>
         <PaneBadge themePalette={themePalette}>{lane.items.length}件</PaneBadge>
       </div>
-      <div className="mt-2 space-y-2">
+      <div className="mt-1.5 space-y-1.5">
         {lane.items.map((item) => (
           <LiveLogisticsItemButton
             key={item.id}
@@ -391,26 +385,26 @@ function LiveLogisticsItemButton({
     <button
       type="button"
       onClick={() => onSelect(item.id)}
-      className="w-full rounded-lg border px-3 py-3 text-left transition hover:border-slate-300/40"
+      className="w-full rounded-[10px] border px-2.5 py-2 text-left transition"
       style={{
-        borderColor: isActive ? themePalette.accent : themePalette.borderSubtle,
-        background: isActive ? themePalette.accentSoft : themePalette.surfacePanelElevated
+        borderColor: isActive ? `${themePalette.accent}99` : themePalette.borderSubtle,
+        background: isActive ? themePalette.accentSoft : "rgba(255,255,255,0.025)"
       }}
     >
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-1">
         <OverlayChip themePalette={themePalette}>{item.kindLabel}</OverlayChip>
         <OverlayChip themePalette={themePalette}>{item.statusLabel}</OverlayChip>
         <OverlayChip themePalette={themePalette}>{item.lastSeenLabel}</OverlayChip>
       </div>
-      <div className="mt-2 min-w-0 text-sm font-semibold leading-5 text-white [overflow-wrap:anywhere]">{item.title}</div>
-      <div className="mt-1 min-w-0 text-[0.72rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
+      <div className="mt-1.5 line-clamp-2 min-w-0 text-[0.8rem] font-semibold leading-5 text-white">{item.title}</div>
+      <div className="mt-0.5 line-clamp-1 min-w-0 text-[0.66rem] leading-4" style={{ color: themePalette.textMuted }}>
         {item.corridorLabel}
       </div>
-      <div className="mt-2 grid grid-cols-1 gap-1 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
-        <span className="[overflow-wrap:anywhere]">{item.etaLabel}</span>
-        <span className="[overflow-wrap:anywhere]">{item.sourceLabel}</span>
-        <span className="[overflow-wrap:anywhere]">{item.confidenceLabel}</span>
-        <span className="[overflow-wrap:anywhere]">{item.disclosureLabel}</span>
+      <div className="mt-1 grid grid-cols-1 gap-0.5 text-[0.62rem]" style={{ color: themePalette.textMuted }}>
+        <span className="truncate">{item.etaLabel}</span>
+        <span className="truncate">{item.sourceLabel}</span>
+        <span className="truncate">{item.confidenceLabel}</span>
+        <span className="truncate">{item.disclosureLabel}</span>
       </div>
     </button>
   );
@@ -425,10 +419,10 @@ function OverlayChip({
 }) {
   return (
     <span
-      className="rounded-full border px-2 py-1 text-[0.62rem]"
+      className="ops-chip"
       style={{
         borderColor: themePalette.borderSubtle,
-        background: themePalette.surfacePanel,
+        background: "rgba(255,255,255,0.03)",
         color: themePalette.textMuted
       }}
     >
@@ -446,10 +440,10 @@ function PaneBadge({
 }) {
   return (
     <span
-      className="rounded-full border px-2.5 py-1 text-[0.68rem]"
+      className="ops-chip shrink-0"
       style={{
         borderColor: themePalette.borderSubtle,
-        background: themePalette.surfacePanel,
+        background: "rgba(255,255,255,0.03)",
         color: themePalette.textMuted
       }}
     >
