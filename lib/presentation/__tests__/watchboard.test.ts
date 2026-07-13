@@ -25,9 +25,9 @@ describe("watchboard presentation", () => {
         freshnessLabel: "1日前取得",
         confidenceLabel: "高信頼",
         whyNow: "国家的重要度が高く、日本向けの監視優先度が高い。",
-        strategicQuestion: "日本のどのライフラインが、エネルギー・物流・食料ルートの変化に晒されるか？",
+        strategicQuestion: "燃料・電力の国内数字は、家計と産業のどこに着地するか？",
         sourceProofLabel: "根拠: METI / MAFF / JMA / Trade Statistics",
-        safetyLabel: "公開情報のみ / 遅延・bounded overlay"
+        safetyLabel: "公式統計が主 / 海上ルートは文脈補助 / 非リアルタイム監視"
       })
     );
     expect(briefing?.proofSourceLabels).toEqual(["METI", "MAFF", "JMA", "Trade Statistics"]);

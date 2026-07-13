@@ -36,14 +36,14 @@ describe("operations url state", () => {
     ).toEqual({
       mapMode: "point",
       selectedId: null,
-      themeId: "energy"
+      themeId: "rice"
     });
   });
 
   test("serializes only non-default state", () => {
     expect(
       serializeOperationsUrlState({
-        themeId: "energy",
+        themeId: "rice",
         mapMode: "point",
         selectedId: null
       })
@@ -51,10 +51,11 @@ describe("operations url state", () => {
 
     expect(
       serializeOperationsUrlState({
-        themeId: "rice",
+        themeId: "energy",
         mapMode: "cluster",
-        selectedId: "observation:rice-price-signal-2026"
+        selectedId: "flow:saudi-oil-japan"
       })
-    ).toBe("theme=rice&mode=cluster&selected=observation%3Arice-price-signal-2026");
+    ).toBe("theme=energy&mode=cluster&selected=flow%3Asaudi-oil-japan");
   });
 });
+

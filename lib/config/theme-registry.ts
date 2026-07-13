@@ -1,6 +1,10 @@
 import { THEME_IDS, type ThemeId } from "../../types/semantic";
 
-export const DEFAULT_THEME_ID: ThemeId = THEME_IDS[0];
+/** Public e-Stat spine default: rice (official domestic numbers), not energy route theater. */
+export const DEFAULT_THEME_ID: ThemeId = "rice";
+
+/** Themes to emphasize on the public MVP rail / lead selection. */
+export const PUBLIC_SPINE_THEME_IDS: ThemeId[] = ["rice", "energy", "logistics"];
 
 export interface ThemeDefinition {
   accent: string;
@@ -14,10 +18,10 @@ export interface ThemeDefinition {
 export const THEME_REGISTRY: Record<ThemeId, ThemeDefinition> = {
   energy: {
     accent: "#ff9f2f",
-    headline: "原油・LNG・海上輸送路の揺れは、日本のどこに着地するのか。",
+    headline: "燃料・電力の公式数字は、日本の暮らしと産業のどこに着地するのか。",
     label: "エネルギー",
-    question: "原油・LNG・海上輸送路の揺れは、日本のどこに着地するのか。",
-    sublabel: "原油 / LNG / 海上ルート",
+    question: "燃料・電力の国内数字は、家計と産業のどこに着地するのか。",
+    sublabel: "国内着地 / 公式統計 / 依存文脈",
     title: "エネルギー"
   },
   logistics: {
@@ -54,10 +58,10 @@ export const THEME_REGISTRY: Record<ThemeId, ThemeDefinition> = {
   },
   rice: {
     accent: "#d9b45b",
-    headline: "価格、備蓄、水、政策シグナルは、食卓にどうつながるのか。",
+    headline: "公式の収穫量と価格シグナルは、食卓と産地のどこに効くのか。",
     label: "コメ",
-    question: "コメ価格と備蓄の揺れは、日本の暮らしにどう跳ね返るのか。",
-    sublabel: "価格 / 備蓄 / 政策",
+    question: "公式統計の収穫量・価格は、日本のどの産地と家計に効いているのか。",
+    sublabel: "収穫量 / 価格 / 公式統計",
     title: "コメ"
   },
   water: {

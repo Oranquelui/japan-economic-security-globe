@@ -32,10 +32,10 @@ export function WatchboardBriefing({ briefing, themePalette, variant = "floating
       <div className={pane ? "border-b px-3 py-2.5" : "border-b px-5 py-4"} style={{ borderColor: themePalette.borderSubtle }}>
         <div className="flex items-center justify-between gap-3">
           <div className="ops-label" style={{ color: themePalette.textMuted }}>
-            JAPAN WATCHBOARD
+            日本レジリエンス
           </div>
           <div className="ops-label" style={{ color: themePalette.textMuted }}>
-            Source proof
+            公式出典
           </div>
         </div>
         <h2
@@ -52,7 +52,7 @@ export function WatchboardBriefing({ briefing, themePalette, variant = "floating
       <div className={pane ? "grid gap-2.5 p-3" : "grid gap-4 p-5"}>
         <div>
           <div className="ops-label" style={{ color: themePalette.textMuted }}>
-            Now watching
+            最新の調査値
           </div>
           <div className={pane ? "mt-2 flex flex-wrap items-center gap-1.5" : "mt-3 flex flex-wrap items-center gap-2"}>
             <BriefingChip accent themePalette={themePalette}>

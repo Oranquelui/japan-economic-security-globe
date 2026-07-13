@@ -90,7 +90,10 @@ export function AppShell({
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(true);
   const [isCompareOpen, setCompareOpen] = useState(false);
-  const [isEvidenceOpen, setEvidenceOpen] = useState(Boolean(resolvedInitialState.selectedId));
+  // Open evidence only when the URL explicitly pins a selection — not for homepage auto-lead.
+  const [isEvidenceOpen, setEvidenceOpen] = useState(
+    Boolean(hasExplicitUrlState && resolvedInitialState.selectedId)
+  );
   const [, startTransition] = useTransition();
   const initialSerializedRef = useRef(serializeOperationsUrlState(resolvedInitialState));
   const view = getThemeView(graph, themeId);

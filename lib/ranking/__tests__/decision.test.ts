@@ -126,8 +126,8 @@ describe("ranking presentation helpers", () => {
     });
 
     expect(buildHomepageLeadSelection(graph, loadSeedRankingSignals(), decision)).toEqual({
-      selectedId: "flow:saudi-oil-japan",
-      themeId: "energy"
+      selectedId: "observation:rice-price-signal-2026",
+      themeId: "rice"
     });
   });
 

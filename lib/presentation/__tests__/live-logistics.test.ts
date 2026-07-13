@@ -201,7 +201,8 @@ describe("live logistics view", () => {
 
     expect(logisticsView?.mapVessels).toEqual([]);
     expect(logisticsView?.mapRoutes.map((route) => route.id)).toContain("live-logistics:container-asia-yokohama");
-    expect(energyView?.mapVessels.map((vessel) => vessel.selectionId)).toContain("live-logistics:tanker-qatar-tokyo-bay");
+    // Energy public surface no longer hosts AIS tanker theater (e-Stat spine non-goal).
+    expect(energyView).toBeNull();
   });
 
   test("returns no surface for themes with no live logistics feed", () => {

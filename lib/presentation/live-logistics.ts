@@ -50,6 +50,12 @@ export function buildLiveLogisticsView(
   events: LiveLogisticsEvent[] = [],
   now = new Date()
 ): LiveLogisticsViewModel | null {
+  // Public e-Stat spine: energy surface must not open as AIS tanker theater.
+  // Maritime demo remains available only as logistics supporting context (and map context layers elsewhere).
+  if (themeId === "energy") {
+    return null;
+  }
+
   const items = events
     .filter((event) => event.themeIds.includes(themeId))
     .map((event) => toViewItem(event, now))

@@ -31,7 +31,7 @@ export function OperationsSignalTable({
   themePalette
 }: OperationsSignalTableProps) {
   const isLogistics = themeId === "logistics";
-  const title = isLogistics ? "国内物流インパクト" : "日本向け依存シグナル";
+  const title = isLogistics ? "国内物流インパクト" : "公式シグナル比較";
   const eyebrow = isLogistics ? "Impact Matrix" : "比較表";
 
   if (collapsible && collapsed) {
