@@ -23,60 +23,64 @@ export type StatusPalette = {
 
 export type SemanticTone = "accent" | "high" | "watch" | "normal" | "monitoring" | "selected" | "neutral";
 
+/**
+ * Night Atlas base: deep operations-room chrome so the Japan map and
+ * theme accents read as the hero, not a muddy gray dual-mode shell.
+ */
 const BASE_THEME: Omit<ThemePalette, "accent" | "accentSoft" | "accentText"> = {
-  surfaceCanvas: "#c8d2d6",
-  surfacePanel: "rgba(39, 47, 53, 0.9)",
-  surfacePanelElevated: "rgba(52, 63, 70, 0.84)",
-  borderSubtle: "rgba(107, 120, 128, 0.38)",
-  borderStrong: "rgba(129, 145, 153, 0.54)",
-  textPrimary: "#f5f7fa",
-  textMuted: "#c4ccd5"
+  surfaceCanvas: "#0a121c",
+  surfacePanel: "rgba(10, 16, 26, 0.92)",
+  surfacePanelElevated: "rgba(18, 28, 42, 0.94)",
+  borderSubtle: "rgba(148, 176, 204, 0.14)",
+  borderStrong: "rgba(176, 206, 232, 0.28)",
+  textPrimary: "#eef4fb",
+  textMuted: "#93a4b8"
 };
 
 const THEME_PALETTES: Record<ThemeId, Pick<ThemePalette, "accent" | "accentSoft" | "accentText">> = {
   energy: {
-    accent: "#b67a45",
-    accentSoft: "rgba(182, 122, 69, 0.12)",
-    accentText: "#f0d7bf"
+    accent: "#e0a060",
+    accentSoft: "rgba(224, 160, 96, 0.16)",
+    accentText: "#f6dfc4"
   },
   logistics: {
-    accent: "#42a6bd",
-    accentSoft: "rgba(66, 166, 189, 0.14)",
-    accentText: "#d5f1f6"
+    accent: "#4ec4d9",
+    accentSoft: "rgba(78, 196, 217, 0.16)",
+    accentText: "#d4f5fb"
   },
   "regional-security": {
-    accent: "#b35f55",
-    accentSoft: "rgba(179, 95, 85, 0.14)",
-    accentText: "#f2d0ca"
+    accent: "#e07a6e",
+    accentSoft: "rgba(224, 122, 110, 0.16)",
+    accentText: "#f8d8d3"
   },
   defense: {
-    accent: "#8b6773",
-    accentSoft: "rgba(139, 103, 115, 0.12)",
-    accentText: "#eed9df"
+    accent: "#c48a9a",
+    accentSoft: "rgba(196, 138, 154, 0.15)",
+    accentText: "#f3dde4"
   },
   semiconductors: {
-    accent: "#5aae9d",
-    accentSoft: "rgba(90, 174, 157, 0.12)",
-    accentText: "#d9f4ee"
+    accent: "#4fd0b8",
+    accentSoft: "rgba(79, 208, 184, 0.15)",
+    accentText: "#d8f8f0"
   },
   rice: {
-    accent: "#a88a56",
-    accentSoft: "rgba(168, 138, 86, 0.12)",
-    accentText: "#efe0bc"
+    accent: "#d4b06a",
+    accentSoft: "rgba(212, 176, 106, 0.15)",
+    accentText: "#f4e6c4"
   },
   water: {
-    accent: "#5a9fc2",
-    accentSoft: "rgba(90, 159, 194, 0.12)",
-    accentText: "#d2ebf8"
+    accent: "#5fb4de",
+    accentSoft: "rgba(95, 180, 222, 0.15)",
+    accentText: "#d7eefb"
   }
 };
 
 const STATUS_PALETTE: StatusPalette = {
-  high: "#df6d65",
-  watch: "#d7a24c",
-  normal: "#79a878",
-  monitoring: "#4b9fc5",
-  selected: "#f0c95a"
+  high: "#f07167",
+  watch: "#e0b14a",
+  normal: "#6fbf7a",
+  monitoring: "#4eb3d8",
+  selected: "#f2c96a"
 };
 
 export function getThemePalette(themeId: ThemeId): ThemePalette {

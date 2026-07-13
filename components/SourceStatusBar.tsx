@@ -16,22 +16,28 @@ export function SourceStatusBar({ summary, themePalette, variant = "default" }: 
     <section
       role="status"
       aria-label="出典状態"
-      className="overflow-x-auto border-b px-4 py-2"
+      className="overflow-x-auto border-b px-5 py-1.5"
       style={{
         borderColor: themePalette.borderSubtle,
-        background: themePalette.surfacePanel
+        background: "rgba(6, 10, 16, 0.78)"
       }}
     >
-      <div className="flex min-h-8 flex-nowrap items-center gap-2 whitespace-nowrap text-[0.72rem]">
-        <div className="mr-1 flex shrink-0 items-center gap-2 font-mono text-[0.58rem] uppercase tracking-[0.24em]" style={{ color: themePalette.textMuted }}>
+      <div className="flex min-h-7 flex-nowrap items-center gap-1.5 whitespace-nowrap text-[0.7rem]">
+        <div
+          className="mr-1.5 flex shrink-0 items-center gap-2 font-mono text-[0.54rem] uppercase tracking-[0.22em]"
+          style={{ color: themePalette.textMuted }}
+        >
           <span
-            className="h-2 w-2 rounded-full"
-            style={{ background: getToneColor(summary.overallTone, themePalette) }}
+            className="h-1.5 w-1.5 rounded-full"
+            style={{
+              background: getToneColor(summary.overallTone, themePalette),
+              boxShadow: `0 0 10px ${getToneColor(summary.overallTone, themePalette)}`
+            }}
             aria-hidden="true"
           />
           出典状態
         </div>
-        <StatusChip borderColor={themePalette.accent} textColor={themePalette.textPrimary}>
+        <StatusChip borderColor={`${themePalette.accent}55`} textColor={themePalette.accentText} background={themePalette.accentSoft}>
           公式 {summary.officialSources}/{summary.totalSources}
         </StatusChip>
         {publicHistory ? (
@@ -65,21 +71,23 @@ export function SourceStatusBar({ summary, themePalette, variant = "default" }: 
 }
 
 function StatusChip({
+  background,
   borderColor,
   children,
   textColor
 }: {
+  background?: string;
   borderColor: string;
   children: ReactNode;
   textColor: string;
 }) {
   return (
     <span
-      className="shrink-0 rounded-full border px-2.5 py-1"
+      className="ops-chip shrink-0"
       style={{
         borderColor,
         color: textColor,
-        background: "rgba(24, 28, 33, 0.68)"
+        background: background ?? "rgba(255, 255, 255, 0.03)"
       }}
     >
       {children}

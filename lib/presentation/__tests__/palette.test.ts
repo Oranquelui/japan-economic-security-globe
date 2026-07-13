@@ -13,15 +13,15 @@ describe("presentation palettes", () => {
     expect(status.high).not.toBe(status.normal);
   });
 
-  test("provides a subdued map canvas with readable panel surfaces", () => {
+  test("provides a night-atlas map canvas with readable panel surfaces", () => {
     const energy = getThemePalette("energy");
     const logistics = getThemePalette("logistics");
     const status = getStatusPalette();
 
-    expect(energy.surfaceCanvas).toBe("#c8d2d6");
-    expect(logistics.accent).toBe("#42a6bd");
-    expect(status.selected).toBe("#f0c95a");
-    expect(energy.surfacePanel).toContain("0.9");
-    expect(energy.textPrimary).toBe("#f5f7fa");
+    expect(energy.surfaceCanvas).toBe("#0a121c");
+    expect(logistics.accent).toBe("#4ec4d9");
+    expect(status.selected).toBe("#f2c96a");
+    expect(energy.surfacePanel).toContain("0.92");
+    expect(energy.textPrimary).toBe("#eef4fb");
   });
 });

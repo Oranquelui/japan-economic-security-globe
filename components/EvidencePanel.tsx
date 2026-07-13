@@ -98,18 +98,19 @@ export function EvidencePanel({
     <aside
       data-testid="evidence-panel"
       data-collapsed="no"
-      className="h-full overflow-y-auto border-l p-4 backdrop-blur-xl"
+      className="h-full overflow-y-auto border-l p-4 backdrop-blur-2xl"
       style={{
         borderColor: themePalette.borderSubtle,
-        background: themePalette.surfacePanel
+        background: `linear-gradient(180deg, ${themePalette.surfacePanelElevated} 0%, ${themePalette.surfacePanel} 100%)`,
+        boxShadow: "inset 1px 0 0 rgba(255,255,255,0.03)"
       }}
     >
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.36em]" style={{ color: themePalette.textMuted }}>
+          <p className="ops-label" style={{ color: themePalette.textMuted }}>
             根拠
           </p>
-          <h2 className="mt-2 text-xl font-semibold text-white">{localizeAnyLabel(detail.id, detail.label)}</h2>
+          <h2 className="ops-title mt-2 text-xl text-white">{localizeAnyLabel(detail.id, detail.label)}</h2>
           <p className="mt-1 text-[0.72rem]" style={{ color: themePalette.textMuted }}>
             {themeTitle}
           </p>

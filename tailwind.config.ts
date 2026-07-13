@@ -20,7 +20,8 @@ const config: Config = {
         mono: ["var(--font-mono)", "monospace"]
       },
       boxShadow: {
-        glow: "0 0 50px rgba(255, 159, 47, 0.24)"
+        glow: "0 0 50px rgba(78, 196, 217, 0.22)",
+        panel: "0 18px 48px rgba(0, 0, 0, 0.38)"
       }
     }
   },

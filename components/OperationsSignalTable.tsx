@@ -37,25 +37,25 @@ export function OperationsSignalTable({
   if (collapsible && collapsed) {
     return (
       <section
-        className="mx-auto max-w-md rounded-2xl border shadow-2xl shadow-black/35"
+        className="mx-auto max-w-md rounded-[14px] border shadow-2xl shadow-black/35 backdrop-blur-xl"
         style={{
           borderColor: themePalette.borderSubtle,
-          background: themePalette.surfacePanel
+          background: "rgba(8, 12, 20, 0.9)"
         }}
       >
-        <div className="flex items-center justify-between gap-4 px-4 py-3">
+        <div className="flex items-center justify-between gap-4 px-4 py-2.5">
           <div>
-            <p className="font-mono text-[0.62rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
+            <p className="ops-label" style={{ color: themePalette.textMuted }}>
               {eyebrow}
             </p>
-            <div className="mt-1 text-sm font-semibold text-white">{title} {rows.length}件</div>
+            <div className="mt-0.5 text-[0.84rem] font-semibold text-white">{title} {rows.length}件</div>
           </div>
           <button
             type="button"
             onClick={onToggleCollapsed}
-            className="rounded-lg border px-3 py-2 text-xs transition"
+            className="rounded-[10px] border px-3 py-1.5 text-xs transition"
             style={{
-              borderColor: themePalette.accent,
+              borderColor: `${themePalette.accent}99`,
               background: themePalette.accentSoft,
               color: themePalette.textPrimary
             }}
@@ -69,48 +69,48 @@ export function OperationsSignalTable({
 
   return (
     <section
-      className="flex h-full flex-col overflow-hidden border-t"
+      className="flex h-full flex-col overflow-hidden border-t backdrop-blur-xl"
       style={{
         borderColor: themePalette.borderSubtle,
-        background: themePalette.surfacePanel
+        background: `linear-gradient(180deg, ${themePalette.surfacePanelElevated} 0%, ${themePalette.surfacePanel} 100%)`
       }}
     >
       <div
-        className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3"
+        className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2"
         style={{
           borderColor: themePalette.borderSubtle,
-          background: themePalette.surfacePanel
+          background: "rgba(8, 12, 20, 0.55)"
         }}
       >
         <div>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.32em]" style={{ color: themePalette.textMuted }}>
+          <p className="ops-label" style={{ color: themePalette.textMuted }}>
             {eyebrow}
           </p>
-          <h2 className="mt-1 text-base font-semibold text-white">{title}</h2>
+          <h2 className="ops-title mt-0.5 text-[0.95rem] text-white">{title}</h2>
         </div>
-        <div className="flex items-center gap-2 font-mono text-[0.68rem] uppercase tracking-[0.2em]" style={{ color: themePalette.textMuted }}>
+        <div className="flex items-center gap-1.5 font-mono text-[0.62rem] uppercase tracking-[0.16em]" style={{ color: themePalette.textMuted }}>
           <span
-            className="rounded border px-3 py-2"
+            className="ops-chip"
             style={{
               borderColor: themePalette.borderSubtle,
-              background: themePalette.surfacePanelElevated
+              background: "rgba(255,255,255,0.03)"
             }}
           >
             {rows.length} 件表示
           </span>
           {query ? (
             <span
-              className="rounded border px-3 py-2"
+              className="ops-chip"
               style={buildWidgetButtonStyle(statusPalette.monitoring)}
             >
               絞り込み中
             </span>
           ) : null}
           <span
-            className="rounded border px-3 py-2"
+            className="ops-chip"
             style={{
               borderColor: themePalette.borderSubtle,
-              background: themePalette.surfacePanelElevated
+              background: "rgba(255,255,255,0.03)"
             }}
           >
             出典あり
@@ -119,10 +119,10 @@ export function OperationsSignalTable({
             <button
               type="button"
               onClick={onToggleCollapsed}
-              className="rounded border px-3 py-2 text-[0.68rem] transition"
+              className="ops-chip transition"
               style={{
                 borderColor: themePalette.borderSubtle,
-                background: themePalette.surfacePanelElevated,
+                background: "rgba(255,255,255,0.03)",
                 color: themePalette.textMuted
               }}
             >
@@ -133,21 +133,21 @@ export function OperationsSignalTable({
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto">
-        <table className="min-w-full border-collapse text-left text-sm">
+        <table className="min-w-full border-collapse text-left text-[0.8rem]">
           <thead
-            className="sticky top-0 z-10 text-[0.62rem] uppercase tracking-[0.22em] backdrop-blur"
+            className="sticky top-0 z-10 text-[0.58rem] uppercase tracking-[0.18em] backdrop-blur"
             style={{
-              background: themePalette.surfacePanelElevated,
+              background: "rgba(10, 16, 26, 0.94)",
               color: themePalette.textMuted
             }}
           >
             <tr>
-              <th className="px-4 py-3 font-medium">優先</th>
-              <th className="px-4 py-3 font-medium">{isLogistics ? "影響種別" : "種別"}</th>
-              <th className="px-4 py-3 font-medium">{isLogistics ? "経済影響" : "シグナル"}</th>
-              <th className="px-4 py-3 font-medium">{isLogistics ? "地域/コリドー" : "対象"}</th>
-              <th className="px-4 py-3 font-medium">緊急度</th>
-              <th className="px-4 py-3 font-medium">状態</th>
+              <th className="px-3 py-2 font-medium">優先</th>
+              <th className="px-3 py-2 font-medium">{isLogistics ? "影響種別" : "種別"}</th>
+              <th className="px-3 py-2 font-medium">{isLogistics ? "経済影響" : "シグナル"}</th>
+              <th className="px-3 py-2 font-medium">{isLogistics ? "地域/コリドー" : "対象"}</th>
+              <th className="px-3 py-2 font-medium">緊急度</th>
+              <th className="px-3 py-2 font-medium">状態</th>
               <th className="px-4 py-3 font-medium">信頼</th>
               <th className="px-4 py-3 font-medium">理由</th>
               <th className="px-4 py-3 font-medium">必要アクション</th>

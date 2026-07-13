@@ -4,7 +4,7 @@ import { getThemePalette } from "../palette";
 import { buildOperationsBasemapStyle } from "../basemap-style";
 
 describe("operations basemap style", () => {
-  test("uses a terrain-aware gray canvas basemap with local geography fallback", () => {
+  test("uses a night-atlas terrain basemap with local geography fallback", () => {
     const style = buildOperationsBasemapStyle(getThemePalette("energy"));
     expect(style.sources).toHaveProperty("world-land");
     expect(style.sources).toHaveProperty("terrain-shaded-relief");
@@ -24,18 +24,21 @@ describe("operations basemap style", () => {
     expect(style.layers.map((layer) => layer.id).indexOf("terrain-shaded-relief")).toBeLessThan(
       style.layers.map((layer) => layer.id).indexOf("gray-canvas-base")
     );
+    expect(style.layers.find((layer) => layer.id === "ops-background")).toMatchObject({
+      paint: { "background-color": "#0a121c" }
+    });
     expect(style.layers.find((layer) => layer.id === "terrain-shaded-relief")).toMatchObject({
-      paint: { "raster-opacity": 0.46 }
+      paint: { "raster-opacity": 0.34 }
     });
     expect(style.layers.find((layer) => layer.id === "terrain-contours")).toMatchObject({
       minzoom: 2.4,
-      paint: { "raster-opacity": 0.34 }
+      paint: { "raster-opacity": 0.22 }
     });
     expect(style.layers.find((layer) => layer.id === "gray-canvas-base")).toMatchObject({
-      paint: { "raster-opacity": 0.58 }
+      paint: { "raster-opacity": 0.28 }
     });
     expect(style.layers.find((layer) => layer.id === "world-land-fill")).toMatchObject({
-      paint: { "fill-color": "rgba(218,229,224,0.16)" }
+      paint: { "fill-color": "rgba(92, 128, 148, 0.12)" }
     });
   });
 });
