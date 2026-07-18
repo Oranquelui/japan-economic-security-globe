@@ -37,6 +37,14 @@ export function MapLegend({
             {legend.unit ? <span>{legend.unit}</span> : null}
             <span>{legend.maxLabel ?? "高"}</span>
           </div>
+          <div className="mt-2 flex items-center gap-2 text-[0.64rem]" style={{ color: themePalette.textMuted }}>
+            <span
+              aria-hidden="true"
+              className="h-3 w-3 rounded-sm border"
+              style={{ borderColor: themePalette.borderStrong, background: themePalette.surfacePanel }}
+            />
+            <span>{legend.missingLabel}</span>
+          </div>
         </div>
       ) : (
         <ul role="list" aria-label={legend.title} className="mt-2 space-y-1.5">
@@ -52,15 +60,6 @@ export function MapLegend({
           ))}
         </ul>
       )}
-
-      <div className="mt-2 flex items-center gap-2 text-[0.64rem]" style={{ color: themePalette.textMuted }}>
-        <span
-          aria-hidden="true"
-          className="h-3 w-3 rounded-sm border"
-          style={{ borderColor: themePalette.borderStrong, background: themePalette.surfacePanel }}
-        />
-        <span>{legend.missingLabel}</span>
-      </div>
 
       <div className="mt-3">
         <div className="text-[0.6rem] font-semibold" style={{ color: themePalette.textMuted }}>

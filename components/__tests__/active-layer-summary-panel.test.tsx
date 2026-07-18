@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { loadSeedGraph } from "../../lib/data/seed-loader";
@@ -134,7 +134,10 @@ describe("ActiveLayerSummaryPanel", () => {
   test("renders fixed demo data without an official badge or source link", () => {
     renderPanel(loadSeedGraph(), "logistics", "logistics-domestic");
 
-    expect(screen.getAllByText("固定デモデータ").length).toBeGreaterThan(0);
+    const sourceSection = screen.getByRole("heading", { name: "出典" }).parentElement;
+
+    expect(sourceSection).not.toBeNull();
+    expect(within(sourceSection!).getByText("固定デモデータ")).toBeTruthy();
     expect(screen.queryByText("公式")).toBeNull();
     expect(screen.queryByRole("link")).toBeNull();
   });

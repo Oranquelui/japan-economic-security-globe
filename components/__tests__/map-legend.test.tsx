@@ -62,6 +62,7 @@ describe("MapLegend", () => {
       "要監視",
       "通常"
     ]);
+    expect(screen.queryByText("データなし")).toBeNull();
     expect(screen.getByText("地図の読み方")).toBeTruthy();
     expect(screen.getByText("供給状態を分類別のマーカーで表します。")).toBeTruthy();
   });
