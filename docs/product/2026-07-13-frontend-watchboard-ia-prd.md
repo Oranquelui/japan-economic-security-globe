@@ -388,4 +388,4 @@ The checked no-live-overclaim criterion means the delivered UI does not present 
 
 Fresh remediation verification passed `npm test` (72 files / 331 tests), `npm run typecheck`, `npm run build`, and `git diff --check`.
 
-There are no known desktop acceptance blockers after that truth-labeling remediation. Remaining delivery work is final independent re-review and, only after explicit authorization, push/PR publication. Broader external-data coverage and provenance expansion remain separate data work, not a blocker for this UI delivery. Mobile redesign remains explicitly deferred and is not complete; only the existing stacked-tree smoke boundary passed.
+Independent re-review approved remediation head `e731ff7` with no blocking findings. The only remaining delivery step is push/PR publication after explicit authorization. Broader external-data coverage and provenance expansion remain separate data work, not a blocker for this UI delivery. Mobile redesign remains explicitly deferred and is not complete; only the existing stacked-tree smoke boundary passed.

@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 16, React 19, TypeScript 5.8, Tailwind CSS, MapLibre GL 5, Vitest 3, Testing Library.
 
-**Delivery status (2026-07-18):** Tasks 1–8 and P0–P3 are implemented and verified on `codex/power-atlas-desktop-reframe`. Product-doc base: `9e32d82`. Pre-documentation delivery head: `c6a06cf487a8e0a26acbce114c920f58f9d15979`. PR: **not opened / awaiting explicit authorization**. Mobile redesign remains deferred and is not complete.
+**Delivery status (2026-07-18):** Tasks 1–9 and P0–P3 are implemented, verified, and independently approved on `codex/power-atlas-desktop-reframe`. Product-doc base: `9e32d82`. Pre-documentation delivery head: `c6a06cf487a8e0a26acbce114c920f58f9d15979`. Final remediation head: `e731ff7`. PR: **not opened / awaiting explicit authorization**. Mobile redesign remains deferred and is not complete.
 
 ---
 
@@ -471,7 +471,7 @@ Final-review remediation note: the bundled logistics route input is a fixed demo
 
 Fallback-source verification times follow the same truth boundary: relative fixture labels such as `22分前` are presentation context, not retrieval dates. When no valid `YYYY-MM-DD` verification date exists, freshness is `unknown` and the UI renders `確認時点不明` / `確認日不明`; it must never render `NaN日前確認` or imply a calendar date.
 
-Remediation verification: `npm test` passed 72 files / 331 tests; `npm run typecheck`, `npm run build`, and `git diff --check` also passed. Final independent re-review is still required before Task 9 Step 3 is checked.
+Remediation verification: `npm test` passed 72 files / 331 tests; `npm run typecheck`, `npm run build`, and `git diff --check` also passed. Final independent re-review approved `e731ff7` with no blocking findings.
 
 buildSelectionInspector must use the already-resolved DetailViewModel supplied by AppShell; it must not call getDetailView internally. This preserves live-logistics:* selections, whose detail comes from buildLiveLogisticsDetail and is not stored in SemanticGraph. Selection metric rules:
 
@@ -1381,9 +1381,9 @@ Update the e-Stat handoff with the implementation branch and truthful PR status.
 
 Check only completed/verified tasks. Never claim mobile complete.
 
-- [ ] **Step 3: Request final code review**
+- [x] **Step 3: Request final code review**
 
-Status: awaiting independent parent review; do not mark complete from the documentation implementer's own pass.
+Status: independently re-reviewed after remediation at `e731ff7`; verdict **APPROVED**, with no blocking findings. Fresh parent verification passed 72 files / 331 tests, typecheck, production build, and full-base diff check.
 
 Use superpowers:requesting-code-review, then run:
 
