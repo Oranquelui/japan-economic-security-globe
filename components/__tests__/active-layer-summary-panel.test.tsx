@@ -12,7 +12,7 @@ import {
 } from "../../lib/presentation/workspace";
 import { getThemeView } from "../../lib/semantic/selectors";
 import type { LayerDefinition, ThemeView } from "../../types/presentation";
-import type { SemanticGraph, ThemeId } from "../../types/semantic";
+import type { SemanticGraph, SourceDocument, ThemeId } from "../../types/semantic";
 import { ActiveLayerSummaryPanel } from "../ActiveLayerSummaryPanel";
 
 afterEach(() => {
@@ -117,6 +117,52 @@ describe("ActiveLayerSummaryPanel", () => {
     const sourceItem = screen.getByTestId("active-layer-source");
     expect(within(sourceItem).getByRole("link", { name: naturalEarth.label })).toBeTruthy();
     expect(within(sourceItem).queryByText("公式")).toBeNull();
+  });
+
+  test.each([
+    { name: "legacy source without authority fields", authority: {}, expectedOfficial: true },
+    { name: "legacy official false", authority: { official: false }, expectedOfficial: false },
+    {
+      name: "explicit open-data category with official true",
+      authority: { official: true, sourceCategory: "open-data" as const },
+      expectedOfficial: false
+    },
+    {
+      name: "explicit private category with official true",
+      authority: { official: true, sourceCategory: "private" as const },
+      expectedOfficial: false
+    },
+    {
+      name: "explicit official category with official false",
+      authority: { official: false, sourceCategory: "official" as const },
+      expectedOfficial: true
+    }
+  ])("resolves the official badge for $name", ({ authority, expectedOfficial }) => {
+    const graph = loadSeedGraph();
+    const { layer, summary } = buildPanelInput(graph, "rice", "rice-harvest");
+    const source: SourceDocument = {
+      id: "source:badge-authority",
+      label: "Badge authority source",
+      url: "https://example.com/badge-authority",
+      publisher: "Test publisher",
+      accessed: "2026-07-18",
+      ...authority
+    };
+
+    render(
+      <ActiveLayerSummaryPanel
+        legend={layer.legend}
+        summary={{ ...summary, sources: [source] }}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    const sourceItem = screen.getByTestId("active-layer-source");
+    if (expectedOfficial) {
+      expect(within(sourceItem).getByText("公式")).toBeTruthy();
+    } else {
+      expect(within(sourceItem).queryByText("公式")).toBeNull();
+    }
   });
 
   test("renders an official source without a URL as text and never invents a link", () => {

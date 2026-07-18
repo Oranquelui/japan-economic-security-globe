@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { EvidencePanel } from "../EvidencePanel";
@@ -9,6 +9,7 @@ import { buildLiveLogisticsDetail } from "../../lib/presentation/live-logistics-
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
 import type { DetailViewModel, EvidenceGraphViewModel } from "../../types/presentation";
 import type { RankingExplanationViewModel } from "../../lib/ranking/explain";
+import type { SourceDocument } from "../../types/semantic";
 
 afterEach(() => {
   cleanup();
@@ -206,6 +207,61 @@ describe("evidence panel structure", () => {
 
     expect(screen.getByText("7日前確認")).toBeTruthy();
     expect(screen.getByText("確認日 2026-04-11")).toBeTruthy();
+  });
+
+  test.each([
+    { name: "legacy source without authority fields", authority: {}, expectedOfficial: true },
+    { name: "legacy official false", authority: { official: false }, expectedOfficial: false },
+    {
+      name: "explicit open-data category with official true",
+      authority: { official: true, sourceCategory: "open-data" as const },
+      expectedOfficial: false
+    },
+    {
+      name: "explicit private category with official true",
+      authority: { official: true, sourceCategory: "private" as const },
+      expectedOfficial: false
+    },
+    {
+      name: "explicit official category with official false",
+      authority: { official: false, sourceCategory: "official" as const },
+      expectedOfficial: true
+    }
+  ])("resolves the official source chip for $name", ({ authority, expectedOfficial }) => {
+    const source: SourceDocument = {
+      id: "source:badge-authority",
+      label: "Badge authority source",
+      url: "https://example.com/badge-authority",
+      publisher: "Test publisher",
+      accessed: "2026-07-18",
+      ...authority
+    };
+
+    render(
+      <EvidencePanel
+        collapsed={false}
+        detail={{ ...detail, sources: [source], sourceHighlights: [] }}
+        evidenceGraph={evidenceGraph}
+        onSelect={vi.fn()}
+        onToggleCollapsed={vi.fn()}
+        selectedId="flow:saudi-oil-japan"
+        statusPalette={statusPalette}
+        themePalette={themePalette}
+        themeTitle="エネルギー"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "出典" }));
+    const sourceHeader = screen.getByText(source.label).parentElement;
+
+    expect(sourceHeader).not.toBeNull();
+    if (expectedOfficial) {
+      expect(within(sourceHeader!).getByText("公式")).toBeTruthy();
+      expect(within(sourceHeader!).queryByText("補助")).toBeNull();
+    } else {
+      expect(within(sourceHeader!).queryByText("公式")).toBeNull();
+      expect(within(sourceHeader!).getByText("補助")).toBeTruthy();
+    }
   });
 
   test("renders an actual demo fallback source without a false freshness date", () => {

@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
+import { resolveSourceCategory } from "../lib/legal/source-catalog";
 import { getSourceFreshness, type SourceFreshnessTone } from "../lib/official/source-freshness";
 import type { RankingExplanationViewModel } from "../lib/ranking/explain";
 import type { DetailViewModel, EvidenceGraphViewModel, SelectionInspectorViewModel } from "../types/presentation";
@@ -515,7 +516,7 @@ export function EvidenceSurface({
                     <>
                       <div className="flex flex-wrap items-center gap-2">
                         <div className="text-sm font-semibold text-white">{localizeSourceLabel(source.id, source.label)}</div>
-                        {source.official !== false ? (
+                        {resolveSourceCategory(source) === "official" ? (
                           <PanelChip borderColor={themePalette.accent} textColor={themePalette.textPrimary}>
                             公式
                           </PanelChip>

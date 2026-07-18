@@ -1,3 +1,4 @@
+import { resolveSourceCategory } from "../lib/legal/source-catalog";
 import { getSourceFreshness } from "../lib/official/source-freshness";
 import type { ThemePalette } from "../lib/presentation/palette";
 import type { ActiveLayerSummary, LayerLegend } from "../types/presentation";
@@ -141,7 +142,7 @@ function ActiveSource({
     <li data-testid="active-layer-source" className="text-[0.64rem] leading-4">
       <div className="flex items-start gap-1.5">
         <div className="min-w-0 flex-1">{sourceLabel}</div>
-        {source.official === true ? (
+        {resolveSourceCategory(source) === "official" ? (
           <span
             className="shrink-0 rounded-full border px-1.5 py-px text-[0.54rem] font-semibold"
             style={{
