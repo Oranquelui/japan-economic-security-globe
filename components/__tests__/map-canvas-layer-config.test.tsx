@@ -22,11 +22,16 @@ const registeredLayerHandlers: Array<{
   unsubscribe: ReturnType<typeof vi.fn>;
 }> = [];
 let lastMap: {
+  easeTo: ReturnType<typeof vi.fn>;
   fitBounds: ReturnType<typeof vi.fn>;
   getCanvas: ReturnType<typeof vi.fn>;
+  getZoom: ReturnType<typeof vi.fn>;
   off: ReturnType<typeof vi.fn>;
+  setLayoutProperty: ReturnType<typeof vi.fn>;
 } | null = null;
 let mapCanvasSize = { width: 1024, height: 720 };
+let mapZoom = 5.3;
+let zoomEndHandler: (() => void) | null = null;
 
 vi.mock("maplibre-gl", () => {
   class MockMap {
@@ -62,7 +67,7 @@ vi.mock("maplibre-gl", () => {
       getClusterExpansionZoom: vi.fn(async () => 6)
     }));
     isStyleLoaded = vi.fn(() => true);
-    getZoom = vi.fn(() => 5.3);
+    getZoom = vi.fn(() => mapZoom);
     off = vi.fn();
 
     constructor() {
@@ -72,6 +77,9 @@ vi.mock("maplibre-gl", () => {
     on = vi.fn((event: string, layerOrHandler: string | string[] | ((...args: unknown[]) => void), handler?: (...args: any[]) => void) => {
       if (event === "load" && typeof layerOrHandler === "function") {
         layerOrHandler();
+      }
+      if (event === "zoomend" && typeof layerOrHandler === "function") {
+        zoomEndHandler = layerOrHandler as () => void;
       }
 
       if ((typeof layerOrHandler === "string" || Array.isArray(layerOrHandler)) && handler) {
@@ -108,6 +116,8 @@ afterEach(() => {
   registeredLayerHandlers.length = 0;
   lastMap = null;
   mapCanvasSize = { width: 1024, height: 720 };
+  mapZoom = 5.3;
+  zoomEndHandler = null;
 });
 
 const model: JapanMapCanvasModel = {
@@ -283,6 +293,12 @@ describe("map canvas layer config", () => {
       expect(getLayerHandler("click", "jp-prefecture-fill")).toBeDefined();
     });
 
+    expect(lastMap?.getZoom()).toBe(5.3);
+    expect(zoomEndHandler).not.toBeNull();
+    mapZoom = 9.1;
+    zoomEndHandler!();
+    expect(lastMap?.getZoom()).toBe(9.1);
+
     rerender(
       <JapanOperationsMapCanvas
         activeId="prefecture:tokyo"
@@ -297,9 +313,26 @@ describe("map canvas layer config", () => {
 
     await waitFor(() => {
       const prefectures = addedSources.get("jp-prefectures") as {
-        features: Array<{ properties: { entityId: string; selected: boolean } }>;
+        features: Array<{
+          properties: {
+            entityId: string;
+            label: string;
+            periodLabel: string | null;
+            rawValue: number | null;
+            selected: boolean;
+            unit: string | null;
+          };
+        }>;
       };
-      expect(prefectures.features.find((feature) => feature.properties.entityId === "prefecture:tokyo")?.properties.selected).toBe(true);
+      expect(prefectures.features.find((feature) => feature.properties.entityId === "prefecture:tokyo")?.properties).toMatchObject({
+        entityId: "prefecture:tokyo",
+        label: "東京都",
+        periodLabel: "令和5年産",
+        rawValue: expect.any(Number),
+        selected: true,
+        unit: "トン"
+      });
+      expect(prefectures.features.find((feature) => feature.properties.entityId === "prefecture:hokkaido")?.properties.selected).toBe(false);
     });
 
     const prefectureLayerIds = addedLayers
@@ -311,10 +344,47 @@ describe("map canvas layer config", () => {
       "jp-prefecture-selected-outline"
     ]);
     expect(getAddedLayer("jp-prefecture-fill")).toMatchObject({ maxzoom: 9 });
+    expect(getAddedLayer("jp-prefecture-selected-outline")).toMatchObject({
+      maxzoom: 9,
+      filter: ["==", ["get", "selected"], true]
+    });
+    expect(JSON.stringify((getAddedLayer("jp-prefecture-fill") as any).paint)).toContain("selected");
     expect(groupedRegistrations("click")[0].layerIds).toContain("jp-prefecture-fill");
     expect(groupedRegistrations("click")[0].layerIds).not.toContain("jp-prefecture-outline");
     expect(groupedRegistrations("click")[0].layerIds).not.toContain("jp-prefecture-selected-outline");
+    expect(lastMap?.easeTo).not.toHaveBeenCalled();
     expect(lastMap?.fitBounds).not.toHaveBeenCalled();
+  });
+
+  test("applies region visibility consistently to prefecture boundaries and representative-radius layers", async () => {
+    const canvasForMode = (mapMode: "choropleth" | "static" | "point" | "route" | "cluster") => (
+      <JapanOperationsMapCanvas
+        activeId="prefecture:tokyo"
+        focusTargetId={null}
+        mapMode={mapMode}
+        model={{ ...model, regions: prefectureMetricRegions() }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+    const { rerender } = render(canvasForMode("choropleth"));
+
+    await waitFor(() => {
+      expectRegionLayerVisibility("visible");
+    });
+
+    for (const [mapMode, expectedVisibility] of [
+      ["point", "none"],
+      ["static", "visible"],
+      ["route", "none"],
+      ["cluster", "none"]
+    ] as const) {
+      rerender(canvasForMode(mapMode));
+      await waitFor(() => {
+        expectRegionLayerVisibility(expectedVisibility);
+      });
+    }
   });
 
   test("keeps representative-radius circles separate from joined prefecture boundaries", async () => {
@@ -1056,4 +1126,22 @@ function getAddedLayerCall(layerId: string) {
 
 function getAddedLayerCallIndex(layerId: string) {
   return addedLayerCalls.findIndex((call) => call.layer.id === layerId);
+}
+
+function expectRegionLayerVisibility(expectedVisibility: "visible" | "none") {
+  for (const layerId of [
+    "jp-prefecture-fill",
+    "jp-prefecture-outline",
+    "jp-prefecture-selected-outline",
+    "jp-region-fill",
+    "jp-region-outline"
+  ]) {
+    expect(getLastLayoutVisibility(layerId)).toBe(expectedVisibility);
+  }
+}
+
+function getLastLayoutVisibility(layerId: string) {
+  return [...(lastMap?.setLayoutProperty.mock.calls ?? [])]
+    .reverse()
+    .find(([candidateLayerId, property]) => candidateLayerId === layerId && property === "visibility")?.[2];
 }
