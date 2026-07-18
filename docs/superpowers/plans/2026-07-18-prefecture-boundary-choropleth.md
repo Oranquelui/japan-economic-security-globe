@@ -321,6 +321,7 @@ Require:
 - `jp-prefecture-fill` is interactive below zoom 9 and absent from rendered feature queries at zoom 9+ through `maxzoom`;
 - `jp-region-fill`/outline and `createCirclePolygon` remain for representative-radius regions only;
 - point, route, logistics, and cluster layer contracts remain unchanged;
+- palette, mode, or referentially new-but-value-equal model rerenders do not rebuild or call `setData` for the 47-feature prefecture source; metric/label/source metadata or `activeId` changes update it exactly once;
 - no second map, `精密表示`, minimap, lock, or automatic selection zoom is added.
 
 Run:
@@ -334,6 +335,8 @@ Expected: FAIL on missing source/layers/order/fade.
 ### Step 4.2: Split prefecture and representative-radius sources
 
 Create and update `jp-prefectures` independently from `jp-regions`. The prefecture source receives the joined boundary collection; `jp-regions` receives only non-prefecture radius features. Never silently fall back to circles when a prefecture geometry join fails.
+
+Keep paint/visibility updates independent from boundary data updates. Compare a deterministic lightweight signature of the boundary-region presentation fields plus `activeId` before building the full collection; do not stringify or clone the geometry merely to decide whether it changed. Cache the last applied signature so palette-only, mode-only, and value-equal model rerenders skip `jp-prefectures.setData`, while metric/label/source metadata and external selection changes still update it.
 
 ### Step 4.3: Insert layers around the raster reference overlay
 
