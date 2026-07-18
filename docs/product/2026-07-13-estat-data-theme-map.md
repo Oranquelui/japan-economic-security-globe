@@ -14,6 +14,7 @@ Define which official statistics should power each public theme under the **e-St
 2. **Context series** may be ministry PDFs, Trade Statistics, BOJ, AIS demo — always labeled.  
 3. Every spine series needs: unit, geography, cadence, theme hooks, attribution.  
 4. Prefer prefecture grain for map choropleth; national series for briefing trends.
+5. Prefecture-grain statistics use an attributable regional-boundary artifact with its authority and accuracy stated explicitly; representative-point radius polygons are not the final encoding for the rice prefecture harvest layer.
 
 ## Implementation priority
 
@@ -101,6 +102,18 @@ Define which official statistics should power each public theme under the **e-St
 3. Write snapshot under a deterministic cache key (optional Phase).  
 4. Ranking/briefing can lead with harvest stress or related price signal — still Japan impact first.
 
+**Approved desktop geometry:**
+
+- render the 47 prefectures with Natural Earth 5.1.1 Admin-1 generalized polygons joined by stable prefecture code or semantic entity ID;
+- encode harvest value with restrained choropleth fill and visible borders;
+- show full Japanese prefecture names on the national desktop view;
+- keep municipality, city, and road names as progressive zoom context;
+- use the primary map's existing zoom rather than adding a centered `精密表示` inset or second map state.
+- progressively fade the generalized prefecture fill and borders above zoom 6.5, making them visually absent by zoom 9 so street context does not imply boundary precision;
+- treat the shared-map boundary replacement as a correctness fix at every viewport while deferring Mobile layout and interaction redesign.
+
+Canonical interaction and data-boundary specification: `docs/superpowers/specs/2026-07-18-prefecture-boundary-choropleth-design.md`.
+
 ## Attribution (always)
 
 UI and exports must credit:
@@ -108,6 +121,14 @@ UI and exports must credit:
 > このサービスは、政府統計の総合窓口(e-Stat)のAPI機能を使用していますが、サービスの内容は国によって保証されたものではありません。
 
 (When e-Stat API is used; mirror official credit guidance.)
+
+For the processed prefecture geometry, show the separate geometry source, processing statement, and limitation:
+
+> Natural Earth 5.1.1 Admin-1 States, Provinces を日本の47都道府県に絞り、本サービスの全国表示向けに属性整理・簡略化して作成
+
+> Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。
+
+The geometry source must be reachable from the active-layer summary, MapLibre attribution, and `/sources-license`. Natural Earth vector data is public domain and permits modification and electronic redistribution without permission; credit remains included for source transparency. The source record is explicitly non-official, receives no `公式` badge, and is listed in a neutral `公開・オープンデータ` catalog group. Provenance pins the immutable 5.1.1 archive URL and SHA-256 `efc59726337323058f9446210adc96673179cd344e053666ee3d28cb58ba2b05`. National Land Numerical Information N03 is deferred until this project obtains the required GSI approval for the planned processing and public map use.
 
 ## Out of scope for spine
 
