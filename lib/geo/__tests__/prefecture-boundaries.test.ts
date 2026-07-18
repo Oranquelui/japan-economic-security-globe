@@ -7,11 +7,61 @@ import {
   prefectureBoundaryByEntityId,
   prefectureBoundaryCollection,
   prefectureBoundaryProvenance,
+  prefectureEntityIdByCode,
   type LinearRing,
   type Position
 } from "../prefecture-boundaries";
 
 const artifactPath = "data/geo/japan-prefectures-natural-earth-5.1.1.geojson";
+const expectedCodeEntityPairs = [
+  ["JP-01", "prefecture:hokkaido"],
+  ["JP-02", "prefecture:aomori"],
+  ["JP-03", "prefecture:iwate"],
+  ["JP-04", "prefecture:miyagi"],
+  ["JP-05", "prefecture:akita"],
+  ["JP-06", "prefecture:yamagata"],
+  ["JP-07", "prefecture:fukushima"],
+  ["JP-08", "prefecture:ibaraki"],
+  ["JP-09", "prefecture:tochigi"],
+  ["JP-10", "prefecture:gunma"],
+  ["JP-11", "prefecture:saitama"],
+  ["JP-12", "prefecture:chiba"],
+  ["JP-13", "prefecture:tokyo"],
+  ["JP-14", "prefecture:kanagawa"],
+  ["JP-15", "prefecture:niigata"],
+  ["JP-16", "prefecture:toyama"],
+  ["JP-17", "prefecture:ishikawa"],
+  ["JP-18", "prefecture:fukui"],
+  ["JP-19", "prefecture:yamanashi"],
+  ["JP-20", "prefecture:nagano"],
+  ["JP-21", "prefecture:gifu"],
+  ["JP-22", "prefecture:shizuoka"],
+  ["JP-23", "prefecture:aichi"],
+  ["JP-24", "prefecture:mie"],
+  ["JP-25", "prefecture:shiga"],
+  ["JP-26", "prefecture:kyoto"],
+  ["JP-27", "prefecture:osaka"],
+  ["JP-28", "prefecture:hyogo"],
+  ["JP-29", "prefecture:nara"],
+  ["JP-30", "prefecture:wakayama"],
+  ["JP-31", "prefecture:tottori"],
+  ["JP-32", "prefecture:shimane"],
+  ["JP-33", "prefecture:okayama"],
+  ["JP-34", "prefecture:hiroshima"],
+  ["JP-35", "prefecture:yamaguchi"],
+  ["JP-36", "prefecture:tokushima"],
+  ["JP-37", "prefecture:kagawa"],
+  ["JP-38", "prefecture:ehime"],
+  ["JP-39", "prefecture:kochi"],
+  ["JP-40", "prefecture:fukuoka"],
+  ["JP-41", "prefecture:saga"],
+  ["JP-42", "prefecture:nagasaki"],
+  ["JP-43", "prefecture:kumamoto"],
+  ["JP-44", "prefecture:oita"],
+  ["JP-45", "prefecture:miyazaki"],
+  ["JP-46", "prefecture:kagoshima"],
+  ["JP-47", "prefecture:okinawa"]
+] as const;
 
 function ringsForGeometry(
   geometry: (typeof prefectureBoundaryCollection.features)[number]["geometry"]
@@ -201,6 +251,10 @@ describe("verified prefecture boundary artifact", () => {
     expect([...prefectureBoundaryByEntityId.keys()].sort()).toEqual(seedPrefectureIds);
   });
 
+  test("exports every normalized prefecture code to repository entity ID pair", () => {
+    expect([...prefectureEntityIdByCode]).toEqual(expectedCodeEntityPairs);
+  });
+
   test("pins reproducible Natural Earth provenance and licensing context", () => {
     expect(prefectureBoundaryProvenance).toMatchObject({
       upstreamVersion: "5.1.1",
@@ -215,10 +269,13 @@ describe("verified prefecture boundary artifact", () => {
       processingDate: "2026-07-18",
       artifactVersion: "natural-earth-5.1.1-japan-prefectures-v1"
     });
-    expect(prefectureBoundaryProvenance.processing).toContain("mapshaper");
-    expect(prefectureBoundaryProvenance.processing).toContain("adm0_a3 == JPN");
+    expect(prefectureBoundaryProvenance.processing).toBe(
+      "Natural Earth 5.1.1 Admin-1 States, Provinces を日本の47都道府県に絞り、本サービスの全国表示向けに属性整理・簡略化して作成"
+    );
     expect(prefectureBoundaryProvenance.command).toContain("mapshaper");
-    expect(prefectureBoundaryProvenance.limitation.trim().length).toBeGreaterThan(0);
+    expect(prefectureBoundaryProvenance.limitation).toBe(
+      "Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。"
+    );
     expect(prefectureBoundaryProvenance.license).toBe("Public domain");
   });
 

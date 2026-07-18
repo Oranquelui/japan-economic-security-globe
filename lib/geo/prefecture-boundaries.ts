@@ -188,22 +188,35 @@ if (process.env.NODE_ENV !== "production") {
 
 const codeIndex = new Map<string, PrefectureBoundaryFeature>();
 const entityIndex = new Map<string, PrefectureBoundaryFeature>();
+const entityIdByCodeIndex = new Map<
+  PrefectureBoundaryFeature["properties"]["prefectureCode"],
+  PrefectureBoundaryFeature["properties"]["entityId"]
+>();
 for (const feature of prefectureBoundaryCollection.features) {
   const { prefectureCode, entityId } = feature.properties;
-  if (codeIndex.has(prefectureCode) || entityIndex.has(entityId)) {
+  if (
+    codeIndex.has(prefectureCode) ||
+    entityIndex.has(entityId) ||
+    entityIdByCodeIndex.has(prefectureCode)
+  ) {
     throw new Error(`Duplicate prefecture boundary mapping: ${prefectureCode} / ${entityId}`);
   }
   codeIndex.set(prefectureCode, feature);
   entityIndex.set(entityId, feature);
+  entityIdByCodeIndex.set(prefectureCode, entityId);
 }
 
-if (codeIndex.size !== 47 || entityIndex.size !== 47) {
+if (codeIndex.size !== 47 || entityIndex.size !== 47 || entityIdByCodeIndex.size !== 47) {
   throw new Error("Missing prefecture boundary mapping");
 }
 
 export const prefectureBoundaryByCode: ReadonlyMap<string, PrefectureBoundaryFeature> = codeIndex;
 export const prefectureBoundaryByEntityId: ReadonlyMap<string, PrefectureBoundaryFeature> =
   entityIndex;
+export const prefectureEntityIdByCode: ReadonlyMap<
+  PrefectureBoundaryFeature["properties"]["prefectureCode"],
+  PrefectureBoundaryFeature["properties"]["entityId"]
+> = entityIdByCodeIndex;
 
 const provenanceCandidate: unknown = immutableJsonClone(importedProvenance);
 assertProvenance(provenanceCandidate);

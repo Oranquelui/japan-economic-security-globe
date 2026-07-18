@@ -212,9 +212,9 @@ async function main() {
       command:
         "./node_modules/.bin/mapshaper <source.zip> -target ne_10m_admin_1_states_provinces -filter 'adm0_a3 == \"JPN\"' -filter-fields iso_3166_2,name_ja -clean -o format=geojson precision=0.00001 <processed.geojson>",
       processing:
-        "Used repository-local mapshaper to filter to adm0_a3 == JPN, retain ISO code and Japanese source name, clean polygon topology, and apply fixed five-decimal GeoJSON precision; then mapped repository entity IDs and full Japanese labels and sorted by prefectureCode. The source fit the transfer budget, so no simplification was applied.",
+        "Natural Earth 5.1.1 Admin-1 States, Provinces を日本の47都道府県に絞り、本サービスの全国表示向けに属性整理・簡略化して作成",
       limitation:
-        "Natural Earth admin-1 boundaries are generalized cartographic data and may not represent survey-grade coastlines, disputed claims, or every remote islet. Treat them as beta, de facto display geometry rather than a legal boundary authority."
+        "Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。"
     };
 
     const outputDirectory = path.join(repositoryRoot, "data/geo");
