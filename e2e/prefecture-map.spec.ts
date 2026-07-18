@@ -1,7 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 
-import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { expect, test, type Locator, type Page, type TestInfo } from "@playwright/test";
 
 const VIEWPORTS = [
   { width: 1280, height: 800 },
@@ -67,9 +67,22 @@ test.describe("prefecture map acceptance", () => {
     await expect.poll(async () => map.evaluate((element: any) => Boolean(element.__prefectureMapDiagnostics))).toBe(true);
 
     const initialUrl = page.url();
+    const overview = await map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([])) as Diagnostics;
+    expect(overview.zoom).toBeCloseTo(5.3, 1);
+    expect(overview.renderedLabelIds).toHaveLength(47);
+    expect(page.url()).toBe(initialUrl);
+
+    await panInitialCoordinateToMapCenter(page, map, {
+      latitude: 35.69,
+      longitude: 139.69,
+      zoom: overview.zoom
+    });
     const zoomIn = page.locator('button[aria-label="地図を拡大"]:visible');
-    for (let index = 0; index < 6; index += 1) {
+    for (let index = 0; index < 4; index += 1) {
       await zoomIn.click();
+      await expect.poll(async () => (
+        map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([]).zoom)
+      )).toBeGreaterThan(overview.zoom + index + 0.8);
     }
     await expect.poll(async () => map.evaluate((element: any) => (
       element.__prefectureMapDiagnostics.read([])
@@ -79,7 +92,7 @@ test.describe("prefecture map acceptance", () => {
       zoom: expect.any(Number)
     });
     const detailed = await map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([])) as Diagnostics;
-    expect(detailed.zoom).toBeCloseTo(10.5, 1);
+    expect(detailed.zoom).toBeCloseTo(9.3, 1);
     expect(detailed.renderedLabelIds).toEqual(["prefecture:tokyo"]);
     expect(detailed.renderedPolygonIds).toEqual([]);
     await map.click({ position: { x: 720, y: 450 } });
@@ -117,6 +130,34 @@ test.describe("prefecture map acceptance", () => {
     await writeOptionalEvidenceScreenshot(page, testInfo, "prefecture-choropleth-missing-value.png");
   });
 });
+
+async function panInitialCoordinateToMapCenter(
+  page: Page,
+  map: Locator,
+  target: Readonly<{ latitude: number; longitude: number; zoom: number }>
+) {
+  const rect = await map.boundingBox();
+  expect(rect).not.toBeNull();
+  const worldSize = 512 * (2 ** target.zoom);
+  const start = {
+    x: rect!.x + rect!.width / 2 + (target.longitude - 138.45) / 360 * worldSize,
+    y: rect!.y + rect!.height / 2 + (mercatorY(target.latitude) - mercatorY(36.25)) * worldSize
+  };
+  const center = {
+    x: rect!.x + rect!.width / 2,
+    y: rect!.y + rect!.height / 2
+  };
+
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(center.x, center.y, { steps: 12 });
+  await page.mouse.up();
+}
+
+function mercatorY(latitude: number) {
+  const radians = latitude * Math.PI / 180;
+  return (1 - Math.log(Math.tan(radians) + 1 / Math.cos(radians)) / Math.PI) / 2;
+}
 
 async function installLocalNetworkGuard(page: Page) {
   const knownPresentation: string[] = [];

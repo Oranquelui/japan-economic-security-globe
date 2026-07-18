@@ -2164,6 +2164,9 @@ function focusMapOnSelection(
   const activeRoute = model.routes.find((route) => routeMatchesSelection(route, activeId));
   const activePoint = model.points.find((point) => point.id === activeId);
   const activeRegion = model.regions.find((region) => region.id === activeId);
+  if (activeRegion?.geometryKind === "prefecture-boundary") {
+    return;
+  }
   const activeGlobalRoute = model.globalRoutes.find((route) => routeMatchesSelection(route, activeId));
   const activeGlobalPoint = model.globalPoints.find((point) => point.id === activeId);
   const activeLiveRoute = model.liveRoutes?.find((route) => routeMatchesSelection(route, activeId));

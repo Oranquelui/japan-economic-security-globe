@@ -471,6 +471,27 @@ describe("map canvas layer config", () => {
     }
   });
 
+  test("preserves the camera when a prefecture-boundary selection receives focus", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="prefecture:tokyo"
+        focusTargetId="prefecture:tokyo"
+        mapMode="choropleth"
+        model={{ ...model, regions: prefectureMetricRegions() }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.get("jp-prefectures")).toBeDefined();
+    });
+
+    expect(lastMap?.easeTo).not.toHaveBeenCalled();
+    expect(lastMap?.fitBounds).not.toHaveBeenCalled();
+  });
+
   test("toggles the all-prefecture labels at the xl boundary without recreating the map", async () => {
     desktopViewportMatches = false;
     render(
