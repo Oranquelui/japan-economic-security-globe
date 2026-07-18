@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import packageJson from "../package.json";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,6 +16,8 @@ export default function RootLayout({
   return (
     <html lang="ja" className="dark">
       <head>
+        <meta name="release-sha" content={process.env.NEXT_PUBLIC_RELEASE_SHA ?? "local"} />
+        <meta name="release-version" content={packageJson.version} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
