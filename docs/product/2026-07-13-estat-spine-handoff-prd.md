@@ -1,23 +1,84 @@
 # PRD / Handoff: e-Stat Spine — Japan Resilience Map
 
-**Status:** Option A **approved** and **partially shipped**  
+**Status:** Option A **approved**; rice/e-Stat public path present; **desktop surface reframe authorized 2026-07-18**
 **Date:** 2026-07-13  
+**Historical pause:** 2026-07-13 (usage budget) — superseded by the 2026-07-18 implementation authorization
 **Repo:** `jp-strategic-dependency-graph` (public remote: `Oranquelui/japan-economic-security-globe`)  
-**Audience:** Any coding agent (Codex / Claude / Grok) continuing this work without prior chat context  
+**Audience:** Product owner + any coding agent (Codex / Claude / Grok) continuing without prior chat
 
 ---
 
-## 0. Read this first (agent bootstrap)
+## 0. Current continuation state
+
+### Current state and historical reconciliation
+
+| Item | State |
+|------|--------|
+| Strategy | **Option A closed** — e-Stat spine, econ-sec = lens |
+| Surface ship | Done (PR #27): title 日本レジリエンス地図, default `rice`, energy AIS off |
+| Theater UI | Done earlier: Night Atlas, scanner, curved maritime routes |
+| **Rice/e-Stat path** | Present on current `main` and reviewed production: 47 prefectures, Niigata `514,100 トン`, survey context, official source |
+| **2026-07-13 WP2 pause** | Historical only; do not restart the old checklist |
+| **Authorized next work** | Desktop Power Atlas-style surface responsibilities, P0–P3 |
+| Branch | work on feature branch off `main`; merge via PR when green |
+| Production | `https://economic-security.quadrillionaaa.com/` |
+
+### Continuation checklist (agent or human)
+
+1. Read this current-status section and §12.
+2. Read `docs/product/2026-07-13-frontend-watchboard-ia-prd.md` §11–18.
+3. Read `docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md`.
+4. Use the isolated branch `codex/power-atlas-desktop-reframe`.
+5. Execute P0–P3 in order; do not restart the historical WP2 checklist or redesign Mobile.
+
+### Implementation direction (north star for code)
+
+```text
+DO
+  · Make rice theme prove: official number → prefecture → evidence (unit, year, source)
+  · Prefer seed-first reliability; live e-Stat when ESTAT_APP_ID present
+  · Add one monthly price/CPI auxiliary so the product is not annual-only
+  · Keep Japan-first shell, ranking, evidence drawer, URL state
+
+DON'T
+  · Put AIS / tanker theater on homepage
+  · Claim real-time for survey series
+  · Build jSTAT MAP feature parity
+  · Multi-theme live e-Stat before rice path is solid
+  · Large-bang English→Japanese internal renames that block WP2
+```
+
+### Historical 2026-07-13 WP2 task plan (retained for provenance)
+
+| Step | Task | Done when |
+|------|------|-----------|
+| 1 | Audit rice seed + sources (`data/seed/*`, `source:estat-rice-prefecture-harvest-r5`) | Know what already exists vs gaps |
+| 2 | Surface unit + survey year + source in evidence/detail/ranking for a prefecture | Niigata (or any pref) shows provenance in UI |
+| 3 | Optional live path: `lib/official/estat.ts` + snapshot/cache when `ESTAT_APP_ID` | Documented; seed still works without key |
+| 4 | Map/list: rice = prefecture choropleth or ranked list first (not global route hero) | Default rice UX matches spine story |
+| 5 | One monthly auxiliary (うるち米価格 or food CPI) card/trend | Habit-loop note in briefing/evidence |
+| 6 | Tests + typecheck | `npm test` + `npm run typecheck` green |
+| 7 | PR → CI → merge → production smoke (`?theme=rice`) | Acceptance checklist §5.3 all true |
+
+**Timebox hint:** one focused session for steps 1–3 + tests; second session for auxiliary + polish + ship if needed.
+
+### Later e-Stat work
+
+See §6: optional interviews (WP1), copy polish (WP3), more series (WP4), institutional Layer B (WP5).
+
+---
+
+## 0b. Read this first (agent bootstrap)
 
 If you are continuing from Codex or a new session:
 
-1. Read **this file entirely**.  
+1. Read **this file entirely** (or at least §0 + §5).
 2. Then skim:  
    - `docs/product/2026-07-13-estat-spine-decision-memo.md`  
    - `docs/product/2026-07-13-estat-data-theme-map.md`  
    - `lib/config/estat-theme-map.ts`  
 3. **Do not** reopen the product-strategy debate (A vs B vs C). A is closed.  
-4. **Next engineering work is WP2** (rice e-Stat vertical slice + one monthly price auxiliary), not more AIS/theater UI.  
+4. **Next engineering work is the authorized desktop surface reframe**; the old WP2 pause instructions are historical.
 5. Keep Japan-first map shell, evidence panel, ranking, URL state, provenance discipline.
 
 ### One-line product identity
@@ -35,22 +96,50 @@ If you are continuing from Codex or a new session:
 
 ---
 
-## 1. Strategic decision (CLOSED)
+## 1. Strategic decision (CLOSED) — Option A explained
 
 | Option | Meaning | Result |
 |--------|---------|--------|
-| **A** | e-Stat / official stats = spine; economic security = lens | **APPROVED** |
-| B | Keep econ-sec ops room as hero | Rejected |
+| **A** | e-Stat / official stats = **spine**; economic security = **lens** | **APPROVED** |
+| B | Keep econ-sec ops room / AIS theater as hero | Rejected |
 | C | Pure stats portal; drop econ-sec language entirely | Rejected |
 
-**Why A (do not re-litigate):**
+### What Option A means in plain language
+
+**Problem we hit:** The product was drifting into a free “economic security ops room” (tankers, chokepoints, near-live drama). That story needs trade/AIS/policy OSINT. e-Stat is excellent at **survey-cycle official statistics by prefecture**, not at becoming MarineTraffic. Free MVP cannot win as OSINT theater; it also should not become a jSTAT MAP clone.
+
+**Option A’s answer:**
+
+1. **Spine (what the product is built on)**
+   Official Japanese statistics (e-Stat first, 統計ダッシュボード for monthly prices when useful).
+   Map + ranking + evidence show **numbers you can cite**: value, unit, survey date, source URL/id.
+
+2. **Lens (how we frame why it matters)**
+   Economic security / resilience language stays as the **question**:
+   “Where is Japan’s household, food, energy, industry exposure fragile?”
+   — not as the product name or a claim of live threat radar.
+
+3. **Two layers**
+   - **Layer A (public MVP priority):** prefecture official numbers, rice-first.
+   - **Layer B (thin, later thicker for institutions):** routes, policy context, delayed demos — always labeled supporting/historical/demo.
+
+4. **What users should feel**
+   “I understand **Niigata rice harvest (year, unit, official source)** in under a minute” — not “I am watching tankers in real time.”
+
+5. **What we refuse**
+   Homepage AIS theater; “real-time” for annual surveys; jSTAT feature race; multi-theme live API before one theme is honest end-to-end.
+
+**Why not B:** Free ops room loses to commercial maritime intel and overclaims relative to data quality.
+**Why not C:** Dropping all resilience/econ-sec framing throws away the product’s distinctive “why it matters” narrative; A keeps the lens without lying about the spine.
+
+**Approval source:** ChatGPT deep research review of the reframe PRD (2026-07-13), accepted by product owner.
+
+**Why A (short, do not re-litigate):**
 
 - e-Stat is strong at prefecture/official/citable/survey-cycle data.  
 - Econ-sec “radar” needs trade, policy, AIS, geopolitics — not e-Stat’s core.  
 - Free public MVP should not compete with Windward/Kpler/MarineTraffic or enterprise OSINT.  
 - White space: **official numbers → household/industry consequence narrative**, not GIS clone and not free OSINT.
-
-**Approval source:** ChatGPT deep research review of the reframe PRD (2026-07-13), accepted by product owner.
 
 Related docs:
 
@@ -132,7 +221,7 @@ rice → energy → logistics → semiconductors → water → defense → regio
 
 ---
 
-## 5. NEXT WORK: WP2 — Rice vertical slice (IMPLEMENT THIS)
+## 5. Historical WP2 acceptance reference — do not restart
 
 ### 5.1 Goal
 
@@ -270,4 +359,34 @@ If anything conflicts with older Phase 0 PRD (`.taskmaster/docs/japan-economic-s
 | PRD | Concept reframe + data map + validation plan landed (PR #26) |
 | Deep research | ChatGPT approved A; recommended 日本レジリエンス地図 + rice first + price auxiliary |
 | Surface apply | Title, default rice, disable energy AIS, briefing copy (PR #27) |
-| **Next** | **WP2 rice e-Stat vertical slice** (this PRD §5) |
+| Handoff PRD | Agent bootstrap + WP2 acceptance (§0–5) written for Codex |
+| **Historical pause** | 2026-07-13 usage-budget pause; superseded after current-state verification |
+| **Current next work** | Desktop surface reframe P0–P3 (`docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md`) |
+
+---
+
+## 12. 2026-07-15 UI direction: Power Atlas surface responsibilities
+
+**Canonical UI decision:** `docs/product/2026-07-13-frontend-watchboard-ia-prd.md` §11–18
+**Decision:** Adopt the reference video's surface responsibilities, not its brand or global-infrastructure product scope.
+**Implementation status:** Authorized by product owner on 2026-07-18; execute the reviewed formal plan P0–P3 in an isolated worktree.
+
+### Next-agent summary
+
+1. Keep the approved Option A product model: official statistics are the spine; economic security is the explanatory lens.
+2. Keep Japan and the map as the primary subject.
+3. Change the default left surface from a permanent monitoring inbox to a compact scope summary and semantic layer deck.
+4. Consolidate `MapDetailPopup` and `EvidencePanel` into one contextual right-side inspector; retain only lightweight map feedback on click/hover.
+5. Move ranked signals and comparison into deliberate secondary views rather than permanent map chrome.
+6. Name layers by user meaning (`収穫量`, `価格`, `在庫・政策`, `物流・投入コスト`), not by rendering mechanics (`地点`, `集約`, `地域塗り`, `ルート`).
+7. Preserve value, unit, survey year, official URL/source id, freshness language, URL state, and accessibility.
+
+### Status reconciliation completed 2026-07-18
+
+The earlier sections in this handoff record the 2026-07-13 pause state as `WP2 not started`. A live production review on 2026-07-15 showed a rice-first surface with 47 prefectures and a Niigata detail path exposing `514,100 トン`, survey context, official sources, and related flows.
+
+The reconciliation confirmed that current `main` already contains the rice-first semantic/data path described above. The 2026-07-13 `WP2 not started` wording is historical, not an instruction to rebuild or delete current work.
+
+### Handoff file policy
+
+Do **not** create a new generic `handoff.md`. This file remains the e-Stat/product-state handoff, while the frontend IA PRD above remains the canonical source for the Power Atlas-style UI decision.

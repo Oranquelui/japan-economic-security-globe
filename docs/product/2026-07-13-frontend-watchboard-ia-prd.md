@@ -196,3 +196,164 @@ Fix the public frontend information architecture so Japan Watchboard reads as a 
 ```
 
 Preferred execution order: **WP1 → WP2 → WP3 → WP4**, then optionally WP5.
+
+---
+
+## 11. 2026-07-15 decision: adopt the Power Atlas surface contract
+
+Status: **Approved for product design; implementation not authorized by this document update**
+Reference reviewed: X video showing a Power Atlas-style physical-infrastructure map workspace
+Decision owner: product
+
+Adopt the reference product's **surface responsibilities**, not its branding, visual styling, or infrastructure coverage.
+
+The useful pattern is:
+
+1. a compact scope summary and semantic layer deck on the left;
+2. the map as the dominant workspace in the center;
+3. one contextual inspector on the right after selection;
+4. progressive disclosure for signals, comparisons, relationships, and provenance.
+
+This decision extends the earlier rule that "map is the stage." It changes the left pane from a permanently open monitoring inbox into map context, and it removes duplicated selected-object explanations across the map popup and evidence drawer.
+
+### 11.1 What is explicitly not being copied
+
+- The `Power Atlas` name or brand treatment.
+- A global country-profile catalog as the public product identity.
+- Generic GIS authoring, arbitrary dataset upload, or jSTAT MAP feature parity.
+- Claims of comprehensive physical-infrastructure or real-time coverage.
+- A tactical operations-room or threat-monitoring tone.
+
+The public product remains **Japan Resilience Map / 日本レジリエンス地図**, with official statistics as the spine and economic security as the explanatory lens.
+
+## 12. Verified current-state diagnosis (2026-07-15)
+
+The production rice surface was reviewed at `https://economic-security.quadrillionaaa.com/` on 2026-07-15.
+
+Observed strengths:
+
+- Japan-first rice view is live.
+- The map includes prefecture points and the left pane exposes 47 prefectures.
+- Selecting Niigata shows `514,100 トン`, the survey context, official source labels, and related dependency context.
+- Provenance, unit, survey year, and related flows already exist in the presentation path.
+
+Observed IA problems:
+
+| Surface | Current behavior | Problem |
+|---------|------------------|---------|
+| Left command pane | Briefing, filters, ranked signals, and 47 prefectures share one scroll story | The map context is buried inside an operations inbox |
+| Map detail popup | Repeats summary, sources, related flows, and related points | Duplicates the right evidence surface and covers the map |
+| Right evidence drawer | Repeats the same selected-object explanation in greater depth | Selection content is split across two competing inspectors |
+| Bottom comparison bar | Always advertises comparison as another primary surface | Adds persistent chrome even when the user is not comparing |
+| Map modes | `地点 / 集約 / 地域塗り / ルート` | Describes rendering mechanics instead of the user's subject |
+
+The root problem is now **duplication and surface competition**, not missing evidence or missing data primitives.
+
+## 13. Target desktop information architecture
+
+```text
+┌──────────────────────────────────────────────────────────┐
+│ Brand / scope / search / source freshness / utilities          │
+├───────────────┬──────────────────────────┬─────────────────┐
+│ Scope summary  │                          │ Context inspector │
+│ - headline KPIs │                          │ - value / unit     │
+│ - period/source │       Japan map          │ - survey period   │
+│                │   dominant workspace     │ - why it matters  │
+│ Semantic layers│                          │ - sources          │
+│ - harvest      │                          │ - related objects  │
+│ - price        │                          │ - graph            │
+│ - logistics    │                          │                    │
+└───────────────┴──────────────────────────┴─────────────────┘
+          Secondary views: signals / comparison / table
+```
+
+### 13.1 Surface ownership
+
+| Surface | Owns | Must not own |
+|---------|------|--------------|
+| Header | Identity, active scope, search, source freshness, share/menu | Map rendering modes or dense filter controls |
+| Left context pane | Scope summary, 3–4 headline metrics, semantic layers, legend | A permanent 47-row list or full monitoring inbox |
+| Map | Geography, magnitude, spatial relationships, hover label | Long-form evidence or a second full detail panel |
+| Right inspector | The selected entity, observation, or flow; official evidence; related relationships | Theme navigation or duplicate ranked lists |
+| Signals view | Ranked changes and watch items | Default map context |
+| Comparison view | Regional or series comparison when requested | Persistent bottom chrome |
+
+## 14. Interaction rules
+
+1. **No selection:** show the scope summary and semantic layers; keep the right inspector closed or show a concise theme brief.
+2. **Hover:** show only label, primary value, unit, and period.
+3. **Click:** open one right-side inspector; do not also open a large map popup.
+4. **Related object click:** update the same inspector and map focus without creating another surface.
+5. **Compare:** enter an explicit comparison view or drawer; do not keep the comparison bar permanently open.
+6. **Signals:** open as a deliberate secondary view; do not use the monitoring inbox as the homepage's default frame.
+
+For the rice default, the first semantic layers should be user-facing subjects such as `収穫量`, `価格`, `在庫・政策`, and `物流・投入コスト`. Rendering modes such as point, choropleth, and route remain implementation details selected by the layer definition.
+
+## 15. Presentation and data implications
+
+The existing semantic model remains the source of truth:
+
+- `SemanticEntity`
+- `Observation`
+- `DependencyFlow`
+- `SourceDocument`
+- `GraphEdge`
+
+Do not rewrite the ontology for this UI change. Add or derive focused presentation contracts instead:
+
+| Contract | Purpose |
+|----------|---------|
+| `ScopeSummary` | Headline metrics, period, coverage, and source state for Japan, a prefecture, or a theme |
+| `LayerDefinition` | User-facing layer label, semantic inputs, rendering method, legend, source disclosure, and default visibility |
+| `SelectionInspector` | One normalized projection for entity, observation, and flow selection |
+| `MetricSeries` | Comparable regional or time-series observations with unit and period discipline |
+
+The likely component consolidation is:
+
+```text
+MapDetailPopup + EvidencePanel -> one contextual inspector
+MapInboxPanel default          -> scope summary + semantic layer deck
+MapInboxPanel ranking content  -> separate signals view
+OperationsSignalTable          -> explicit comparison/table view
+```
+
+## 16. Phased delivery recommendation
+
+### P0 — Remove selection duplication
+
+- Make the right inspector the single selected-object surface.
+- Reduce map click feedback to a small anchored label or highlight.
+- Preserve URL state, evidence links, and keyboard access.
+
+### P1 — Replace the default inbox frame
+
+- Introduce scope summary metrics and semantic layer controls.
+- Move ranked monitoring content into a separate signals view.
+- Keep search available without permanently showing all 47 prefectures.
+
+### P2 — Make thematic encoding primary
+
+- Rice opens with a choropleth or another magnitude-bearing regional layer.
+- Every layer has a visible legend, unit, period, missing-data treatment, and source disclosure.
+- Points and routes remain available when their semantics require them.
+
+### P3 — Separate comparison and monitoring workflows
+
+- Comparison opens intentionally as a drawer, table mode, or dedicated view.
+- Signals use ranking and freshness, but no longer frame the default civic map.
+
+## 17. Acceptance criteria for the reframe
+
+- [ ] At desktop launch, the map is the largest and clearest surface.
+- [ ] Left pane shows scope metrics and semantic layers before ranked monitoring content.
+- [ ] Selecting Niigata opens exactly one detailed inspector.
+- [ ] Niigata still exposes value, unit, survey year, official source, and why it matters.
+- [ ] The map is not covered by a second long-form detail popup.
+- [ ] Rice layer names describe user subjects, not rendering mechanics.
+- [ ] Comparison and signals remain reachable but are not permanently open.
+- [ ] URL state, source links, mobile conceptual order, and accessibility remain intact.
+- [ ] No copy implies live threat monitoring or comprehensive infrastructure coverage.
+
+## 18. Execution boundary
+
+This addendum originally recorded a product and IA decision only. On 2026-07-18, the product owner authorized desktop implementation P0–P3 with Mobile redesign deferred. The reviewed execution source is `docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md`; implementation must remain within that plan and its phased review gates.

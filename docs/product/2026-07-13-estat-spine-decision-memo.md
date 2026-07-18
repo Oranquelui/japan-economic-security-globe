@@ -1,11 +1,11 @@
 # Decision Memo: Approve e-Stat Spine (Option A)
 
-Status: **Approved** + **public surface partially applied**  
+Status: **Approved** + **public rice/e-Stat surface present** — **desktop surface reframe authorized 2026-07-18**
 Date: 2026-07-13  
 Source: ChatGPT deep research review of internal reframe PRD  
 Related:
 
-- **Handoff PRD (start here for agents):** `docs/product/2026-07-13-estat-spine-handoff-prd.md`
+- **Handoff PRD (start here for agents):** `docs/product/2026-07-13-estat-spine-handoff-prd.md` — §0 current status, §1 Option A plain language, §12 desktop UI direction
 - `docs/product/2026-07-13-estat-spine-concept-reframe-prd.md`
 - `docs/product/2026-07-13-estat-data-theme-map.md`
 - `lib/config/estat-theme-map.ts`
@@ -19,6 +19,10 @@ Related:
 | A: e-Stat 骨格 + 経済安保はレンズ | **GO** |
 | B: 経済安保オペ室のまま | **NO** |
 | C: 純統計ポータル（経済安保ワード削除） | **NO** |
+
+### Option A 一言
+
+公式統計を製品の**背骨**にし、経済安保は「なぜ気にするか」の**レンズ**にする。無料公開は監視レーダーでも jSTAT 代替でもない。
 
 ## Frozen public non-goals
 
@@ -40,14 +44,15 @@ Related:
 - Homepage lead prefers **`PUBLIC_SPINE_THEME_IDS`**: rice → energy → logistics  
 - Briefing: `最新の調査値` / `公式出典`  
 
-## Next implementation (WP2) — for Codex / any agent
+## Historical WP2 checklist — do not restart from this section
 
-詳細・完了条件は handoff PRD §5 を正とする。
+The 2026-07-13 pause record below is retained for history. Current `main` and the reviewed production surface already contain 47 prefectures, rice harvest values, Niigata `514,100 トン`, survey context, and official-source links. Do not restart WP2 from this checklist. The authorized next implementation is the desktop surface reframe in `docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md`.
 
 1. コメ都道府県収穫（e-Stat / seed）— 値・単位・調査年・出典リンクを evidence まで  
 2. 補助 1 枚: うるち米価格 or 食料・エネルギー CPI（統計ダッシュボード API 可）  
 3. `npm test` + `npm run typecheck` 緑  
 4. リアルタイム主張をしない  
+5. PR → CI → production smoke `?theme=rice`
 
 ## Validation (optional, not a blocker for WP2)
 
@@ -60,4 +65,3 @@ Related:
 - Enterprise OSINT / Phase 2 workspace  
 - Regional-security or defense as homepage lead  
 - Returning energy AIS theater to homepage  
-
