@@ -1,4 +1,5 @@
 import type {
+  ActiveLayerSummary,
   DetailViewModel,
   LayerDefinition,
   LayerLegend,
@@ -41,6 +42,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "rice",
       label: "収穫量",
       description: "都道府県別の主食用米収穫量",
+      mapEncodingDescription: "都道府県の代表点の色と大きさで型付き主食用米収穫量を表します。行政区域ポリゴンではありません。",
       renderMode: "choropleth",
       periodLabel: "令和5年産",
       sourceIds: [RICE_HARVEST_SOURCE_ID],
@@ -57,6 +59,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "rice",
       label: "価格",
       description: "相対取引価格の公開観測",
+      mapEncodingDescription: "関連する公開観測の対象地点を代表位置に表示します。マーカー自体は地域指標を表すものではありません。",
       renderMode: "point",
       periodLabel: "2026年2月",
       sourceIds: ["source:maff-rice-policy", "source:maff-rice-monthly-report"],
@@ -69,6 +72,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "rice",
       label: "在庫・政策",
       description: "民間在庫と備蓄政策の公開観測",
+      mapEncodingDescription: "関連する公開観測の対象地点を代表位置に表示します。マーカー自体は地域指標を表すものではありません。",
       renderMode: "point",
       periodLabel: "2026年2月",
       sourceIds: ["source:maff-rice-monthly-report", "source:maff-rice-policy", "source:egov-law-search"],
@@ -87,6 +91,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "rice",
       label: "物流・投入コスト",
       description: "エネルギーと肥料投入からコメ価格への依存関係",
+      mapEncodingDescription: "登録済みの意味的フローから依存・供給の代表経路を表示します。ライブ経路ではありません。",
       renderMode: "route",
       periodLabel: "2026年",
       sourceIds: [
@@ -106,6 +111,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "energy",
       label: "供給拠点",
       description: "供給国と国内の受入・精製拠点",
+      mapEncodingDescription: "関連する公開エンティティや施設を、利用可能な代表位置に表示します。",
       renderMode: "point",
       periodLabel: "2026年",
       sourceIds: ["source:customs-trade-statistics", "source:enecho-energy-trends"],
@@ -118,6 +124,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "energy",
       label: "輸入価格",
       description: "LNGと電力コストに関する公開観測",
+      mapEncodingDescription: "関連する公開観測の対象地点を代表位置に表示します。マーカー自体は地域指標を表すものではありません。",
       renderMode: "point",
       periodLabel: "2026年4月",
       sourceIds: ["source:enecho-energy-trends", "source:tepco-2026-april-power"],
@@ -130,6 +137,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "energy",
       label: "供給ルート",
       description: "日本向けエネルギー供給経路",
+      mapEncodingDescription: "登録済みの意味的フローから依存・供給の代表経路を表示します。ライブ経路ではありません。",
       renderMode: "route",
       periodLabel: "2026年",
       sourceIds: ["source:customs-trade-statistics", "source:enecho-energy-trends"],
@@ -144,6 +152,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "logistics",
       label: "国内物流",
       description: "固定デモデータによる港湾から国内配送網への物流経路",
+      mapEncodingDescription: "固定デモデータの代表経路を表示します。ライブ追跡または公式な影響データではありません。",
       renderMode: "route",
       periodLabel: "固定デモデータ",
       sourceIds: [],
@@ -156,6 +165,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "logistics",
       label: "到着見込み",
       description: "提供データ内の日本側拠点への到着見込み",
+      mapEncodingDescription: "提供データの時点における到着地点を表示します。網羅的なライブ範囲ではありません。",
       renderMode: "point",
       periodLabel: "提供データの時点",
       sourceIds: [],
@@ -168,6 +178,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "logistics",
       label: "物流影響",
       description: "型付き影響指標が提供された場合に地域別表示",
+      mapEncodingDescription: "型付きで出典のある地域別影響値が存在するまで表示できません。",
       renderMode: "choropleth",
       periodLabel: "指標データ未提供",
       sourceIds: [],
@@ -182,6 +193,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "regional-security",
       label: "公開事象",
       description: "公式・公開情報に限定した地域安全保障事象",
+      mapEncodingDescription: "関連する公開観測の対象地点を代表位置に表示します。マーカー自体は地域指標を表すものではありません。",
       renderMode: "point",
       periodLabel: "公開履歴",
       sourceIds: [
@@ -205,6 +217,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "regional-security",
       label: "影響観測",
       description: "日本向けの公開・履歴ベース影響観測",
+      mapEncodingDescription: "関連する公開観測の対象地点を代表位置に表示します。マーカー自体は地域指標を表すものではありません。",
       renderMode: "point",
       periodLabel: "1984–2026年",
       sourceIds: [
@@ -221,6 +234,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "regional-security",
       label: "代表経路",
       description: "公開履歴から構成した日本向け代表経路",
+      mapEncodingDescription: "登録済みの意味的フローから依存・供給の代表経路を表示します。ライブ経路ではありません。",
       renderMode: "route",
       periodLabel: "1984–2026年",
       sourceIds: [
@@ -239,6 +253,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "defense",
       label: "能力・予算",
       description: "防衛能力と令和8年度予算の公開観測",
+      mapEncodingDescription: "関連する公開観測の対象地点を代表位置に表示します。マーカー自体は地域指標を表すものではありません。",
       renderMode: "point",
       periodLabel: "2026年度",
       sourceIds: ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
@@ -260,6 +275,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "defense",
       label: "拠点",
       description: "防衛関連施設と組織",
+      mapEncodingDescription: "関連する公開エンティティや施設を、利用可能な代表位置に表示します。",
       renderMode: "point",
       periodLabel: "2026年",
       sourceIds: ["source:mod-installations", "source:mod-fy2026-budget"],
@@ -272,6 +288,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "defense",
       label: "依存関係",
       description: "予算・能力・産業基盤の依存関係",
+      mapEncodingDescription: "登録済みの意味的フローから依存・供給の代表経路を表示します。ライブ経路ではありません。",
       renderMode: "route",
       periodLabel: "2026年度",
       sourceIds: ["source:mod-fy2026-budget", "source:mof-fy2026-budget"],
@@ -286,6 +303,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "semiconductors",
       label: "生産・供給拠点",
       description: "半導体の生産施設・供給国・関連組織",
+      mapEncodingDescription: "関連する公開エンティティや施設を、利用可能な代表位置に表示します。",
       renderMode: "point",
       periodLabel: "2026年",
       sourceIds: ["source:meti-semiconductor-frame", "source:cabinet-tsmc-2026"],
@@ -298,6 +316,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "semiconductors",
       label: "供給ルート",
       description: "日本の半導体供給に関わる依存経路",
+      mapEncodingDescription: "登録済みの意味的フローから依存・供給の代表経路を表示します。ライブ経路ではありません。",
       renderMode: "route",
       periodLabel: "2026年",
       sourceIds: ["source:meti-semiconductor-frame", "source:customs-trade-statistics"],
@@ -310,6 +329,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "semiconductors",
       label: "監視指標",
       description: "半導体産業基盤の政策シグナル",
+      mapEncodingDescription: "関連する公開観測の対象地点を代表位置に表示します。マーカー自体は地域指標を表すものではありません。",
       renderMode: "point",
       periodLabel: "2026年",
       sourceIds: ["source:meti-semiconductor-frame", "source:cabinet-tsmc-2026", "source:customs-trade-statistics"],
@@ -324,6 +344,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "water",
       label: "貯水率",
       description: "公開されている水源別の最新貯水率",
+      mapEncodingDescription: "水源の代表点の色と大きさで型付き最新貯水率を表します。",
       renderMode: "choropleth",
       periodLabel: "最新公表値",
       sourceIds: ["source:mlit-drought-portal", "source:mlit-river-disaster-info"],
@@ -340,6 +361,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "water",
       label: "水源",
       description: "国内の主要な公開水源",
+      mapEncodingDescription: "関連する公開エンティティや施設を、利用可能な代表位置に表示します。",
       renderMode: "point",
       periodLabel: "最新公表値",
       sourceIds: ["source:mlit-drought-portal", "source:mlit-river-disaster-info"],
@@ -352,6 +374,7 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "water",
       label: "供給関係",
       description: "首都圏ライフラインと水供給の公開観測",
+      mapEncodingDescription: "関連する公開観測の対象地点を代表位置に表示します。マーカー自体は地域指標を表すものではありません。",
       renderMode: "point",
       periodLabel: "2026年4月26日",
       sourceIds: ["source:jma-earthquake-information", "source:mlit-drought-portal"],
@@ -377,6 +400,41 @@ export function buildWorkspacePresentation(
     defaultLayerId: defaultLayer.id,
     scope: buildScopeSummary(view, layers),
     layers
+  };
+}
+
+export function buildActiveLayerSummary(
+  graph: SemanticGraph,
+  view: ThemeView,
+  layer: LayerDefinition,
+  scope: ScopeSummary,
+  liveLogistics: LiveLogisticsViewModel | null = null
+): ActiveLayerSummary {
+  // Live logistics is accepted for the presentation contract, but it is never a numeric source.
+  void liveLogistics;
+
+  const sources = layer.sourceIds.flatMap((sourceId) => {
+    const source = view.sources.find((candidate) => candidate.id === sourceId);
+    return source ? [source] : [];
+  });
+
+  return {
+    title: layer.label,
+    description: layer.description,
+    coverage: buildActiveLayerCoverage(view, layer, scope),
+    periodLabel: layer.periodLabel,
+    primaryMetric: buildActiveLayerPrimaryMetric(graph, view, layer),
+    missingDataLabel:
+      layer.content.kind === "regional-metric" || layer.legend.kind === "continuous"
+        ? "データなし"
+        : null,
+    mapEncodingDescription: layer.mapEncodingDescription,
+    sources,
+    sourceFallbackLabel: sources.length > 0
+      ? null
+      : layer.id === "logistics-domestic"
+        ? "固定デモデータ"
+        : "出典情報なし"
   };
 }
 
@@ -620,6 +678,90 @@ function hasLiveLogisticsInput(
   // Runtime logistics items describe routes and arrival context, not a typed regional impact metric.
   // Keep the impact layer unavailable until the view model carries sourced values, units, and periods.
   return false;
+}
+
+function buildActiveLayerCoverage(
+  view: ThemeView,
+  layer: LayerDefinition,
+  scope: ScopeSummary
+): ScopeSummary["coverage"] {
+  if (layer.content.kind !== "regional-metric") {
+    return scope.coverage;
+  }
+
+  const { eligibleCount, numericValues } = getRegionalMetricValues(view, layer.content);
+  if (
+    layer.content.property === "riceMainUseHarvestTonsR5" &&
+    eligibleCount > 0 &&
+    numericValues.length === eligibleCount
+  ) {
+    return scope.coverage;
+  }
+
+  return {
+    label: "データ収録",
+    value: `${numericValues.length}/${eligibleCount}件`
+  };
+}
+
+function buildActiveLayerPrimaryMetric(
+  graph: SemanticGraph,
+  view: ThemeView,
+  layer: LayerDefinition
+): ScopeSummaryMetric | null {
+  if (layer.content.kind === "regional-metric") {
+    if (layer.content.property !== "riceMainUseHarvestTonsR5") {
+      return null;
+    }
+
+    const { eligibleCount, numericValues } = getRegionalMetricValues(view, layer.content);
+    if (eligibleCount === 0 || numericValues.length !== eligibleCount) {
+      return null;
+    }
+
+    return {
+      id: "rice-harvest-total",
+      label: "主食用米収穫量",
+      value: numberFormatter.format(
+        numericValues.reduce((total, harvest) => total + harvest, 0)
+      ),
+      unit: "トン",
+      periodLabel: layer.periodLabel,
+      sourceIds: [...layer.sourceIds]
+    };
+  }
+
+  if (layer.content.kind === "observations") {
+    if (layer.content.observationIds.length !== 1) {
+      return null;
+    }
+
+    const [observationId] = layer.content.observationIds;
+    const observation = graph.observations.find(
+      (candidate) =>
+        candidate.id === observationId && candidate.theme === view.id
+    );
+    if (!observation || typeof observation.value !== "number") {
+      return null;
+    }
+
+    return toScopeObservationMetric(observation);
+  }
+
+  return null;
+}
+
+function getRegionalMetricValues(
+  view: ThemeView,
+  content: Extract<LayerDefinition["content"], { kind: "regional-metric" }>
+): { eligibleCount: number; numericValues: number[] } {
+  const eligibleEntities = view.entities.filter((entity) => entity.kind === content.entityKind);
+  const numericValues = eligibleEntities.flatMap((entity) => {
+    const value = entity.properties?.[content.property];
+    return typeof value === "number" ? [value] : [];
+  });
+
+  return { eligibleCount: eligibleEntities.length, numericValues };
 }
 
 function buildScopeSummary(view: ThemeView, layers: LayerDefinition[]): ScopeSummary {

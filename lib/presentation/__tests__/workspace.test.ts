@@ -6,6 +6,7 @@ import { getDetailView } from "../../semantic/detail";
 import { getThemeView } from "../../semantic/selectors";
 import { buildLiveLogisticsView } from "../live-logistics";
 import {
+  buildActiveLayerSummary,
   buildMetricSeries,
   buildSelectionInspector,
   buildWorkspacePresentation,
@@ -144,6 +145,15 @@ describe("buildWorkspacePresentation", () => {
     )).toBe(false);
   });
 
+  test.each(THEME_IDS)("authors truthful map encoding text for every %s layer", (themeId) => {
+    const graph = loadSeedGraph();
+    const workspace = buildWorkspacePresentation(graph, getThemeView(graph, themeId));
+
+    for (const layer of workspace.layers) {
+      expect(layer.mapEncodingDescription.trim(), layer.id).not.toBe("");
+    }
+  });
+
   test("does not publish a nationwide rice total when one prefecture is missing", () => {
     const graph = structuredClone(loadSeedGraph());
     const prefecture = graph.entities.find(
@@ -171,6 +181,12 @@ describe("workspace layer registry", () => {
   test("resolves semantic and legacy layers without retaining unsupported choropleths", () => {
     expect(getLayerDefinition("energy", "energy-route")?.renderMode).toBe("route");
     expect(getLayerDefinition("energy", "rice-harvest")).toBeNull();
+    expect(getLayerDefinition("rice", "rice-harvest")?.mapEncodingDescription).toMatch(
+      /代表点.*行政区域ポリゴンではありません/
+    );
+    expect(getLayerDefinition("logistics", "logistics-domestic")?.mapEncodingDescription).toMatch(
+      /固定デモデータ.*ライブ/
+    );
     expect(getDefaultLayerDefinition("rice").id).toBe("rice-harvest");
     expect(resolveLegacyPresentation("rice", "choropleth")).toMatchObject({
       layer: { id: "rice-harvest" },
@@ -230,6 +246,118 @@ describe("workspace layer registry", () => {
         `${layerId} availability`
       ).toBe(expected);
     }
+  });
+});
+
+describe("active layer summary", () => {
+  test.each([
+    ["rice", "rice-harvest", "6,610,315", "トン"],
+    ["rice", "rice-price", "35,056", "円/玄米60kg"],
+    ["rice", "rice-inventory-policy", null, null],
+    ["water", "water-fill-rate", null, null],
+    ["defense", "defense-capability-budget", null, null]
+  ] as const)("derives only an allowed primary metric for %s/%s", (themeId, layerId, value, unit) => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, themeId);
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = getLayerDefinition(themeId, layerId, workspace)!;
+    const summary = buildActiveLayerSummary(graph, view, layer, workspace.scope);
+
+    if (value === null) {
+      expect(summary.primaryMetric).toBeNull();
+    } else {
+      expect(summary.primaryMetric).toMatchObject({ value, unit });
+    }
+  });
+
+  test("withholds the rice total when prefecture coverage is incomplete", () => {
+    const graph = structuredClone(loadSeedGraph());
+    const prefecture = graph.entities.find(
+      (entity) => entity.kind === "Prefecture" && entity.themes.includes("rice")
+    );
+    delete prefecture?.properties?.riceMainUseHarvestTonsR5;
+
+    const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = getLayerDefinition("rice", "rice-harvest", workspace)!;
+    const summary = buildActiveLayerSummary(graph, view, layer, workspace.scope);
+    const scopeTotal = workspace.scope.metrics.find((metric) => metric.id === "rice-harvest-total");
+
+    expect(summary.primaryMetric).toBeNull();
+    expect(summary.coverage.value).toBe("46/47件");
+    expect(scopeTotal).not.toHaveProperty("unit");
+  });
+
+  test("reports numeric water-source coverage without aggregating percentages", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "water");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = getLayerDefinition("water", "water-fill-rate", workspace)!;
+    const summary = buildActiveLayerSummary(graph, view, layer, workspace.scope);
+
+    expect(summary.primaryMetric).toBeNull();
+    expect(summary.coverage).toEqual({ label: "データ収録", value: "5/5件" });
+    expect(summary.coverage.value).not.toMatch(/%|合計|平均/);
+  });
+
+  test("resolves active sources in registry order and labels fixed demo data", () => {
+    const graph = loadSeedGraph();
+    const riceView = getThemeView(graph, "rice");
+    const riceWorkspace = buildWorkspacePresentation(graph, riceView);
+    const riceHarvestLayer = getLayerDefinition("rice", "rice-harvest", riceWorkspace)!;
+    const riceInventoryLayer = getLayerDefinition("rice", "rice-inventory-policy", riceWorkspace)!;
+    const riceHarvest = buildActiveLayerSummary(
+      graph,
+      riceView,
+      riceHarvestLayer,
+      riceWorkspace.scope
+    );
+    const riceInventory = buildActiveLayerSummary(
+      graph,
+      riceView,
+      riceInventoryLayer,
+      riceWorkspace.scope
+    );
+
+    const logisticsView = getThemeView(graph, "logistics");
+    const logisticsWorkspace = buildWorkspacePresentation(graph, logisticsView);
+    const logisticsLayer = getLayerDefinition(
+      "logistics",
+      "logistics-domestic",
+      logisticsWorkspace
+    )!;
+    const logisticsDomestic = buildActiveLayerSummary(
+      graph,
+      logisticsView,
+      logisticsLayer,
+      logisticsWorkspace.scope
+    );
+
+    expect(riceHarvest.sources.map((source) => source.id)).toEqual([
+      "source:estat-rice-prefecture-harvest-r5"
+    ]);
+    expect(riceInventory.sources.map((source) => source.id)).toEqual(
+      riceInventoryLayer.sourceIds
+    );
+    expect(logisticsDomestic.sources).toEqual([]);
+    expect(logisticsDomestic.sourceFallbackLabel).toBe("固定デモデータ");
+  });
+
+  test("does not fabricate a source when an active non-demo source is unresolved", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+    const unresolvedView = { ...view, sources: [] };
+    const workspace = buildWorkspacePresentation(graph, unresolvedView);
+    const layer = getLayerDefinition("rice", "rice-price", workspace)!;
+    const summary = buildActiveLayerSummary(
+      graph,
+      unresolvedView,
+      layer,
+      workspace.scope
+    );
+
+    expect(summary.sources).toEqual([]);
+    expect(summary.sourceFallbackLabel).toBe("出典情報なし");
   });
 });
 

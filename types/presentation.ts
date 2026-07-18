@@ -149,6 +149,18 @@ export interface ScopeSummary {
   sourceIds: string[];
 }
 
+export interface ActiveLayerSummary {
+  title: string;
+  description: string;
+  coverage: { label: string; value: string };
+  periodLabel: string;
+  primaryMetric: ScopeSummaryMetric | null;
+  missingDataLabel: "データなし" | null;
+  mapEncodingDescription: string;
+  sources: SourceDocument[];
+  sourceFallbackLabel: "固定デモデータ" | "出典情報なし" | null;
+}
+
 export interface LayerLegend {
   kind: "continuous" | "categorical";
   title: string;
@@ -164,6 +176,7 @@ export interface LayerDefinition {
   themeId: ThemeId;
   label: string;
   description: string;
+  mapEncodingDescription: string;
   renderMode: OperationMapMode;
   periodLabel: string;
   sourceIds: string[];
