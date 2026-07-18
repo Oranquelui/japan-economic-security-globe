@@ -85,7 +85,7 @@ Each feature must contain:
 Processing must:
 
 - preserve valid island geometry and MultiPolygon structure;
-- simplify topology conservatively for desktop web use;
+- round coordinates to five decimal places and deterministically canonicalize ring orientation and start without simplifying coordinates;
 - avoid self-intersections and invalid rings;
 - retain enough detail for national and prefecture-level zooms;
 - record upstream dataset name, version, immutable download URL, upstream SHA-256, terms URL, processing date, and processing command;
@@ -179,7 +179,7 @@ Expose the geometry source through all three routes:
 - MapLibre attribution: compact text `境界: Made with Natural Earth（加工）`;
 - `/sources-license`: dataset URL, terms URL, public-domain status, Admin-1 beta and principally de facto worldview, artifact source version `5.1.1`, immutable archive URL and SHA-256, exact processing statement, limitation statement, artifact version, and processing date.
 
-The full processing statement is: `Natural Earth 5.1.1 Admin-1 States, Provinces を日本の47都道府県に絞り、本サービスの全国表示向けに属性整理・簡略化して作成`. The accompanying limitation is: `Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。` It must not imply that Natural Earth, a government, or a surveying authority created or endorsed the processed artifact.
+The full processing statement is: `Natural Earth 5.1.1 Admin-1 States, Provinces から日本の47都道府県を抽出し、座標を小数点以下5桁へ丸め、リングの向きと始点を決定論的に正規化して作成`. The accompanying limitation is: `Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。` It must not imply that Natural Earth, a government, or a surveying authority created or endorsed the processed artifact.
 
 ## 7. Data and component boundaries
 
@@ -223,7 +223,7 @@ Do not change:
 
 ## 10. Performance budgets
 
-- The processed boundary artifact must be no larger than 700 KB raw and 250 KB gzip. If the first deterministic result exceeds either budget, simplify conservatively and re-run geometry and visual checks before committing it.
+- The processed boundary artifact must be no larger than 700 KB raw and 250 KB gzip. The v2 artifact meets both budgets without coordinate simplification; any future budget regression requires a new versioned processing contract and full geometry and visual review rather than silent simplification.
 - The map source is added once and updated without rebuilding geometry on every React render.
 - Label and fill styling changes use MapLibre paint/layout updates rather than re-creating the map.
 - Initial desktop interaction remains responsive at 1280x800, 1440x900, and 1680x900.

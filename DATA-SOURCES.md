@@ -46,7 +46,7 @@ The prefecture choropleth separates official metric data from non-official map g
 - Terms: [Public domain](https://www.naturalearthdata.com/about/terms-of-use/).
 - Fixed archive: [ne_10m_admin_1_states_provinces.zip](https://naciscdn.org/naturalearth/5.1.1/10m/cultural/ne_10m_admin_1_states_provinces.zip).
 - Archive SHA-256: `efc59726337323058f9446210adc96673179cd344e053666ee3d28cb58ba2b05`.
-- Processing: filter the Natural Earth Admin-1 source to Japan's 47 prefectures, organize the attributes, and simplify the shapes for a nationwide display.
+- Processing: extract Japan's 47 Admin-1 records, round coordinates to five decimal places, and deterministically canonicalize ring orientation and start; the v2 processor does not simplify coordinates.
 
 Natural Earth describes Admin-1 as beta and generally uses de facto boundaries. The generalized prefecture polygons do not express the Japanese government's position on territory or jurisdiction. They are not legal, surveying, cadastral, or boundary-determination data and must not be used for precise administrative-boundary confirmation.
 
