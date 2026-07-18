@@ -345,8 +345,9 @@ An agent with **only this PRD** can:
 
 1. Know A is approved and not reopen strategy.  
 2. Know what is already on production.  
-3. Implement WP2 rice slice with clear acceptance criteria.  
-4. Avoid forbidden product moves (AIS home, jSTAT clone, real-time claims).  
+3. Know the WP2 rice semantic slice and desktop P0–P3 reframe are already delivered and must not be rebuilt as continuation work.
+4. Independently review the delivered branch and publish only when explicitly authorized, or extend it through separately scoped new work.
+5. Avoid forbidden product moves (AIS home, jSTAT clone, real-time claims).
 
 If anything conflicts with older Phase 0 PRD (`.taskmaster/docs/japan-economic-security-globe-prd.txt`), **this handoff PRD wins for public MVP direction**.
 
@@ -362,7 +363,7 @@ If anything conflicts with older Phase 0 PRD (`.taskmaster/docs/japan-economic-s
 | Surface apply | Title, default rice, disable energy AIS, briefing copy (PR #27) |
 | Handoff PRD | Agent bootstrap + WP2 acceptance (§0–5) written for Codex |
 | **Historical pause** | 2026-07-13 usage-budget pause; superseded after current-state verification |
-| **Current next work** | Desktop surface reframe P0–P3 (`docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md`) |
+| **Delivered desktop work** | P0–P3 completed on `codex/power-atlas-desktop-reframe`; PR not opened / awaiting explicit authorization (`docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md`) |
 
 ---
 
@@ -372,15 +373,16 @@ If anything conflicts with older Phase 0 PRD (`.taskmaster/docs/japan-economic-s
 **Decision:** Adopt the reference video's surface responsibilities, not its brand or global-infrastructure product scope.
 **Implementation status:** P0–P3 implemented and Task 8 accepted on `codex/power-atlas-desktop-reframe`; PR not opened / awaiting explicit authorization.
 
-### Next-agent summary
+### Current guardrails and delivered state
 
 1. Keep the approved Option A product model: official statistics are the spine; economic security is the explanatory lens.
 2. Keep Japan and the map as the primary subject.
-3. Change the default left surface from a permanent monitoring inbox to a compact scope summary and semantic layer deck.
-4. Consolidate `MapDetailPopup` and `EvidencePanel` into one contextual right-side inspector; retain only lightweight map feedback on click/hover.
-5. Move ranked signals and comparison into deliberate secondary views rather than permanent map chrome.
-6. Name layers by user meaning (`収穫量`, `価格`, `在庫・政策`, `物流・投入コスト`), not by rendering mechanics (`地点`, `集約`, `地域塗り`, `ルート`).
-7. Preserve value, unit, survey year, official URL/source id, freshness language, URL state, and accessibility.
+3. The default left surface is the compact scope summary and semantic layer deck; do not restore the permanent monitoring inbox as the desktop default.
+4. Desktop detailed selection is consolidated into one contextual right-side inspector; keep map click/hover feedback lightweight and do not reintroduce a duplicate long-form popup.
+5. Ranked signals and comparison are deliberate secondary views; keep them reachable without making them permanent map chrome.
+6. Keep user-meaningful layer names (`収穫量`, `価格`, `在庫・政策`, `物流・投入コスト`) rather than rendering mechanics (`地点`, `集約`, `地域塗り`, `ルート`).
+7. Keep value, unit, survey year, official URL/source id, freshness language, URL state, and accessibility intact.
+8. Do not restart completed P0–P3. Independently review the delivered branch, and publish only with explicit authorization; any extension must be separately scoped new work.
 
 ### Status reconciliation completed 2026-07-18
 
