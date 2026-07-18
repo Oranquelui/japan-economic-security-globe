@@ -118,7 +118,7 @@ describe("AppShell evidence wiring (real ContextInspector)", () => {
 
     expect(screen.getByTestId("layout-map-section")).toBeTruthy();
     expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
-    expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
+    expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
     const desktop = screen.getByTestId("layout-desktop-workspace");
     expect(screen.getByTestId("layout-action-bar")).toBeTruthy();
     expect(within(screen.getByTestId("layout-action-bar")).queryByText("表示レイヤー")).toBeNull();
@@ -148,13 +148,15 @@ describe("AppShell evidence wiring (real ContextInspector)", () => {
     expect(within(inspector).getAllByRole("link").length).toBeGreaterThan(0);
   });
 
-  test("table selection also opens the real evidence surface", async () => {
+  test("secondary signal selection also opens the real evidence surface", async () => {
     const user = userEvent.setup();
 
     render(<AppShell graph={loadSeedGraph()} />);
 
     const desktop = screen.getByTestId("layout-desktop-workspace");
-    await user.click(within(desktop).getByText("select-energy-from-table"));
+    await user.click(within(desktop).getByRole("button", { name: "シグナルを見る" }));
+    const signals = within(desktop).getByTestId("signals-panel");
+    await user.click(within(signals).getAllByRole("button")[1]);
 
     await waitFor(() => {
       expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();

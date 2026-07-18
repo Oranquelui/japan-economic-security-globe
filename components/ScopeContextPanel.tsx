@@ -8,6 +8,7 @@ import { SemanticLayerDeck } from "./SemanticLayerDeck";
 
 interface ScopeContextPanelProps {
   activeLayerId: SemanticLayerId;
+  comparisonAvailable: boolean;
   onLayerChange: (id: SemanticLayerId) => void;
   onOpenComparison: () => void;
   onOpenSignals: () => void;
@@ -18,6 +19,7 @@ interface ScopeContextPanelProps {
 
 export function ScopeContextPanel({
   activeLayerId,
+  comparisonAvailable,
   onLayerChange,
   onOpenComparison,
   onOpenSignals,
@@ -77,8 +79,14 @@ export function ScopeContextPanel({
       ) : null}
 
       <div className="mt-5 grid grid-cols-2 gap-2">
-        <SecondaryAction label="シグナルを見る" onClick={onOpenSignals} themePalette={themePalette} />
-        <SecondaryAction label="比較する" onClick={onOpenComparison} themePalette={themePalette} />
+        <SecondaryAction actionId="signals" label="シグナルを見る" onClick={onOpenSignals} themePalette={themePalette} />
+        <SecondaryAction
+          actionId="comparison"
+          disabled={!comparisonAvailable}
+          label={comparisonAvailable ? "比較する" : "比較可能な系列なし"}
+          onClick={onOpenComparison}
+          themePalette={themePalette}
+        />
       </div>
     </div>
   );
@@ -105,10 +113,14 @@ function SummaryCard({
 }
 
 function SecondaryAction({
+  actionId,
+  disabled = false,
   label,
   onClick,
   themePalette
 }: {
+  actionId: "comparison" | "signals";
+  disabled?: boolean;
   label: string;
   onClick: () => void;
   themePalette: ThemePalette;
@@ -116,8 +128,10 @@ function SecondaryAction({
   return (
     <button
       type="button"
+      data-secondary-action={actionId}
+      disabled={disabled}
       onClick={onClick}
-      className="rounded-xl border px-3 py-2.5 text-xs font-semibold transition"
+      className="rounded-xl border px-3 py-2.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-55"
       style={{
         borderColor: themePalette.borderStrong,
         background: themePalette.surfacePanelElevated,

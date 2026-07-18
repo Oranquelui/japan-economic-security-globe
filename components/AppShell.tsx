@@ -14,6 +14,7 @@ import { buildEvidenceGraph } from "../lib/semantic/view-models";
 import { buildJapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import { buildLiveLogisticsDetail } from "../lib/presentation/live-logistics-detail";
 import { buildLiveLogisticsView } from "../lib/presentation/live-logistics";
+import { validateMetricSeries } from "../lib/presentation/metric-series";
 import { getThemeView } from "../lib/semantic/selectors";
 import { buildOperationRows, filterOperationRows, type OperationMapMode } from "../lib/presentation/operations";
 import { getStatusPalette, getThemePalette } from "../lib/presentation/palette";
@@ -34,6 +35,7 @@ import { getThemeLabel, localizeAnyLabel, localizeKind } from "../lib/presentati
 import { getRouteStatus } from "../lib/presentation/route-status";
 import {
   buildSelectionInspector,
+  buildMetricSeries,
   buildWorkspacePresentation,
   getDefaultLayerDefinition,
   getLayerDefinition,
@@ -41,6 +43,7 @@ import {
 } from "../lib/presentation/workspace";
 import { summarizeSourceStatus } from "../lib/official/source-freshness";
 import { ActionBar } from "./ActionBar";
+import { ComparisonPanel } from "./ComparisonPanel";
 import { ContextInspector } from "./ContextInspector";
 import { EvidencePanel } from "./EvidencePanel";
 import { InitialNoticeModal } from "./InitialNoticeModal";
@@ -51,6 +54,7 @@ import { NavigationRail } from "./NavigationRail";
 import { OperationsSignalTable } from "./OperationsSignalTable";
 import { SourceStatusBar } from "./SourceStatusBar";
 import { ScopeContextPanel } from "./ScopeContextPanel";
+import { SignalsPanel } from "./SignalsPanel";
 import { WatchboardBriefing } from "./WatchboardBriefing";
 
 interface AppShellProps {
@@ -119,12 +123,21 @@ export function AppShell({
             : getDefaultLayerDefinition(resolvedInitialThemeId, initialWorkspace),
           mapModeOverride: null
         };
+  const initialMetricSeries = buildMetricSeries(
+    graph,
+    resolvedInitialThemeId,
+    initialPresentation.layer.id
+  );
+  const resolvedInitialWorkspaceView = initialUrlState.workspaceView === "comparison"
+    && !validateMetricSeries(initialMetricSeries).comparable
+      ? "map"
+      : homepageThemeChanged ? "map" : initialUrlState.workspaceView;
   const resolvedInitialState: OperationsUrlState = {
     themeId: resolvedInitialThemeId,
     selectedId: resolvedInitialSelectedId,
     layerId: initialPresentation.layer.id,
     mapModeOverride: initialPresentation.mapModeOverride,
-    workspaceView: homepageThemeChanged ? "map" : initialUrlState.workspaceView
+    workspaceView: resolvedInitialWorkspaceView
   };
   const [themeId, setThemeId] = useState<ThemeId>(resolvedInitialState.themeId);
   const [selectedId, setSelectedId] = useState<string | null>(resolvedInitialState.selectedId);
@@ -133,10 +146,9 @@ export function AppShell({
   const [mapModeOverride, setMapModeOverride] = useState<OperationMapMode | null>(
     resolvedInitialState.mapModeOverride
   );
-  const [workspaceView, setWorkspaceView] = useState(resolvedInitialState.workspaceView);
+  const [workspaceView, setWorkspaceView] = useState<OperationsUrlState["workspaceView"]>(resolvedInitialState.workspaceView);
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(true);
-  const [isCompareOpen, setCompareOpen] = useState(resolvedInitialState.workspaceView === "comparison");
   // Open evidence only when the URL explicitly pins a selection — not for homepage auto-lead.
   const [isEvidenceOpen, setEvidenceOpen] = useState(
     Boolean(hasExplicitUrlState && resolvedInitialState.selectedId)
@@ -189,6 +201,8 @@ export function AppShell({
   const activeLayer = requestedLayer?.available
     ? requestedLayer
     : getDefaultLayerDefinition(themeId, workspace);
+  const metricSeries = buildMetricSeries(graph, themeId, activeLayer.id);
+  const comparisonValidation = validateMetricSeries(metricSeries);
   const desktopMapMode = mapModeOverride ?? activeLayer.renderMode;
   const mobileMapMode = mapModeOverride ?? "point";
   const liveLogisticsDetailItem = liveLogistics?.items.find((item) => item.id === activeId) ?? null;
@@ -253,9 +267,7 @@ export function AppShell({
   const inspectorExpandedWidth = 360;
   const visiblePaneWidth = isInboxOpen ? paneWidth : 0;
   const inspectorWidth = isEvidenceOpen ? inspectorExpandedWidth : 0;
-  const compareExpandedHeight = 264;
-  const compareCollapsedHeight = 76;
-  const compareHeight = isCompareOpen ? compareExpandedHeight : compareCollapsedHeight;
+  const compareHeight = workspaceView === "comparison" ? 264 : 0;
   const mapOverlayInsets = {
     top: 16,
     left: railWidth + visiblePaneWidth + 16,
@@ -306,7 +318,6 @@ export function AppShell({
       setMapPopupAnchor(null);
       setSearchQuery("");
       setEvidenceOpen(false);
-      setCompareOpen(false);
     });
   }
 
@@ -326,29 +337,49 @@ export function AppShell({
 
     setLayerId(nextLayer.id);
     setMapModeOverride(null);
+    if (workspaceView === "comparison") {
+      const nextSeries = buildMetricSeries(graph, themeId, nextLayer.id);
+      if (!validateMetricSeries(nextSeries).comparable) {
+        setWorkspaceView("map");
+      }
+    }
   }
 
   function handleOpenSignals() {
-    setCompareOpen(false);
     setWorkspaceView("signals");
   }
 
   function handleOpenComparison() {
-    setCompareOpen(true);
+    if (!comparisonValidation.comparable) {
+      return;
+    }
     setWorkspaceView("comparison");
   }
 
-  function handleCompareToggle() {
-    const nextIsOpen = !isCompareOpen;
-
-    setCompareOpen(nextIsOpen);
-    setWorkspaceView(nextIsOpen ? "comparison" : "map");
+  function handleCloseSecondary(origin: "comparison" | "signals") {
+    setWorkspaceView("map");
+    setTimeout(() => {
+      const trigger = document.querySelector<HTMLButtonElement>(
+        `[data-testid="layout-desktop-workspace"] [data-secondary-action="${origin}"]`
+      );
+      trigger?.focus();
+    }, 0);
   }
 
   function handleSelect(nextSelectedId: string) {
     setSelectedId(nextSelectedId);
     setMapPopupAnchor(null);
     setEvidenceOpen(true);
+  }
+
+  function handleSecondarySelect(nextSelectedId: string) {
+    setWorkspaceView("map");
+    handleSelect(nextSelectedId);
+    setTimeout(() => {
+      document.querySelector<HTMLElement>(
+        '[data-testid="layout-desktop-workspace"] [data-testid="context-inspector"] h2'
+      )?.focus();
+    }, 0);
   }
 
   function handleMapSelect(nextSelectedId: string, anchor?: MapPopupAnchor) {
@@ -361,6 +392,28 @@ export function AppShell({
     setSelectedId(null);
     setMapPopupAnchor(null);
   }
+
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      if (workspaceView === "signals" || workspaceView === "comparison") {
+        event.preventDefault();
+        handleCloseSecondary(workspaceView);
+        return;
+      }
+
+      if (isEvidenceOpen) {
+        event.preventDefault();
+        setEvidenceOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isEvidenceOpen, workspaceView]);
 
   return (
     <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 xl:grid xl:grid-rows-[56px,auto,minmax(0,1fr)]" style={shellStyle}>
@@ -432,15 +485,30 @@ export function AppShell({
                 background: themePalette.surfacePanel
               }}
             >
-              <ScopeContextPanel
-                activeLayerId={activeLayer.id}
-                onLayerChange={handleLayerChange}
-                onOpenComparison={handleOpenComparison}
-                onOpenSignals={handleOpenSignals}
-                sources={view.sources}
-                themePalette={themePalette}
-                workspace={workspace}
-              />
+              {workspaceView === "signals" ? (
+                <SignalsPanel
+                  activeId={activeId}
+                  onBackToMap={() => handleCloseSecondary("signals")}
+                  onQueryChange={setSearchQuery}
+                  onSelect={handleSecondarySelect}
+                  query={searchQuery}
+                  rows={filteredOperationRows}
+                  themeId={themeId}
+                  themeLabel={themeLabel}
+                  themePalette={themePalette}
+                />
+              ) : (
+                <ScopeContextPanel
+                  activeLayerId={activeLayer.id}
+                  comparisonAvailable={comparisonValidation.comparable}
+                  onLayerChange={handleLayerChange}
+                  onOpenComparison={handleOpenComparison}
+                  onOpenSignals={handleOpenSignals}
+                  sources={view.sources}
+                  themePalette={themePalette}
+                  workspace={workspace}
+                />
+              )}
             </aside>
           ) : null}
 
@@ -468,27 +536,27 @@ export function AppShell({
             </aside>
           ) : null}
 
-          <section
-            data-testid="layout-compare-drawer"
-            className="absolute bottom-0 z-30 min-h-0"
-            style={{
-              left: railWidth + visiblePaneWidth,
-              right: inspectorWidth,
-              height: compareHeight
-            }}
-          >
-            <OperationsSignalTable
-              activeId={activeId}
-              collapsed={!isCompareOpen}
-              onSelect={handleSelect}
-              query={searchQuery}
-              rows={filteredOperationRows}
-              statusPalette={statusPalette}
-              themeId={themeId}
-              themePalette={themePalette}
-              onToggleCollapsed={handleCompareToggle}
-            />
-          </section>
+          {workspaceView === "comparison" && comparisonValidation.comparable ? (
+            <section
+              data-testid="layout-compare-drawer"
+              className="absolute bottom-0 z-30 min-h-0"
+              style={{
+                left: railWidth + visiblePaneWidth,
+                right: inspectorWidth,
+                height: 264
+              }}
+            >
+              <ComparisonPanel
+                activeId={activeId}
+                layer={activeLayer}
+                onClose={() => handleCloseSecondary("comparison")}
+                onSelect={handleSecondarySelect}
+                series={metricSeries}
+                sources={view.sources}
+                themePalette={themePalette}
+              />
+            </section>
+          ) : null}
         </div>
 
         <div data-testid="layout-stacked-workspace" className="min-w-0 space-y-4 overflow-x-hidden pb-6 xl:hidden">

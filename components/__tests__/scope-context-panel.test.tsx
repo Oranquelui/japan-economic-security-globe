@@ -22,6 +22,7 @@ describe("ScopeContextPanel", () => {
     render(
       <ScopeContextPanel
         activeLayerId="rice-harvest"
+        comparisonAvailable
         onLayerChange={vi.fn()}
         onOpenComparison={vi.fn()}
         onOpenSignals={vi.fn()}
@@ -55,6 +56,7 @@ describe("ScopeContextPanel", () => {
     render(
       <ScopeContextPanel
         activeLayerId="rice-harvest"
+        comparisonAvailable
         onLayerChange={onLayerChange}
         onOpenComparison={onOpenComparison}
         onOpenSignals={onOpenSignals}
@@ -81,6 +83,7 @@ describe("ScopeContextPanel", () => {
     render(
       <ScopeContextPanel
         activeLayerId="rice-logistics-inputs"
+        comparisonAvailable
         onLayerChange={vi.fn()}
         onOpenComparison={vi.fn()}
         onOpenSignals={vi.fn()}
@@ -103,6 +106,7 @@ describe("ScopeContextPanel", () => {
     render(
       <ScopeContextPanel
         activeLayerId={"missing-layer" as SemanticLayerId}
+        comparisonAvailable
         onLayerChange={vi.fn()}
         onOpenComparison={vi.fn()}
         onOpenSignals={vi.fn()}
@@ -128,6 +132,7 @@ describe("ScopeContextPanel", () => {
     render(
       <ScopeContextPanel
         activeLayerId="rice-harvest"
+        comparisonAvailable={false}
         onLayerChange={vi.fn()}
         onOpenComparison={vi.fn()}
         onOpenSignals={vi.fn()}
@@ -139,5 +144,7 @@ describe("ScopeContextPanel", () => {
 
     expect(screen.getAllByRole("button").every((button) => button.getAttribute("aria-pressed") !== "true")).toBe(true);
     expect(screen.queryByRole("region", { name: /凡例/ })).toBeNull();
+    const comparison = screen.getByRole("button", { name: "比較可能な系列なし" });
+    expect(comparison.hasAttribute("disabled")).toBe(true);
   });
 });

@@ -193,6 +193,7 @@ vi.mock("../ContextInspector", () => ({
     inspector: {
       detail: {
         id: string;
+        label: string;
         summary?: string;
         whyItMatters?: string;
         sources?: unknown[];
@@ -214,6 +215,7 @@ vi.mock("../ContextInspector", () => ({
       data-theme={themeTitle}
       data-value={inspector.primaryMetric?.valueLabel ?? ""}
     >
+      <h2 tabIndex={-1}>{inspector.detail.label}</h2>
       <button type="button" aria-label="詳細を閉じる" onClick={onClose}>
         close-inspector
       </button>
@@ -254,7 +256,7 @@ beforeEach(() => {
 });
 
 describe("AppShell url sync", () => {
-  test("renders the shell as a command pane, full map stage, evidence drawer, and collapsed compare drawer", () => {
+  test("renders the default desktop map without persistent secondary chrome", () => {
     render(
       <AppShell
         graph={loadSeedGraph()}
@@ -305,12 +307,14 @@ describe("AppShell url sync", () => {
     expect(screen.queryByTestId("layout-watchboard-overlay")).toBeNull();
     expect(within(desktopWorkspace).getByTestId("scope-context-panel")).toBeTruthy();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-watch-overlays")).toBe("0");
-    expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
+    expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
+    expect(within(desktopWorkspace).queryByTestId("signals-panel")).toBeNull();
     expect(screen.queryByTestId("layout-context-inspector")).toBeNull();
     expect(screen.queryByTestId("context-inspector")).toBeNull();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-overlay-right")).toBe("16");
-    // Homepage ranking lead may pin a selection for map focus without opening evidence.
-    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("yes");
+    // The mobile table remains mounted in the mobile workspace only.
+    expect(screen.getAllByTestId("grid")).toHaveLength(1);
+    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(withinActionBar().queryByText("表示レイヤー")).toBeNull();
     expect(within(desktopWorkspace).queryByTestId("map-layer-controls")).toBeNull();
@@ -357,6 +361,8 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("observation:rice-price-signal-2026");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("observation:rice-price-signal-2026");
     expect(screen.getByTestId("context-inspector").getAttribute("data-id")).toBe("observation:rice-price-signal-2026");
+    expect(within(screen.getByTestId("layout-desktop-workspace")).getByTestId("signals-panel")).toBeTruthy();
+    expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
     expect(replaceMock).not.toHaveBeenCalled();
   });
 
@@ -403,7 +409,7 @@ describe("AppShell url sync", () => {
     });
   });
 
-  test("routes scope actions to explicit secondary workspace views", async () => {
+  test("mounts exactly one desktop secondary view and restores focus to each trigger", async () => {
     const user = userEvent.setup();
 
     render(<AppShell graph={loadSeedGraph()} />);
@@ -412,12 +418,27 @@ describe("AppShell url sync", () => {
     await user.click(within(desktop).getByRole("button", { name: "シグナルを見る" }));
     await waitFor(() => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?view=signals", { scroll: false });
+      expect(within(desktop).getByTestId("signals-panel")).toBeTruthy();
+      expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
+    });
+    expect(within(desktop).getByRole("heading", { name: "コメのシグナル" })).toBe(document.activeElement);
+
+    await user.click(within(desktop).getByRole("button", { name: "地図に戻る" }));
+    await waitFor(() => {
+      expect(within(desktop).getByRole("button", { name: "シグナルを見る" })).toBe(document.activeElement);
     });
 
     await user.click(within(desktop).getByRole("button", { name: "比較する" }));
     await waitFor(() => {
       expect(replaceMock).toHaveBeenLastCalledWith("/?view=comparison", { scroll: false });
-      expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
+      expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
+      expect(within(desktop).queryByTestId("signals-panel")).toBeNull();
+    });
+    expect(within(desktop).getByRole("heading", { name: "収穫量を比較" })).toBe(document.activeElement);
+
+    await user.click(within(desktop).getByRole("button", { name: "比較を閉じる" }));
+    await waitFor(() => {
+      expect(within(desktop).getByRole("button", { name: "比較する" })).toBe(document.activeElement);
     });
   });
 
@@ -451,19 +472,46 @@ describe("AppShell url sync", () => {
     expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
   });
 
-  test("opens the compare drawer only after an explicit toggle", async () => {
+  test("Escape closes a secondary view before the inspector", async () => {
     const user = userEvent.setup();
 
     render(<AppShell graph={loadSeedGraph()} />);
+    const desktop = screen.getByTestId("layout-desktop-workspace");
 
-    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("yes");
+    await user.click(screen.getAllByText("select-rice-from-inbox")[0]);
+    await user.click(within(desktop).getByRole("button", { name: "比較する" }));
+    expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();
+    expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
 
-    await user.click(screen.getAllByText("toggle-grid")[0]);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
+    expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();
 
-    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
+    await user.keyboard("{Escape}");
+    expect(within(desktop).queryByTestId("context-inspector")).toBeNull();
   });
 
   test("hydrates the comparison workspace view from URL state", () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "rice",
+          selectedId: null,
+          layerId: "rice-harvest",
+          mapModeOverride: null,
+          workspaceView: "comparison"
+        }}
+      />
+    );
+
+    expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("choropleth");
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  test("normalizes comparison URL state for a non-comparable layer to map once", async () => {
     render(
       <AppShell
         graph={loadSeedGraph()}
@@ -478,9 +526,12 @@ describe("AppShell url sync", () => {
       />
     );
 
-    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("point");
-    expect(replaceMock).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
+    expect(within(screen.getByTestId("layout-desktop-workspace")).getByTestId("scope-context-panel")).toBeTruthy();
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalledTimes(1);
+      expect(replaceMock).toHaveBeenLastCalledWith("/?layer=rice-price", { scroll: false });
+    });
   });
 
   test("uses the homepage ranking lead when the URL did not explicitly pin a theme", () => {
@@ -810,6 +861,21 @@ describe("AppShell url sync", () => {
       expect(screen.getByTestId("context-inspector")).toBeTruthy();
     });
     expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("");
+  });
+
+  test("comparison selection returns to map, selects Niigata, and focuses the inspector heading", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    await user.click(within(desktop).getByRole("button", { name: "比較する" }));
+    await user.click(within(desktop).getByRole("button", { name: /新潟県 514,100/ }));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
+      expect(within(desktop).getByTestId("context-inspector").getAttribute("data-id")).toBe("prefecture:niigata");
+      expect(within(desktop).getByRole("heading", { name: "新潟県" })).toBe(document.activeElement);
+    });
   });
 
   test("closes the inspector without changing the selected theme or layer", async () => {

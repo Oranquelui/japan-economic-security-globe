@@ -174,7 +174,7 @@ export function EvidenceSurface({
           <p className="ops-label" style={{ color: themePalette.textMuted }}>
             根拠
           </p>
-          <h2 className="ops-title mt-2 text-xl text-white">{localizeAnyLabel(detail.id, detail.label)}</h2>
+          <h2 tabIndex={-1} className="ops-title mt-2 text-xl text-white outline-none">{localizeAnyLabel(detail.id, detail.label)}</h2>
           {primaryMetric ? (
             <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <span className="text-2xl font-semibold tracking-tight text-white">{primaryMetric.valueLabel}</span>
