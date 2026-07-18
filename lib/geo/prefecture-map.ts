@@ -29,6 +29,13 @@ export type PrefectureMetricFeatureCollection = Readonly<{
   features: readonly PrefectureMetricFeature[];
 }>;
 
+export class PrefectureMetricValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PrefectureMetricValidationError";
+  }
+}
+
 export function buildPrefectureMetricFeatureCollection(
   regions: readonly PrefectureMetricRegion[],
   activeId: string
@@ -39,7 +46,9 @@ export function buildPrefectureMetricFeatureCollection(
     const region = regionByEntityId.get(entityId);
 
     if (!region) {
-      throw new Error(`Missing prefecture metric entity for boundary: ${entityId}`);
+      throw new PrefectureMetricValidationError(
+        `Missing prefecture metric entity for boundary: ${entityId}`
+      );
     }
 
     const properties = Object.freeze({
@@ -75,7 +84,9 @@ function validatePrefectureMetricRegions(
 
   for (const region of regions) {
     if (regionByEntityId.has(region.id)) {
-      throw new Error(`Duplicate prefecture metric entityId: ${region.id}`);
+      throw new PrefectureMetricValidationError(
+        `Duplicate prefecture metric entityId: ${region.id}`
+      );
     }
     regionByEntityId.set(region.id, region);
   }
@@ -83,7 +94,9 @@ function validatePrefectureMetricRegions(
   for (const region of regions) {
     const boundary = prefectureBoundaryByEntityId.get(region.id as `prefecture:${string}`);
     if (!boundary) {
-      throw new Error(`Unmatched prefecture metric entityId: ${region.id}`);
+      throw new PrefectureMetricValidationError(
+        `Unmatched prefecture metric entityId: ${region.id}`
+      );
     }
     validatePrefectureGeometry(region, boundary);
     validatePrefectureMetricState(region);
@@ -99,17 +112,19 @@ function validatePrefectureGeometry(
   const candidate = region as unknown as Record<string, unknown>;
   const geometryKind = candidate.geometryKind;
   if (geometryKind !== "prefecture-boundary") {
-    throw new Error(
+    throw new PrefectureMetricValidationError(
       `Invalid prefecture geometryKind for entityId: ${region.id}; expected prefecture-boundary, received ${String(geometryKind)}`
     );
   }
 
   const prefectureCode = candidate.prefectureCode;
   if (typeof prefectureCode !== "string") {
-    throw new Error(`Missing prefectureCode for entityId: ${region.id}`);
+    throw new PrefectureMetricValidationError(
+      `Missing prefectureCode for entityId: ${region.id}`
+    );
   }
   if (prefectureCode !== boundary.properties.prefectureCode) {
-    throw new Error(
+    throw new PrefectureMetricValidationError(
       `Mismatched prefectureCode for entityId: ${region.id}; expected ${boundary.properties.prefectureCode}, received ${prefectureCode}`
     );
   }
@@ -122,7 +137,7 @@ function validatePrefectureMetricState(region: PrefectureMetricRegion): void {
 
   if (value === null) {
     if (hasRawValue) {
-      throw new Error(
+      throw new PrefectureMetricValidationError(
         `Invalid prefecture metric state for entityId: ${region.id}; null value forbids rawValue`
       );
     }
@@ -130,19 +145,19 @@ function validatePrefectureMetricState(region: PrefectureMetricRegion): void {
   }
 
   if (typeof value !== "number" || !Number.isFinite(value)) {
-    throw new Error(
+    throw new PrefectureMetricValidationError(
       `Invalid prefecture metric value for entityId: ${region.id}; expected a finite number`
     );
   }
   if (!hasRawValue) {
-    throw new Error(
+    throw new PrefectureMetricValidationError(
       `Invalid prefecture metric state for entityId: ${region.id}; finite value requires finite rawValue`
     );
   }
 
   const rawValue = candidate.rawValue;
   if (typeof rawValue !== "number" || !Number.isFinite(rawValue)) {
-    throw new Error(
+    throw new PrefectureMetricValidationError(
       `Invalid prefecture metric rawValue for entityId: ${region.id}; expected a finite number`
     );
   }

@@ -3,7 +3,10 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import type { GeoJSONSourceSpecification } from "maplibre-gl";
 
-import { buildPrefectureMetricFeatureCollection } from "../lib/geo/prefecture-map";
+import {
+  PrefectureMetricValidationError,
+  buildPrefectureMetricFeatureCollection
+} from "../lib/geo/prefecture-map";
 import {
   PREFECTURE_LABEL_FONT_SIZE,
   buildPrefectureLabelFeatureCollections,
@@ -56,6 +59,11 @@ const JA_NUMBER_FORMATTER = new Intl.NumberFormat("ja-JP");
 const EMPTY_FEATURE_COLLECTION = Object.freeze({
   type: "FeatureCollection" as const,
   features: Object.freeze([])
+});
+const EMPTY_PREFECTURE_LABEL_SOURCES = Object.freeze({
+  labelPoints: EMPTY_FEATURE_COLLECTION as unknown as GeoJSONSourceSpecification["data"],
+  leaderLines: EMPTY_FEATURE_COLLECTION as unknown as GeoJSONSourceSpecification["data"],
+  selectedLabelPoints: EMPTY_FEATURE_COLLECTION as unknown as GeoJSONSourceSpecification["data"]
 });
 const INTERACTIVE_SEMANTIC_LAYER_IDS = [
   "jp-point-circle",
@@ -1986,13 +1994,14 @@ function buildPrefectureLabelSources(
 }
 
 function buildPrefectureMapSources(regions: JapanMapRegion[], activeId: string) {
+  const labels = buildPrefectureLabelSources(regions, activeId);
   const hasPrefectureBoundaries = regions.some(
     (region) => region.geometryKind === "prefecture-boundary"
   );
 
   if (!hasPrefectureBoundaries) {
     return {
-      labels: buildPrefectureLabelSources([], activeId),
+      labels,
       prefectures: EMPTY_FEATURE_COLLECTION as unknown as GeoJSONSourceSpecification["data"],
       unavailable: false
     };
@@ -2000,13 +2009,21 @@ function buildPrefectureMapSources(regions: JapanMapRegion[], activeId: string) 
 
   try {
     return {
-      labels: buildPrefectureLabelSources(regions, activeId),
+      labels,
       prefectures: prefectureRegionsToFeatureCollection(regions, activeId),
       unavailable: false
     };
-  } catch {
+  } catch (error) {
+    if (!(error instanceof PrefectureMetricValidationError)) {
+      throw error;
+    }
+
+    console.error(
+      "Prefecture boundary/model validation failed; rendering an empty prefecture geometry source.",
+      error
+    );
     return {
-      labels: buildPrefectureLabelSources([], activeId),
+      labels: EMPTY_PREFECTURE_LABEL_SOURCES,
       prefectures: EMPTY_FEATURE_COLLECTION as unknown as GeoJSONSourceSpecification["data"],
       unavailable: true
     };

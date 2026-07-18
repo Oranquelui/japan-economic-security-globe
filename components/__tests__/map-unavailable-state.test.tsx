@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { prefectureBoundaryCollection } from "../../lib/geo/prefecture-boundaries";
 import type { JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
@@ -15,7 +15,45 @@ const registeredLayerHandlers: Array<{
   handler: (...args: any[]) => void;
   layerIds: string[];
 }> = [];
+const mapLoadErrors: unknown[] = [];
+const injectedFailure = vi.hoisted(() => ({
+  boundaryBuilder: null as Error | null,
+  labelBuilder: null as Error | null
+}));
 let mapZoom = 5.3;
+let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
+vi.mock("../../lib/geo/prefecture-map", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../lib/geo/prefecture-map")>();
+
+  return {
+    ...actual,
+    buildPrefectureMetricFeatureCollection: (
+      ...args: Parameters<typeof actual.buildPrefectureMetricFeatureCollection>
+    ) => {
+      if (injectedFailure.boundaryBuilder) {
+        throw injectedFailure.boundaryBuilder;
+      }
+      return actual.buildPrefectureMetricFeatureCollection(...args);
+    }
+  };
+});
+
+vi.mock("../../lib/geo/prefecture-label-layout", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../lib/geo/prefecture-label-layout")>();
+
+  return {
+    ...actual,
+    buildPrefectureLabelFeatureCollections: (
+      ...args: Parameters<typeof actual.buildPrefectureLabelFeatureCollections>
+    ) => {
+      if (injectedFailure.labelBuilder) {
+        throw injectedFailure.labelBuilder;
+      }
+      return actual.buildPrefectureLabelFeatureCollections(...args);
+    }
+  };
+});
 
 Object.defineProperty(window, "matchMedia", {
   configurable: true,
@@ -66,7 +104,11 @@ vi.mock("maplibre-gl", () => {
       handler?: (...args: any[]) => void
     ) => {
       if (event === "load" && typeof layerOrHandler === "function") {
-        layerOrHandler();
+        try {
+          layerOrHandler();
+        } catch (error) {
+          mapLoadErrors.push(error);
+        }
       }
       if ((typeof layerOrHandler === "string" || Array.isArray(layerOrHandler)) && handler) {
         registeredLayerHandlers.push({
@@ -87,12 +129,20 @@ vi.mock("maplibre-gl", () => {
   };
 });
 
+beforeEach(() => {
+  consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+});
+
 afterEach(() => {
   cleanup();
   addedSources.clear();
   sourceSetDataSpies.clear();
   registeredLayerHandlers.length = 0;
+  mapLoadErrors.length = 0;
+  injectedFailure.boundaryBuilder = null;
+  injectedFailure.labelBuilder = null;
   mapZoom = 5.3;
+  consoleErrorSpy.mockRestore();
 });
 
 const baseModel: JapanMapCanvasModel = {
@@ -183,6 +233,13 @@ describe("prefecture map unavailable state", () => {
     expect(sourceFeatures("jp-regions")).toEqual([]);
     expect(sourceFeatures("jp-points")).toHaveLength(2);
     expect(sourceFeatures("jp-routes")).toHaveLength(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "Prefecture boundary/model validation failed; rendering an empty prefecture geometry source.",
+      expect.objectContaining({
+        message: expect.stringContaining("Missing prefecture metric entity for boundary"),
+        name: "PrefectureMetricValidationError"
+      })
+    );
   });
 
   test("shows no unavailable status for valid prefecture geometry or representative-radius-only regions", async () => {
@@ -278,5 +335,21 @@ describe("prefecture map unavailable state", () => {
       x: 420,
       y: 240
     });
+  });
+
+  test.each([
+    { failure: "boundaryBuilder" as const, message: "unexpected boundary builder failure" },
+    { failure: "labelBuilder" as const, message: "unexpected label builder failure" }
+  ])("rethrows an unknown $failure error without reporting geometry unavailable", async ({ failure, message }) => {
+    const unexpectedError = new Error(message);
+    injectedFailure[failure] = unexpectedError;
+
+    renderCanvas({ ...baseModel, regions: prefectureMetricRegions() });
+
+    await waitFor(() => {
+      expect(mapLoadErrors).toEqual([unexpectedError]);
+    });
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+    expect(screen.queryByRole("status", { name: "都道府県の地図形状の状態" })).toBeNull();
   });
 });

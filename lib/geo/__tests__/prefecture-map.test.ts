@@ -5,7 +5,10 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, test } from "vitest";
 
 import { prefectureBoundaryCollection } from "../prefecture-boundaries";
-import { buildPrefectureMetricFeatureCollection } from "../prefecture-map";
+import {
+  PrefectureMetricValidationError,
+  buildPrefectureMetricFeatureCollection
+} from "../prefecture-map";
 import type { PrefectureMetricRegion } from "../prefecture-map";
 import { NATURAL_EARTH_PREFECTURE_SOURCE_ID } from "../prefecture-source";
 
@@ -84,6 +87,26 @@ function replaceHokkaido(
   return regions.map((region) =>
     region.id === "prefecture:hokkaido" ? replacement(region) : region
   );
+}
+
+function expectPrefectureMetricValidationError(
+  operation: () => unknown,
+  expectedMessage: string | RegExp
+) {
+  let thrown: unknown;
+  try {
+    operation();
+  } catch (error) {
+    thrown = error;
+  }
+
+  expect(thrown).toBeInstanceOf(PrefectureMetricValidationError);
+  expect(thrown).toMatchObject({ name: "PrefectureMetricValidationError" });
+  if (typeof expectedMessage === "string") {
+    expect((thrown as Error).message).toBe(expectedMessage);
+  } else {
+    expect((thrown as Error).message).toMatch(expectedMessage);
+  }
 }
 
 describe("prefecture metric feature collection", () => {
@@ -191,7 +214,8 @@ describe("prefecture metric feature collection", () => {
   ])("rejects $name at the builder boundary", ({ replacement, error }) => {
     const regions = replaceHokkaido(metricRegions(), replacement);
 
-    expect(() => buildPrefectureMetricFeatureCollection(regions, "prefecture:tokyo")).toThrow(
+    expectPrefectureMetricValidationError(
+      () => buildPrefectureMetricFeatureCollection(regions, "prefecture:tokyo"),
       error
     );
   });
@@ -216,7 +240,8 @@ describe("prefecture metric feature collection", () => {
   ])("rejects $name", ({ replacement, error }) => {
     const regions = replaceHokkaido(metricRegions(), replacement);
 
-    expect(() => buildPrefectureMetricFeatureCollection(regions, "prefecture:tokyo")).toThrow(
+    expectPrefectureMetricValidationError(
+      () => buildPrefectureMetricFeatureCollection(regions, "prefecture:tokyo"),
       error
     );
   });
@@ -233,7 +258,8 @@ describe("prefecture metric feature collection", () => {
       rawValue
     } as unknown as PrefectureMetricRegion));
 
-    expect(() => buildPrefectureMetricFeatureCollection(regions, "prefecture:tokyo")).toThrow(
+    expectPrefectureMetricValidationError(
+      () => buildPrefectureMetricFeatureCollection(regions, "prefecture:tokyo"),
       `Invalid prefecture metric ${field} for entityId: prefecture:hokkaido; expected a finite number`
     );
   });
@@ -261,13 +287,16 @@ describe("prefecture metric feature collection", () => {
       index === 0 ? { ...region, id: regions[1].id } : region
     );
 
-    expect(() => buildPrefectureMetricFeatureCollection(unmatched, "prefecture:tokyo")).toThrow(
+    expectPrefectureMetricValidationError(
+      () => buildPrefectureMetricFeatureCollection(unmatched, "prefecture:tokyo"),
       "Unmatched prefecture metric entityId: prefecture:not-in-boundaries"
     );
-    expect(() => buildPrefectureMetricFeatureCollection(duplicate, "prefecture:tokyo")).toThrow(
+    expectPrefectureMetricValidationError(
+      () => buildPrefectureMetricFeatureCollection(duplicate, "prefecture:tokyo"),
       `Duplicate prefecture metric entityId: ${regions[1].id}`
     );
-    expect(() => buildPrefectureMetricFeatureCollection(regions.slice(1), "prefecture:tokyo")).toThrow(
+    expectPrefectureMetricValidationError(
+      () => buildPrefectureMetricFeatureCollection(regions.slice(1), "prefecture:tokyo"),
       /Missing prefecture metric entity for boundary: prefecture:/
     );
   });
