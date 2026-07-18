@@ -304,6 +304,7 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 - Modify: `lib/geo/__tests__/prefecture-map.test.ts`
 - Modify: `components/JapanOperationsMapCanvas.tsx`
 - Modify: `components/__tests__/map-canvas-layer-config.test.tsx`
+- Modify: `e2e/prefecture-map.spec.ts`
 - Modify: `lib/presentation/basemap-style.ts`
 - Modify: `lib/presentation/__tests__/basemap-style.test.ts`
 
@@ -553,7 +554,7 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 
 Write a failing regression test first. With `focusTargetId` set to a `prefecture-boundary` region, selecting the prefecture must continue to update the semantic selection outside the canvas, but the canvas must not call `easeTo` or `fitBounds` and must preserve its current zoom/camera. Keep the existing focus behavior for representative-radius regions, points, and routes.
 
-After the RED test proves the current automatic zoom, add the smallest canvas-side guard that suppresses focus only for `prefecture-boundary` selections. Run the focused test, full unit suite, typecheck, production build, and prefecture Playwright acceptance. Commit this behavior fix separately before recapturing evidence, then run fresh spec and code-quality reviews for the fix.
+After the RED test proves the current automatic zoom, add the smallest canvas-side guard that suppresses focus only for `prefecture-boundary` selections. Update the existing selected-prefecture detail E2E so it first proves the selected URL keeps the overview camera, then uses actual pan and zoom controls to bring Tokyo into view before asserting the selected label, zoom-9 polygon absence, and invisible-click behavior. The E2E must not regain a programmatic or URL-triggered camera shortcut. Run the focused test, full unit suite, typecheck, production build, and prefecture Playwright acceptance. Commit this behavior fix separately before recapturing evidence, then run fresh spec and code-quality reviews for the fix.
 
 ```bash
 npx vitest run components/__tests__/map-canvas-layer-config.test.tsx
@@ -562,7 +563,7 @@ npm run typecheck
 npm run build
 npm run test:e2e:prefecture
 git diff --check
-git add components/JapanOperationsMapCanvas.tsx components/__tests__/map-canvas-layer-config.test.tsx
+git add components/JapanOperationsMapCanvas.tsx components/__tests__/map-canvas-layer-config.test.tsx e2e/prefecture-map.spec.ts
 git commit -m "fix: preserve camera on prefecture selection"
 ```
 
