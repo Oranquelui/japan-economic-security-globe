@@ -243,6 +243,7 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 - Modify: `lib/presentation/workspace.ts`
 - Modify: `lib/presentation/__tests__/map-canvas.test.ts`
 - Modify: `lib/presentation/__tests__/workspace.test.ts`
+- Modify: `components/__tests__/active-layer-summary-panel.test.tsx`
 
 ### Step 3.1: Write failing join and regression tests
 
