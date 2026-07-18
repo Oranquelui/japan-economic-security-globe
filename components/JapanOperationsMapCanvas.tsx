@@ -70,6 +70,18 @@ export function JapanOperationsMapCanvas({
   useEffect(() => {
     let disposed = false;
     const interactionSubscriptions: Array<{ unsubscribe: () => void }> = [];
+    const handleClusterMouseEnter = () => {
+      const map = mapRef.current;
+      if (map) {
+        map.getCanvas().style.cursor = "pointer";
+      }
+    };
+    const handleClusterMouseLeave = () => {
+      const map = mapRef.current;
+      if (map) {
+        map.getCanvas().style.cursor = "";
+      }
+    };
 
     async function mount() {
       if (!containerRef.current || mapRef.current) {
@@ -680,6 +692,8 @@ export function JapanOperationsMapCanvas({
             zoom
           });
         }));
+        map.on("mouseenter", "jp-cluster-circle", handleClusterMouseEnter);
+        map.on("mouseleave", "jp-cluster-circle", handleClusterMouseLeave);
 
         applyModeVisibility(map, mapMode);
         startRouteScanAnimation(map, scanPhaseRef, scanRafRef);
@@ -694,6 +708,12 @@ export function JapanOperationsMapCanvas({
 
     return () => {
       disposed = true;
+      const map = mapRef.current;
+      if (map) {
+        map.off("mouseenter", "jp-cluster-circle", handleClusterMouseEnter);
+        map.off("mouseleave", "jp-cluster-circle", handleClusterMouseLeave);
+      }
+
       for (const subscription of interactionSubscriptions) {
         subscription.unsubscribe();
       }

@@ -17,6 +17,8 @@ const registeredLayerHandlers: Array<{
 }> = [];
 let lastMap: {
   fitBounds: ReturnType<typeof vi.fn>;
+  getCanvas: ReturnType<typeof vi.fn>;
+  off: ReturnType<typeof vi.fn>;
 } | null = null;
 let mapCanvasSize = { width: 1024, height: 720 };
 
@@ -39,14 +41,16 @@ vi.mock("maplibre-gl", () => {
     zoomOut = vi.fn();
     setPaintProperty = vi.fn();
     setLayoutProperty = vi.fn();
-    getCanvas = vi.fn(() => ({
+    canvas = {
       clientHeight: mapCanvasSize.height,
       clientWidth: mapCanvasSize.width,
       style: { cursor: "" }
-    }));
+    };
+    getCanvas = vi.fn(() => this.canvas);
     getSource = vi.fn(() => ({ setData: vi.fn(), getClusterExpansionZoom: vi.fn(async () => 6) }));
     isStyleLoaded = vi.fn(() => true);
     getZoom = vi.fn(() => 5.3);
+    off = vi.fn();
 
     constructor() {
       lastMap = this;
@@ -652,11 +656,50 @@ describe("map canvas layer config", () => {
     expect(groupedRegistrations("mouseenter")).toHaveLength(1);
     expect(groupedRegistrations("mouseleave")).toHaveLength(1);
     expect(groupedRegistrations("click")).toHaveLength(1);
+    expect(groupedLayers).not.toContain("jp-cluster-circle");
+    expect(getRegistrations("mousemove").some((registration) => registration.layerIds.includes("jp-cluster-circle"))).toBe(false);
     expect(getRegistrations("click").filter((registration) => registration.layerIds.includes("jp-cluster-circle"))).toHaveLength(1);
 
     const groupedSubscriptions = registeredLayerHandlers.filter((registration) => registration.layerIds.length > 1);
     unmount();
     expect(groupedSubscriptions.every((registration) => registration.unsubscribe.mock.calls.length === 1)).toBe(true);
+  });
+
+  test("restores the cluster pointer affordance with stable handlers and off cleanup", async () => {
+    const { unmount } = render(
+      <JapanOperationsMapCanvas
+        activeId="port:yokohama"
+        focusTargetId={null}
+        mapMode="cluster"
+        model={model}
+        onHover={vi.fn()}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getClusterCursorRegistration("mouseenter")).toBeDefined();
+      expect(getClusterCursorRegistration("mouseleave")).toBeDefined();
+    });
+
+    const enter = getClusterCursorRegistration("mouseenter")!;
+    const leave = getClusterCursorRegistration("mouseleave")!;
+    enter.handler();
+    expect(lastMap?.getCanvas().style.cursor).toBe("pointer");
+    leave.handler();
+    expect(lastMap?.getCanvas().style.cursor).toBe("");
+
+    expect(groupedRegistrations("mouseenter")).toHaveLength(1);
+    expect(groupedRegistrations("mouseleave")).toHaveLength(1);
+    expect(groupedRegistrations("mousemove")).toHaveLength(1);
+    expect(groupedRegistrations("click")).toHaveLength(1);
+    expect(getLayerHandler("mousemove", "jp-cluster-circle")).toBeUndefined();
+
+    unmount();
+    expect(lastMap?.off).toHaveBeenCalledWith("mouseenter", "jp-cluster-circle", enter.handler);
+    expect(lastMap?.off).toHaveBeenCalledWith("mouseleave", "jp-cluster-circle", leave.handler);
   });
 
   test("hovers and selects a logistics impact region through the shared handlers", async () => {
@@ -745,4 +788,10 @@ function groupedRegistrations(event: string) {
 
 function getLayerHandler(event: string, layerId: string) {
   return getRegistrations(event).find((registration) => registration.layerIds.includes(layerId))?.handler;
+}
+
+function getClusterCursorRegistration(event: "mouseenter" | "mouseleave") {
+  return getRegistrations(event).find((registration) => (
+    registration.layerIds.length === 1 && registration.layerIds[0] === "jp-cluster-circle"
+  ));
 }
