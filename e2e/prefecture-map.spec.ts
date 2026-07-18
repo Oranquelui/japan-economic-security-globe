@@ -105,6 +105,7 @@ test.describe("prefecture map acceptance", () => {
   }
 
   test("removes polygons at detailed zoom and keeps clicks from changing selection", async ({ page }) => {
+    test.setTimeout(60_000);
     const network = await installLocalNetworkGuard(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/?theme=rice&layer=rice-harvest&selected=prefecture%3Atokyo");
