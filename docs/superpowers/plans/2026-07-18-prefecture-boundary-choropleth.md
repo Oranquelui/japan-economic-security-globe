@@ -237,6 +237,7 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 
 **Files:**
 
+- Create: `lib/geo/prefecture-source.ts`
 - Create: `lib/geo/prefecture-map.ts`
 - Create: `lib/geo/__tests__/prefecture-map.test.ts`
 - Modify: `lib/presentation/map-canvas.ts`
@@ -251,6 +252,7 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 Require:
 
 - prefecture regional metrics declare a boundary geometry kind and stable `prefectureCode`;
+- `JapanMapRegion` is a true discriminated union: boundary regions require `prefectureCode`, radius regions forbid it, finite normalized values require finite `rawValue`, and missing values are the paired null/no-raw state;
 - rice regions join to all 47 boundary features by `entityId`, never by display label;
 - geometry feature properties include `id`, `entityId`, `prefectureCode`, `label`, `value`, `rawValue`, `unit`, `periodLabel`, `sourceIds`, and `selected`;
 - missing typed values remain `null` and keep the feature;
@@ -258,6 +260,7 @@ Require:
 - non-prefecture regional layers retain the representative-radius contract;
 - rice layer `sourceIds` are ordered `[e-Stat metric, Natural Earth geometry]`;
 - rice map copy says `都道府県の一般化された地域形状` and no longer says representative point or precise administrative polygon.
+- the shared Natural Earth source ID lives in a lightweight dependency-free module, so presentation-only source lookup does not import or parse the boundary artifact.
 
 Run:
 
@@ -273,11 +276,11 @@ Extend `JapanMapRegion` with a narrow discriminator such as `geometryKind: "pref
 
 ### Step 3.3: Build the boundary feature collection
 
-`lib/geo/prefecture-map.ts` combines the immutable boundary collection with current metric properties. It must not import React or MapLibre. Keep the collection builder deterministic and pure so component tests can inspect it directly.
+`lib/geo/prefecture-map.ts` combines the immutable boundary collection with current metric properties. It must not import React or MapLibre. Keep the collection builder deterministic and pure so component tests can inspect it directly. At the builder boundary, validate the geometry discriminator/code pair and require finite paired `value`/`rawValue` numbers or the explicit missing-value state; reject mismatched codes, non-finite numbers, normalized values without raw data, and raw data attached to `null`.
 
 ### Step 3.4: Update source order and copy
 
-Add a shared Natural Earth source ID constant. Update only the rice-harvest layer and corresponding map model. Do not add the geometry source to rice price, inventory, logistics, unrelated themes, or semantic entities.
+Add a shared Natural Earth source ID constant in dependency-free `lib/geo/prefecture-source.ts`; importing the constant alone must not load the GeoJSON artifact. Update only the rice-harvest layer and corresponding map model. Do not add the geometry source to rice price, inventory, logistics, unrelated themes, or semantic entities.
 
 ### Step 3.5: Verify and commit
 
@@ -285,7 +288,7 @@ Add a shared Natural Earth source ID constant. Update only the rice-harvest laye
 npx vitest run lib/geo/__tests__/prefecture-map.test.ts lib/presentation/__tests__/map-canvas.test.ts lib/presentation/__tests__/workspace.test.ts components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/map-canvas-layer-config.test.tsx
 npm run typecheck
 git diff --check
-git add lib/geo/prefecture-map.ts lib/geo/__tests__/prefecture-map.test.ts lib/presentation/map-canvas.ts lib/presentation/workspace.ts lib/presentation/__tests__/map-canvas.test.ts lib/presentation/__tests__/workspace.test.ts components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/map-canvas-layer-config.test.tsx
+git add lib/geo/prefecture-source.ts lib/geo/prefecture-map.ts lib/geo/__tests__/prefecture-map.test.ts lib/presentation/map-canvas.ts lib/presentation/workspace.ts lib/presentation/__tests__/map-canvas.test.ts lib/presentation/__tests__/workspace.test.ts components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/map-canvas-layer-config.test.tsx
 git commit -m "feat: join prefecture metrics to boundaries"
 ```
 
