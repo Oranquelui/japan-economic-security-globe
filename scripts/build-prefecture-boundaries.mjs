@@ -68,7 +68,7 @@ const PREFECTURES = [
   ["JP-45", "prefecture:miyazaki", "宮崎県"],
   ["JP-46", "prefecture:kagoshima", "鹿児島県"],
   ["JP-47", "prefecture:okinawa", "沖縄県"]
-].map(([prefectureCode, entityId, labelJa]) => ({ prefectureCode, entityId, labelJa }));
+].map(([prefectureCode, entityId, label]) => ({ prefectureCode, entityId, label }));
 
 const MAPSHAPER_ARGS = [
   "<source.zip>",
@@ -145,14 +145,14 @@ function normalizeFeatures(processedCollection) {
     sourceByCode.set(code, feature);
   }
 
-  const features = PREFECTURES.map(({ prefectureCode, entityId, labelJa }) => {
+  const features = PREFECTURES.map(({ prefectureCode, entityId, label }) => {
     const sourceFeature = sourceByCode.get(prefectureCode);
     if (!sourceFeature) {
       throw new Error(`Natural Earth is missing ${prefectureCode}`);
     }
     return {
       type: "Feature",
-      properties: { prefectureCode, entityId, labelJa },
+      properties: { prefectureCode, entityId, label },
       geometry: sourceFeature.geometry
     };
   });

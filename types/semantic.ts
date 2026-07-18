@@ -123,6 +123,8 @@ export interface SourceRights {
   licenseLabel: string;
   licenseUrl: string;
   sourceVersion: string;
+  artifactVersion: string;
+  processingDate: string;
   immutableArchiveUrl: string;
   immutableArchiveSha256: string;
   processingStatement: string;

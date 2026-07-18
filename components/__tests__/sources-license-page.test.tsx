@@ -55,6 +55,8 @@ describe("SourcesLicensePage", () => {
     for (const field of [
       "利用条件",
       "ソース版",
+      "加工成果物版",
+      "加工日",
       "固定取得元",
       "SHA-256",
       "加工内容",
@@ -64,6 +66,8 @@ describe("SourcesLicensePage", () => {
     }
     expect(rights.textContent).toContain("Public domain");
     expect(rights.textContent).toContain("Natural Earth 5.1.1");
+    expect(rights.textContent).toContain("natural-earth-5.1.1-japan-prefectures-v1");
+    expect(rights.textContent).toContain("2026-07-18");
     expect(rights.textContent).toContain("efc59726337323058f9446210adc96673179cd344e053666ee3d28cb58ba2b05");
     expect(rights.textContent).toContain(
       "Natural Earth 5.1.1 Admin-1 States, Provinces を日本の47都道府県に絞り、本サービスの全国表示向けに属性整理・簡略化して作成"

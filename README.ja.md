@@ -44,7 +44,7 @@ Natural Earth Admin-1 は beta で、原則として de facto（実効支配）�
 
 ## 公開プレビュー
 
-![コメ収穫量レイヤーと単一のコンテキストインスペクタを表示した日本レジリエンス地図](docs/assets/power-atlas-desktop-rice-niigata.png)
+![全国47都道府県の境界と正式名称を表示したコメ収穫量コロプレス地図](docs/assets/prefecture-choropleth-default-1440x900.png)
 
 現在の公開面は、公式の e-Stat コメ収穫量指標を、Natural Earth に由来する一般化した47都道府県の地域形状に重ねて表示します。都道府県の正式名称を読みやすく保ち、地域形状を選ぶと出典付きのインスペクタが1つだけ開きます。指標の公式性と地域形状の来歴は分けて表示し、シグナルと47都道府県比較は必要なときだけ表示します。
 

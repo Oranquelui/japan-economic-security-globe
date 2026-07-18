@@ -88,8 +88,8 @@ vi.mock("../JapanMainMap", () => ({
       globalPoints?: Array<{ selectionId?: string }>;
       livePoints?: Array<{ selectionId?: string }>;
       liveVessels?: Array<{ selectionId?: string }>;
-      regions?: unknown[];
-      logisticsImpactRegions?: unknown[];
+      regions?: Array<{ geometryKind?: string }>;
+      logisticsImpactRegions?: Array<{ geometryKind?: string }>;
     };
     onMapModeChange?: (mode: OperationMapMode) => void;
     onOpenEvidence?: () => void;
@@ -107,6 +107,9 @@ vi.mock("../JapanMainMap", () => ({
       data-mode={mapMode}
       data-points={(model?.points?.length ?? 0) + (model?.globalPoints?.length ?? 0) + (model?.livePoints?.length ?? 0) + (model?.liveVessels?.length ?? 0)}
       data-regions={(model?.regions?.length ?? 0) + (model?.logisticsImpactRegions?.length ?? 0)}
+      data-region-geometry-kinds={[...(model?.regions ?? []), ...(model?.logisticsImpactRegions ?? [])]
+        .map((region) => region.geometryKind ?? "unknown")
+        .join(",")}
       data-selection-ids={[
         ...(model?.points ?? []),
         ...(model?.globalPoints ?? []),
@@ -406,7 +409,7 @@ describe("AppShell url sync", () => {
     expect(replaceMock).not.toHaveBeenCalled();
   });
 
-  test("uses the default semantic layer mode and does not focus the fallback active item on first load", () => {
+  test("uses prefecture boundary choropleths in both desktop and stacked rice harvest maps", () => {
     render(<AppShell graph={loadSeedGraph()} />);
 
     const desktop = screen.getByTestId("layout-desktop-workspace");
@@ -415,13 +418,37 @@ describe("AppShell url sync", () => {
     expect(within(desktop).getByRole("button", { name: "在庫・政策" })).toBeTruthy();
     expect(within(desktop).getByRole("button", { name: "物流・投入コスト" })).toBeTruthy();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("choropleth");
-    expect(Number(screen.getAllByTestId("map")[0].getAttribute("data-regions"))).toBeGreaterThan(0);
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-regions")).toBe("47");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-region-geometry-kinds")).not.toContain("representative-radius");
     const stackedMap = within(screen.getByTestId("layout-stacked-workspace")).getByTestId("map");
-    expect(stackedMap.getAttribute("data-mode")).toBe("point");
-    expect(Number(stackedMap.getAttribute("data-points"))).toBeGreaterThan(0);
+    expect(stackedMap.getAttribute("data-mode")).toBe("choropleth");
+    expect(stackedMap.getAttribute("data-regions")).toBe("47");
+    expect(stackedMap.getAttribute("data-region-geometry-kinds")).not.toContain("representative-radius");
     // Public spine default theme is rice; first selectable rice signal/entity is the fallback active.
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/^(observation:|flow:|prefecture:|product:)/);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
+  });
+
+  test("keeps legacy rice choropleth URLs on the semantic prefecture boundary model", () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "rice",
+          selectedId: null,
+          layerId: "rice-harvest",
+          mapModeOverride: "choropleth",
+          workspaceView: "map"
+        }}
+      />
+    );
+
+    for (const map of screen.getAllByTestId("map")) {
+      expect(map.getAttribute("data-mode")).toBe("choropleth");
+      expect(map.getAttribute("data-regions")).toBe("47");
+      expect(map.getAttribute("data-region-geometry-kinds")).not.toContain("representative-radius");
+    }
   });
 
   test("changes the desktop semantic layer and exposes distinct rice observation features", async () => {

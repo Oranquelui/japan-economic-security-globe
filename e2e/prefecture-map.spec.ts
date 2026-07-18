@@ -18,6 +18,7 @@ type Diagnostics = {
   };
   renderedLabelIds: string[];
   renderedPolygonIds: string[];
+  renderedRepresentativeRegionIds: string[];
   renderedFeatures: Array<{
     entityId: string;
     hasData: boolean;
@@ -45,9 +46,12 @@ test.describe("prefecture map acceptance", () => {
         element.__prefectureMapDiagnostics.read(rectangles)
       ), exclusions) as Diagnostics;
 
-      expect(diagnostics.zoom).toBeCloseTo(5.3, 1);
+      expect(diagnostics.zoom).toBeCloseTo(5, 1);
       expect(new Set(diagnostics.renderedLabelIds).size).toBe(47);
       expect(diagnostics.renderedLabelIds).toHaveLength(47);
+      expect(new Set(diagnostics.renderedPolygonIds).size).toBe(47);
+      expect(diagnostics.renderedPolygonIds).toHaveLength(47);
+      expect(diagnostics.renderedRepresentativeRegionIds).toEqual([]);
       expect(diagnostics.tilesLoaded).toBe(true);
       expect(diagnostics.collisionReport.overlaps).toEqual([]);
       expect(diagnostics.collisionReport.clipped).toEqual([]);
@@ -55,7 +59,48 @@ test.describe("prefecture map acceptance", () => {
       expect(network.unexpected).toEqual([]);
 
       await page.screenshot({ path: testInfo.outputPath(`prefecture-labels-${viewport.width}x${viewport.height}.png`) });
-      await writeOptionalEvidenceScreenshot(page, testInfo, `prefecture-labels-${viewport.width}x${viewport.height}.png`);
+      await writeOptionalEvidenceScreenshot(page, testInfo, `prefecture-choropleth-default-${viewport.width}x${viewport.height}.png`);
+    });
+  }
+
+  for (const viewport of [
+    { width: 1024, height: 768 },
+    { width: 390, height: 844 }
+  ] as const) {
+    test(`keeps the shared prefecture boundary choropleth below xl at ${viewport.width}x${viewport.height}`, async ({ page }, testInfo) => {
+      const network = await installLocalNetworkGuard(page);
+      await page.setViewportSize(viewport);
+      await page.goto("/?theme=rice&layer=rice-harvest");
+
+      const map = page.locator('[data-testid="jp-operations-map-canvas"]:visible');
+      await expect(map).toHaveCount(1);
+      await expect.poll(async () => map.evaluate((element: any) => Boolean(element.__prefectureMapDiagnostics))).toBe(true);
+      await expect.poll(async () => map.evaluate((element: any) => {
+        const diagnostics = element.__prefectureMapDiagnostics.read([]);
+        return {
+          polygonCount: diagnostics.renderedPolygonIds.length,
+          representativeCount: diagnostics.renderedRepresentativeRegionIds.length,
+          tilesLoaded: diagnostics.tilesLoaded
+        };
+      }), { timeout: 10_000 }).toEqual({
+        polygonCount: expect.any(Number),
+        representativeCount: 0,
+        tilesLoaded: true
+      });
+
+      const diagnostics = await map.evaluate((element: any) => (
+        element.__prefectureMapDiagnostics.read([])
+      )) as Diagnostics;
+      expect(diagnostics.renderedPolygonIds.length).toBeGreaterThan(0);
+      expect(diagnostics.renderedRepresentativeRegionIds).toEqual([]);
+      expect(diagnostics.renderedLabelIds).toEqual([]);
+      expect(network.unexpected).toEqual([]);
+
+      await writeOptionalEvidenceScreenshot(
+        page,
+        testInfo,
+        `prefecture-choropleth-regression-${viewport.width}x${viewport.height}.png`
+      );
     });
   }
 
@@ -69,7 +114,7 @@ test.describe("prefecture map acceptance", () => {
 
     const initialUrl = page.url();
     const overview = await map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([])) as Diagnostics;
-    expect(overview.zoom).toBeCloseTo(5.3, 1);
+    expect(overview.zoom).toBeCloseTo(5, 1);
     expect(overview.renderedLabelIds).toHaveLength(47);
     expect(page.url()).toBe(initialUrl);
 
@@ -94,7 +139,7 @@ test.describe("prefecture map acceptance", () => {
       zoom: expect.any(Number)
     });
     const detailed = await map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([])) as Diagnostics;
-    expect(detailed.zoom).toBeCloseTo(9.3, 1);
+    expect(detailed.zoom).toBeCloseTo(9, 1);
     expect(detailed.renderedLabelIds).toEqual(["prefecture:tokyo"]);
     expect(detailed.renderedPolygonIds).toEqual([]);
     expect(detailed.tilesLoaded).toBe(true);
@@ -133,8 +178,37 @@ test.describe("prefecture map acceptance", () => {
       && typeof feature.value === "number")).toBe(true);
     expect(network.unexpected).toEqual([]);
 
+    const noticeClose = page.getByRole("button", { name: "お知らせを閉じる" });
+    if (await noticeClose.count()) {
+      await noticeClose.click();
+      await expect(noticeClose).toHaveCount(0);
+    }
+
     await page.screenshot({ path: testInfo.outputPath("prefecture-choropleth-missing-value.png") });
     await writeOptionalEvidenceScreenshot(page, testInfo, "prefecture-choropleth-missing-value.png");
+  });
+
+  test("shows the Natural Earth artifact version and processing date on the source license page", async ({ page }, testInfo) => {
+    const network = await installLocalNetworkGuard(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/sources-license");
+
+    const sourceLink = page.getByRole("link", {
+      name: "地図形状: Natural Earth Admin 1（一般化・加工）"
+    });
+    await sourceLink.scrollIntoViewIfNeeded();
+    const sourceCard = sourceLink.locator("xpath=ancestor::article");
+    await expect(sourceCard).toContainText("加工成果物版");
+    await expect(sourceCard).toContainText("natural-earth-5.1.1-japan-prefectures-v1");
+    await expect(sourceCard).toContainText("加工日");
+    await expect(sourceCard).toContainText("2026-07-18");
+    expect(network.unexpected).toEqual([]);
+
+    await writeOptionalEvidenceScreenshot(
+      page,
+      testInfo,
+      "prefecture-choropleth-sources-license.png"
+    );
   });
 });
 
@@ -143,9 +217,14 @@ async function waitForOverviewReadiness(map: Locator) {
     const diagnostics = element.__prefectureMapDiagnostics.read([]);
     return {
       renderedLabelCount: diagnostics.renderedLabelIds.length,
+      renderedPolygonCount: diagnostics.renderedPolygonIds.length,
       tilesLoaded: diagnostics.tilesLoaded
     };
-  }), { timeout: 10_000 }).toEqual({ renderedLabelCount: 47, tilesLoaded: true });
+  }), { timeout: 10_000 }).toEqual({
+    renderedLabelCount: 47,
+    renderedPolygonCount: 47,
+    tilesLoaded: true
+  });
 }
 
 async function panInitialCoordinateToMapCenter(
@@ -158,7 +237,7 @@ async function panInitialCoordinateToMapCenter(
   const worldSize = 512 * (2 ** target.zoom);
   const start = {
     x: rect!.x + rect!.width / 2 + (target.longitude - 138.45) / 360 * worldSize,
-    y: rect!.y + rect!.height / 2 + (mercatorY(target.latitude) - mercatorY(36.25)) * worldSize
+    y: rect!.y + rect!.height / 2 + (mercatorY(target.latitude) - mercatorY(35)) * worldSize
   };
   const center = {
     x: rect!.x + rect!.width / 2,

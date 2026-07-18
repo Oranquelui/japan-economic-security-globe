@@ -44,7 +44,7 @@ The active-layer block keeps scope, period, unit, map encoding, missing-data tre
 
 ## Launch Preview
 
-![Japan Resilience Map desktop workspace showing the rice harvest layer and one contextual inspector](docs/assets/power-atlas-desktop-rice-niigata.png)
+![Japan Resilience Map showing the nationwide rice-harvest choropleth with 47 prefecture boundaries and full names](docs/assets/prefecture-choropleth-default-1440x900.png)
 
 The current launch surface starts with the official e-Stat rice harvest metric over 47 generalized Natural Earth prefecture shapes. Full prefecture names remain readable and selecting a shape opens one evidence-backed inspector. Metric authority and geometry provenance are shown separately; Signals and the 47-prefecture comparison appear only when requested.
 

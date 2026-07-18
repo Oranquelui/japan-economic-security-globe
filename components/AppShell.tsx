@@ -229,8 +229,12 @@ export function AppShell({
   );
   const metricSeries = buildMetricSeries(graph, themeId, activeLayer.id);
   const comparisonValidation = validateMetricSeries(metricSeries, view.sources);
+  const usesSemanticPrefectureBoundaries = activeLayer.renderMode === "choropleth"
+    && activeLayer.content.kind === "regional-metric"
+    && activeLayer.content.entityKind === "Prefecture";
   const desktopMapMode = mapModeOverride ?? activeLayer.renderMode;
-  const mobileMapMode = mapModeOverride ?? "point";
+  const mobileMapMode = mapModeOverride
+    ?? (usesSemanticPrefectureBoundaries ? activeLayer.renderMode : "point");
   const liveLogisticsDetailItem = liveLogistics?.items.find((item) => item.id === activeId) ?? null;
   const focusTargetId = validSelectedId;
   const detail = liveLogisticsDetailItem
@@ -247,8 +251,12 @@ export function AppShell({
     activeLayer,
     liveLogistics
   );
-  const desktopMapModel = mapModeOverride ? legacyMapModel : semanticDesktopMapModel;
-  const mobileMapModel = legacyMapModel;
+  const desktopMapModel = mapModeOverride && !usesSemanticPrefectureBoundaries
+    ? legacyMapModel
+    : semanticDesktopMapModel;
+  const mobileMapModel = usesSemanticPrefectureBoundaries
+    ? semanticDesktopMapModel
+    : legacyMapModel;
   const mapDisclosure =
     themeId === "regional-security"
       ? {

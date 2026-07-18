@@ -11,8 +11,8 @@ import {
   projectPrefectureLabelAnchor
 } from "../prefecture-label-layout";
 
-const DEFAULT_CENTER: [number, number] = [138.45, 36.25];
-const DEFAULT_ZOOM = 5.3;
+const DEFAULT_CENTER: [number, number] = [138.45, 35];
+const DEFAULT_ZOOM = 5;
 const REQUIRED_CURATED_CODES = [
   "JP-01",
   "JP-11",
@@ -48,7 +48,7 @@ describe("prefecture label layout", () => {
     ])).toEqual(prefectureBoundaryCollection.features.map(({ properties }) => [
       properties.prefectureCode,
       properties.entityId,
-      properties.labelJa
+      properties.label
     ]));
   });
 

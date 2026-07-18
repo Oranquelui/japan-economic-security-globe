@@ -46,8 +46,8 @@ type LabelProperties = Readonly<{
 }>;
 
 const DEFAULT_PROJECTION: PrefectureLabelProjection = {
-  center: [138.45, 36.25],
-  zoom: 5.3,
+  center: [138.45, 35],
+  zoom: 5,
   viewport: { width: 1440, height: 900 }
 };
 
@@ -119,9 +119,9 @@ export function assertPrefectureLabelLayout(
         `Invalid prefecture label layout: prefectureCode ${prefectureCode} entityId mismatch; expected ${canonical.entityId}, received ${entityId}`
       );
     }
-    if (label !== canonical.labelJa) {
+    if (label !== canonical.label) {
       throw new Error(
-        `Invalid prefecture label layout: prefectureCode ${prefectureCode} label mismatch; expected ${canonical.labelJa}, received ${label}`
+        `Invalid prefecture label layout: prefectureCode ${prefectureCode} label mismatch; expected ${canonical.label}, received ${label}`
       );
     }
 

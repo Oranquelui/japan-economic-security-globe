@@ -24,7 +24,7 @@ export type PrefectureBoundaryFeature = Readonly<{
   properties: Readonly<{
     prefectureCode: `JP-${string}`;
     entityId: `prefecture:${string}`;
-    labelJa: string;
+    label: string;
   }>;
   geometry: PolygonGeometry | MultiPolygonGeometry;
 }>;
@@ -99,12 +99,12 @@ export function assertPrefectureBoundaryCollection(
   for (const [index, candidate] of value.features.entries()) {
     assertRecord(candidate, `feature ${index}`);
     assertRecord(candidate.properties, `feature ${index} properties`);
-    const { prefectureCode, entityId, labelJa } = candidate.properties;
+    const { prefectureCode, entityId, label } = candidate.properties;
     if (
       typeof prefectureCode !== "string" ||
       typeof entityId !== "string" ||
-      typeof labelJa !== "string" ||
-      labelJa.trim().length === 0
+      typeof label !== "string" ||
+      label.trim().length === 0
     ) {
       throw new Error(`Invalid prefecture boundary artifact: feature ${index} has invalid properties`);
     }

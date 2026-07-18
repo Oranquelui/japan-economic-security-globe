@@ -203,13 +203,30 @@ describe("verified prefecture boundary artifact", () => {
       ({ properties }) => properties.entityId
     );
     const labels = prefectureBoundaryCollection.features.map(
-      ({ properties }) => properties.labelJa
+      ({ properties }) => properties.label
     );
 
     expect(new Set(entityIds).size).toBe(47);
     expect(new Set(labels).size).toBe(47);
     expect(entityIds.every((entityId) => entityId.startsWith("prefecture:"))).toBe(true);
     expect(labels.every((label) => label.trim().length > 0)).toBe(true);
+  });
+
+  test("requires the canonical label property and rejects the obsolete labelJa form", () => {
+    for (const feature of prefectureBoundaryCollection.features) {
+      expect(feature.properties).toHaveProperty("label");
+      expect(feature.properties).not.toHaveProperty("labelJa");
+    }
+
+    const obsolete = mutableJsonClone(prefectureBoundaryCollection);
+    obsolete.features[0].properties.labelJa = obsolete.features[0].properties.label;
+    delete obsolete.features[0].properties.label;
+
+    const missing = mutableJsonClone(prefectureBoundaryCollection);
+    delete missing.features[0].properties.label;
+
+    expect(() => assertPrefectureBoundaryCollection(obsolete)).toThrow(/invalid properties/i);
+    expect(() => assertPrefectureBoundaryCollection(missing)).toThrow(/invalid properties/i);
   });
 
   test("contains only valid, bounded Polygon or MultiPolygon rings", () => {

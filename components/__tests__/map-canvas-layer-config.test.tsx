@@ -34,7 +34,7 @@ let lastMap: {
   setPaintProperty: ReturnType<typeof vi.fn>;
 } | null = null;
 let mapCanvasSize = { width: 1024, height: 720 };
-let mapZoom = 5.3;
+let mapZoom = 5;
 let zoomEndHandler: (() => void) | null = null;
 let desktopViewportMatches = true;
 let mapInstanceCount = 0;
@@ -93,7 +93,7 @@ vi.mock("maplibre-gl", () => {
       style: { cursor: "" }
     };
     getCanvas = vi.fn(() => this.canvas);
-    getCenter = vi.fn(() => ({ lat: 36.25, lng: 138.45 }));
+    getCenter = vi.fn(() => ({ lat: 35, lng: 138.45 }));
     getSource = vi.fn((id: string) => ({
       setData: sourceSetDataSpies.get(id),
       getClusterExpansionZoom: vi.fn(async () => 6)
@@ -152,7 +152,7 @@ afterEach(() => {
   registeredLayerHandlers.length = 0;
   lastMap = null;
   mapCanvasSize = { width: 1024, height: 720 };
-  mapZoom = 5.3;
+  mapZoom = 5;
   zoomEndHandler = null;
   desktopViewportMatches = true;
   mapInstanceCount = 0;
@@ -183,7 +183,7 @@ const model: JapanMapCanvasModel = {
 function prefectureMetricRegions(): JapanMapCanvasModel["regions"] {
   return prefectureBoundaryCollection.features.map((feature, index) => ({
     id: feature.properties.entityId,
-    label: feature.properties.labelJa,
+    label: feature.properties.label,
     lat: 24 + index * 0.5,
     lon: 123 + index * 0.5,
     geometryKind: "prefecture-boundary",
@@ -379,7 +379,7 @@ describe("map canvas layer config", () => {
       expect(getLayerHandler("click", "jp-prefecture-fill")).toBeDefined();
     });
 
-    expect(lastMap?.getZoom()).toBe(5.3);
+    expect(lastMap?.getZoom()).toBe(5);
     expect(zoomEndHandler).not.toBeNull();
     mapZoom = 9.1;
     zoomEndHandler!();

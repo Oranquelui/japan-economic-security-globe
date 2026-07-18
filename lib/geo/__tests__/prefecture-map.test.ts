@@ -164,7 +164,7 @@ describe("prefecture metric feature collection", () => {
       sourceIds: [METRIC_SOURCE_ID, NATURAL_EARTH_PREFECTURE_SOURCE_ID],
       selected: true
     });
-    expect(tokyo.properties.label).not.toBe(sourceBoundary.properties.labelJa);
+    expect(tokyo.properties.label).not.toBe(sourceBoundary.properties.label);
   });
 
   test("retains a boundary with null typed metric values", () => {

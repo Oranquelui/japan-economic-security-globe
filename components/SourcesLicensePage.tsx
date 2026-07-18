@@ -144,6 +144,10 @@ function SourceRightsDetails({ rights }: { rights: SourceRights }) {
         </dd>
         <dt className="font-medium text-slate-500">ソース版</dt>
         <dd>{rights.sourceVersion}</dd>
+        <dt className="font-medium text-slate-500">加工成果物版</dt>
+        <dd className="break-all font-mono text-xs">{rights.artifactVersion}</dd>
+        <dt className="font-medium text-slate-500">加工日</dt>
+        <dd>{rights.processingDate}</dd>
         <dt className="font-medium text-slate-500">固定取得元</dt>
         <dd>
           <a

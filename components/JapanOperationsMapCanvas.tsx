@@ -43,8 +43,8 @@ interface JapanOperationsMapCanvasProps {
   themePalette: ThemePalette;
 }
 
-const INITIAL_CENTER: [number, number] = [138.45, 36.25];
-const INITIAL_ZOOM = 5.3;
+const INITIAL_CENTER: [number, number] = [138.45, 35];
+const INITIAL_ZOOM = 5;
 const GLOBAL_CONTEXT_MAX_ZOOM = 3.6;
 const DOMESTIC_CONTEXT_MIN_ZOOM = 3.2;
 const PREFECTURE_POLYGON_FADE_START_ZOOM = 6.5;
@@ -1144,6 +1144,7 @@ type PrefectureMapDiagnostics = Readonly<{
     }>;
     renderedLabelIds: string[];
     renderedPolygonIds: string[];
+    renderedRepresentativeRegionIds: string[];
     tilesLoaded: boolean;
     zoom: number;
   };
@@ -1198,6 +1199,7 @@ function installPrefectureMapDiagnostics(
       "jp-prefecture-selected-label"
     ]);
     const polygonFeatures = queryRenderedLayerFeatures(map, ["jp-prefecture-fill"]);
+    const representativeRegionFeatures = queryRenderedLayerFeatures(map, ["jp-region-fill"]);
     const renderedByEntityId = new Map<string, {
       entityId: string;
       hasData: boolean;
@@ -1245,6 +1247,7 @@ function installPrefectureMapDiagnostics(
         })),
       renderedLabelIds: uniqueRenderedEntityIds(labelFeatures),
       renderedPolygonIds: uniqueRenderedEntityIds(polygonFeatures),
+      renderedRepresentativeRegionIds: uniqueRenderedEntityIds(representativeRegionFeatures),
       tilesLoaded: map.areTilesLoaded(),
       zoom: map.getZoom()
     };

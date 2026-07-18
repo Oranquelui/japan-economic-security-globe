@@ -15,9 +15,14 @@ describe("buildSourcesLicenseCatalog", () => {
     ]);
 
     const naturalEarthId = "source:natural-earth-admin1-japan-5-1-1";
-    expect(catalog.groups.find((group) => group.id === "open-data")?.items.map((item) => item.id)).toContain(
-      naturalEarthId
-    );
+    const naturalEarth = catalog.groups
+      .find((group) => group.id === "open-data")
+      ?.items.find((item) => item.id === naturalEarthId);
+    expect(naturalEarth).toBeDefined();
+    expect(naturalEarth?.rights).toMatchObject({
+      artifactVersion: "natural-earth-5.1.1-japan-prefectures-v1",
+      processingDate: "2026-07-18"
+    });
     expect(catalog.groups.find((group) => group.id === "official")?.items.map((item) => item.id)).not.toContain(
       naturalEarthId
     );

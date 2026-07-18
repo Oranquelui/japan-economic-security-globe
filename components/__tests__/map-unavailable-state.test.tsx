@@ -179,7 +179,7 @@ const baseModel: JapanMapCanvasModel = {
 function prefectureMetricRegions(): JapanMapCanvasModel["regions"] {
   return prefectureBoundaryCollection.features.map((feature, index) => ({
     id: feature.properties.entityId,
-    label: feature.properties.labelJa,
+    label: feature.properties.label,
     lat: 24 + index * 0.5,
     lon: 123 + index * 0.5,
     geometryKind: "prefecture-boundary" as const,
