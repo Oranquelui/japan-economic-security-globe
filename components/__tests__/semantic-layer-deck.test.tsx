@@ -31,6 +31,7 @@ describe("SemanticLayerDeck", () => {
     );
 
     expect(screen.getByRole("group", { name: "表示レイヤー" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "表示レイヤー" }).className).toContain("grid-cols-1");
     expect(screen.getByRole("button", { name: "収穫量" }).getAttribute("aria-pressed")).toBe("true");
 
     await userEvent.click(screen.getByRole("button", { name: "価格" }));
@@ -49,8 +50,10 @@ describe("SemanticLayerDeck", () => {
     );
 
     const unavailable = screen.getByRole("button", { name: /物流・投入コスト/ });
+    const price = screen.getByRole("button", { name: "価格" });
     expect((unavailable as HTMLButtonElement).disabled).toBe(true);
     expect(unavailable.textContent).toMatch(/準備中|データなし/);
+    expect(price.textContent).toContain("相対取引価格の公開観測");
     expect(screen.queryByText("point")).toBeNull();
     expect(screen.queryByText("choropleth")).toBeNull();
   });

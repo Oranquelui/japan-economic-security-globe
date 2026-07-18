@@ -6,157 +6,144 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { loadSeedGraph } from "../../lib/data/seed-loader";
 import { getThemePalette } from "../../lib/presentation/palette";
-import { buildWorkspacePresentation } from "../../lib/presentation/workspace";
+import {
+  buildActiveLayerSummary,
+  buildWorkspacePresentation
+} from "../../lib/presentation/workspace";
 import { getThemeView } from "../../lib/semantic/selectors";
 import type { SemanticLayerId } from "../../types/presentation";
+import type { ThemeId } from "../../types/semantic";
 import { ScopeContextPanel } from "../ScopeContextPanel";
 
 afterEach(cleanup);
 
-describe("ScopeContextPanel", () => {
-  test("shows the rice scope before semantic layers and ranked-content actions", () => {
-    const graph = loadSeedGraph();
-    const view = getThemeView(graph, "rice");
-    const workspace = buildWorkspacePresentation(graph, view);
+function buildPanelInput(
+  activeLayerId: SemanticLayerId = "rice-harvest",
+  themeIds: readonly ThemeId[] = ["rice", "energy"]
+) {
+  const graph = loadSeedGraph();
+  const view = getThemeView(graph, "rice");
+  const workspace = buildWorkspacePresentation(graph, view);
+  const requestedLayer = workspace.layers.find((layer) => layer.id === activeLayerId);
+  const activeLayer = requestedLayer?.available
+    ? requestedLayer
+    : workspace.layers.find((layer) => layer.available) ?? workspace.layers[0];
 
-    render(
-      <ScopeContextPanel
-        activeLayerId="rice-harvest"
-        comparisonAvailable
-        onLayerChange={vi.fn()}
-        onOpenComparison={vi.fn()}
-        onOpenSignals={vi.fn()}
-        sources={view.sources}
-        themePalette={getThemePalette("rice")}
-        workspace={workspace}
-      />
-    );
+  if (!activeLayer) {
+    throw new Error("Expected the rice workspace to define at least one layer.");
+  }
+
+  return {
+    activeLayerId,
+    activeSummary: buildActiveLayerSummary(graph, view, activeLayer, workspace.scope),
+    comparisonAvailable: true,
+    onLayerChange: vi.fn(),
+    onOpenComparison: vi.fn(),
+    onOpenSignals: vi.fn(),
+    onThemeChange: vi.fn(),
+    themeId: "rice" as const,
+    themeIds,
+    themePalette: getThemePalette("rice"),
+    workspace
+  };
+}
+
+describe("ScopeContextPanel", () => {
+  test("shows one theme selector and one active-layer reading path without legacy scope cards", () => {
+    const input = buildPanelInput();
+
+    render(<ScopeContextPanel {...input} />);
 
     const panel = screen.getByTestId("scope-context-panel");
-    const summary = screen.getByRole("region", { name: "対象範囲の要約" });
+    const themeSelect = screen.getByRole("combobox", { name: "テーマ" });
+    const activeSummary = screen.getByRole("region", { name: "いま表示中" });
     const layerRegion = screen.getByRole("region", { name: "表示レイヤー" });
-    const layerGroup = screen.getByRole("group", { name: "表示レイヤー" });
-    const legend = screen.getByRole("region", { name: "主食用米収穫量の凡例" });
     const signalsAction = screen.getByRole("button", { name: "シグナルを見る" });
 
-    expect(panel.className).toContain("px-3");
-    expect(panel.className).toContain("py-3");
-    expect(summary.children).toHaveLength(4);
-    expect(layerGroup.className).toContain("grid-cols-2");
-    expect(legend.className).toContain("p-2");
-    expect(screen.getByText("47都道府県")).toBeTruthy();
+    expect(screen.getAllByRole("combobox", { name: "テーマ" })).toHaveLength(1);
+    expect(screen.getByRole("option", { name: "コメ" })).toBeTruthy();
+    expect(screen.getAllByRole("region", { name: "いま表示中" })).toHaveLength(1);
+    expect(screen.queryByRole("region", { name: "対象範囲の要約" })).toBeNull();
+    expect(screen.queryByText("35,056")).toBeNull();
     expect(screen.getByText("6,610,315")).toBeTruthy();
-    expect(screen.getAllByText("令和5年産").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "収穫量" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.queryByText("監視インボックス")).toBeNull();
     expect(panel.querySelectorAll("[data-prefecture-row]")).toHaveLength(0);
-
-    const text = panel.textContent ?? "";
-    expect(text.indexOf(workspace.scope.description)).toBeLessThan(text.indexOf("収穫量"));
-    expect(text.indexOf("収穫量")).toBeLessThan(text.indexOf("主食用米収穫量"));
-    expect(text.indexOf("主食用米収穫量")).toBeLessThan(text.indexOf("シグナルを見る"));
-    expect(summary.compareDocumentPosition(layerRegion) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(layerRegion.compareDocumentPosition(legend) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(legend.compareDocumentPosition(signalsAction) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(themeSelect.compareDocumentPosition(activeSummary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(activeSummary.compareDocumentPosition(layerRegion) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(layerRegion.compareDocumentPosition(signalsAction) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  test("routes semantic-layer and secondary-view actions", async () => {
-    const graph = loadSeedGraph();
-    const view = getThemeView(graph, "rice");
-    const onLayerChange = vi.fn();
-    const onOpenSignals = vi.fn();
-    const onOpenComparison = vi.fn();
+  test("routes theme, semantic-layer, and secondary-view actions", async () => {
+    const input = buildPanelInput();
 
-    render(
-      <ScopeContextPanel
-        activeLayerId="rice-harvest"
-        comparisonAvailable
-        onLayerChange={onLayerChange}
-        onOpenComparison={onOpenComparison}
-        onOpenSignals={onOpenSignals}
-        sources={view.sources}
-        themePalette={getThemePalette("rice")}
-        workspace={buildWorkspacePresentation(graph, view)}
-      />
-    );
+    render(<ScopeContextPanel {...input} />);
 
+    await userEvent.selectOptions(screen.getByRole("combobox", { name: "テーマ" }), "energy");
     await userEvent.click(screen.getByRole("button", { name: "価格" }));
     await userEvent.click(screen.getByRole("button", { name: "シグナルを見る" }));
     await userEvent.click(screen.getByRole("button", { name: "比較する" }));
 
-    expect(onLayerChange).toHaveBeenCalledWith("rice-price");
-    expect(onOpenSignals).toHaveBeenCalledTimes(1);
-    expect(onOpenComparison).toHaveBeenCalledTimes(1);
+    expect(input.onThemeChange).toHaveBeenCalledOnce();
+    expect(input.onThemeChange).toHaveBeenCalledWith("energy");
+    expect(input.onLayerChange).toHaveBeenCalledWith("rice-price");
+    expect(input.onOpenSignals).toHaveBeenCalledTimes(1);
+    expect(input.onOpenComparison).toHaveBeenCalledTimes(1);
   });
 
-  test("falls back from an unavailable requested layer to the first available layer", () => {
-    const graph = loadSeedGraph();
-    const view = getThemeView(graph, "rice");
-    const workspace = buildWorkspacePresentation(graph, view);
+  test("does not notify when the already-active theme is selected", async () => {
+    const input = buildPanelInput();
 
-    render(
-      <ScopeContextPanel
-        activeLayerId="rice-logistics-inputs"
-        comparisonAvailable
-        onLayerChange={vi.fn()}
-        onOpenComparison={vi.fn()}
-        onOpenSignals={vi.fn()}
-        sources={view.sources}
-        themePalette={getThemePalette("rice")}
-        workspace={workspace}
-      />
+    render(<ScopeContextPanel {...input} />);
+
+    await userEvent.selectOptions(screen.getByRole("combobox", { name: "テーマ" }), "rice");
+
+    expect(input.onThemeChange).not.toHaveBeenCalled();
+  });
+
+  test("preserves the supplied theme order in the native select", () => {
+    const input = buildPanelInput("rice-harvest", ["water", "rice", "energy"]);
+
+    render(<ScopeContextPanel {...input} />);
+
+    const options = Array.from(
+      screen.getByRole("combobox", { name: "テーマ" }).querySelectorAll("option")
     );
+    expect(options.map((option) => option.value)).toEqual(["water", "rice", "energy"]);
+    expect(options.map((option) => option.textContent)).toEqual(["水", "コメ", "エネルギー"]);
+  });
+
+  test.each([
+    ["unavailable", "rice-logistics-inputs" as SemanticLayerId],
+    ["missing", "missing-layer" as SemanticLayerId]
+  ])("falls back from a %s requested layer to the first available layer", (_kind, activeLayerId) => {
+    const input = buildPanelInput(activeLayerId);
+
+    render(<ScopeContextPanel {...input} />);
 
     expect(screen.getByRole("button", { name: "収穫量" }).getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByRole("button", { name: "物流・投入コスト" }).getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByRole("heading", { level: 2, name: "収穫量" })).toBeTruthy();
     expect(screen.getByRole("region", { name: "主食用米収穫量の凡例" })).toBeTruthy();
   });
 
-  test("falls back from a missing requested layer to the first available layer", () => {
-    const graph = loadSeedGraph();
-    const view = getThemeView(graph, "rice");
-    const workspace = buildWorkspacePresentation(graph, view);
-
-    render(
-      <ScopeContextPanel
-        activeLayerId={"missing-layer" as SemanticLayerId}
-        comparisonAvailable
-        onLayerChange={vi.fn()}
-        onOpenComparison={vi.fn()}
-        onOpenSignals={vi.fn()}
-        sources={view.sources}
-        themePalette={getThemePalette("rice")}
-        workspace={workspace}
-      />
-    );
-
-    expect(screen.getByRole("button", { name: "収穫量" }).getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByRole("region", { name: "主食用米収穫量の凡例" })).toBeTruthy();
-  });
-
-  test("shows no active layer or legend when every layer is unavailable", () => {
-    const graph = loadSeedGraph();
-    const view = getThemeView(graph, "rice");
-    const workspace = buildWorkspacePresentation(graph, view);
+  test("omits the active summary and forces comparison unavailable when every layer is unavailable", () => {
+    const input = buildPanelInput();
     const unavailableWorkspace = {
-      ...workspace,
-      layers: workspace.layers.map((layer) => ({ ...layer, available: false }))
+      ...input.workspace,
+      layers: input.workspace.layers.map((layer) => ({ ...layer, available: false }))
     };
 
     render(
       <ScopeContextPanel
-        activeLayerId="rice-harvest"
-        comparisonAvailable={false}
-        onLayerChange={vi.fn()}
-        onOpenComparison={vi.fn()}
-        onOpenSignals={vi.fn()}
-        sources={view.sources}
-        themePalette={getThemePalette("rice")}
+        {...input}
+        comparisonAvailable
         workspace={unavailableWorkspace}
       />
     );
 
-    expect(screen.getAllByRole("button").every((button) => button.getAttribute("aria-pressed") !== "true")).toBe(true);
+    const layerButtons = screen.getByRole("group", { name: "表示レイヤー" }).querySelectorAll("button");
+    expect(Array.from(layerButtons).every((button) => button.disabled)).toBe(true);
+    expect(screen.queryByRole("region", { name: "いま表示中" })).toBeNull();
     expect(screen.queryByRole("region", { name: /凡例/ })).toBeNull();
     const comparison = screen.getByRole("button", { name: "比較可能な系列なし" });
     expect(comparison.hasAttribute("disabled")).toBe(true);

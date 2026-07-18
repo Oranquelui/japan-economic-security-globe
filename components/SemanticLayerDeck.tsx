@@ -57,7 +57,7 @@ export function SemanticLayerDeck({
       >
         表示レイヤー
       </h3>
-      <div role="group" aria-label="表示レイヤー" className="mt-2 grid grid-cols-2 gap-2">
+      <div role="group" aria-label="表示レイヤー" className="mt-2 grid grid-cols-1 gap-1.5">
         {layers.map((layer, index) => {
           const active = layer.available && layer.id === activeLayerId;
 

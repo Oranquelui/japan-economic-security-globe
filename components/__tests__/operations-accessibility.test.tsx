@@ -13,6 +13,7 @@ import { OperationsSignalTable } from "../OperationsSignalTable";
 import { ScopeContextPanel } from "../ScopeContextPanel";
 import { loadSeedGraph } from "../../lib/data/seed-loader";
 import {
+  buildActiveLayerSummary,
   buildSelectionInspector,
   buildWorkspacePresentation,
   getLayerDefinition
@@ -154,21 +155,28 @@ describe("operations accessibility", () => {
   test("exposes a logical scope, semantic-layer, and legend heading hierarchy", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const activeLayer = getLayerDefinition("rice", "rice-harvest", workspace)!;
 
     render(
       <ScopeContextPanel
         activeLayerId="rice-harvest"
+        activeSummary={buildActiveLayerSummary(graph, view, activeLayer, workspace.scope)}
         comparisonAvailable
         onLayerChange={() => undefined}
         onOpenComparison={() => undefined}
         onOpenSignals={() => undefined}
-        sources={view.sources}
+        onThemeChange={() => undefined}
+        themeId="rice"
+        themeIds={["rice", "energy"]}
         themePalette={getThemePalette("rice")}
-        workspace={buildWorkspacePresentation(graph, view)}
+        workspace={workspace}
       />
     );
 
-    expect(screen.getByRole("heading", { level: 2, name: "コメ" })).toBeTruthy();
+    const themeSelect = screen.getByRole("combobox", { name: "テーマ" }) as HTMLSelectElement;
+    expect(themeSelect.selectedOptions[0]?.textContent).toBe("コメ");
+    expect(screen.getByRole("heading", { level: 2, name: "収穫量" })).toBeTruthy();
     expect(screen.getByRole("heading", { level: 3, name: "表示レイヤー" })).toBeTruthy();
     expect(screen.getByRole("heading", { level: 3, name: "主食用米収穫量" })).toBeTruthy();
 

@@ -35,6 +35,7 @@ import { getThemeLabel, localizeAnyLabel, localizeKind } from "../lib/presentati
 import { getRouteStatus } from "../lib/presentation/route-status";
 import {
   buildSelectionInspector,
+  buildActiveLayerSummary,
   buildMetricSeries,
   buildWorkspacePresentation,
   getDefaultLayerDefinition,
@@ -210,6 +211,13 @@ export function AppShell({
   const activeLayer = requestedLayer?.available
     ? requestedLayer
     : getDefaultLayerDefinition(themeId, workspace);
+  const activeLayerSummary = buildActiveLayerSummary(
+    graph,
+    view,
+    activeLayer,
+    workspace.scope,
+    liveLogistics
+  );
   const metricSeries = buildMetricSeries(graph, themeId, activeLayer.id);
   const comparisonValidation = validateMetricSeries(metricSeries, view.sources);
   const desktopMapMode = mapModeOverride ?? activeLayer.renderMode;
@@ -535,11 +543,14 @@ export function AppShell({
               ) : (
                 <ScopeContextPanel
                   activeLayerId={activeLayer.id}
+                  activeSummary={activeLayerSummary}
                   comparisonAvailable={comparisonValidation.comparable}
                   onLayerChange={handleLayerChange}
                   onOpenComparison={handleOpenComparison}
                   onOpenSignals={handleOpenSignals}
-                  sources={view.sources}
+                  onThemeChange={handleThemeChange}
+                  themeId={themeId}
+                  themeIds={orderedThemeIds}
                   themePalette={themePalette}
                   workspace={workspace}
                 />
