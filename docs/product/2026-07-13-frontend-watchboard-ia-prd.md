@@ -3,7 +3,7 @@
 Status: Desktop Power Atlas surface reframe P0–P3 implemented and Task 8 accepted; PR not opened / awaiting explicit authorization
 Date: 2026-07-13  
 Repository: `jp-strategic-dependency-graph`  
-Version context: public Phase 0 / `v0.3.x`  
+Version context: public Phase 0 / `v0.4.x`
 Related:
 
 - `.taskmaster/docs/japan-economic-security-globe-prd.txt` (Phase 0 product PRD)
@@ -226,7 +226,7 @@ This decision extends the earlier rule that "map is the stage." It changes the l
 
 The public product remains **Japan Resilience Map / 日本レジリエンス地図**, with official statistics as the spine and economic security as the explanatory lens.
 
-## 12. Verified current-state diagnosis (2026-07-15)
+## 12. Historical 2026-07-15 baseline before the delivered reframe
 
 The production rice surface was reviewed at `https://economic-security.quadrillionaaa.com/` on 2026-07-15.
 
@@ -239,15 +239,15 @@ Observed strengths:
 
 Observed IA problems:
 
-| Surface | Current behavior | Problem |
-|---------|------------------|---------|
+| Surface | Behavior observed on 2026-07-15 | Problem |
+|---------|---------------------------------|---------|
 | Left command pane | Briefing, filters, ranked signals, and 47 prefectures share one scroll story | The map context is buried inside an operations inbox |
 | Map detail popup | Repeats summary, sources, related flows, and related points | Duplicates the right evidence surface and covers the map |
 | Right evidence drawer | Repeats the same selected-object explanation in greater depth | Selection content is split across two competing inspectors |
 | Bottom comparison bar | Always advertises comparison as another primary surface | Adds persistent chrome even when the user is not comparing |
 | Map modes | `地点 / 集約 / 地域塗り / ルート` | Describes rendering mechanics instead of the user's subject |
 
-The root problem is now **duplication and surface competition**, not missing evidence or missing data primitives.
+At that time, the root problem was **duplication and surface competition**, not missing evidence or missing data primitives.
 
 ## 13. Target desktop information architecture
 
