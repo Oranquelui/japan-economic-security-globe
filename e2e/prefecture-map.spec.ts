@@ -87,7 +87,7 @@ test.describe("prefecture map acceptance", () => {
     expect(network.unexpected).toEqual([]);
   });
 
-  test("renders an acceptance-only missing value with the neutral polygon, border, and label", async ({ page }) => {
+  test("missing-value evidence renders an acceptance-only missing value with the neutral polygon, border, and label", async ({ page }, testInfo) => {
     const network = await installLocalNetworkGuard(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/?theme=rice&layer=rice-harvest");
@@ -112,6 +112,9 @@ test.describe("prefecture map acceptance", () => {
       && feature.hasData
       && typeof feature.value === "number")).toBe(true);
     expect(network.unexpected).toEqual([]);
+
+    await page.screenshot({ path: testInfo.outputPath("prefecture-choropleth-missing-value.png") });
+    await writeOptionalEvidenceScreenshot(page, testInfo, "prefecture-choropleth-missing-value.png");
   });
 });
 
