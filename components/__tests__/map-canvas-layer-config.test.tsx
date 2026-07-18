@@ -23,9 +23,11 @@ const registeredLayerHandlers: Array<{
   unsubscribe: ReturnType<typeof vi.fn>;
 }> = [];
 let lastMap: {
+  areTilesLoaded: ReturnType<typeof vi.fn>;
   easeTo: ReturnType<typeof vi.fn>;
   fitBounds: ReturnType<typeof vi.fn>;
   getCanvas: ReturnType<typeof vi.fn>;
+  getCenter: ReturnType<typeof vi.fn>;
   getZoom: ReturnType<typeof vi.fn>;
   off: ReturnType<typeof vi.fn>;
   setLayoutProperty: ReturnType<typeof vi.fn>;
@@ -91,12 +93,15 @@ vi.mock("maplibre-gl", () => {
       style: { cursor: "" }
     };
     getCanvas = vi.fn(() => this.canvas);
+    getCenter = vi.fn(() => ({ lat: 36.25, lng: 138.45 }));
     getSource = vi.fn((id: string) => ({
       setData: sourceSetDataSpies.get(id),
       getClusterExpansionZoom: vi.fn(async () => 6)
     }));
     isStyleLoaded = vi.fn(() => true);
+    areTilesLoaded = vi.fn(() => true);
     getZoom = vi.fn(() => mapZoom);
+    queryRenderedFeatures = vi.fn(() => []);
     off = vi.fn();
 
     constructor() {
@@ -544,6 +549,8 @@ describe("map canvas layer config", () => {
     await waitFor(() => {
       expect(typeof mapContainer.__prefectureMapDiagnostics?.read).toBe("function");
     });
+    expect(mapContainer.__prefectureMapDiagnostics.read([]).tilesLoaded).toBe(true);
+    expect(lastMap?.areTilesLoaded).toHaveBeenCalled();
     expect(mapContainer.__prefectureMapDiagnostics?.setPrefectureValueNull).toBeUndefined();
     expect((window as any).__prefectureMapDiagnostics).toBeUndefined();
 

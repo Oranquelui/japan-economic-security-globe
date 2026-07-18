@@ -24,6 +24,7 @@ type Diagnostics = {
     layers: string[];
     value: number | null;
   }>;
+  tilesLoaded: boolean;
   zoom: number;
 };
 
@@ -37,9 +38,7 @@ test.describe("prefecture map acceptance", () => {
       const map = page.locator('[data-testid="jp-operations-map-canvas"]:visible');
       await expect(map).toHaveCount(1);
       await expect.poll(async () => map.evaluate((element: any) => Boolean(element.__prefectureMapDiagnostics))).toBe(true);
-      await expect.poll(async () => map.evaluate((element: any) => (
-        element.__prefectureMapDiagnostics.read([]).renderedLabelIds.length
-      ))).toBe(47);
+      await waitForOverviewReadiness(map);
 
       const exclusions = await readPermanentExclusions(page);
       const diagnostics = await map.evaluate((element: any, rectangles) => (
@@ -49,6 +48,7 @@ test.describe("prefecture map acceptance", () => {
       expect(diagnostics.zoom).toBeCloseTo(5.3, 1);
       expect(new Set(diagnostics.renderedLabelIds).size).toBe(47);
       expect(diagnostics.renderedLabelIds).toHaveLength(47);
+      expect(diagnostics.tilesLoaded).toBe(true);
       expect(diagnostics.collisionReport.overlaps).toEqual([]);
       expect(diagnostics.collisionReport.clipped).toEqual([]);
       expectBoxesInsideMapAndOutsideExclusions(diagnostics.collisionReport.boxes, await map.boundingBox(), exclusions);
@@ -65,6 +65,7 @@ test.describe("prefecture map acceptance", () => {
     await page.goto("/?theme=rice&layer=rice-harvest&selected=prefecture%3Atokyo");
     const map = page.locator('[data-testid="jp-operations-map-canvas"]:visible');
     await expect.poll(async () => map.evaluate((element: any) => Boolean(element.__prefectureMapDiagnostics))).toBe(true);
+    await waitForOverviewReadiness(map);
 
     const initialUrl = page.url();
     const overview = await map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([])) as Diagnostics;
@@ -89,12 +90,14 @@ test.describe("prefecture map acceptance", () => {
     )) as Promise<Diagnostics>, { timeout: 10_000 }).toMatchObject({
       renderedLabelIds: ["prefecture:tokyo"],
       renderedPolygonIds: [],
+      tilesLoaded: true,
       zoom: expect.any(Number)
     });
     const detailed = await map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([])) as Diagnostics;
     expect(detailed.zoom).toBeCloseTo(9.3, 1);
     expect(detailed.renderedLabelIds).toEqual(["prefecture:tokyo"]);
     expect(detailed.renderedPolygonIds).toEqual([]);
+    expect(detailed.tilesLoaded).toBe(true);
     await map.click({ position: { x: 720, y: 450 } });
     expect(page.url()).toBe(initialUrl);
     expect(network.unexpected).toEqual([]);
@@ -106,18 +109,22 @@ test.describe("prefecture map acceptance", () => {
     await page.goto("/?theme=rice&layer=rice-harvest");
     const map = page.locator('[data-testid="jp-operations-map-canvas"]:visible');
     await expect.poll(async () => map.evaluate((element: any) => Boolean(element.__prefectureMapDiagnostics))).toBe(true);
+    await waitForOverviewReadiness(map);
 
     await map.evaluate((element: any) => element.__prefectureMapDiagnostics.setPrefectureValueNull("prefecture:tokyo"));
     await expect.poll(async () => map.evaluate((element: any) => (
-      element.__prefectureMapDiagnostics.read([]).renderedFeatures
-    )) as Promise<Diagnostics["renderedFeatures"]>).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        entityId: "prefecture:tokyo",
-        hasData: false,
-        layers: expect.arrayContaining(["jp-prefecture-fill", "jp-prefecture-outline", "jp-prefecture-label"]),
-        value: null
-      })
-    ]));
+      element.__prefectureMapDiagnostics.read([])
+    )) as Promise<Diagnostics>).toMatchObject({
+      renderedFeatures: expect.arrayContaining([
+        expect.objectContaining({
+          entityId: "prefecture:tokyo",
+          hasData: false,
+          layers: expect.arrayContaining(["jp-prefecture-fill", "jp-prefecture-outline", "jp-prefecture-label"]),
+          value: null
+        })
+      ]),
+      tilesLoaded: true
+    });
     const renderedFeatures = await map.evaluate((element: any) => (
       element.__prefectureMapDiagnostics.read([]).renderedFeatures
     )) as Diagnostics["renderedFeatures"];
@@ -130,6 +137,16 @@ test.describe("prefecture map acceptance", () => {
     await writeOptionalEvidenceScreenshot(page, testInfo, "prefecture-choropleth-missing-value.png");
   });
 });
+
+async function waitForOverviewReadiness(map: Locator) {
+  await expect.poll(async () => map.evaluate((element: any) => {
+    const diagnostics = element.__prefectureMapDiagnostics.read([]);
+    return {
+      renderedLabelCount: diagnostics.renderedLabelIds.length,
+      tilesLoaded: diagnostics.tilesLoaded
+    };
+  }), { timeout: 10_000 }).toEqual({ renderedLabelCount: 47, tilesLoaded: true });
+}
 
 async function panInitialCoordinateToMapCenter(
   page: Page,

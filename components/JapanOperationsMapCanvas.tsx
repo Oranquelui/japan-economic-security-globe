@@ -1144,6 +1144,7 @@ type PrefectureMapDiagnostics = Readonly<{
     }>;
     renderedLabelIds: string[];
     renderedPolygonIds: string[];
+    tilesLoaded: boolean;
     zoom: number;
   };
   setPrefectureValueNull?: (entityId: string) => Promise<void>;
@@ -1244,6 +1245,7 @@ function installPrefectureMapDiagnostics(
         })),
       renderedLabelIds: uniqueRenderedEntityIds(labelFeatures),
       renderedPolygonIds: uniqueRenderedEntityIds(polygonFeatures),
+      tilesLoaded: map.areTilesLoaded(),
       zoom: map.getZoom()
     };
   };
