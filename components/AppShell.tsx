@@ -72,6 +72,15 @@ const DESKTOP_WORKSPACE_GEOMETRY = {
   contextPaneWidth: 320,
   inspectorWidth: 360
 } as const;
+const DESKTOP_WORKSPACE_MEDIA_QUERY = "(min-width: 1280px)";
+const FOCUSABLE_CONTROL_SELECTOR = [
+  "button:not([disabled])",
+  "a[href]",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])'
+].join(",");
 
 type InspectorOrigin = "comparison" | "signals";
 
@@ -455,20 +464,31 @@ export function AppShell({
     inspectorOriginRef.current = null;
     setEvidenceOpen(false);
     scheduleFocus(() => {
-      if (returnTarget?.isConnected) {
+      const desktopWorkspace = document.querySelector<HTMLElement>('[data-testid="layout-desktop-workspace"]');
+      const stackedWorkspace = document.querySelector<HTMLElement>('[data-testid="layout-stacked-workspace"]');
+      const desktopActive = typeof window.matchMedia !== "function"
+        || window.matchMedia(DESKTOP_WORKSPACE_MEDIA_QUERY).matches;
+      const targetInDesktop = Boolean(returnTarget && desktopWorkspace?.contains(returnTarget));
+      const targetInStacked = Boolean(returnTarget && stackedWorkspace?.contains(returnTarget));
+      const returnTargetMatchesLayout = desktopActive ? !targetInStacked : !targetInDesktop;
+
+      if (returnTarget?.isConnected && returnTargetMatchesLayout) {
         return returnTarget;
       }
+      if (!desktopActive) {
+        return findMatchingWorkspaceControl(stackedWorkspace, returnTarget);
+      }
       if (origin) {
-        const originTrigger = document.querySelector<HTMLElement>(
-          `[data-testid="layout-desktop-workspace"] [data-secondary-action="${origin}"]`
-        );
+        const originTrigger = desktopWorkspace?.querySelector<HTMLElement>(
+          `[data-secondary-action="${origin}"]`
+        ) ?? null;
         if (originTrigger) {
           return originTrigger;
         }
       }
-      return document.querySelector<HTMLElement>(
-        '[data-testid="layout-desktop-workspace"] [data-testid="scope-context-panel"] [aria-pressed="true"]'
-      );
+      return desktopWorkspace?.querySelector<HTMLElement>(
+        '[data-testid="scope-context-panel"] [aria-pressed="true"]'
+      ) ?? null;
     });
   }
 
@@ -769,4 +789,30 @@ function getSelectableIds(view: ThemeView, liveLogistics: ReturnType<typeof buil
     ...view.entities.map((entity) => entity.id),
     ...(liveLogistics?.items.map((item) => item.id) ?? [])
   ]);
+}
+
+function findMatchingWorkspaceControl(
+  workspace: HTMLElement | null,
+  returnTarget: HTMLElement | null
+) {
+  if (!workspace) {
+    return null;
+  }
+
+  const controls = Array.from(workspace.querySelectorAll<HTMLElement>(FOCUSABLE_CONTROL_SELECTOR));
+  const returnLabel = getControlLabel(returnTarget);
+  if (returnLabel) {
+    const matchingControl = controls.find((control) => getControlLabel(control) === returnLabel);
+    if (matchingControl) {
+      return matchingControl;
+    }
+  }
+
+  return controls[0] ?? null;
+}
+
+function getControlLabel(control: HTMLElement | null) {
+  return control?.getAttribute("aria-label")?.trim()
+    || control?.textContent?.replace(/\s+/g, " ").trim()
+    || null;
 }

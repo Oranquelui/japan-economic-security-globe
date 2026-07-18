@@ -10,6 +10,29 @@ import { HOMEPAGE_NOTICE_STORAGE_KEY } from "../InitialNoticeModal";
 import type { RankingSignal } from "../../types/ranking";
 
 const replaceMock = vi.fn();
+const originalMatchMedia = window.matchMedia;
+let desktopViewportMatches = true;
+
+function setDesktopViewport(matches: boolean) {
+  desktopViewportMatches = matches;
+}
+
+function installMatchMediaMock() {
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: vi.fn((query: string): MediaQueryList => ({
+      matches: query === "(min-width: 1280px)" ? desktopViewportMatches : false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(() => false)
+    }))
+  });
+}
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
@@ -220,11 +243,18 @@ import { AppShell } from "../AppShell";
 
 afterEach(() => {
   cleanup();
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: originalMatchMedia
+  });
 });
 
 beforeEach(() => {
   replaceMock.mockReset();
   window.localStorage.clear();
+  setDesktopViewport(true);
+  installMatchMediaMock();
 });
 
 describe("AppShell url sync", () => {
@@ -448,14 +478,26 @@ describe("AppShell url sync", () => {
           selectedId: "prefecture:niigata",
           layerId: "rice-harvest",
           mapModeOverride: "cluster",
-          workspaceView: "comparison"
+          workspaceView: "map"
         }}
       />
     );
 
     const desktop = screen.getByTestId("layout-desktop-workspace");
     expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();
+    expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("cluster");
+
+    await user.click(within(desktop).getByRole("button", { name: "シグナルを見る" }));
+    const queryInput = within(desktop).getByRole("searchbox", { name: "シグナルを検索" }) as HTMLInputElement;
+    await user.type(queryInput, "新潟");
+    expect(queryInput.value).toBe("新潟");
+
+    await user.click(within(desktop).getByRole("button", { name: "地図に戻る" }));
+    await user.click(within(desktop).getByRole("button", { name: "比較する" }));
     expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
+    expect(within(desktop).getByTestId("context-inspector").getAttribute("data-id")).toBe("prefecture:niigata");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("cluster");
 
     const themeSelect = within(desktop).getByRole("combobox", { name: "テーマ" }) as HTMLSelectElement;
     await user.selectOptions(themeSelect, "energy");
@@ -891,6 +933,63 @@ describe("AppShell url sync", () => {
     });
     expect(screen.getByTestId("context-inspector").getAttribute("data-summary")).toBeTruthy();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-overlay-right")).toBe("376");
+  });
+
+  test("does not focus the CSS-hidden desktop workspace when mobile Escape closes URL-hydrated inspector state", async () => {
+    const user = userEvent.setup();
+    setDesktopViewport(false);
+
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "rice",
+          selectedId: "prefecture:niigata",
+          layerId: "rice-harvest",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+      />
+    );
+
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    const stacked = screen.getByTestId("layout-stacked-workspace");
+    expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();
+
+    await user.keyboard("{Escape}");
+
+    await waitFor(() => {
+      expect(within(desktop).queryByTestId("context-inspector")).toBeNull();
+      expect(desktop.contains(document.activeElement)).toBe(false);
+      expect(stacked.contains(document.activeElement)).toBe(true);
+    });
+  });
+
+  test("moves focus to the corresponding stacked map control after resizing below xl", async () => {
+    const user = userEvent.setup();
+    setDesktopViewport(true);
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    const stacked = screen.getByTestId("layout-stacked-workspace");
+    const desktopSelection = within(desktop).getByRole("button", { name: "地図から新潟県を選択" });
+    const stackedSelection = within(stacked).getByRole("button", { name: "地図から新潟県を選択" });
+    await user.click(desktopSelection);
+    await waitFor(() => {
+      expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();
+    });
+
+    setDesktopViewport(false);
+    within(desktop).getByRole("button", { name: "詳細を閉じる" }).focus();
+    await user.keyboard("{Escape}");
+
+    await waitFor(() => {
+      expect(within(desktop).queryByTestId("context-inspector")).toBeNull();
+      expect(desktopSelection).not.toBe(document.activeElement);
+      expect(stackedSelection).toBe(document.activeElement);
+    });
   });
 
   test("restores focus to the exact map control after closing the inspector", async () => {
