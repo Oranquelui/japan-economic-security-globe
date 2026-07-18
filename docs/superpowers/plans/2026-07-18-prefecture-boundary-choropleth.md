@@ -300,6 +300,8 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 
 **Files:**
 
+- Modify: `lib/geo/prefecture-map.ts`
+- Modify: `lib/geo/__tests__/prefecture-map.test.ts`
 - Modify: `components/JapanOperationsMapCanvas.tsx`
 - Modify: `components/__tests__/map-canvas-layer-config.test.tsx`
 - Modify: `lib/presentation/basemap-style.ts`
@@ -485,6 +487,7 @@ Require:
 - geometry source link and compact map attribution are reachable;
 - `/sources-license` exposes the complete structured rights/limitation block;
 - invalid/missing prefecture geometry renders an honest unavailable state and never falls back to radius circles;
+- only a typed prefecture boundary/model validation error is recovered as unavailable; label/programming/unknown errors remain visible to error handling and are never misreported as geometry failure;
 - click selection below zoom 9 continues to call the existing semantic ID selection callback;
 - existing URL selection and inspector tests for Niigata still pass;
 - the update notice says `v0.6.0` and accurately describes the change;
@@ -500,7 +503,7 @@ Expected: FAIL because the unavailable-state test/module behavior and `v0.6.0` n
 
 ### Step 6.2: Add the honest unavailable state
 
-If the boundary builder rejects the dataset/model join, do not add misleading circle features. Surface a concise non-modal map status through the existing presentation shell or an accessible map overlay. Keep the rest of the app usable.
+If the boundary builder rejects the dataset/model join, do not add misleading circle features. Represent expected join/model validation failures with a dedicated exported error class. Build labels outside the recovery block; catch only that typed boundary error, emit a useful diagnostic, and rethrow unknown errors. Surface a concise non-modal map status through the existing presentation shell or an accessible map overlay. Keep the rest of the app usable.
 
 ### Step 6.3: Update durable release documentation
 
@@ -516,10 +519,10 @@ Update only current product/release surfaces. Do not rewrite historical `v0.5.0`
 ### Step 6.4: Verify and commit
 
 ```bash
-npx vitest run components/__tests__/map-unavailable-state.test.tsx components/__tests__/initial-notice-modal.test.tsx components/__tests__/app-shell-url-state.test.tsx components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/sources-license-page.test.tsx components/__tests__/map-canvas-layer-config.test.tsx
+npx vitest run lib/geo/__tests__/prefecture-map.test.ts components/__tests__/map-unavailable-state.test.tsx components/__tests__/initial-notice-modal.test.tsx components/__tests__/app-shell-url-state.test.tsx components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/sources-license-page.test.tsx components/__tests__/map-canvas-layer-config.test.tsx
 npm run typecheck
 git diff --check
-git add components/JapanOperationsMapCanvas.tsx components/InitialNoticeModal.tsx components/__tests__/map-unavailable-state.test.tsx components/__tests__/initial-notice-modal.test.tsx components/__tests__/app-shell-url-state.test.tsx components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/sources-license-page.test.tsx README.md README.ja.md docs/public-launch.md DATA-SOURCES.md
+git add lib/geo/prefecture-map.ts lib/geo/__tests__/prefecture-map.test.ts components/JapanOperationsMapCanvas.tsx components/InitialNoticeModal.tsx components/__tests__/map-unavailable-state.test.tsx components/__tests__/initial-notice-modal.test.tsx components/__tests__/app-shell-url-state.test.tsx components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/sources-license-page.test.tsx README.md README.ja.md docs/public-launch.md DATA-SOURCES.md
 git commit -m "docs: prepare prefecture map release"
 ```
 
