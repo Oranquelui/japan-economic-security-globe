@@ -81,7 +81,9 @@ function assertRecord(value: unknown, description: string): asserts value is Rec
   }
 }
 
-function assertBoundaryCollection(value: unknown): asserts value is PrefectureBoundaryCollection {
+export function assertPrefectureBoundaryCollection(
+  value: unknown
+): asserts value is PrefectureBoundaryCollection {
   assertRecord(value, "root");
   if (value.type !== "FeatureCollection" || !Array.isArray(value.features)) {
     throw new Error("Invalid prefecture boundary artifact: expected a FeatureCollection");
@@ -113,10 +115,26 @@ function assertBoundaryCollection(value: unknown): asserts value is PrefectureBo
     entityIds.add(entityId);
 
     assertRecord(candidate.geometry, `feature ${prefectureCode} geometry`);
-    if (
-      (candidate.geometry.type !== "Polygon" && candidate.geometry.type !== "MultiPolygon") ||
-      !Array.isArray(candidate.geometry.coordinates)
-    ) {
+    if (candidate.geometry.type === "Polygon") {
+      if (
+        !Array.isArray(candidate.geometry.coordinates) ||
+        candidate.geometry.coordinates.length < 1
+      ) {
+        throw new Error(`Invalid prefecture boundary geometry for ${prefectureCode}: missing ring`);
+      }
+    } else if (candidate.geometry.type === "MultiPolygon") {
+      if (
+        !Array.isArray(candidate.geometry.coordinates) ||
+        candidate.geometry.coordinates.length < 1 ||
+        candidate.geometry.coordinates.some(
+          (polygon) => !Array.isArray(polygon) || polygon.length < 1
+        )
+      ) {
+        throw new Error(
+          `Invalid prefecture boundary geometry for ${prefectureCode}: missing polygon or ring`
+        );
+      }
+    } else {
       throw new Error(`Invalid prefecture boundary geometry for ${prefectureCode}`);
     }
   }
@@ -126,16 +144,18 @@ function assertBoundaryCollection(value: unknown): asserts value is PrefectureBo
       `Missing, duplicate, or unsorted prefecture boundary code: expected ${expectedCodes.join(",")}, received ${codes.join(",")}`
     );
   }
+
+  assertGeometryCoordinates(value as unknown as PrefectureBoundaryCollection);
 }
 
 function ringsForGeometry(geometry: PolygonGeometry | MultiPolygonGeometry): readonly LinearRing[] {
   return geometry.type === "Polygon" ? geometry.coordinates : geometry.coordinates.flat();
 }
 
-function assertDevelopmentGeometry(collection: PrefectureBoundaryCollection): void {
+function assertGeometryCoordinates(collection: PrefectureBoundaryCollection): void {
   for (const feature of collection.features) {
     for (const ring of ringsForGeometry(feature.geometry)) {
-      if (ring.length < 4) {
+      if (!Array.isArray(ring) || ring.length < 4) {
         throw new Error(`Invalid prefecture boundary ring for ${feature.properties.prefectureCode}`);
       }
 
@@ -165,12 +185,32 @@ function assertDevelopmentGeometry(collection: PrefectureBoundaryCollection): vo
   }
 }
 
-function assertProvenance(value: unknown): asserts value is PrefectureBoundaryProvenance {
+export function assertPrefectureBoundaryProvenance(
+  value: unknown
+): asserts value is PrefectureBoundaryProvenance {
   assertRecord(value, "provenance");
+  assertRecord(value.worldview, "provenance worldview");
+  assertRecord(value.processor, "provenance processor");
   if (
+    value.artifactVersion !== "natural-earth-5.1.1-japan-prefectures-v1" ||
+    value.upstreamDataset !== "Natural Earth Admin 1 – States, Provinces" ||
     value.upstreamVersion !== "5.1.1" ||
+    value.immutableUrl !==
+      "https://naciscdn.org/naturalearth/5.1.1/10m/cultural/ne_10m_admin_1_states_provinces.zip" ||
     value.upstreamSha256 !== "efc59726337323058f9446210adc96673179cd344e053666ee3d28cb58ba2b05" ||
-    value.license !== "Public domain"
+    value.termsUrl !== "https://www.naturalearthdata.com/about/terms-of-use/" ||
+    value.license !== "Public domain" ||
+    value.worldview.status !== "beta" ||
+    value.worldview.boundaryType !== "de facto" ||
+    value.processingDate !== "2026-07-18" ||
+    value.processor.name !== "mapshaper" ||
+    value.processor.version !== "0.7.45" ||
+    value.command !==
+      "./node_modules/.bin/mapshaper <source.zip> -target ne_10m_admin_1_states_provinces -filter 'adm0_a3 == \"JPN\"' -filter-fields iso_3166_2,name_ja -clean -o format=geojson precision=0.00001 <processed.geojson>" ||
+    value.processing !==
+      "Natural Earth 5.1.1 Admin-1 States, Provinces を日本の47都道府県に絞り、本サービスの全国表示向けに属性整理・簡略化して作成" ||
+    value.limitation !==
+      "Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。"
   ) {
     throw new Error("Invalid prefecture boundary provenance pin");
   }
@@ -178,46 +218,65 @@ function assertProvenance(value: unknown): asserts value is PrefectureBoundaryPr
 
 const importedBoundaryCollection: unknown = JSON.parse(importedBoundaryCollectionText);
 const boundaryCandidate: unknown = immutableJsonClone(importedBoundaryCollection);
-assertBoundaryCollection(boundaryCandidate);
+assertPrefectureBoundaryCollection(boundaryCandidate);
 
 export const prefectureBoundaryCollection = boundaryCandidate;
 
-if (process.env.NODE_ENV !== "production") {
-  assertDevelopmentGeometry(prefectureBoundaryCollection);
+function createReadonlyMap<K, V>(entries: Iterable<readonly [K, V]>): ReadonlyMap<K, V> {
+  const backing = new Map<K, V>(entries);
+  let facade: ReadonlyMap<K, V>;
+  facade = Object.freeze({
+    get size() {
+      return backing.size;
+    },
+    get: (key: K) => backing.get(key),
+    has: (key: K) => backing.has(key),
+    entries: () => backing.entries(),
+    keys: () => backing.keys(),
+    values: () => backing.values(),
+    forEach: (
+      callback: (value: V, key: K, map: ReadonlyMap<K, V>) => void,
+      thisArg?: unknown
+    ) => {
+      backing.forEach((value, key) => callback.call(thisArg, value, key, facade));
+    },
+    [Symbol.iterator]: () => backing[Symbol.iterator]()
+  });
+  return facade;
 }
 
-const codeIndex = new Map<string, PrefectureBoundaryFeature>();
-const entityIndex = new Map<string, PrefectureBoundaryFeature>();
-const entityIdByCodeIndex = new Map<
-  PrefectureBoundaryFeature["properties"]["prefectureCode"],
-  PrefectureBoundaryFeature["properties"]["entityId"]
->();
+type BoundaryCode = PrefectureBoundaryFeature["properties"]["prefectureCode"];
+type BoundaryEntityId = PrefectureBoundaryFeature["properties"]["entityId"];
+
+const codeFeatureEntries: Array<readonly [BoundaryCode, PrefectureBoundaryFeature]> = [];
+const entityFeatureEntries: Array<readonly [BoundaryEntityId, PrefectureBoundaryFeature]> = [];
+const codeEntityEntries: Array<readonly [BoundaryCode, BoundaryEntityId]> = [];
+const seenCodes = new Set<BoundaryCode>();
+const seenEntityIds = new Set<BoundaryEntityId>();
 for (const feature of prefectureBoundaryCollection.features) {
   const { prefectureCode, entityId } = feature.properties;
-  if (
-    codeIndex.has(prefectureCode) ||
-    entityIndex.has(entityId) ||
-    entityIdByCodeIndex.has(prefectureCode)
-  ) {
+  if (seenCodes.has(prefectureCode) || seenEntityIds.has(entityId)) {
     throw new Error(`Duplicate prefecture boundary mapping: ${prefectureCode} / ${entityId}`);
   }
-  codeIndex.set(prefectureCode, feature);
-  entityIndex.set(entityId, feature);
-  entityIdByCodeIndex.set(prefectureCode, entityId);
+  seenCodes.add(prefectureCode);
+  seenEntityIds.add(entityId);
+  codeFeatureEntries.push([prefectureCode, feature]);
+  entityFeatureEntries.push([entityId, feature]);
+  codeEntityEntries.push([prefectureCode, entityId]);
 }
 
-if (codeIndex.size !== 47 || entityIndex.size !== 47 || entityIdByCodeIndex.size !== 47) {
+if (
+  codeFeatureEntries.length !== 47 ||
+  entityFeatureEntries.length !== 47 ||
+  codeEntityEntries.length !== 47
+) {
   throw new Error("Missing prefecture boundary mapping");
 }
 
-export const prefectureBoundaryByCode: ReadonlyMap<string, PrefectureBoundaryFeature> = codeIndex;
-export const prefectureBoundaryByEntityId: ReadonlyMap<string, PrefectureBoundaryFeature> =
-  entityIndex;
-export const prefectureEntityIdByCode: ReadonlyMap<
-  PrefectureBoundaryFeature["properties"]["prefectureCode"],
-  PrefectureBoundaryFeature["properties"]["entityId"]
-> = entityIdByCodeIndex;
+export const prefectureBoundaryByCode = createReadonlyMap(codeFeatureEntries);
+export const prefectureBoundaryByEntityId = createReadonlyMap(entityFeatureEntries);
+export const prefectureEntityIdByCode = createReadonlyMap(codeEntityEntries);
 
 const provenanceCandidate: unknown = immutableJsonClone(importedProvenance);
-assertProvenance(provenanceCandidate);
+assertPrefectureBoundaryProvenance(provenanceCandidate);
 export const prefectureBoundaryProvenance = provenanceCandidate;

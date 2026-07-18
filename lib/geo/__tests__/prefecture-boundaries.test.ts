@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 import seedEntities from "../../../data/seed/entities.json";
 import {
+  assertPrefectureBoundaryCollection,
+  assertPrefectureBoundaryProvenance,
   prefectureBoundaryByCode,
   prefectureBoundaryByEntityId,
   prefectureBoundaryCollection,
@@ -13,6 +15,11 @@ import {
 } from "../prefecture-boundaries";
 
 const artifactPath = "data/geo/japan-prefectures-natural-earth-5.1.1.geojson";
+
+function mutableJsonClone(value: unknown) {
+  return JSON.parse(JSON.stringify(value));
+}
+
 const expectedCodeEntityPairs = [
   ["JP-01", "prefecture:hokkaido"],
   ["JP-02", "prefecture:aomori"],
@@ -225,6 +232,23 @@ describe("verified prefecture boundary artifact", () => {
     }
   });
 
+  test("runtime collection validation rejects empty Polygon and MultiPolygon containers", () => {
+    expect(() => assertPrefectureBoundaryCollection(prefectureBoundaryCollection)).not.toThrow();
+
+    const emptyPolygon = mutableJsonClone(prefectureBoundaryCollection);
+    emptyPolygon.features[0].geometry = { type: "Polygon", coordinates: [] };
+
+    const emptyMultiPolygon = mutableJsonClone(prefectureBoundaryCollection);
+    emptyMultiPolygon.features[0].geometry = { type: "MultiPolygon", coordinates: [] };
+
+    const ringlessMultiPolygon = mutableJsonClone(prefectureBoundaryCollection);
+    ringlessMultiPolygon.features[0].geometry = { type: "MultiPolygon", coordinates: [[]] };
+
+    for (const fixture of [emptyPolygon, emptyMultiPolygon, ringlessMultiPolygon]) {
+      expect(() => assertPrefectureBoundaryCollection(fixture)).toThrow(/geometry|ring/i);
+    }
+  });
+
   test("has no ring segment intersections beyond adjacent shared endpoints", () => {
     for (const feature of prefectureBoundaryCollection.features) {
       for (const ring of ringsForGeometry(feature.geometry)) {
@@ -255,6 +279,37 @@ describe("verified prefecture boundary artifact", () => {
     expect([...prefectureEntityIdByCode]).toEqual(expectedCodeEntityPairs);
   });
 
+  test("exposes iterable indexes without runtime mutation methods", () => {
+    expect(prefectureEntityIdByCode.size).toBe(47);
+    expect(prefectureEntityIdByCode.has("JP-13")).toBe(true);
+    expect(prefectureEntityIdByCode.get("JP-13")).toBe("prefecture:tokyo");
+    expect([...prefectureEntityIdByCode]).toEqual(expectedCodeEntityPairs);
+
+    expect(prefectureBoundaryByEntityId.size).toBe(47);
+    expect(prefectureBoundaryByEntityId.has("prefecture:tokyo")).toBe(true);
+    expect(prefectureBoundaryByEntityId.get("prefecture:tokyo")?.properties.prefectureCode).toBe(
+      "JP-13"
+    );
+
+    for (const index of [
+      prefectureBoundaryByCode,
+      prefectureBoundaryByEntityId,
+      prefectureEntityIdByCode
+    ]) {
+      const forciblyMutable = index as unknown as {
+        set: (key: unknown, value: unknown) => unknown;
+        delete: (key: unknown) => unknown;
+        clear: () => unknown;
+      };
+
+      expect(Object.isFrozen(index)).toBe(true);
+      expect(forciblyMutable.set).toBeUndefined();
+      expect(forciblyMutable.delete).toBeUndefined();
+      expect(forciblyMutable.clear).toBeUndefined();
+      expect(() => forciblyMutable.set("invalid", "invalid")).toThrow(TypeError);
+    }
+  });
+
   test("pins reproducible Natural Earth provenance and licensing context", () => {
     expect(prefectureBoundaryProvenance).toMatchObject({
       upstreamVersion: "5.1.1",
@@ -277,6 +332,31 @@ describe("verified prefecture boundary artifact", () => {
       "Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。"
     );
     expect(prefectureBoundaryProvenance.license).toBe("Public domain");
+  });
+
+  test("runtime provenance validation rejects missing, nested, scalar, and pin drift", () => {
+    expect(() => assertPrefectureBoundaryProvenance(prefectureBoundaryProvenance)).not.toThrow();
+
+    const missingProcessor = mutableJsonClone(prefectureBoundaryProvenance);
+    delete missingProcessor.processor;
+
+    const badNestedField = mutableJsonClone(prefectureBoundaryProvenance);
+    badNestedField.worldview.status = "stable";
+
+    const badScalarField = mutableJsonClone(prefectureBoundaryProvenance);
+    badScalarField.processingDate = 20260718;
+
+    const badPinnedField = mutableJsonClone(prefectureBoundaryProvenance);
+    badPinnedField.upstreamVersion = "5.1.2";
+
+    for (const fixture of [
+      missingProcessor,
+      badNestedField,
+      badScalarField,
+      badPinnedField
+    ]) {
+      expect(() => assertPrefectureBoundaryProvenance(fixture)).toThrow(/provenance/i);
+    }
   });
 
   test("stays within raw and gzip transfer budgets", () => {
