@@ -49,12 +49,8 @@ describe("navigation shell", () => {
     render(
       <>
         <ActionBar
-          onClearFilters={() => undefined}
-          queryActive={false}
-          selectedKindLabel="依存フロー"
-          selectedLabel="サウジ原油 → 日本"
+          currentViewLabel="コメ / 収穫量 / 令和5年産"
           sharePath="/"
-          themeLabel="エネルギー"
           themePalette={themePalette}
         />
         <JapanMainMap
@@ -78,7 +74,8 @@ describe("navigation shell", () => {
     expect(within(header).queryByRole("button", { name: "地点" })).toBeNull();
     expect(within(header).queryByText("表示レイヤー")).toBeNull();
     expect(within(header).queryByText("運用地図")).toBeNull();
-    expect(within(header).getByText("選択中")).toBeTruthy();
+    expect(within(header).queryByText("選択中")).toBeNull();
+    expect(within(header).getByText("コメ / 収穫量 / 令和5年産")).toBeTruthy();
 
     const mapLayerControls = screen.getByTestId("map-layer-controls");
     expect(within(mapLayerControls).getByText("表示レイヤー")).toBeTruthy();

@@ -31,7 +31,7 @@ import {
   serializeOperationsUrlState,
   type OperationsUrlState
 } from "../lib/presentation/url-state";
-import { getThemeLabel, localizeAnyLabel, localizeKind } from "../lib/presentation/japanese";
+import { getThemeLabel } from "../lib/presentation/japanese";
 import { getRouteStatus } from "../lib/presentation/route-status";
 import {
   buildSelectionInspector,
@@ -51,7 +51,6 @@ import { InitialNoticeModal } from "./InitialNoticeModal";
 import { JapanMainMap } from "./JapanMainMap";
 import { LogisticsImpactBoard } from "./LogisticsImpactBoard";
 import { MapInboxPanel } from "./MapInboxPanel";
-import { NavigationRail } from "./NavigationRail";
 import { OperationsSignalTable } from "./OperationsSignalTable";
 import { SourceStatusBar } from "./SourceStatusBar";
 import { ScopeContextPanel } from "./ScopeContextPanel";
@@ -71,9 +70,10 @@ interface AppShellProps {
 const DESKTOP_WORKSPACE_GEOMETRY = {
   comparisonHeight: 264,
   contextPaneWidth: 320,
-  inspectorWidth: 360,
-  railWidth: 72
+  inspectorWidth: 360
 } as const;
+
+type InspectorOrigin = "comparison" | "signals";
 
 export function AppShell({
   graph,
@@ -87,7 +87,8 @@ export function AppShell({
   const router = useRouter();
   const pathname = usePathname();
   const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inboxToggleRef = useRef<HTMLButtonElement>(null);
+  const inspectorReturnFocusRef = useRef<HTMLElement | null>(null);
+  const inspectorOriginRef = useRef<InspectorOrigin | null>(null);
   const rankingNowRef = useRef(new Date().toISOString());
   const homepageDecision = rankingSignals.length
     ? buildRankingDecision({
@@ -158,7 +159,6 @@ export function AppShell({
   );
   const [workspaceView, setWorkspaceView] = useState<OperationsUrlState["workspaceView"]>(resolvedInitialState.workspaceView);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isInboxOpen, setInboxOpen] = useState(true);
   // Open evidence only when the URL explicitly pins a selection — not for homepage auto-lead.
   const [isEvidenceOpen, setEvidenceOpen] = useState(
     Boolean(hasExplicitUrlState && resolvedInitialState.selectedId)
@@ -259,6 +259,7 @@ export function AppShell({
   const themePalette = getThemePalette(themeId);
   const statusPalette = getStatusPalette();
   const themeLabel = getThemeLabel(themeId).label;
+  const currentViewLabel = [themeLabel, activeLayer.label, activeLayer.periodLabel].join(" / ");
   const serializedState = serializeOperationsUrlState({
     themeId,
     selectedId: validSelectedId,
@@ -279,15 +280,13 @@ export function AppShell({
     "--ops-text-primary": themePalette.textPrimary,
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
-  const railWidth = DESKTOP_WORKSPACE_GEOMETRY.railWidth;
   const paneWidth = DESKTOP_WORKSPACE_GEOMETRY.contextPaneWidth;
   const inspectorExpandedWidth = DESKTOP_WORKSPACE_GEOMETRY.inspectorWidth;
-  const visiblePaneWidth = isInboxOpen ? paneWidth : 0;
   const inspectorWidth = isEvidenceOpen ? inspectorExpandedWidth : 0;
   const compareHeight = workspaceView === "comparison" ? DESKTOP_WORKSPACE_GEOMETRY.comparisonHeight : 0;
   const mapOverlayInsets = {
     top: 16,
-    left: railWidth + visiblePaneWidth + 16,
+    left: paneWidth + 16,
     right: inspectorWidth + 16,
     bottom: compareHeight + 16
   };
@@ -333,6 +332,9 @@ export function AppShell({
     );
     const nextWorkspace = buildWorkspacePresentation(graph, nextView, nextLiveLogistics);
     const nextDefaultLayer = getDefaultLayerDefinition(nextThemeId, nextWorkspace);
+
+    inspectorReturnFocusRef.current = null;
+    inspectorOriginRef.current = null;
 
     startTransition(() => {
       setThemeId(nextThemeId);
@@ -386,16 +388,8 @@ export function AppShell({
     scheduleFocus(() => (
       document.querySelector<HTMLButtonElement>(
         `[data-testid="layout-desktop-workspace"] [data-secondary-action="${origin}"]`
-      ) ?? inboxToggleRef.current
+      )
     ));
-  }
-
-  function handleCloseInbox() {
-    setInboxOpen(false);
-    if (workspaceView !== "map") {
-      setWorkspaceView("map");
-    }
-    scheduleFocus(() => inboxToggleRef.current);
   }
 
   function scheduleFocus(resolveTarget: () => HTMLElement | null) {
@@ -408,15 +402,32 @@ export function AppShell({
     }, 0);
   }
 
+  function captureInspectorReturnFocus(origin: InspectorOrigin | null = null) {
+    const activeElement = document.activeElement;
+    if (!(activeElement instanceof HTMLElement) || activeElement === document.body) {
+      return;
+    }
+    if (activeElement.closest('[data-testid="layout-context-inspector"]')) {
+      return;
+    }
+
+    inspectorReturnFocusRef.current = activeElement;
+    inspectorOriginRef.current = origin;
+  }
+
   function handleSelect(nextSelectedId: string) {
+    captureInspectorReturnFocus();
     setSelectedId(nextSelectedId);
     setMapPopupAnchor(null);
     setEvidenceOpen(true);
   }
 
-  function handleSecondarySelect(nextSelectedId: string) {
+  function handleSecondarySelect(nextSelectedId: string, origin: InspectorOrigin) {
+    captureInspectorReturnFocus(origin);
     setWorkspaceView("map");
-    handleSelect(nextSelectedId);
+    setSelectedId(nextSelectedId);
+    setMapPopupAnchor(null);
+    setEvidenceOpen(true);
     scheduleFocus(() => (
       document.querySelector<HTMLElement>(
         '[data-testid="layout-desktop-workspace"] [data-testid="context-inspector"] h2'
@@ -425,6 +436,7 @@ export function AppShell({
   }
 
   function handleMapSelect(nextSelectedId: string, anchor?: MapPopupAnchor) {
+    captureInspectorReturnFocus();
     setSelectedId(nextSelectedId);
     setMapPopupAnchor(anchor ?? null);
     setEvidenceOpen(true);
@@ -433,6 +445,31 @@ export function AppShell({
   function handleCloseDetail() {
     setSelectedId(null);
     setMapPopupAnchor(null);
+  }
+
+  function handleCloseInspector() {
+    const returnTarget = inspectorReturnFocusRef.current;
+    const origin = inspectorOriginRef.current;
+
+    inspectorReturnFocusRef.current = null;
+    inspectorOriginRef.current = null;
+    setEvidenceOpen(false);
+    scheduleFocus(() => {
+      if (returnTarget?.isConnected) {
+        return returnTarget;
+      }
+      if (origin) {
+        const originTrigger = document.querySelector<HTMLElement>(
+          `[data-testid="layout-desktop-workspace"] [data-secondary-action="${origin}"]`
+        );
+        if (originTrigger) {
+          return originTrigger;
+        }
+      }
+      return document.querySelector<HTMLElement>(
+        '[data-testid="layout-desktop-workspace"] [data-testid="scope-context-panel"] [aria-pressed="true"]'
+      );
+    });
   }
 
   useEffect(() => {
@@ -449,7 +486,7 @@ export function AppShell({
 
       if (isEvidenceOpen) {
         event.preventDefault();
-        setEvidenceOpen(false);
+        handleCloseInspector();
       }
     }
 
@@ -458,25 +495,22 @@ export function AppShell({
   }, [isEvidenceOpen, workspaceView]);
 
   return (
-    <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 xl:grid xl:grid-rows-[56px,auto,minmax(0,1fr)]" style={shellStyle}>
+    <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 xl:grid xl:grid-rows-[56px,minmax(0,1fr)]" style={shellStyle}>
       <InitialNoticeModal homepageMode={homepageMode} locale={locale} />
 
       <ActionBar
-        onClearFilters={() => setSearchQuery("")}
-        queryActive={searchQuery.length > 0}
-        routeStatusLabel={routeStatus?.chipLabel ?? null}
-        selectedKindLabel={localizeKind(detail.kind)}
-        selectedLabel={localizeAnyLabel(detail.id, detail.label)}
+        currentViewLabel={currentViewLabel}
         sharePath={sharePath}
-        themeLabel={themeLabel}
         themePalette={themePalette}
       />
 
-      <SourceStatusBar
-        summary={sourceStatusSummary}
-        themePalette={themePalette}
-        variant={themeId === "regional-security" ? "public-history" : "default"}
-      />
+      <div data-testid="layout-source-status-mobile" className="xl:hidden">
+        <SourceStatusBar
+          summary={sourceStatusSummary}
+          themePalette={themePalette}
+          variant={themeId === "regional-security" ? "public-history" : "default"}
+        />
+      </div>
 
       <div data-testid="layout-workspace-scroll" className="h-full min-h-0 min-w-0 overflow-x-hidden overflow-y-auto xl:overflow-hidden">
         <div data-testid="layout-desktop-workspace" className="relative hidden h-full min-h-0 xl:block">
@@ -496,67 +530,45 @@ export function AppShell({
           </section>
 
           <aside
-            data-testid="layout-navigation-rail"
-            className="absolute left-0 top-0 z-40"
+            data-testid="layout-command-pane"
+            aria-hidden="false"
+            className="absolute left-0 top-0 z-20 min-h-0 overflow-hidden border-r"
             style={{
-              width: railWidth,
-              bottom: 0
+              left: 0,
+              width: paneWidth,
+              bottom: 0,
+              borderColor: themePalette.borderSubtle,
+              background: themePalette.surfacePanel
             }}
           >
-            <NavigationRail
-              inboxToggleRef={inboxToggleRef}
-              isInboxOpen={isInboxOpen}
-              onCloseInbox={handleCloseInbox}
-              onOpenInbox={() => setInboxOpen(true)}
-              onThemeChange={handleThemeChange}
-              themeId={themeId}
-              themeIds={orderedThemeIds}
-              themePalette={themePalette}
-            />
+            {workspaceView === "signals" ? (
+              <SignalsPanel
+                activeId={activeId}
+                onBackToMap={() => handleCloseSecondary("signals")}
+                onQueryChange={setSearchQuery}
+                onSelect={(nextSelectedId) => handleSecondarySelect(nextSelectedId, "signals")}
+                query={searchQuery}
+                rows={filteredOperationRows}
+                themeId={themeId}
+                themeLabel={themeLabel}
+                themePalette={themePalette}
+              />
+            ) : (
+              <ScopeContextPanel
+                activeLayerId={activeLayer.id}
+                activeSummary={activeLayerSummary}
+                comparisonAvailable={comparisonValidation.comparable}
+                onLayerChange={handleLayerChange}
+                onOpenComparison={handleOpenComparison}
+                onOpenSignals={handleOpenSignals}
+                onThemeChange={handleThemeChange}
+                themeId={themeId}
+                themeIds={orderedThemeIds}
+                themePalette={themePalette}
+                workspace={workspace}
+              />
+            )}
           </aside>
-
-          {isInboxOpen ? (
-            <aside
-              data-testid="layout-command-pane"
-              aria-hidden="false"
-              className="absolute top-0 z-20 min-h-0 overflow-hidden border-r"
-              style={{
-                left: railWidth,
-                width: paneWidth,
-                bottom: 0,
-                borderColor: themePalette.borderSubtle,
-                background: themePalette.surfacePanel
-              }}
-            >
-              {workspaceView === "signals" ? (
-                <SignalsPanel
-                  activeId={activeId}
-                  onBackToMap={() => handleCloseSecondary("signals")}
-                  onQueryChange={setSearchQuery}
-                  onSelect={handleSecondarySelect}
-                  query={searchQuery}
-                  rows={filteredOperationRows}
-                  themeId={themeId}
-                  themeLabel={themeLabel}
-                  themePalette={themePalette}
-                />
-              ) : (
-                <ScopeContextPanel
-                  activeLayerId={activeLayer.id}
-                  activeSummary={activeLayerSummary}
-                  comparisonAvailable={comparisonValidation.comparable}
-                  onLayerChange={handleLayerChange}
-                  onOpenComparison={handleOpenComparison}
-                  onOpenSignals={handleOpenSignals}
-                  onThemeChange={handleThemeChange}
-                  themeId={themeId}
-                  themeIds={orderedThemeIds}
-                  themePalette={themePalette}
-                  workspace={workspace}
-                />
-              )}
-            </aside>
-          ) : null}
 
           {isEvidenceOpen ? (
             <aside
@@ -571,7 +583,7 @@ export function AppShell({
               <ContextInspector
                 evidenceGraph={evidenceGraph}
                 inspector={selectionInspector}
-                onClose={() => setEvidenceOpen(false)}
+                onClose={handleCloseInspector}
                 onSelect={handleSelect}
                 rankingExplanation={liveLogisticsDetailItem ? null : rankingExplanation}
                 selectedId={activeId}
@@ -587,7 +599,7 @@ export function AppShell({
               data-testid="layout-compare-drawer"
               className="absolute bottom-0 z-30 min-h-0"
               style={{
-                left: railWidth + visiblePaneWidth,
+                left: paneWidth,
                 right: inspectorWidth,
                 height: compareHeight
               }}
@@ -596,7 +608,7 @@ export function AppShell({
                 activeId={activeId}
                 layer={activeLayer}
                 onClose={() => handleCloseSecondary("comparison")}
-                onSelect={handleSecondarySelect}
+                onSelect={(nextSelectedId) => handleSecondarySelect(nextSelectedId, "comparison")}
                 series={metricSeries}
                 sources={view.sources}
                 themePalette={themePalette}

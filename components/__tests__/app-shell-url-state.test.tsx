@@ -5,8 +5,6 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { loadSeedGraph } from "../../lib/data/seed-loader";
-import type { Ref } from "react";
-import type { ThemeId } from "../../types/semantic";
 import type { OperationMapMode } from "../../lib/presentation/operations";
 import { HOMEPAGE_NOTICE_STORAGE_KEY } from "../InitialNoticeModal";
 import type { RankingSignal } from "../../types/ranking";
@@ -40,42 +38,6 @@ vi.mock("../MapInboxPanel", () => ({
   )
 }));
 
-vi.mock("../NavigationRail", () => ({
-  NavigationRail: ({
-    isInboxOpen,
-    onCloseInbox,
-    onOpenInbox,
-    onThemeChange,
-    inboxToggleRef,
-    themeId
-  }: {
-    isInboxOpen: boolean;
-    onCloseInbox: () => void;
-    onOpenInbox: () => void;
-    onThemeChange: (themeId: ThemeId) => void;
-    inboxToggleRef?: Ref<HTMLButtonElement>;
-    themeId: ThemeId;
-  }) => (
-    <div data-testid="nav-rail" data-theme={themeId}>
-      {isInboxOpen ? (
-        <button ref={inboxToggleRef} type="button" aria-label="監視インボックスを閉じる" onClick={onCloseInbox}>
-          close-inbox
-        </button>
-      ) : (
-        <button ref={inboxToggleRef} type="button" aria-label="監視インボックスを開く" onClick={onOpenInbox}>
-          open-inbox
-        </button>
-      )}
-      <button type="button" onClick={() => onThemeChange("rice")}>
-        change-theme-rice
-      </button>
-      <button type="button" onClick={() => onThemeChange("energy")}>
-        change-theme-energy
-      </button>
-    </div>
-  )
-}));
-
 vi.mock("../JapanMainMap", () => ({
   JapanMainMap: ({
     activeId,
@@ -85,6 +47,7 @@ vi.mock("../JapanMainMap", () => ({
     model,
     onMapModeChange,
     onOpenEvidence,
+    onSelect,
     overlayInsets,
     watchOverlays = []
   }: {
@@ -107,6 +70,7 @@ vi.mock("../JapanMainMap", () => ({
     };
     onMapModeChange?: (mode: OperationMapMode) => void;
     onOpenEvidence?: () => void;
+    onSelect: (id: string) => void;
     overlayInsets?: { bottom: number; left: number; right: number; top: number };
     watchOverlays?: unknown[];
   }) => (
@@ -147,6 +111,9 @@ vi.mock("../JapanMainMap", () => ({
           根拠パネルを開く
         </button>
       ) : null}
+      <button type="button" onClick={() => onSelect("prefecture:niigata")}>
+        地図から新潟県を選択
+      </button>
       mocked-map
     </div>
   )
@@ -291,7 +258,7 @@ describe("AppShell url sync", () => {
     const stackedWorkspace = screen.getByTestId("layout-stacked-workspace");
 
     expect(shell.className).toContain("xl:grid");
-    expect(shell.className).toContain("xl:grid-rows-[56px,auto,minmax(0,1fr)]");
+    expect(shell.className).toContain("xl:grid-rows-[56px,minmax(0,1fr)]");
     expect(shell.className).not.toContain("lg:grid");
     expect(actionBar.className).toContain("hidden");
     expect(actionBar.className).toContain("xl:flex");
@@ -306,7 +273,9 @@ describe("AppShell url sync", () => {
     expect(screen.getByRole("banner")).toBeTruthy();
     expect(actionBar).toBeTruthy();
     expect(screen.getByRole("status", { name: "出典状態" })).toBeTruthy();
-    expect(screen.getByTestId("layout-navigation-rail")).toBeTruthy();
+    const sourceStatusMobile = screen.getByTestId("layout-source-status-mobile");
+    expect(sourceStatusMobile.className).toContain("xl:hidden");
+    expect(screen.queryByTestId("layout-navigation-rail")).toBeNull();
     expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
     expect(screen.getByTestId("layout-map-section")).toBeTruthy();
     expect(screen.queryByTestId("layout-watchboard-overlay")).toBeNull();
@@ -325,6 +294,7 @@ describe("AppShell url sync", () => {
     expect(within(desktopWorkspace).queryByTestId("map-layer-controls")).toBeNull();
     expect(screen.getAllByTestId("map-layer-controls")).toHaveLength(1);
     expect(screen.getAllByTestId("inbox")).toHaveLength(1);
+    expect(within(desktopWorkspace).getAllByRole("combobox", { name: "テーマ" })).toHaveLength(1);
   });
 
   test("shows the initial notice only when homepage mode is app", async () => {
@@ -361,7 +331,7 @@ describe("AppShell url sync", () => {
       />
     );
 
-    expect(screen.getAllByTestId("nav-rail")[0].getAttribute("data-theme")).toBe("rice");
+    expect(within(screen.getByTestId("layout-desktop-workspace")).getByTestId("signals-panel").getAttribute("data-theme")).toBe("rice");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("cluster");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("observation:rice-price-signal-2026");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("observation:rice-price-signal-2026");
@@ -447,56 +417,62 @@ describe("AppShell url sync", () => {
     });
   });
 
-  test("chooses the runtime default layer when the theme changes", async () => {
+  test("changes theme through the desktop native select while retaining focus", async () => {
     const user = userEvent.setup();
 
     render(<AppShell graph={loadSeedGraph()} />);
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    const themeSelect = within(desktop).getByRole("combobox", { name: "テーマ" }) as HTMLSelectElement;
 
-    await user.click(screen.getAllByText("change-theme-energy")[0]);
+    themeSelect.focus();
+    await user.selectOptions(themeSelect, "energy");
 
     await waitFor(() => {
       expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("point");
       expect(replaceMock).toHaveBeenLastCalledWith("/?theme=energy", { scroll: false });
     });
-    expect(screen.getByRole("button", { name: "供給拠点" }).getAttribute("aria-pressed")).toBe("true");
+    expect(themeSelect.value).toBe("energy");
+    expect(themeSelect).toBe(document.activeElement);
+    expect(within(desktop).getByRole("button", { name: "供給拠点" }).getAttribute("aria-pressed")).toBe("true");
   });
 
-  test("disables pointer hits on the closed inbox pane and reopens it from the rail toggle", async () => {
+  test("theme change resets selection, comparison, legacy mode, popup, and query state", async () => {
     const user = userEvent.setup();
 
-    render(<AppShell graph={loadSeedGraph()} />);
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "rice",
+          selectedId: "prefecture:niigata",
+          layerId: "rice-harvest",
+          mapModeOverride: "cluster",
+          workspaceView: "comparison"
+        }}
+      />
+    );
 
-    expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();
+    expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
 
-    await user.click(screen.getByRole("button", { name: "監視インボックスを閉じる" }));
+    const themeSelect = within(desktop).getByRole("combobox", { name: "テーマ" }) as HTMLSelectElement;
+    await user.selectOptions(themeSelect, "energy");
 
-    expect(screen.queryByTestId("layout-command-pane")).toBeNull();
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenLastCalledWith("/?theme=energy", { scroll: false });
+      expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
+      expect(within(desktop).queryByTestId("context-inspector")).toBeNull();
+    });
+    expect(within(desktop).getByRole("button", { name: "供給拠点" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("point");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("");
+    expect(replaceMock.mock.calls.at(-1)?.[0]).not.toContain("mode=");
 
-    await user.click(screen.getByRole("button", { name: "監視インボックスを開く" }));
-
-    expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
+    await user.click(within(desktop).getByRole("button", { name: "シグナルを見る" }));
+    expect((within(desktop).getByRole("searchbox", { name: "シグナルを検索" }) as HTMLInputElement).value).toBe("");
   });
-
-  test.each(["signals", "comparison"] as const)(
-    "closing the command pane resets %s and focuses the rail reopen control",
-    async (secondaryView) => {
-      const user = userEvent.setup();
-      render(<AppShell graph={loadSeedGraph()} />);
-      const desktop = screen.getByTestId("layout-desktop-workspace");
-
-      await user.click(within(desktop).getByRole("button", {
-        name: secondaryView === "signals" ? "シグナルを見る" : "比較する"
-      }));
-      await user.click(within(desktop).getByRole("button", { name: "監視インボックスを閉じる" }));
-
-      await waitFor(() => {
-        expect(within(desktop).queryByTestId("layout-command-pane")).toBeNull();
-        expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
-        expect(within(desktop).queryByTestId("signals-panel")).toBeNull();
-        expect(within(desktop).getByRole("button", { name: "監視インボックスを開く" })).toBe(document.activeElement);
-      });
-    }
-  );
 
   test("Escape closes a secondary view before the inspector", async () => {
     const user = userEvent.setup();
@@ -615,7 +591,7 @@ describe("AppShell url sync", () => {
       />
     );
 
-    expect(screen.getAllByTestId("nav-rail")[0].getAttribute("data-theme")).toBe("rice");
+    expect((within(screen.getByTestId("layout-desktop-workspace")).getByRole("combobox", { name: "テーマ" }) as HTMLSelectElement).value).toBe("rice");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/rice|observation:rice/);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toMatch(/rice|observation:rice|^$/);
     expect(screen.queryByTestId("context-inspector")).toBeNull();
@@ -647,7 +623,7 @@ describe("AppShell url sync", () => {
       />
     );
 
-    expect(screen.getAllByTestId("nav-rail")[0].getAttribute("data-theme")).toBe("water");
+    expect((within(screen.getByTestId("layout-desktop-workspace")).getByRole("combobox", { name: "テーマ" }) as HTMLSelectElement).value).toBe("water");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("choropleth");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("observation:ogochi-reservoir-stress");
     expect(replaceMock).not.toHaveBeenCalled();
@@ -884,26 +860,8 @@ describe("AppShell url sync", () => {
     });
   });
 
-  test("replaces the URL when theme, legacy map mode, and selection change", async () => {
-    render(
-      <AppShell
-        graph={loadSeedGraph()}
-        hasExplicitUrlState
-        initialUrlState={{
-          themeId: "energy",
-          selectedId: null,
-          layerId: "energy-supply",
-          mapModeOverride: null,
-          workspaceView: "signals"
-        }}
-      />
-    );
-
-    fireEvent.click(screen.getAllByText("change-theme-rice")[0]);
-    await waitFor(() => {
-      // rice is the public default theme, so theme=rice is omitted from the URL.
-      expect(replaceMock).toHaveBeenLastCalledWith("/", { scroll: false });
-    });
+  test("replaces the URL when legacy map mode and selection change", async () => {
+    render(<AppShell graph={loadSeedGraph()} />);
 
     fireEvent.click(screen.getAllByRole("button", { name: "集約" })[0]);
     await waitFor(() => {
@@ -935,28 +893,93 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-overlay-right")).toBe("376");
   });
 
-  test("locks desktop workspace geometry and keeps 528px of map at 1280px with the inspector open", async () => {
+  test("restores focus to the exact map control after closing the inspector", async () => {
     const user = userEvent.setup();
 
     render(<AppShell graph={loadSeedGraph()} />);
 
-    const rail = screen.getByTestId("layout-navigation-rail");
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    const mapSelection = within(desktop).getByRole("button", { name: "地図から新潟県を選択" });
+    await user.click(mapSelection);
+    await waitFor(() => {
+      expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();
+    });
+
+    await user.click(within(desktop).getByRole("button", { name: "詳細を閉じる" }));
+
+    await waitFor(() => {
+      expect(within(desktop).queryByTestId("context-inspector")).toBeNull();
+      expect(mapSelection).toBe(document.activeElement);
+    });
+  });
+
+  test("restores focus to the exact map control after Escape closes the inspector", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    const mapSelection = within(desktop).getByRole("button", { name: "地図から新潟県を選択" });
+    await user.click(mapSelection);
+    await waitFor(() => {
+      expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();
+    });
+
+    within(desktop).getByRole("button", { name: "詳細を閉じる" }).focus();
+    await user.keyboard("{Escape}");
+
+    await waitFor(() => {
+      expect(within(desktop).queryByTestId("context-inspector")).toBeNull();
+      expect(mapSelection).toBe(document.activeElement);
+    });
+  });
+
+  test("falls back to the Signals trigger when the invoking row unmounts", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    await user.click(within(desktop).getByRole("button", { name: "シグナルを見る" }));
+    const signals = within(desktop).getByTestId("signals-panel");
+    await user.click(within(signals).getByRole("button", { name: /新潟県/ }));
+
+    await waitFor(() => {
+      expect(within(desktop).queryByTestId("signals-panel")).toBeNull();
+      expect(within(desktop).getByRole("heading", { name: "新潟県" })).toBe(document.activeElement);
+    });
+
+    await user.click(within(desktop).getByRole("button", { name: "詳細を閉じる" }));
+
+    await waitFor(() => {
+      expect(within(desktop).getByRole("button", { name: "シグナルを見る" })).toBe(document.activeElement);
+    });
+  });
+
+  test("locks desktop workspace geometry and keeps 600px of map at 1280px with the inspector open", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
     const commandPane = screen.getByTestId("layout-command-pane");
-    expect(rail.style.width).toBe("72px");
+    expect(screen.queryByTestId("layout-navigation-rail")).toBeNull();
+    expect(commandPane.style.left).toBe("0px");
     expect(commandPane.style.width).toBe("320px");
 
     await user.click(screen.getAllByText("select-rice-from-inbox")[0]);
 
     const inspector = screen.getByTestId("layout-context-inspector");
     expect(inspector.style.width).toBe("360px");
-    expect(1280 - Number.parseInt(rail.style.width) - Number.parseInt(commandPane.style.width) - Number.parseInt(inspector.style.width)).toBe(528);
+    expect(1280 - Number.parseInt(commandPane.style.width) - Number.parseInt(inspector.style.width)).toBe(600);
 
     const map = screen.getAllByTestId("map")[0];
-    expect(map.getAttribute("data-overlay-left")).toBe("408");
+    expect(map.getAttribute("data-overlay-left")).toBe("336");
     expect(map.getAttribute("data-overlay-right")).toBe("376");
 
     await user.click(within(screen.getByTestId("layout-desktop-workspace")).getByRole("button", { name: "比較する" }));
-    expect(screen.getByTestId("layout-compare-drawer").style.height).toBe("264px");
+    const comparison = screen.getByTestId("layout-compare-drawer");
+    expect(comparison.style.left).toBe("320px");
+    expect(comparison.style.height).toBe("264px");
     expect(map.getAttribute("data-overlay-bottom")).toBe("280");
   });
 
@@ -997,6 +1020,12 @@ describe("AppShell url sync", () => {
       expect(within(desktop).getByTestId("context-inspector").getAttribute("data-id")).toBe("prefecture:niigata");
       expect(within(desktop).getByRole("heading", { name: "新潟県" })).toBe(document.activeElement);
     });
+
+    await user.click(within(desktop).getByRole("button", { name: "詳細を閉じる" }));
+
+    await waitFor(() => {
+      expect(within(desktop).getByRole("button", { name: "比較する" })).toBe(document.activeElement);
+    });
   });
 
   test("closes the inspector without changing the selected theme or layer", async () => {
@@ -1022,7 +1051,7 @@ describe("AppShell url sync", () => {
     await user.click(screen.getByRole("button", { name: "詳細を閉じる" }));
 
     expect(screen.queryByTestId("context-inspector")).toBeNull();
-    expect(screen.getAllByTestId("nav-rail")[0].getAttribute("data-theme")).toBe("rice");
+    expect((within(screen.getByTestId("layout-desktop-workspace")).getByRole("combobox", { name: "テーマ" }) as HTMLSelectElement).value).toBe("rice");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("choropleth");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-overlay-right")).toBe("16");
   });

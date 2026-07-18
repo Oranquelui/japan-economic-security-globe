@@ -8,7 +8,6 @@ import { EvidencePanel } from "../EvidencePanel";
 import { AppShell } from "../AppShell";
 import { ContextInspector } from "../ContextInspector";
 import { JapanMainMap } from "../JapanMainMap";
-import { NavigationRail } from "../NavigationRail";
 import { OperationsSignalTable } from "../OperationsSignalTable";
 import { ScopeContextPanel } from "../ScopeContextPanel";
 import { loadSeedGraph } from "../../lib/data/seed-loader";
@@ -185,21 +184,32 @@ describe("operations accessibility", () => {
     expect(within(layerGroup).getByRole("button", { name: "価格" }).getAttribute("aria-pressed")).toBe("false");
   });
 
-  test("announces the active theme in the desktop navigation rail", () => {
+  test("announces the active theme through the native desktop selector", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const activeLayer = getLayerDefinition("rice", "rice-harvest", workspace)!;
+
     render(
-      <NavigationRail
-        isInboxOpen
-        onCloseInbox={() => undefined}
-        onOpenInbox={() => undefined}
+      <ScopeContextPanel
+        activeLayerId="rice-harvest"
+        activeSummary={buildActiveLayerSummary(graph, view, activeLayer, workspace.scope)}
+        comparisonAvailable
+        onLayerChange={() => undefined}
+        onOpenComparison={() => undefined}
+        onOpenSignals={() => undefined}
         onThemeChange={() => undefined}
         themeId="rice"
         themeIds={["rice", "energy"]}
         themePalette={getThemePalette("rice")}
+        workspace={workspace}
       />
     );
 
-    expect(screen.getByRole("button", { name: "コメ" }).getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByRole("button", { name: "エネルギー" }).getAttribute("aria-pressed")).toBe("false");
+    const themeSelect = screen.getByRole("combobox", { name: "テーマ" }) as HTMLSelectElement;
+    expect(themeSelect.selectedOptions).toHaveLength(1);
+    expect(themeSelect.selectedOptions[0]?.value).toBe("rice");
+    expect(themeSelect.selectedOptions[0]?.textContent).toBe("コメ");
   });
 
   test("gives the inspector a Japanese close name, discernible source links, and unique interactive ids", () => {

@@ -5,7 +5,6 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { loadSeedGraph } from "../../lib/data/seed-loader";
-import type { ThemeId } from "../../types/semantic";
 import type { OperationMapMode } from "../../lib/presentation/operations";
 
 const replaceMock = vi.fn();
@@ -25,14 +24,6 @@ vi.mock("../MapInboxPanel", () => ({
       </button>
     </div>
   )
-}));
-
-vi.mock("../NavigationRail", () => ({
-  NavigationRail: ({
-    themeId
-  }: {
-    themeId: ThemeId;
-  }) => <div data-testid="nav-rail" data-theme={themeId} />
 }));
 
 vi.mock("../JapanMainMap", () => ({

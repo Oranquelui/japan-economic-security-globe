@@ -1,61 +1,58 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test } from "vitest";
 
 import { ActionBar } from "../ActionBar";
 import { getThemePalette } from "../../lib/presentation/palette";
 
-const themePalette = getThemePalette("energy");
+const themePalette = getThemePalette("rice");
 
 afterEach(() => {
   cleanup();
 });
 
-describe("ActionBar selected row", () => {
-  test("uses a single-row scroll container with a right-side fade", () => {
+describe("ActionBar", () => {
+  test("shows compact product identity and a non-interactive current-view trail", () => {
     render(
       <ActionBar
-        onClearFilters={() => undefined}
-        queryActive={false}
-        selectedKindLabel="依存フロー"
-        selectedLabel="サウジ原油 → 日本"
-        routeStatusLabel="概念連関"
+        currentViewLabel="コメ / 収穫量 / 令和5年産"
         sharePath="/"
-        themeLabel="エネルギー"
-        themePalette={themePalette}
-      />
-    );
-
-    const scroll = screen.getByTestId("selected-scroll");
-    expect(scroll.tabIndex).toBe(0);
-    expect(scroll.getAttribute("role")).toBe("region");
-    expect(scroll.getAttribute("aria-label")).toBe("選択中の選択内容");
-    expect(scroll.className).toContain("overflow-x-auto");
-    expect(scroll.className).toContain("whitespace-nowrap");
-
-    const fade = screen.getByTestId("selected-fade");
-    expect(fade.getAttribute("style") ?? "").toContain("linear-gradient");
-  });
-
-  test("does not host map-layer widget controls in the primary action bar", () => {
-    render(
-      <ActionBar
-        onClearFilters={() => undefined}
-        queryActive={false}
-        selectedKindLabel="依存フロー"
-        selectedLabel="サウジ原油 → 日本"
-        sharePath="/"
-        themeLabel="エネルギー"
         themePalette={themePalette}
       />
     );
 
     const header = screen.getByRole("banner");
     expect(header.getAttribute("data-testid")).toBe("layout-action-bar");
-    expect(screen.queryByText("表示レイヤー")).toBeNull();
-    expect(screen.queryByRole("button", { name: "地点" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "集約" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "ルート" })).toBeNull();
+    expect(within(header).getByRole("heading", { name: "日本レジリエンス地図" })).toBeTruthy();
+    expect(within(header).getByText("コメ / 収穫量 / 令和5年産")).toBeTruthy();
+    expect(within(header).queryByRole("button", { name: "コメ / 収穫量 / 令和5年産" })).toBeNull();
+    expect(within(header).getByRole("button", { name: "メニュー" })).toBeTruthy();
+
+    expect(within(header).queryByText("選択中")).toBeNull();
+    expect(within(header).queryByRole("button", { name: "フィルター解除" })).toBeNull();
+    expect(within(header).queryByText("依存フロー")).toBeNull();
+    expect(within(header).queryByText("サウジ原油 → 日本")).toBeNull();
+    expect(within(header).queryByText("概念連関")).toBeNull();
+    expect(within(header).queryByText("コメ", { selector: ".ops-chip" })).toBeNull();
+  });
+
+  test("preserves the share menu actions", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ActionBar
+        currentViewLabel="コメ / 収穫量 / 令和5年産"
+        sharePath="/?layer=rice-harvest"
+        themePalette={themePalette}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "メニュー" }));
+
+    expect(screen.getByRole("menuitem", { name: "共有" })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: "Sources/License" }).getAttribute("href")).toBe("/sources-license");
+    expect(screen.getByRole("menuitem", { name: "問い合わせ" }).getAttribute("href")).toBe("/contact");
   });
 });
