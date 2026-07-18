@@ -13,7 +13,50 @@ import type { ThemePalette } from "./palette";
 
 const landFeature = feature(countries110m as any, (countries110m as any).objects.land);
 
-export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
+export function buildOperationsBasemapStyle(
+  themePalette: ThemePalette,
+  options: Readonly<{ acceptance?: boolean }> = {}
+) {
+  if (options.acceptance) {
+    const acceptanceStyle: StyleSpecification = {
+      version: 8,
+      sources: {
+        "world-land": {
+          type: "geojson",
+          data: landFeature
+        }
+      },
+      layers: [
+        {
+          id: "ops-background",
+          type: "background",
+          paint: {
+            "background-color": themePalette.surfaceCanvas
+          }
+        },
+        {
+          id: "world-land-fill",
+          type: "fill",
+          source: "world-land",
+          paint: {
+            "fill-color": "rgba(92, 128, 148, 0.12)",
+            "fill-opacity": 1
+          }
+        },
+        {
+          id: "gray-canvas-reference",
+          type: "fill",
+          source: "world-land",
+          paint: {
+            "fill-opacity": 0
+          }
+        }
+      ]
+    };
+
+    return acceptanceStyle;
+  }
+
   const sources: Record<string, GeoJSONSourceSpecification | RasterSourceSpecification> = {
     "world-land": {
       type: "geojson",

@@ -13,8 +13,9 @@
     "build:prefecture-boundaries": "node scripts/build-prefecture-boundaries.mjs",
     "lint": "npm run typecheck",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --exclude 'e2e/**'",
+    "test:watch": "vitest",
+    "test:e2e:prefecture": "playwright test e2e/prefecture-map.spec.ts"
   },
   "dependencies": {
     "@react-three/fiber": "^9.1.2",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.19.0",
+    "@playwright/test": "1.61.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22.14.0",

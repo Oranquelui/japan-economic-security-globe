@@ -34,6 +34,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Prefecture map acceptance
+        run: npm run test:e2e:prefecture
+
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: verify

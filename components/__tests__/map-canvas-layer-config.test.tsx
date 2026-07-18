@@ -34,6 +34,25 @@ let lastMap: {
 let mapCanvasSize = { width: 1024, height: 720 };
 let mapZoom = 5.3;
 let zoomEndHandler: (() => void) | null = null;
+let desktopViewportMatches = true;
+let mapInstanceCount = 0;
+const mediaChangeListeners = new Set<(event: { matches: boolean }) => void>();
+
+Object.defineProperty(window, "matchMedia", {
+  configurable: true,
+  value: vi.fn((query: string) => ({
+    addEventListener: (_event: string, listener: (event: { matches: boolean }) => void) => {
+      mediaChangeListeners.add(listener);
+    },
+    get matches() {
+      return query === "(min-width: 1280px)" && desktopViewportMatches;
+    },
+    media: query,
+    removeEventListener: (_event: string, listener: (event: { matches: boolean }) => void) => {
+      mediaChangeListeners.delete(listener);
+    }
+  }))
+});
 
 vi.mock("maplibre-gl", () => {
   class MockMap {
@@ -49,7 +68,14 @@ vi.mock("maplibre-gl", () => {
       }));
     });
     addLayer = vi.fn((layer: Record<string, unknown>, beforeId?: string) => {
-      addedLayers.push(layer);
+      const beforeIndex = beforeId
+        ? addedLayers.findIndex((candidate) => candidate.id === beforeId)
+        : -1;
+      if (beforeIndex >= 0) {
+        addedLayers.splice(beforeIndex, 0, layer);
+      } else {
+        addedLayers.push(layer);
+      }
       addedLayerCalls.push({ beforeId, layer });
     });
     remove = vi.fn();
@@ -74,6 +100,7 @@ vi.mock("maplibre-gl", () => {
     off = vi.fn();
 
     constructor() {
+      mapInstanceCount += 1;
       lastMap = this;
     }
 
@@ -122,6 +149,9 @@ afterEach(() => {
   mapCanvasSize = { width: 1024, height: 720 };
   mapZoom = 5.3;
   zoomEndHandler = null;
+  desktopViewportMatches = true;
+  mapInstanceCount = 0;
+  mediaChangeListeners.clear();
 });
 
 const model: JapanMapCanvasModel = {
@@ -190,6 +220,9 @@ describe("map canvas layer config", () => {
     const fill = getAddedLayer("jp-prefecture-fill") as any;
     const outline = getAddedLayer("jp-prefecture-outline") as any;
     const selectedOutline = getAddedLayer("jp-prefecture-selected-outline") as any;
+    const leaderLine = getAddedLayer("jp-prefecture-leader-line") as any;
+    const label = getAddedLayer("jp-prefecture-label") as any;
+    const selectedLabel = getAddedLayer("jp-prefecture-selected-label") as any;
 
     expect(source).toMatchObject({
       type: "geojson",
@@ -221,9 +254,47 @@ describe("map canvas layer config", () => {
       maxzoom: 9,
       filter: ["==", ["get", "selected"], true]
     });
+    expect(leaderLine).toMatchObject({
+      id: "jp-prefecture-leader-line",
+      type: "line",
+      source: "jp-prefecture-leaders",
+      minzoom: 3.2,
+      maxzoom: 9
+    });
+    expect(label).toMatchObject({
+      id: "jp-prefecture-label",
+      type: "symbol",
+      source: "jp-prefecture-labels",
+      minzoom: 3.2,
+      maxzoom: 9,
+      layout: {
+        "text-field": ["get", "label"],
+        "text-size": 12,
+        "text-anchor": "center",
+        "text-allow-overlap": true,
+        "text-ignore-placement": true
+      }
+    });
+    expect(label.paint).toMatchObject({
+      "text-halo-width": expect.any(Number),
+      "text-halo-color": expect.any(String)
+    });
+    expect(selectedLabel).toMatchObject({
+      id: "jp-prefecture-selected-label",
+      type: "symbol",
+      source: "jp-prefecture-labels",
+      minzoom: 3.2,
+      maxzoom: 10.5,
+      filter: ["==", ["get", "selected"], true]
+    });
     expect(getAddedLayerCall("jp-prefecture-fill")?.beforeId).toBe("gray-canvas-reference");
     expect(getAddedLayerCall("jp-prefecture-outline")?.beforeId).toBe("gray-canvas-reference");
+    expect(getAddedLayerCall("jp-prefecture-leader-line")?.beforeId).toBe("jp-prefecture-selected-outline");
+    expect(getAddedLayerCall("jp-prefecture-label")?.beforeId).toBe("jp-prefecture-selected-outline");
     expect(getAddedLayerCall("jp-prefecture-selected-outline")?.beforeId).toBeUndefined();
+    expect(getAddedLayerCallIndex("jp-prefecture-leader-line")).toBeLessThan(getAddedLayerCallIndex("jp-prefecture-label"));
+    expect(getAddedLayerCallIndex("jp-prefecture-label")).toBeLessThan(getAddedLayerCallIndex("jp-prefecture-selected-outline"));
+    expect(getAddedLayerCallIndex("jp-prefecture-selected-outline")).toBeLessThan(getAddedLayerCallIndex("jp-prefecture-selected-label"));
     expect(getAddedLayerCallIndex("jp-prefecture-selected-outline")).toBeLessThan(
       getAddedLayerCallIndex("global-route-glow")
     );
@@ -345,7 +416,10 @@ describe("map canvas layer config", () => {
     expect(prefectureLayerIds).toEqual([
       "jp-prefecture-fill",
       "jp-prefecture-outline",
-      "jp-prefecture-selected-outline"
+      "jp-prefecture-leader-line",
+      "jp-prefecture-label",
+      "jp-prefecture-selected-outline",
+      "jp-prefecture-selected-label"
     ]);
     expect(getAddedLayer("jp-prefecture-fill")).toMatchObject({ maxzoom: 9 });
     expect(getAddedLayer("jp-prefecture-selected-outline")).toMatchObject({
@@ -389,6 +463,65 @@ describe("map canvas layer config", () => {
         expectRegionLayerVisibility(expectedVisibility);
       });
     }
+  });
+
+  test("toggles the all-prefecture labels at the xl boundary without recreating the map", async () => {
+    desktopViewportMatches = false;
+    render(
+      <JapanOperationsMapCanvas
+        activeId="prefecture:tokyo"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{ ...model, regions: prefectureMetricRegions() }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getLastLayoutVisibility("jp-prefecture-fill")).toBe("visible");
+      expect(getLastLayoutVisibility("jp-prefecture-leader-line")).toBe("none");
+      expect(getLastLayoutVisibility("jp-prefecture-label")).toBe("none");
+      expect(getLastLayoutVisibility("jp-prefecture-selected-label")).toBe("none");
+    });
+    expect(mapInstanceCount).toBe(1);
+
+    desktopViewportMatches = true;
+    for (const listener of mediaChangeListeners) {
+      listener({ matches: true });
+    }
+
+    await waitFor(() => {
+      expect(getLastLayoutVisibility("jp-prefecture-leader-line")).toBe("visible");
+      expect(getLastLayoutVisibility("jp-prefecture-label")).toBe("visible");
+      expect(getLastLayoutVisibility("jp-prefecture-selected-label")).toBe("visible");
+    });
+    expect(mapInstanceCount).toBe(1);
+  });
+
+  test("owns read-only production diagnostics on the map container for exactly its lifecycle", async () => {
+    const rendered = render(
+      <JapanOperationsMapCanvas
+        activeId="prefecture:tokyo"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{ ...model, regions: prefectureMetricRegions() }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+    const mapContainer = rendered.container.querySelector('[data-testid="jp-operations-map-canvas"]') as any;
+
+    await waitFor(() => {
+      expect(typeof mapContainer.__prefectureMapDiagnostics?.read).toBe("function");
+    });
+    expect(mapContainer.__prefectureMapDiagnostics?.setPrefectureValueNull).toBeUndefined();
+    expect((window as any).__prefectureMapDiagnostics).toBeUndefined();
+
+    rendered.unmount();
+    expect(mapContainer.__prefectureMapDiagnostics).toBeUndefined();
   });
 
   test("does not resend prefecture boundaries for palette, mode, or value-equal model rerenders", async () => {
@@ -1316,7 +1449,7 @@ function getAddedLayerCall(layerId: string) {
 }
 
 function getAddedLayerCallIndex(layerId: string) {
-  return addedLayerCalls.findIndex((call) => call.layer.id === layerId);
+  return addedLayers.findIndex((layer) => layer.id === layerId);
 }
 
 function expectRegionLayerVisibility(expectedVisibility: "visible" | "none") {
@@ -1324,6 +1457,9 @@ function expectRegionLayerVisibility(expectedVisibility: "visible" | "none") {
     "jp-prefecture-fill",
     "jp-prefecture-outline",
     "jp-prefecture-selected-outline",
+    "jp-prefecture-leader-line",
+    "jp-prefecture-label",
+    "jp-prefecture-selected-label",
     "jp-region-fill",
     "jp-region-outline"
   ]) {

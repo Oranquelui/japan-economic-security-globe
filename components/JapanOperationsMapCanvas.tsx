@@ -3,7 +3,14 @@
 import { useEffect, useEffectEvent, useRef } from "react";
 import type { GeoJSONSourceSpecification } from "maplibre-gl";
 
+import importedPrefectureLabelLayout from "../data/geo/japan-prefecture-labels.json";
 import { buildPrefectureMetricFeatureCollection } from "../lib/geo/prefecture-map";
+import {
+  PREFECTURE_LABEL_FONT_SIZE,
+  buildPrefectureLabelFeatureCollections,
+  inspectProjectedPrefectureLabelLayout,
+  type PrefectureLabelLayoutEntry
+} from "../lib/geo/prefecture-label-layout";
 import type { OperationMapMode } from "../lib/presentation/operations";
 import type {
   JapanMapCanvasModel,
@@ -40,7 +47,13 @@ const GLOBAL_CONTEXT_MAX_ZOOM = 3.6;
 const DOMESTIC_CONTEXT_MIN_ZOOM = 3.2;
 const PREFECTURE_POLYGON_FADE_START_ZOOM = 6.5;
 const PREFECTURE_POLYGON_MAX_ZOOM = 9;
+const PREFECTURE_LABEL_MAX_ZOOM = 9;
+const PREFECTURE_SELECTED_LABEL_MAX_ZOOM = 10.5;
 const GRAY_CANVAS_REFERENCE_LAYER_ID = "gray-canvas-reference";
+const XL_DESKTOP_MEDIA_QUERY = "(min-width: 1280px)";
+const MAP_ACCEPTANCE_FIXTURES_ENABLED = process.env.NODE_ENV !== "production"
+  && process.env.NEXT_PUBLIC_MAP_ACCEPTANCE_FIXTURES === "1";
+const PREFECTURE_LABEL_LAYOUT = importedPrefectureLabelLayout as unknown as readonly PrefectureLabelLayoutEntry[];
 const JA_NUMBER_FORMATTER = new Intl.NumberFormat("ja-JP");
 const INTERACTIVE_SEMANTIC_LAYER_IDS = [
   "jp-point-circle",
@@ -76,15 +89,26 @@ export function JapanOperationsMapCanvas({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const prefectureSourceSignatureRef = useRef<string | null>(null);
+  const latestModelRef = useRef(model);
+  const latestActiveIdRef = useRef(activeId);
+  const latestMapModeRef = useRef(mapMode);
   const zoomRef = useRef(INITIAL_ZOOM);
   const scanPhaseRef = useRef(0);
   const scanRafRef = useRef<number | null>(null);
   const handleHover = useEffectEvent((hover: MapHoverViewModel | null) => onHover?.(hover));
   const handleSelect = useEffectEvent(onSelect);
+  latestModelRef.current = model;
+  latestActiveIdRef.current = activeId;
+  latestMapModeRef.current = mapMode;
 
   useEffect(() => {
     let disposed = false;
+    let installedDiagnostics: PrefectureMapDiagnostics | null = null;
+    let diagnosticsContainer: PrefectureMapDiagnosticsContainer | null = null;
     const interactionSubscriptions: Array<{ unsubscribe: () => void }> = [];
+    const desktopLabelMedia = typeof window.matchMedia === "function"
+      ? window.matchMedia(XL_DESKTOP_MEDIA_QUERY)
+      : null;
     const handleClusterMouseEnter = () => {
       const map = mapRef.current;
       if (map) {
@@ -116,7 +140,12 @@ export function JapanOperationsMapCanvas({
         maxZoom: 10.5,
         minZoom: 1.4,
         attributionControl: false,
-        style: buildOperationsBasemapStyle(themePalette)
+        style: buildOperationsBasemapStyle(themePalette, {
+          acceptance: MAP_ACCEPTANCE_FIXTURES_ENABLED
+        }),
+        ...(MAP_ACCEPTANCE_FIXTURES_ENABLED
+          ? { localIdeographFontFamily: "Hiragino Kaku Gothic ProN, Yu Gothic, sans-serif" }
+          : {})
       });
 
       map.dragRotate.disable();
@@ -159,6 +188,16 @@ export function JapanOperationsMapCanvas({
           attribution: "境界: Made with Natural Earth（加工）"
         });
         prefectureSourceSignatureRef.current = prefectureSourceSignature;
+
+        const prefectureLabels = buildPrefectureLabelSources(model.regions, activeId);
+        map.addSource("jp-prefecture-labels", {
+          type: "geojson",
+          data: prefectureLabels.labelPoints
+        });
+        map.addSource("jp-prefecture-leaders", {
+          type: "geojson",
+          data: prefectureLabels.leaderLines
+        });
 
         map.addSource("global-points", {
           type: "geojson",
@@ -226,6 +265,58 @@ export function JapanOperationsMapCanvas({
           filter: ["==", ["get", "selected"], true],
           paint: {
             ...getPrefectureSelectedOutlinePaint(statusPalette)
+          }
+        });
+
+        map.addLayer({
+          id: "jp-prefecture-leader-line",
+          type: "line",
+          source: "jp-prefecture-leaders",
+          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          maxzoom: PREFECTURE_LABEL_MAX_ZOOM,
+          layout: {
+            "line-cap": "round",
+            "line-join": "round"
+          },
+          paint: {
+            ...getPrefectureLeaderLinePaint(themePalette, statusPalette)
+          }
+        }, "jp-prefecture-selected-outline");
+
+        map.addLayer({
+          id: "jp-prefecture-label",
+          type: "symbol",
+          source: "jp-prefecture-labels",
+          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          maxzoom: PREFECTURE_LABEL_MAX_ZOOM,
+          layout: {
+            "text-field": ["get", "label"],
+            "text-size": PREFECTURE_LABEL_FONT_SIZE,
+            "text-anchor": "center",
+            "text-allow-overlap": true,
+            "text-ignore-placement": true
+          },
+          paint: {
+            ...getPrefectureLabelPaint(themePalette)
+          }
+        }, "jp-prefecture-selected-outline");
+
+        map.addLayer({
+          id: "jp-prefecture-selected-label",
+          type: "symbol",
+          source: "jp-prefecture-labels",
+          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          maxzoom: PREFECTURE_SELECTED_LABEL_MAX_ZOOM,
+          filter: ["==", ["get", "selected"], true],
+          layout: {
+            "text-field": ["get", "label"],
+            "text-size": PREFECTURE_LABEL_FONT_SIZE + 1,
+            "text-anchor": "center",
+            "text-allow-overlap": true,
+            "text-ignore-placement": true
+          },
+          paint: {
+            ...getPrefectureSelectedLabelPaint(statusPalette)
           }
         });
 
@@ -752,7 +843,22 @@ export function JapanOperationsMapCanvas({
         map.on("mouseenter", "jp-cluster-circle", handleClusterMouseEnter);
         map.on("mouseleave", "jp-cluster-circle", handleClusterMouseLeave);
 
-        applyModeVisibility(map, mapMode);
+        const handleDesktopLabelViewportChange = () => {
+          applyModeVisibility(map, latestMapModeRef.current, desktopLabelMedia?.matches ?? false);
+        };
+        desktopLabelMedia?.addEventListener("change", handleDesktopLabelViewportChange);
+        interactionSubscriptions.push({
+          unsubscribe: () => desktopLabelMedia?.removeEventListener("change", handleDesktopLabelViewportChange)
+        });
+
+        applyModeVisibility(map, mapMode, desktopLabelMedia?.matches ?? false);
+        installedDiagnostics = installPrefectureMapDiagnostics(
+          containerRef.current,
+          map,
+          latestModelRef,
+          latestActiveIdRef
+        );
+        diagnosticsContainer = containerRef.current as PrefectureMapDiagnosticsContainer | null;
         startRouteScanAnimation(map, scanPhaseRef, scanRafRef);
 
         if (focusTargetId) {
@@ -784,6 +890,10 @@ export function JapanOperationsMapCanvas({
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
+      }
+
+      if (diagnosticsContainer?.__prefectureMapDiagnostics === installedDiagnostics) {
+        delete diagnosticsContainer.__prefectureMapDiagnostics;
       }
     };
   }, []);
@@ -843,6 +953,9 @@ export function JapanOperationsMapCanvas({
     applyPaintObject(map, "jp-prefecture-fill", getPrefectureFillPaint(themePalette, statusPalette));
     applyPaintObject(map, "jp-prefecture-outline", getPrefectureOutlinePaint(themePalette));
     applyPaintObject(map, "jp-prefecture-selected-outline", getPrefectureSelectedOutlinePaint(statusPalette));
+    applyPaintObject(map, "jp-prefecture-leader-line", getPrefectureLeaderLinePaint(themePalette, statusPalette));
+    applyPaintObject(map, "jp-prefecture-label", getPrefectureLabelPaint(themePalette));
+    applyPaintObject(map, "jp-prefecture-selected-label", getPrefectureSelectedLabelPaint(statusPalette));
     applyPaintObject(map, "jp-region-fill", getRegionFillPaint(themePalette));
     applyPaintObject(map, "jp-region-outline", getRegionOutlinePaint(themePalette, statusPalette));
     map.setPaintProperty("jp-route-line", "line-color", [
@@ -894,8 +1007,11 @@ export function JapanOperationsMapCanvas({
         prefectureSourceSignatureRef.current = prefectureSourceSignature;
       }
     }
+    const prefectureLabels = buildPrefectureLabelSources(model.regions, activeId);
+    updateSource(map, "jp-prefecture-labels", prefectureLabels.labelPoints);
+    updateSource(map, "jp-prefecture-leaders", prefectureLabels.leaderLines);
     updateSource(map, "jp-regions", representativeRadiusRegionsToFeatureCollection(model.regions, activeId));
-    applyModeVisibility(map, mapMode);
+    applyModeVisibility(map, mapMode, isXlDesktopViewport());
   }, [activeId, mapMode, model, statusPalette, themePalette]);
 
   useEffect(() => {
@@ -932,10 +1048,10 @@ export function JapanOperationsMapCanvas({
     });
   }, [command]);
 
-  return <div ref={containerRef} className="absolute inset-0" />;
+  return <div ref={containerRef} data-testid="jp-operations-map-canvas" className="absolute inset-0" />;
 }
 
-function applyModeVisibility(map: any, mapMode: OperationMapMode) {
+function applyModeVisibility(map: any, mapMode: OperationMapMode, showPrefectureLabels: boolean) {
   const visibility = (show: boolean) => (show ? "visible" : "none");
   const { showClusters, showPoints, showRegions, showRoutes } = getModeVisibilityState(mapMode);
 
@@ -965,10 +1081,205 @@ function applyModeVisibility(map: any, mapMode: OperationMapMode) {
   map.setLayoutProperty("jp-prefecture-fill", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-prefecture-outline", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-prefecture-selected-outline", "visibility", visibility(showRegions));
+  map.setLayoutProperty("jp-prefecture-leader-line", "visibility", visibility(showRegions && showPrefectureLabels));
+  map.setLayoutProperty("jp-prefecture-label", "visibility", visibility(showRegions && showPrefectureLabels));
+  map.setLayoutProperty("jp-prefecture-selected-label", "visibility", visibility(showRegions && showPrefectureLabels));
   map.setLayoutProperty("jp-region-fill", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-region-outline", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-cluster-circle", "visibility", visibility(showClusters));
   map.setLayoutProperty("jp-cluster-count", "visibility", visibility(showClusters));
+}
+
+type DiagnosticsRect = Readonly<{
+  bottom: number;
+  left: number;
+  right: number;
+  top: number;
+}>;
+
+type PrefectureMapDiagnostics = Readonly<{
+  read: (exclusions?: readonly DiagnosticsRect[]) => {
+    collisionReport: ReturnType<typeof inspectProjectedPrefectureLabelLayout>;
+    renderedFeatures: Array<{
+      entityId: string;
+      layers: string[];
+      value: number | null;
+    }>;
+    renderedLabelIds: string[];
+    renderedPolygonIds: string[];
+    zoom: number;
+  };
+  setPrefectureValueNull?: (entityId: string) => Promise<void>;
+}>;
+
+type PrefectureMapDiagnosticsContainer = HTMLDivElement & {
+  __prefectureMapDiagnostics?: PrefectureMapDiagnostics;
+};
+
+function installPrefectureMapDiagnostics(
+  container: HTMLDivElement | null,
+  map: any,
+  latestModelRef: { current: JapanMapCanvasModel },
+  latestActiveIdRef: { current: string }
+): PrefectureMapDiagnostics | null {
+  if (!container) {
+    return null;
+  }
+
+  const read = (absoluteExclusions: readonly DiagnosticsRect[] = []) => {
+    const rect = container.getBoundingClientRect();
+    const canvas = map.getCanvas();
+    const viewport = {
+      width: getCanvasDimension(canvas?.clientWidth, canvas?.width, rect.width || 1024),
+      height: getCanvasDimension(canvas?.clientHeight, canvas?.height, rect.height || 720)
+    };
+    const center = map.getCenter();
+    const localExclusions = absoluteExclusions.map((exclusion) => ({
+      left: exclusion.left - rect.left,
+      right: exclusion.right - rect.left,
+      top: exclusion.top - rect.top,
+      bottom: exclusion.bottom - rect.top
+    }));
+    const projected = inspectProjectedPrefectureLabelLayout(PREFECTURE_LABEL_LAYOUT, {
+      center: [center.lng, center.lat],
+      zoom: map.getZoom(),
+      viewport
+    }, localExclusions);
+    const collisionReport = {
+      ...projected,
+      boxes: projected.boxes.map((box) => ({
+        ...box,
+        left: box.left + rect.left,
+        right: box.right + rect.left,
+        top: box.top + rect.top,
+        bottom: box.bottom + rect.top
+      }))
+    };
+    const labelFeatures = queryRenderedLayerFeatures(map, [
+      "jp-prefecture-label",
+      "jp-prefecture-selected-label"
+    ]);
+    const polygonFeatures = queryRenderedLayerFeatures(map, ["jp-prefecture-fill"]);
+    const renderedByEntityId = new Map<string, {
+      entityId: string;
+      layers: Set<string>;
+      value: number | null;
+    }>();
+
+    for (const layerId of [
+      "jp-prefecture-fill",
+      "jp-prefecture-outline",
+      "jp-prefecture-label",
+      "jp-prefecture-selected-label"
+    ]) {
+      for (const feature of queryRenderedLayerFeatures(map, [layerId])) {
+        const entityId = feature?.properties?.entityId;
+        if (typeof entityId !== "string") {
+          continue;
+        }
+        const current = renderedByEntityId.get(entityId) ?? {
+          entityId,
+          layers: new Set<string>(),
+          value: null
+        };
+        current.layers.add(layerId);
+        current.value = typeof feature?.properties?.value === "number"
+          ? feature.properties.value
+          : null;
+        renderedByEntityId.set(entityId, current);
+      }
+    }
+
+    return {
+      collisionReport,
+      renderedFeatures: [...renderedByEntityId.values()]
+        .sort((left, right) => left.entityId.localeCompare(right.entityId))
+        .map((feature) => ({
+          entityId: feature.entityId,
+          layers: [...feature.layers],
+          value: feature.value
+        })),
+      renderedLabelIds: uniqueRenderedEntityIds(labelFeatures),
+      renderedPolygonIds: uniqueRenderedEntityIds(polygonFeatures),
+      zoom: map.getZoom()
+    };
+  };
+
+  const diagnostics: PrefectureMapDiagnostics = {
+    read,
+    ...(MAP_ACCEPTANCE_FIXTURES_ENABLED
+      ? {
+          setPrefectureValueNull: async (entityId: string) => {
+            const prefectures = prefectureRegionsToFeatureCollection(
+              latestModelRef.current.regions,
+              latestActiveIdRef.current
+            ) as any;
+            const missingValuePrefectures = {
+              ...prefectures,
+              features: prefectures.features.map((feature: any) => (
+                feature.properties.entityId === entityId
+                  ? {
+                      ...feature,
+                      properties: {
+                        ...feature.properties,
+                        neutral: true,
+                        rawValue: null,
+                        value: null
+                      }
+                    }
+                  : feature
+              ))
+            };
+            updateSource(map, "jp-prefectures", missingValuePrefectures);
+            const labels = buildPrefectureLabelSources(
+              latestModelRef.current.regions,
+              latestActiveIdRef.current,
+              new Map([[entityId, null]])
+            );
+            updateSource(map, "jp-prefecture-labels", labels.labelPoints);
+            updateSource(map, "jp-prefecture-leaders", labels.leaderLines);
+            await waitForMapIdle(map);
+          }
+        }
+      : {})
+  };
+
+  (container as PrefectureMapDiagnosticsContainer).__prefectureMapDiagnostics = diagnostics;
+  return diagnostics;
+}
+
+function queryRenderedLayerFeatures(map: any, layerIds: readonly string[]) {
+  try {
+    return map.queryRenderedFeatures(undefined, { layers: [...layerIds] }) ?? [];
+  } catch {
+    return [];
+  }
+}
+
+function uniqueRenderedEntityIds(features: readonly any[]) {
+  return [...new Set(features
+    .map((feature) => feature?.properties?.entityId)
+    .filter((entityId): entityId is string => typeof entityId === "string"))]
+    .sort();
+}
+
+function waitForMapIdle(map: any) {
+  return new Promise<void>((resolve) => {
+    let resolved = false;
+    const finish = () => {
+      if (resolved) {
+        return;
+      }
+      resolved = true;
+      resolve();
+    };
+    map.once("idle", finish);
+    window.setTimeout(finish, 2_000);
+  });
+}
+
+function isXlDesktopViewport() {
+  return typeof window.matchMedia === "function" && window.matchMedia(XL_DESKTOP_MEDIA_QUERY).matches;
 }
 
 export function getModeVisibilityState(mapMode: OperationMapMode) {
@@ -1315,6 +1626,44 @@ function getPrefectureSelectedOutlinePaint(statusPalette: StatusPalette): any {
   };
 }
 
+function getPrefectureLeaderLinePaint(themePalette: ThemePalette, statusPalette: StatusPalette): any {
+  return {
+    "line-color": [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      statusPalette.selected,
+      ["==", ["get", "value"], null],
+      "rgba(125, 137, 149, 0.72)",
+      themePalette.accent
+    ],
+    "line-opacity": ["case", ["boolean", ["get", "selected"], false], 0.95, 0.68],
+    "line-width": ["case", ["boolean", ["get", "selected"], false], 1.8, 1]
+  };
+}
+
+function getPrefectureLabelPaint(themePalette: ThemePalette): any {
+  return {
+    "text-color": [
+      "case",
+      ["==", ["get", "value"], null],
+      "#697580",
+      themePalette.accent
+    ],
+    "text-halo-color": "rgba(250,252,255,0.98)",
+    "text-halo-width": 1.8,
+    "text-halo-blur": 0.25
+  };
+}
+
+function getPrefectureSelectedLabelPaint(statusPalette: StatusPalette): any {
+  return {
+    "text-color": statusPalette.selected,
+    "text-halo-color": "rgba(250,252,255,0.99)",
+    "text-halo-width": 2.4,
+    "text-halo-blur": 0.2
+  };
+}
+
 function getPrefectureZoomFadeOpacity(visibleOpacity: unknown): any {
   return [
     "interpolate",
@@ -1551,6 +1900,42 @@ function corridorsToFeatureCollection(corridors: JapanMapCorridor[], activeId: s
         hasData: true
       }
     }))
+  };
+}
+
+function buildPrefectureLabelSources(
+  regions: readonly JapanMapRegion[],
+  activeId: string,
+  valueOverrides: ReadonlyMap<string, number | null> = new Map()
+) {
+  const values = new Map(
+    regions
+      .filter((region): region is PrefectureBoundaryMapRegion => region.geometryKind === "prefecture-boundary")
+      .map((region) => [region.id, region.value] as const)
+  );
+  const collections = buildPrefectureLabelFeatureCollections(PREFECTURE_LABEL_LAYOUT, activeId);
+  const addMetricState = <T extends { properties: Record<string, unknown> }>(feature: T) => {
+    const entityId = feature.properties.entityId as string;
+    const value = valueOverrides.has(entityId) ? valueOverrides.get(entityId)! : values.get(entityId) ?? null;
+    return {
+      ...feature,
+      properties: {
+        ...feature.properties,
+        neutral: value === null,
+        value
+      }
+    };
+  };
+
+  return {
+    labelPoints: {
+      ...collections.labelPoints,
+      features: collections.labelPoints.features.map(addMetricState)
+    },
+    leaderLines: {
+      ...collections.leaderLines,
+      features: collections.leaderLines.features.map(addMetricState)
+    }
   };
 }
 

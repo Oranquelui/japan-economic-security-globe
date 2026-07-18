@@ -44,4 +44,22 @@ describe("operations basemap style", () => {
       paint: { "fill-color": "rgba(92, 128, 148, 0.12)" }
     });
   });
+
+  test("builds a fully local acceptance style with the reference anchor above world land", () => {
+    const style = buildOperationsBasemapStyle(getThemePalette("rice"), { acceptance: true });
+
+    expect(style.layers.map((layer) => layer.id)).toEqual([
+      "ops-background",
+      "world-land-fill",
+      "gray-canvas-reference"
+    ]);
+    expect(style.layers.find((layer) => layer.id === "gray-canvas-reference")).toMatchObject({
+      id: "gray-canvas-reference",
+      type: "fill",
+      source: "world-land",
+      paint: { "fill-opacity": 0 }
+    });
+    expect(style).not.toHaveProperty("glyphs");
+    expect(JSON.stringify(style)).not.toMatch(/https?:\/\//);
+  });
 });
