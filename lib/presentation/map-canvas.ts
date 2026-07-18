@@ -27,7 +27,11 @@ export type JapanMapRegion = {
   label: string;
   lat: number;
   lon: number;
-  value: number;
+  value: number | null;
+  rawValue?: number;
+  unit?: string;
+  periodLabel?: string;
+  sourceIds?: string[];
 };
 
 export type JapanMapCorridor = {
@@ -103,20 +107,43 @@ export function buildJapanMapCanvasModel(
     .filter((route): route is JapanMapRoute => route !== null);
 
   const regionCandidates = view.japanImpacts
-    .filter((entity) => entity.coordinates && (entity.kind === "Prefecture" || entity.kind === "Reservoir"))
+    .filter((entity) => entity.coordinates && isRegionalMetricEntity(entity, view.id))
     .map((entity) => ({
       entity,
       metric: getRegionalMetric(entity, view.id)
-    }))
-    .filter((candidate): candidate is { entity: SemanticEntity; metric: number } => candidate.metric !== undefined);
-  const normalizedMetrics = normalizeRegionalMetrics(regionCandidates.map((candidate) => candidate.metric), view.id);
-  const regions = regionCandidates.map((candidate, index) => ({
-    id: candidate.entity.id,
-    label: localizeAnyLabel(candidate.entity.id, candidate.entity.label),
-    lat: candidate.entity.coordinates!.lat,
-    lon: candidate.entity.coordinates!.lon,
-    value: normalizedMetrics[index]
-  }));
+    }));
+  const normalizedMetrics = normalizeRegionalMetrics(
+    regionCandidates.flatMap((candidate) => candidate.metric === undefined ? [] : [candidate.metric]),
+    view.id
+  );
+  let normalizedIndex = 0;
+  const regions = regionCandidates.map((candidate) => {
+    const hasMetric = candidate.metric !== undefined;
+    const normalizedValue = hasMetric ? normalizedMetrics[normalizedIndex++] : null;
+
+    return {
+      id: candidate.entity.id,
+      label: localizeAnyLabel(candidate.entity.id, candidate.entity.label),
+      lat: candidate.entity.coordinates!.lat,
+      lon: candidate.entity.coordinates!.lon,
+      value: normalizedValue,
+      ...(hasMetric ? { rawValue: candidate.metric } : {}),
+      ...(view.id === "rice"
+        ? {
+            unit: "トン",
+            periodLabel: "令和5年産",
+            sourceIds: ["source:estat-rice-prefecture-harvest-r5"]
+          }
+        : {}),
+      ...(view.id === "water"
+        ? {
+            unit: "%",
+            periodLabel: "最新公表値",
+            sourceIds: candidate.entity.sourceIds ?? ["source:mlit-drought-portal"]
+          }
+        : {})
+    };
+  });
 
   const globalPoints = buildGlobalPoints(routeScopedFlows, graph, japanEntity);
   const globalRoutes = buildGlobalRoutes(routeScopedFlows, graph, globalPoints, japanEntity);
@@ -296,23 +323,21 @@ function buildLogisticsImpactRegions(graph: SemanticGraph, themeId: ThemeView["i
 
   const regionIds = ["prefecture:tokyo", "prefecture:aichi", "prefecture:osaka"];
 
-  return regionIds
-    .map((id, index) => {
-      const entity = graph.entities.find((candidate) => candidate.id === id);
+  return regionIds.flatMap((id, index): JapanMapRegion[] => {
+    const entity = graph.entities.find((candidate) => candidate.id === id);
 
-      if (!entity?.coordinates) {
-        return null;
-      }
+    if (!entity?.coordinates) {
+      return [];
+    }
 
-      return {
-        id: entity.id,
-        label: localizeAnyLabel(entity.id, entity.label),
-        lat: entity.coordinates.lat,
-        lon: entity.coordinates.lon,
-        value: [92, 76, 68][index] ?? 60
-      };
-    })
-    .filter((region): region is JapanMapRegion => region !== null);
+    return [{
+      id: entity.id,
+      label: localizeAnyLabel(entity.id, entity.label),
+      lat: entity.coordinates.lat,
+      lon: entity.coordinates.lon,
+      value: [92, 76, 68][index] ?? 60
+    }];
+  });
 }
 
 function buildLogisticsImpactCorridors(themeId: ThemeView["id"]): JapanMapCorridor[] {
@@ -538,6 +563,13 @@ function getRegionalMetric(entity: SemanticEntity, themeId: ThemeView["id"]): nu
   }
 
   return undefined;
+}
+
+function isRegionalMetricEntity(entity: SemanticEntity, themeId: ThemeView["id"]): boolean {
+  return (
+    (themeId === "rice" && entity.kind === "Prefecture") ||
+    (themeId === "water" && entity.kind === "Reservoir")
+  );
 }
 
 function normalizeRegionalMetrics(metrics: number[], themeId: ThemeView["id"]): number[] {

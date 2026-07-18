@@ -46,9 +46,46 @@ describe("japan map canvas model", () => {
       ])
     );
     expect(ricePrefecturePoints.length).toBeGreaterThanOrEqual(47);
-    expect(model.regions.find((region) => region.id === "prefecture:niigata")?.value).toBeGreaterThan(
-      model.regions.find((region) => region.id === "prefecture:osaka")?.value ?? 0
+    const niigata = model.regions.find((region) => region.id === "prefecture:niigata");
+    const osaka = model.regions.find((region) => region.id === "prefecture:osaka");
+    expect(niigata?.value).not.toBeNull();
+    expect(niigata?.value ?? 0).toBeGreaterThan(osaka?.value ?? 0);
+    expect(niigata).toMatchObject({
+      rawValue: expect.any(Number),
+      unit: "トン",
+      periodLabel: "令和5年産",
+      sourceIds: ["source:estat-rice-prefecture-harvest-r5"]
+    });
+  });
+
+  test.each([
+    ["rice", "Prefecture", "riceMainUseHarvestTonsR5"],
+    ["water", "Reservoir", "latestFillRatePercent"]
+  ] as const)("retains a %s regional entity whose metric is missing", (themeId, kind, property) => {
+    const graph = structuredClone(loadSeedGraph());
+    const entity = graph.entities.find(
+      (candidate) => candidate.kind === kind && candidate.themes.includes(themeId)
     );
+    expect(entity?.coordinates).toBeDefined();
+    delete entity?.properties?.[property];
+
+    const model = buildJapanMapCanvasModel(graph, getThemeView(graph, themeId), entity!.id);
+    const region = model.regions.find((candidate) => candidate.id === entity!.id);
+
+    expect(region).toBeDefined();
+    expect(region?.value).toBeNull();
+    expect(region?.rawValue).toBeUndefined();
+  });
+
+  test("does not add null regional metrics to themes without a regional layer", () => {
+    const graph = loadSeedGraph();
+    const model = buildJapanMapCanvasModel(
+      graph,
+      getThemeView(graph, "energy"),
+      "observation:lng-electricity-april-2026"
+    );
+
+    expect(model.regions).toEqual([]);
   });
 
   test("does not surface rice route overlays for policy or price observations", () => {

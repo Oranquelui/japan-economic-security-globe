@@ -1341,7 +1341,13 @@ function regionsToFeatureCollection(regions: JapanMapRegion[], activeId: string)
       type: "Feature" as const,
       geometry: {
         type: "Polygon" as const,
-        coordinates: [createCirclePolygon(region.lon, region.lat, 48 + region.value * 0.25)]
+        coordinates: [
+          createCirclePolygon(
+            region.lon,
+            region.lat,
+            48 + (region.value === null ? 0 : region.value * 0.25)
+          )
+        ]
       },
       properties: {
         id: region.id,
