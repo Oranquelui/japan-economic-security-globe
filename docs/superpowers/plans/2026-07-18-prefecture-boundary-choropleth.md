@@ -382,6 +382,7 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 Require:
 
 - exactly 47 unique full Japanese names and entity IDs;
+- the label artifact is runtime-validated and frozen against the canonical boundary mapping so every code, entity ID, and full Japanese name matches the same prefecture and malformed/swapped rows fail loudly;
 - every item has a finite explicit label anchor and target anchor;
 - dense Kanto, Kansai, Okinawa, Hokkaido, and multi-island cases have explicit curated placement;
 - at default zoom 5.3 in the 1440x900 desktop map canvas, every label whose display anchor is at least 28 CSS pixels from its target anchor generates a leader-line feature;
@@ -392,6 +393,7 @@ Require:
 - the now-complete order is asserted as world-land → prefecture fill → prefecture base outline → `gray-canvas-reference` → leader lines → prefecture labels → selected treatment → point/route layers;
 - the selected label remains visible through detailed zoom;
 - all-prefecture labels are disabled below the existing `xl` desktop boundary, with only the existing smaller-viewport behavior retained.
+- label/leader sources are empty for representative-radius regional layers and contain only IDs belonging to the current prefecture-boundary model; unrelated static/choropleth layers never inherit the global 47-label artifact.
 
 Before writing production code, install an exact verified stable `@playwright/test` dev dependency, add the browser test script/config, and write the real-rendered acceptance test:
 
@@ -425,17 +427,20 @@ The initial implementation must include leader lines for the explicit prefecture
 
 ### Step 5.3: Add the pure label builders and layout validator
 
-`prefecture-label-layout.ts` returns:
+`prefecture-label-layout.ts` validates and freezes the imported JSON against `prefectureBoundaryCollection`, then returns:
 
 - a label-point FeatureCollection;
 - a leader-line FeatureCollection;
 - a projected label-box collision report used by tests and browser acceptance diagnostics.
 
 Use the same font-size/anchor assumptions in the validator and MapLibre layer configuration.
+Export the normal runtime validator so negative fixtures can prove malformed coordinates and swapped `(prefectureCode, entityId, label)` mappings are rejected without adding a test-only production API.
 
 ### Step 5.4: Add MapLibre label layers
 
 Add `jp-prefecture-leader-line`, `jp-prefecture-label`, and a selected-label treatment. Put reference context below app labels and selected treatment above. Toggle the all-prefecture label/leader layers at the desktop breakpoint without recreating the map or changing Mobile layout.
+
+Build these sources only from layout entries whose entity ID and prefecture code occur in the current `prefecture-boundary` region set. Return empty label, selected-detail, and leader collections when the model has no boundary regions; add a representative-radius choropleth regression test.
 
 Add the container-scoped read-only diagnostics hook and remove it during map cleanup. Add the local acceptance-style option and unit-test that it contains no remote source/glyph/font URL while retaining the exact transparent `gray-canvas-reference` insertion anchor. Add `test:e2e:prefecture` to `package.json`. In `.github/workflows/ci.yml`, after the production build, run `npx playwright install --with-deps chromium` and then `npm run test:e2e:prefecture`. The test must use one isolated port and terminate its web server after completion.
 
