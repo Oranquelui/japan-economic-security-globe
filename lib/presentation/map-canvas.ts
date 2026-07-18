@@ -170,6 +170,16 @@ export function buildJapanMapCanvasModel(
   };
 }
 
+export function hasLogisticsImpactGeometry(
+  graph: SemanticGraph,
+  themeId: ThemeView["id"]
+): boolean {
+  return (
+    buildLogisticsImpactRegions(graph, themeId).length > 0 ||
+    buildLogisticsImpactCorridors(themeId).length > 0
+  );
+}
+
 function getRouteScopedFlows(graph: SemanticGraph, view: ThemeView, activeId: string): DependencyFlow[] {
   const activeFlow = view.flows.find((flow) => flow.id === activeId);
   if (activeFlow) {

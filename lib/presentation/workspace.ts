@@ -10,8 +10,10 @@ import type {
   ThemeView,
   WorkspacePresentation
 } from "../../types/presentation";
+import type { LiveLogisticsViewModel } from "../../types/logistics";
 import type { SemanticGraph, ThemeId } from "../../types/semantic";
 import { localizeAnyLabel } from "./japanese";
+import { hasLogisticsImpactGeometry } from "./map-canvas";
 import type { OperationMapMode } from "./operations";
 
 const RICE_HARVEST_SOURCE_ID = "source:estat-rice-prefecture-harvest-r5";
@@ -362,55 +364,89 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
 
 export function buildWorkspacePresentation(
   graph: SemanticGraph,
-  view: ThemeView
+  view: ThemeView,
+  liveLogistics: LiveLogisticsViewModel | null = null
 ): WorkspacePresentation {
   const layers = LAYER_REGISTRY[view.id].map((layer) => ({
     ...layer,
-    available: hasLayerInput(graph, view, layer)
+    available: hasLayerInput(graph, view, layer, liveLogistics)
   }));
+  const defaultLayer = layers.find((layer) => layer.available) ?? layers[0];
 
   return {
-    defaultLayerId: layers[0].id,
+    defaultLayerId: defaultLayer.id,
     scope: buildScopeSummary(view, layers),
     layers
   };
 }
 
+type RuntimeLayerSource = WorkspacePresentation | readonly LayerDefinition[];
+
 export function getLayerDefinition(
   themeId: ThemeId,
-  layerId: string | null | undefined
+  layerId: string | null | undefined,
+  runtimeSource?: RuntimeLayerSource
 ): LayerDefinition | null {
   if (!layerId) {
     return null;
   }
 
-  return LAYER_REGISTRY[themeId].find((layer) => layer.id === layerId) ?? null;
+  return getLayerSource(themeId, runtimeSource).find((layer) => layer.id === layerId) ?? null;
 }
 
-export function getDefaultLayerDefinition(themeId: ThemeId): LayerDefinition {
-  return LAYER_REGISTRY[themeId][0];
+export function getDefaultLayerDefinition(
+  themeId: ThemeId,
+  runtimeSource?: RuntimeLayerSource
+): LayerDefinition {
+  const layers = getLayerSource(themeId, runtimeSource);
+  const defaultLayer = layers.find((layer) => layer.available) ?? layers[0];
+
+  if (!defaultLayer) {
+    throw new Error(`No workspace layers registered for ${themeId}`);
+  }
+
+  return defaultLayer;
 }
 
 export function getLegacyLayerDefinition(
   themeId: ThemeId,
-  mapMode: OperationMapMode
+  mapMode: OperationMapMode,
+  runtimeSource?: RuntimeLayerSource
 ): LayerDefinition {
-  return LAYER_REGISTRY[themeId].find(
+  return getLayerSource(themeId, runtimeSource).find(
     (layer) => layer.available && layer.renderMode === mapMode
-  ) ?? getDefaultLayerDefinition(themeId);
+  ) ?? getDefaultLayerDefinition(themeId, runtimeSource);
 }
 
 export function resolveLegacyPresentation(
   themeId: ThemeId,
-  requestedMode: OperationMapMode
+  requestedMode: OperationMapMode,
+  runtimeSource?: RuntimeLayerSource
 ): { layer: LayerDefinition; mapModeOverride: OperationMapMode } {
-  const layer = getLegacyLayerDefinition(themeId, requestedMode);
+  const layer = getLegacyLayerDefinition(themeId, requestedMode, runtimeSource);
 
-  if (requestedMode === "choropleth" && layer.renderMode !== "choropleth") {
-    return { layer: getDefaultLayerDefinition(themeId), mapModeOverride: "point" };
+  if (requestedMode === "choropleth" && (!layer.available || layer.renderMode !== "choropleth")) {
+    return {
+      layer: getDefaultLayerDefinition(themeId, runtimeSource),
+      mapModeOverride: "point"
+    };
   }
 
   return { layer, mapModeOverride: requestedMode };
+}
+
+function getLayerSource(
+  themeId: ThemeId,
+  runtimeSource?: RuntimeLayerSource
+): readonly LayerDefinition[] {
+  // No runtime source means registry metadata/capability lookup, retained for URL parsing compatibility.
+  if (!runtimeSource) {
+    return LAYER_REGISTRY[themeId];
+  }
+
+  // Once supplied, runtime layers are the sole source of truth for data-aware availability.
+  const layers = "layers" in runtimeSource ? runtimeSource.layers : runtimeSource;
+  return layers.filter((layer) => layer.themeId === themeId);
 }
 
 export function buildSelectionInspector(
@@ -508,7 +544,12 @@ export function buildMetricSeries(
   return [];
 }
 
-function hasLayerInput(graph: SemanticGraph, view: ThemeView, layer: LayerDefinition): boolean {
+function hasLayerInput(
+  graph: SemanticGraph,
+  view: ThemeView,
+  layer: LayerDefinition,
+  liveLogistics: LiveLogisticsViewModel | null
+): boolean {
   const content = layer.content;
 
   switch (content.kind) {
@@ -525,18 +566,55 @@ function hasLayerInput(graph: SemanticGraph, view: ThemeView, layer: LayerDefini
     case "entities":
       return view.entities.some((entity) => content.entityKinds.includes(entity.kind));
     case "live-logistics":
+      return hasLiveLogisticsInput(graph, view.id, content.view, liveLogistics);
     case "theme-composite":
       return true;
   }
 }
 
+function hasLiveLogisticsInput(
+  graph: SemanticGraph,
+  themeId: ThemeId,
+  mode: "domestic" | "arrival" | "impact",
+  liveLogistics: LiveLogisticsViewModel | null
+): boolean {
+  if (!liveLogistics) {
+    return false;
+  }
+
+  if (mode === "domestic") {
+    return liveLogistics.mapRoutes.some((route) => {
+      const resolvedPointIds = route.pointIds.filter((id) => {
+        const entity = graph.entities.find((candidate) => candidate.id === id);
+        return Boolean(
+          entity?.coordinates &&
+          (themeId !== "logistics" || !["Country", "Chokepoint", "SeaLane"].includes(entity.kind))
+        );
+      });
+
+      return new Set(resolvedPointIds).size >= 2;
+    });
+  }
+
+  if (mode === "arrival") {
+    return liveLogistics.mapVessels.some(
+      (vessel) => Number.isFinite(vessel.lat) && Number.isFinite(vessel.lon)
+    );
+  }
+
+  return liveLogistics.items.length > 0 && hasLogisticsImpactGeometry(graph, themeId);
+}
+
 function buildScopeSummary(view: ThemeView, layers: LayerDefinition[]): ScopeSummary {
   if (view.id === "rice") {
     const prefectures = view.entities.filter((entity) => entity.kind === "Prefecture");
-    const harvestTotal = prefectures.reduce((total, entity) => {
-      const harvest = entity.properties?.riceMainUseHarvestTonsR5;
-      return total + (typeof harvest === "number" ? harvest : 0);
-    }, 0);
+    const numericHarvests = prefectures.flatMap((entity) => {
+      const value = entity.properties?.riceMainUseHarvestTonsR5;
+      return typeof value === "number" ? [value] : [];
+    });
+    const harvestTotal = numericHarvests.reduce((total, harvest) => total + harvest, 0);
+    const hasCompleteHarvestCoverage =
+      prefectures.length > 0 && numericHarvests.length === prefectures.length;
     const observationMetrics = view.observations
       .filter((observation) => typeof observation.value === "number")
       .map(toScopeObservationMetric);
@@ -550,8 +628,10 @@ function buildScopeSummary(view: ThemeView, layers: LayerDefinition[]): ScopeSum
         {
           id: "rice-harvest-total",
           label: "主食用米収穫量",
-          value: numberFormatter.format(harvestTotal),
-          unit: "トン",
+          value: hasCompleteHarvestCoverage
+            ? numberFormatter.format(harvestTotal)
+            : `データ不足（${numericHarvests.length}/${prefectures.length}件）`,
+          ...(hasCompleteHarvestCoverage ? { unit: "トン" } : {}),
           periodLabel: "令和5年産",
           sourceIds: [RICE_HARVEST_SOURCE_ID]
         },
