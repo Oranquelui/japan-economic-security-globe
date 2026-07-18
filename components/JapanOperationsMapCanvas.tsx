@@ -75,6 +75,7 @@ export function JapanOperationsMapCanvas({
 }: JapanOperationsMapCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
+  const prefectureSourceSignatureRef = useRef<string | null>(null);
   const zoomRef = useRef(INITIAL_ZOOM);
   const scanPhaseRef = useRef(0);
   const scanRafRef = useRef<number | null>(null);
@@ -151,11 +152,13 @@ export function JapanOperationsMapCanvas({
           data: representativeRadiusRegionsToFeatureCollection(model.regions, activeId)
         });
 
+        const prefectureSourceSignature = getPrefectureSourceSignature(model.regions, activeId);
         map.addSource("jp-prefectures", {
           type: "geojson",
           data: prefectureRegionsToFeatureCollection(model.regions, activeId),
           attribution: "境界: Made with Natural Earth（加工）"
         });
+        prefectureSourceSignatureRef.current = prefectureSourceSignature;
 
         map.addSource("global-points", {
           type: "geojson",
@@ -883,7 +886,14 @@ export function JapanOperationsMapCanvas({
     updateSource(map, "jp-points", pointsToFeatureCollection(model.points, activeId));
     updateSource(map, "jp-points-cluster", pointsToFeatureCollection(model.points, activeId));
     updateSource(map, "jp-routes", routesToFeatureCollection(model.routes, model.points, activeId));
-    updateSource(map, "jp-prefectures", prefectureRegionsToFeatureCollection(model.regions, activeId));
+    const prefectureSourceSignature = getPrefectureSourceSignature(model.regions, activeId);
+    if (prefectureSourceSignature !== prefectureSourceSignatureRef.current) {
+      const prefectureSource = map.getSource("jp-prefectures");
+      if (prefectureSource && "setData" in prefectureSource) {
+        prefectureSource.setData(prefectureRegionsToFeatureCollection(model.regions, activeId));
+        prefectureSourceSignatureRef.current = prefectureSourceSignature;
+      }
+    }
     updateSource(map, "jp-regions", representativeRadiusRegionsToFeatureCollection(model.regions, activeId));
     applyModeVisibility(map, mapMode);
   }, [activeId, mapMode, model, statusPalette, themePalette]);
@@ -1564,6 +1574,25 @@ function prefectureRegionsToFeatureCollection(
     prefectureRegions,
     activeId
   ) as unknown as GeoJSONSourceSpecification["data"];
+}
+
+function getPrefectureSourceSignature(regions: JapanMapRegion[], activeId: string) {
+  const presentationTuples = regions
+    .filter((region): region is PrefectureBoundaryMapRegion => region.geometryKind === "prefecture-boundary")
+    .sort((left, right) => left.id < right.id ? -1 : left.id > right.id ? 1 : 0)
+    .map((region) => [
+      region.geometryKind,
+      region.prefectureCode,
+      region.id,
+      region.label,
+      region.value,
+      region.rawValue ?? null,
+      region.unit ?? null,
+      region.periodLabel ?? null,
+      region.sourceIds ?? []
+    ]);
+
+  return JSON.stringify([activeId, presentationTuples]);
 }
 
 function representativeRadiusRegionsToFeatureCollection(regions: JapanMapRegion[], activeId: string) {

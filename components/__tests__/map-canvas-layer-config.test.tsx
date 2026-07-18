@@ -15,6 +15,7 @@ const addedLayerCalls: Array<{
 }> = [];
 const addedSources = new Map<string, unknown>();
 const addedSourceConfigs = new Map<string, Record<string, unknown>>();
+const sourceSetDataSpies = new Map<string, ReturnType<typeof vi.fn>>();
 const registeredLayerHandlers: Array<{
   event: string;
   handler: (...args: any[]) => void;
@@ -28,6 +29,7 @@ let lastMap: {
   getZoom: ReturnType<typeof vi.fn>;
   off: ReturnType<typeof vi.fn>;
   setLayoutProperty: ReturnType<typeof vi.fn>;
+  setPaintProperty: ReturnType<typeof vi.fn>;
 } | null = null;
 let mapCanvasSize = { width: 1024, height: 720 };
 let mapZoom = 5.3;
@@ -42,6 +44,9 @@ vi.mock("maplibre-gl", () => {
     addSource = vi.fn((id: string, source: Record<string, unknown>) => {
       addedSourceConfigs.set(id, source);
       addedSources.set(id, source.data);
+      sourceSetDataSpies.set(id, vi.fn((data: unknown) => {
+        addedSources.set(id, data);
+      }));
     });
     addLayer = vi.fn((layer: Record<string, unknown>, beforeId?: string) => {
       addedLayers.push(layer);
@@ -61,9 +66,7 @@ vi.mock("maplibre-gl", () => {
     };
     getCanvas = vi.fn(() => this.canvas);
     getSource = vi.fn((id: string) => ({
-      setData: vi.fn((data: unknown) => {
-        addedSources.set(id, data);
-      }),
+      setData: sourceSetDataSpies.get(id),
       getClusterExpansionZoom: vi.fn(async () => 6)
     }));
     isStyleLoaded = vi.fn(() => true);
@@ -113,6 +116,7 @@ afterEach(() => {
   addedLayerCalls.length = 0;
   addedSources.clear();
   addedSourceConfigs.clear();
+  sourceSetDataSpies.clear();
   registeredLayerHandlers.length = 0;
   lastMap = null;
   mapCanvasSize = { width: 1024, height: 720 };
@@ -385,6 +389,193 @@ describe("map canvas layer config", () => {
         expectRegionLayerVisibility(expectedVisibility);
       });
     }
+  });
+
+  test("does not resend prefecture boundaries for palette, mode, or value-equal model rerenders", async () => {
+    const regions = prefectureMetricRegions();
+    const canvasModel = { ...model, regions };
+    const statusPalette = getStatusPalette();
+    const themePalette = getThemePalette("rice");
+    const alternateThemePalette = getThemePalette("water");
+    const canvas = ({
+      mapMode = "choropleth",
+      nextModel = canvasModel,
+      nextThemePalette = themePalette
+    }: {
+      mapMode?: "choropleth" | "static";
+      nextModel?: JapanMapCanvasModel;
+      nextThemePalette?: ReturnType<typeof getThemePalette>;
+    } = {}) => (
+      <JapanOperationsMapCanvas
+        activeId="prefecture:hokkaido"
+        focusTargetId={null}
+        mapMode={mapMode}
+        model={nextModel}
+        onSelect={vi.fn()}
+        statusPalette={statusPalette}
+        themePalette={nextThemePalette}
+      />
+    );
+    const { rerender } = render(canvas());
+
+    await waitFor(() => {
+      expect(addedSources.has("jp-prefectures")).toBe(true);
+    });
+
+    const setData = getSourceSetDataSpy("jp-prefectures");
+    expect(setData).toBeDefined();
+    const initialSetDataCount = setData!.mock.calls.length;
+    const paintCallCount = lastMap!.setPaintProperty.mock.calls.length;
+
+    rerender(canvas({ nextThemePalette: alternateThemePalette }));
+    await waitFor(() => {
+      expect(lastMap!.setPaintProperty.mock.calls.length).toBeGreaterThan(paintCallCount);
+    });
+    expect(setData).toHaveBeenCalledTimes(initialSetDataCount);
+
+    const layoutCallCount = lastMap!.setLayoutProperty.mock.calls.length;
+    rerender(canvas({ mapMode: "static", nextThemePalette: alternateThemePalette }));
+    await waitFor(() => {
+      expect(lastMap!.setLayoutProperty.mock.calls.length).toBeGreaterThan(layoutCallCount);
+    });
+    expect(setData).toHaveBeenCalledTimes(initialSetDataCount);
+
+    const valueEqualModel = structuredClone(canvasModel) as JapanMapCanvasModel;
+    const nextPaintCallCount = lastMap!.setPaintProperty.mock.calls.length;
+    rerender(canvas({
+      mapMode: "static",
+      nextModel: valueEqualModel,
+      nextThemePalette: alternateThemePalette
+    }));
+    await waitFor(() => {
+      expect(lastMap!.setPaintProperty.mock.calls.length).toBeGreaterThan(nextPaintCallCount);
+    });
+    expect(setData).toHaveBeenCalledTimes(initialSetDataCount);
+  });
+
+  test("resends prefecture boundaries once for selection and once for content changes", async () => {
+    const regions = prefectureMetricRegions();
+    const canvasModel = { ...model, regions };
+    const statusPalette = getStatusPalette();
+    const themePalette = getThemePalette("rice");
+    const canvas = (activeId: string, nextModel: JapanMapCanvasModel = canvasModel) => (
+      <JapanOperationsMapCanvas
+        activeId={activeId}
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={nextModel}
+        onSelect={vi.fn()}
+        statusPalette={statusPalette}
+        themePalette={themePalette}
+      />
+    );
+    const { rerender } = render(canvas("prefecture:hokkaido"));
+
+    await waitFor(() => {
+      expect(addedSources.has("jp-prefectures")).toBe(true);
+    });
+
+    const setData = getSourceSetDataSpy("jp-prefectures")!;
+    const initialSetDataCount = setData.mock.calls.length;
+    rerender(canvas("prefecture:tokyo"));
+    await waitFor(() => {
+      expect(setData).toHaveBeenCalledTimes(initialSetDataCount + 1);
+    });
+
+    let prefectures = addedSources.get("jp-prefectures") as {
+      features: Array<{ properties: { entityId: string; selected: boolean } }>;
+    };
+    expect(prefectures.features.find((feature) => feature.properties.entityId === "prefecture:tokyo")?.properties.selected).toBe(true);
+    expect(prefectures.features.find((feature) => feature.properties.entityId === "prefecture:hokkaido")?.properties.selected).toBe(false);
+
+    const metricChangedModel = {
+      ...canvasModel,
+      regions: regions.map((region) => region.id === "prefecture:tokyo"
+        ? {
+            ...region,
+            value: 88,
+            rawValue: 888_000
+          }
+        : region)
+    } as JapanMapCanvasModel;
+    rerender(canvas("prefecture:tokyo", metricChangedModel));
+    await waitFor(() => {
+      expect(setData).toHaveBeenCalledTimes(initialSetDataCount + 2);
+    });
+
+    const labelChangedModel = {
+      ...metricChangedModel,
+      regions: metricChangedModel.regions.map((region) => region.id === "prefecture:tokyo"
+        ? { ...region, label: "東京都（更新）" }
+        : region)
+    } as JapanMapCanvasModel;
+    rerender(canvas("prefecture:tokyo", labelChangedModel));
+    await waitFor(() => {
+      expect(setData).toHaveBeenCalledTimes(initialSetDataCount + 3);
+    });
+
+    const metadataChangedModel = {
+      ...labelChangedModel,
+      regions: labelChangedModel.regions.map((region) => region.id === "prefecture:tokyo"
+        ? {
+            ...region,
+            unit: "更新トン",
+            periodLabel: "更新期",
+            sourceIds: [...(region.sourceIds ?? []), "source:revision"]
+          }
+        : region)
+    } as JapanMapCanvasModel;
+    rerender(canvas("prefecture:tokyo", metadataChangedModel));
+    await waitFor(() => {
+      expect(setData).toHaveBeenCalledTimes(initialSetDataCount + 4);
+    });
+
+    prefectures = addedSources.get("jp-prefectures") as typeof prefectures;
+    expect(prefectures.features.find((feature) => feature.properties.entityId === "prefecture:tokyo")?.properties).toMatchObject({
+      label: "東京都（更新）",
+      periodLabel: "更新期",
+      rawValue: 888_000,
+      selected: true,
+      sourceIds: expect.arrayContaining(["source:revision"]),
+      unit: "更新トン",
+      value: 88
+    });
+  });
+
+  test("updates the prefecture source across empty and populated boundary transitions", async () => {
+    const statusPalette = getStatusPalette();
+    const themePalette = getThemePalette("rice");
+    const canvas = (nextModel: JapanMapCanvasModel) => (
+      <JapanOperationsMapCanvas
+        activeId="prefecture:tokyo"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={nextModel}
+        onSelect={vi.fn()}
+        statusPalette={statusPalette}
+        themePalette={themePalette}
+      />
+    );
+    const { rerender } = render(canvas(model));
+
+    await waitFor(() => {
+      expect(addedSources.has("jp-prefectures")).toBe(true);
+    });
+
+    const setData = getSourceSetDataSpy("jp-prefectures")!;
+    const initialSetDataCount = setData.mock.calls.length;
+    const populatedModel = { ...model, regions: prefectureMetricRegions() };
+    rerender(canvas(populatedModel));
+    await waitFor(() => {
+      expect(setData).toHaveBeenCalledTimes(initialSetDataCount + 1);
+    });
+    expect((addedSources.get("jp-prefectures") as { features: unknown[] }).features).toHaveLength(47);
+
+    rerender(canvas(model));
+    await waitFor(() => {
+      expect(setData).toHaveBeenCalledTimes(initialSetDataCount + 2);
+    });
+    expect((addedSources.get("jp-prefectures") as { features: unknown[] }).features).toEqual([]);
   });
 
   test("keeps representative-radius circles separate from joined prefecture boundaries", async () => {
@@ -1144,4 +1335,8 @@ function getLastLayoutVisibility(layerId: string) {
   return [...(lastMap?.setLayoutProperty.mock.calls ?? [])]
     .reverse()
     .find(([candidateLayerId, property]) => candidateLayerId === layerId && property === "visibility")?.[2];
+}
+
+function getSourceSetDataSpy(sourceId: string) {
+  return sourceSetDataSpies.get(sourceId);
 }
