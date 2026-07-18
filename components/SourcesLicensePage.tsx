@@ -1,5 +1,8 @@
-import type { SourceDocument } from "../types/semantic";
-import { buildSourcesLicenseCatalog } from "../lib/legal/source-catalog";
+import type { SourceDocument, SourceRights } from "../types/semantic";
+import {
+  buildSourcesLicenseCatalog,
+  type SourcesLicenseGroupItem
+} from "../lib/legal/source-catalog";
 import { SourcesLicenseFooter } from "./SourcesLicenseFooter";
 
 interface SourcesLicensePageProps {
@@ -40,29 +43,7 @@ export function SourcesLicensePage({ sources }: SourcesLicensePageProps) {
                 </div>
 
                 <div className="space-y-3">
-                  {group.items.map((item) => (
-                    <a
-                      key={item.id}
-                      href={item.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block rounded-[1.5rem] border border-slate-300 bg-[#f3f5f7] px-4 py-4 transition hover:border-slate-400 hover:bg-white"
-                    >
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div className="text-sm font-semibold text-slate-900">{item.label}</div>
-                        <span className="rounded-full border border-[#c8a37c] bg-[#f3e8db] px-2 py-0.5 text-[0.65rem] text-[#82582f]">
-                          {item.accessModeLabel}
-                        </span>
-                        {item.tierLabel ? (
-                          <span className="rounded-full border border-slate-300 px-2 py-0.5 text-[0.65rem] text-slate-600">
-                            {item.tierLabel}
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="mt-2 text-sm text-slate-500">{item.publisher}</div>
-                      {item.description ? <p className="mt-2 text-sm leading-7 text-slate-600">{item.description}</p> : null}
-                    </a>
-                  ))}
+                  {group.items.map((item) => <SourceCard key={item.id} item={item} />)}
                 </div>
               </section>
             ))}
@@ -73,13 +54,114 @@ export function SourcesLicensePage({ sources }: SourcesLicensePageProps) {
           <h2 className="text-xl font-semibold text-slate-900">ライセンス / 権利処理</h2>
           <p className="text-sm leading-7 text-slate-600">{catalog.licenseSummary}</p>
           <p className="text-sm leading-7 text-slate-600">
-            政府・公的機関ソースは各機関の公表条件に従って参照し、民間企業ソースは再配布可能なデータセットとしてではなく、
-            事実記述・要約・リンクの形で扱います。
+            政府・公的機関ソースは各機関の公表条件に従って参照し、公開・オープンデータは各ソース固有のオープンな利用条件に従って再利用します。
+            民間企業ソースは再配布可能なデータセットとしてではなく、事実記述・要約・リンクの形で扱います。
           </p>
         </section>
 
         <SourcesLicenseFooter sharePath="/sources-license" />
       </div>
     </main>
+  );
+}
+
+const SOURCE_CARD_CLASS =
+  "block rounded-[1.5rem] border border-slate-300 bg-[#f3f5f7] px-4 py-4 transition hover:border-slate-400 hover:bg-white";
+
+function SourceCard({ item }: { item: SourcesLicenseGroupItem }) {
+  if (!item.rights) {
+    return (
+      <a href={item.url} target="_blank" rel="noreferrer" className={SOURCE_CARD_CLASS}>
+        <SourceCardSummary item={item} />
+      </a>
+    );
+  }
+
+  return (
+    <article className={SOURCE_CARD_CLASS}>
+      <div className="flex flex-wrap items-center gap-2">
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={item.label}
+          className="text-sm font-semibold text-slate-900 underline decoration-dotted underline-offset-4"
+        >
+          {item.label}
+        </a>
+        <SourceBadges item={item} />
+      </div>
+      <div className="mt-2 text-sm text-slate-500">{item.publisher}</div>
+      {item.description ? <p className="mt-2 text-sm leading-7 text-slate-600">{item.description}</p> : null}
+      <SourceRightsDetails rights={item.rights} />
+    </article>
+  );
+}
+
+function SourceCardSummary({ item }: { item: SourcesLicenseGroupItem }) {
+  return (
+    <>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="text-sm font-semibold text-slate-900">{item.label}</div>
+        <SourceBadges item={item} />
+      </div>
+      <div className="mt-2 text-sm text-slate-500">{item.publisher}</div>
+      {item.description ? <p className="mt-2 text-sm leading-7 text-slate-600">{item.description}</p> : null}
+    </>
+  );
+}
+
+function SourceBadges({ item }: { item: SourcesLicenseGroupItem }) {
+  return (
+    <>
+      <span className="rounded-full border border-[#c8a37c] bg-[#f3e8db] px-2 py-0.5 text-[0.65rem] text-[#82582f]">
+        {item.accessModeLabel}
+      </span>
+      {item.tierLabel ? (
+        <span className="rounded-full border border-slate-300 px-2 py-0.5 text-[0.65rem] text-slate-600">
+          {item.tierLabel}
+        </span>
+      ) : null}
+    </>
+  );
+}
+
+function SourceRightsDetails({ rights }: { rights: SourceRights }) {
+  return (
+    <div data-testid="source-rights" className="mt-4 border-t border-slate-300 pt-4 text-sm text-slate-600">
+      <h4 className="font-semibold text-slate-800">権利・加工情報</h4>
+      <dl className="mt-3 grid gap-3 sm:grid-cols-[8rem_1fr]">
+        <dt className="font-medium text-slate-500">利用条件</dt>
+        <dd>
+          <a
+            href={rights.licenseUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-dotted underline-offset-4"
+          >
+            {rights.licenseLabel}
+          </a>
+        </dd>
+        <dt className="font-medium text-slate-500">ソース版</dt>
+        <dd>{rights.sourceVersion}</dd>
+        <dt className="font-medium text-slate-500">固定取得元</dt>
+        <dd>
+          <a
+            href={rights.immutableArchiveUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-dotted underline-offset-4"
+          >
+            固定アーカイブ
+          </a>
+        </dd>
+        <dt className="font-medium text-slate-500">SHA-256</dt>
+        <dd className="break-all font-mono text-xs">{rights.immutableArchiveSha256}</dd>
+        <dt className="font-medium text-slate-500">加工内容</dt>
+        <dd className="leading-7">{rights.processingStatement}</dd>
+        <dt className="font-medium text-slate-500">精度・境界の制約</dt>
+        <dd className="leading-7">{rights.limitationStatement}</dd>
+      </dl>
+    </div>
   );
 }

@@ -99,6 +99,26 @@ describe("ActiveLayerSummaryPanel", () => {
     });
   });
 
+  test("never renders an official badge for the Natural Earth open-data source", () => {
+    const graph = loadSeedGraph();
+    const naturalEarth = graph.sources.find(
+      (source) => source.id === "source:natural-earth-admin1-japan-5-1-1"
+    )!;
+    const { layer, summary } = buildPanelInput(graph, "rice", "rice-harvest");
+
+    render(
+      <ActiveLayerSummaryPanel
+        legend={layer.legend}
+        summary={{ ...summary, sources: [naturalEarth] }}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    const sourceItem = screen.getByTestId("active-layer-source");
+    expect(within(sourceItem).getByRole("link", { name: naturalEarth.label })).toBeTruthy();
+    expect(within(sourceItem).queryByText("公式")).toBeNull();
+  });
+
   test("renders an official source without a URL as text and never invents a link", () => {
     const graph = structuredClone(loadSeedGraph());
     const source = graph.sources.find(

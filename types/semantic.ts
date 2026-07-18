@@ -117,6 +117,18 @@ export interface Observation {
   provenance: ProvenanceRef[];
 }
 
+export type SourceCategory = "official" | "open-data" | "private";
+
+export interface SourceRights {
+  licenseLabel: string;
+  licenseUrl: string;
+  sourceVersion: string;
+  immutableArchiveUrl: string;
+  immutableArchiveSha256: string;
+  processingStatement: string;
+  limitationStatement: string;
+}
+
 export interface SourceDocument {
   id: string;
   label: string;
@@ -126,6 +138,8 @@ export interface SourceDocument {
   accessed: string;
   description?: string;
   official?: boolean;
+  sourceCategory?: SourceCategory;
+  rights?: SourceRights;
   accessMode?: "api" | "sparql" | "ckan" | "csv" | "excel" | "geojson" | "tile" | "pdf" | "html";
   tier?: "A" | "B" | "C";
 }
