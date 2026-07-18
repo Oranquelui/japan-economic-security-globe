@@ -10,23 +10,28 @@ const { loadSeedGraphMock, loadSeedLiveLogisticsMock, loadSeedRankingSignalsMock
   loadSeedRankingSignalsMock: vi.fn(() => []),
   parseOperationsUrlStateMock: vi.fn(() => ({
     themeId: "energy",
-    mapMode: "point",
-    selectedId: null
+    selectedId: null,
+    layerId: "energy-supply",
+    mapModeOverride: null,
+    workspaceView: "map"
   }))
 }));
 
 vi.mock("../../components/AppShell", () => ({
   AppShell: ({
+    hasExplicitUrlState,
     liveLogisticsEvents,
     locale,
     homepageMode
   }: {
+    hasExplicitUrlState?: boolean;
     liveLogisticsEvents?: unknown[];
     locale?: string;
     homepageMode?: string;
   }) => (
     <div
       data-testid="app-shell"
+      data-explicit-url-state={hasExplicitUrlState ? "yes" : "no"}
       data-homepage-mode={homepageMode ?? ""}
       data-live-logistics={liveLogisticsEvents?.length ?? 0}
       data-locale={locale ?? ""}
@@ -43,8 +48,10 @@ vi.mock("../../lib/data/seed-loader", () => ({
 vi.mock("../../lib/presentation/url-state", () => ({
   DEFAULT_OPERATIONS_URL_STATE: {
     themeId: "energy",
-    mapMode: "point",
-    selectedId: null
+    selectedId: null,
+    layerId: "energy-supply",
+    mapModeOverride: null,
+    workspaceView: "map"
   },
   parseOperationsUrlState: parseOperationsUrlStateMock
 }));
@@ -109,5 +116,25 @@ describe("app page routes", () => {
     expect(loadSeedLiveLogisticsMock).toHaveBeenCalledTimes(1);
     expect(loadSeedRankingSignalsMock).toHaveBeenCalledTimes(1);
     expect(parseOperationsUrlStateMock).toHaveBeenCalledWith({});
+  });
+
+  test.each([
+    ["semantic layer", { layer: "rice-price" }],
+    ["workspace view", { view: "signals" }],
+    ["legacy mode", { mode: "route" }]
+  ])("treats an explicit %s query as pinned URL state", async (_label, query) => {
+    render(await AppPage({ searchParams: Promise.resolve(query) }));
+
+    expect(screen.getByTestId("app-shell").getAttribute("data-explicit-url-state")).toBe("yes");
+  });
+
+  test("checks every value in array query params for explicit URL state", async () => {
+    render(
+      await AppPage({
+        searchParams: Promise.resolve({ selected: ["", "observation:rice-price-signal-2026"] })
+      })
+    );
+
+    expect(screen.getByTestId("app-shell").getAttribute("data-explicit-url-state")).toBe("yes");
   });
 });

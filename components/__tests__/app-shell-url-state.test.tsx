@@ -259,8 +259,10 @@ describe("AppShell url sync", () => {
         graph={loadSeedGraph()}
         initialUrlState={{
           themeId: "rice",
-          mapMode: "cluster",
-          selectedId: "observation:rice-price-signal-2026"
+          selectedId: "observation:rice-price-signal-2026",
+          layerId: "rice-harvest",
+          mapModeOverride: "cluster",
+          workspaceView: "signals"
         }}
       />
     );
@@ -273,10 +275,10 @@ describe("AppShell url sync", () => {
     expect(replaceMock).not.toHaveBeenCalled();
   });
 
-  test("keeps Japan-first default mode and does not focus the fallback active item on first load", () => {
+  test("uses the default semantic layer mode and does not focus the fallback active item on first load", () => {
     render(<AppShell graph={loadSeedGraph()} />);
 
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("point");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("choropleth");
     // Public spine default theme is rice; first selectable rice signal/entity is the fallback active.
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/^(observation:|flow:|prefecture:|product:)/);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
@@ -310,6 +312,26 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
   });
 
+  test("hydrates the comparison workspace view from URL state", () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "rice",
+          selectedId: null,
+          layerId: "rice-price",
+          mapModeOverride: null,
+          workspaceView: "comparison"
+        }}
+      />
+    );
+
+    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("point");
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
   test("uses the homepage ranking lead when the URL did not explicitly pin a theme", () => {
     const rankingSignals: RankingSignal[] = [
       {
@@ -341,14 +363,48 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toMatch(/rice|observation:rice|^$/);
   });
 
+  test("uses the ranked theme default layer instead of carrying the rice layer", () => {
+    const rankingSignals: RankingSignal[] = [
+      {
+        id: "ranking-signal:water-lead",
+        label: "Water lead",
+        importanceAxes: ["disaster_infrastructure"],
+        canonicalRefs: [{ kind: "observation", id: "observation:ogochi-reservoir-stress" }],
+        sourceIds: ["source:mlit-drought-portal"],
+        componentInputs: {
+          nationalImportance: 0.99,
+          disruptionDepth: 0.9,
+          sourceConfidence: 0.95,
+          publicAttention: 0.4
+        },
+        retrievedAt: "2026-04-25T00:00:00.000Z"
+      }
+    ];
+
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState={false}
+        rankingSignals={rankingSignals}
+      />
+    );
+
+    expect(screen.getAllByTestId("nav-rail")[0].getAttribute("data-theme")).toBe("water");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("choropleth");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("observation:ogochi-reservoir-stress");
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
   test("passes ranking explanation to the map detail popup for the selected ranked item", () => {
     render(
       <AppShell
         graph={loadSeedGraph()}
         initialUrlState={{
           themeId: "energy",
-          mapMode: "route",
-          selectedId: "flow:saudi-oil-japan"
+          selectedId: "flow:saudi-oil-japan",
+          layerId: "energy-route",
+          mapModeOverride: "route",
+          workspaceView: "map"
         }}
         rankingSignals={[
           {
@@ -380,8 +436,10 @@ describe("AppShell url sync", () => {
         graph={loadSeedGraph()}
         initialUrlState={{
           themeId: "logistics",
-          mapMode: "route",
-          selectedId: "flow:japan-linked-maritime-watch"
+          selectedId: "flow:japan-linked-maritime-watch",
+          layerId: "logistics-domestic",
+          mapModeOverride: "route",
+          workspaceView: "map"
         }}
         liveLogisticsEvents={[
           {
@@ -415,8 +473,10 @@ describe("AppShell url sync", () => {
         hasExplicitUrlState
         initialUrlState={{
           themeId: "logistics",
-          mapMode: "route",
-          selectedId: null
+          selectedId: null,
+          layerId: "logistics-domestic",
+          mapModeOverride: "route",
+          workspaceView: "map"
         }}
         liveLogisticsEvents={[
           {
@@ -469,8 +529,10 @@ describe("AppShell url sync", () => {
         graph={loadSeedGraph()}
         initialUrlState={{
           themeId: "logistics",
-          mapMode: "route",
-          selectedId: "live-logistics:tanker-qatar-tokyo-bay"
+          selectedId: "live-logistics:tanker-qatar-tokyo-bay",
+          layerId: "logistics-domestic",
+          mapModeOverride: "route",
+          workspaceView: "map"
         }}
         liveLogisticsEvents={[
           {
@@ -497,15 +559,38 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("Tanker corridor: Hormuz → Malacca → Tokyo Bay");
   });
 
-  test("replaces the URL when theme, map mode, and selection change", async () => {
+  test("normalizes an unavailable runtime layer to the theme default", async () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "rice",
+          selectedId: null,
+          layerId: "rice-logistics-inputs",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+      />
+    );
+
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("choropleth");
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenLastCalledWith("/", { scroll: false });
+    });
+  });
+
+  test("replaces the URL when theme, legacy map mode, and selection change", async () => {
     render(
       <AppShell
         graph={loadSeedGraph()}
         hasExplicitUrlState
         initialUrlState={{
           themeId: "energy",
-          mapMode: "point",
-          selectedId: null
+          selectedId: null,
+          layerId: "energy-supply",
+          mapModeOverride: null,
+          workspaceView: "signals"
         }}
       />
     );
@@ -565,8 +650,10 @@ describe("AppShell url sync", () => {
         graph={loadSeedGraph()}
         initialUrlState={{
           themeId: "rice",
-          mapMode: "point",
-          selectedId: null
+          selectedId: null,
+          layerId: "rice-harvest",
+          mapModeOverride: null,
+          workspaceView: "map"
         }}
       />
     );

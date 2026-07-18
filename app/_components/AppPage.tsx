@@ -14,7 +14,7 @@ export async function AppPage({ locale, searchParams }: AppPageProps) {
   const rankingSignals = loadSeedRankingSignals();
   const resolvedSearchParams = await searchParams;
   const initialUrlState = parseOperationsUrlState(resolvedSearchParams);
-  const hasExplicitUrlState = ["theme", "mode", "selected"].some((key) => {
+  const hasExplicitUrlState = ["theme", "layer", "mode", "view", "selected"].some((key) => {
     const value = resolvedSearchParams[key];
 
     return Array.isArray(value) ? value.some(Boolean) : Boolean(value);

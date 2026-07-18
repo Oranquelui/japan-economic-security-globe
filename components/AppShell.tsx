@@ -32,6 +32,12 @@ import {
 } from "../lib/presentation/url-state";
 import { getThemeLabel, localizeAnyLabel, localizeKind } from "../lib/presentation/japanese";
 import { getRouteStatus } from "../lib/presentation/route-status";
+import {
+  buildWorkspacePresentation,
+  getDefaultLayerDefinition,
+  getLayerDefinition,
+  resolveLegacyPresentation
+} from "../lib/presentation/workspace";
 import { summarizeSourceStatus } from "../lib/official/source-freshness";
 import { ActionBar } from "./ActionBar";
 import { EvidencePanel } from "./EvidencePanel";
@@ -76,26 +82,66 @@ export function AppShell({
   const homepageLead = !hasExplicitUrlState && homepageDecision
     ? buildHomepageLeadSelection(graph, rankingSignals, homepageDecision)
     : null;
+  const homepageThemeChanged = Boolean(homepageLead && homepageLead.themeId !== initialUrlState.themeId);
+  const resolvedInitialThemeId = homepageLead?.themeId ?? initialUrlState.themeId;
+  const resolvedInitialSelectedId = initialUrlState.selectedId
+    ?? (homepageThemeChanged ? homepageLead?.selectedId ?? null : null);
+  const initialView = getThemeView(graph, resolvedInitialThemeId);
+  const initialLiveLogistics = buildLiveLogisticsView(
+    resolvedInitialThemeId,
+    resolvedInitialSelectedId,
+    liveLogisticsEvents,
+    new Date(rankingNowRef.current)
+  );
+  const initialWorkspace = buildWorkspacePresentation(graph, initialView, initialLiveLogistics);
+  const requestedInitialLayer = getLayerDefinition(
+    resolvedInitialThemeId,
+    initialUrlState.layerId,
+    initialWorkspace
+  );
+  const initialPresentation = homepageThemeChanged
+    ? {
+        layer: getDefaultLayerDefinition(resolvedInitialThemeId, initialWorkspace),
+        mapModeOverride: null
+      }
+    : initialUrlState.mapModeOverride
+      ? resolveLegacyPresentation(
+          resolvedInitialThemeId,
+          initialUrlState.mapModeOverride,
+          initialWorkspace
+        )
+      : {
+          layer: requestedInitialLayer?.available
+            ? requestedInitialLayer
+            : getDefaultLayerDefinition(resolvedInitialThemeId, initialWorkspace),
+          mapModeOverride: null
+        };
   const resolvedInitialState: OperationsUrlState = {
-    themeId: homepageLead?.themeId ?? initialUrlState.themeId,
-    mapMode: initialUrlState.mapMode,
-    selectedId:
-      initialUrlState.selectedId
-      ?? (homepageLead && homepageLead.themeId !== initialUrlState.themeId ? homepageLead.selectedId : null)
+    themeId: resolvedInitialThemeId,
+    selectedId: resolvedInitialSelectedId,
+    layerId: initialPresentation.layer.id,
+    mapModeOverride: initialPresentation.mapModeOverride,
+    workspaceView: homepageThemeChanged ? "map" : initialUrlState.workspaceView
   };
   const [themeId, setThemeId] = useState<ThemeId>(resolvedInitialState.themeId);
   const [selectedId, setSelectedId] = useState<string | null>(resolvedInitialState.selectedId);
   const [mapPopupAnchor, setMapPopupAnchor] = useState<MapPopupAnchor | null>(null);
-  const [mapMode, setMapMode] = useState<OperationMapMode>(resolvedInitialState.mapMode);
+  const [layerId, setLayerId] = useState(resolvedInitialState.layerId);
+  const [mapModeOverride, setMapModeOverride] = useState<OperationMapMode | null>(
+    resolvedInitialState.mapModeOverride
+  );
+  const [workspaceView, setWorkspaceView] = useState(resolvedInitialState.workspaceView);
   const [searchQuery, setSearchQuery] = useState("");
   const [isInboxOpen, setInboxOpen] = useState(true);
-  const [isCompareOpen, setCompareOpen] = useState(false);
+  const [isCompareOpen, setCompareOpen] = useState(resolvedInitialState.workspaceView === "comparison");
   // Open evidence only when the URL explicitly pins a selection — not for homepage auto-lead.
   const [isEvidenceOpen, setEvidenceOpen] = useState(
     Boolean(hasExplicitUrlState && resolvedInitialState.selectedId)
   );
   const [, startTransition] = useTransition();
-  const initialSerializedRef = useRef(serializeOperationsUrlState(resolvedInitialState));
+  const initialSerializedRef = useRef(
+    serializeOperationsUrlState(homepageThemeChanged ? resolvedInitialState : initialUrlState)
+  );
   const view = getThemeView(graph, themeId);
   const sourceStatusSummary = summarizeSourceStatus(view.sources, new Date(rankingNowRef.current));
   const inboxDecision = rankingSignals.length
@@ -135,6 +181,16 @@ export function AppShell({
     : null;
   const watchOverlays = buildWatchOverlayItems(themeId, activeId, new Date(rankingNowRef.current));
   const liveLogistics = buildLiveLogisticsView(themeId, activeId, liveLogisticsEvents, new Date(rankingNowRef.current));
+  const workspace = buildWorkspacePresentation(graph, view, liveLogistics);
+  const requestedLayer = getLayerDefinition(themeId, layerId, workspace);
+  const activeLayer = requestedLayer?.available
+    ? requestedLayer
+    : getDefaultLayerDefinition(themeId, workspace);
+  const effectiveMapModeOverride = mapModeOverride === "choropleth" && activeLayer.renderMode !== "choropleth"
+    ? "point"
+    : mapModeOverride;
+  const desktopMapMode = effectiveMapModeOverride ?? activeLayer.renderMode;
+  const mobileMapMode = effectiveMapModeOverride ?? "point";
   const liveLogisticsDetailItem = liveLogistics?.items.find((item) => item.id === activeId) ?? null;
   const focusTargetId = validSelectedId;
   const detail = liveLogisticsDetailItem
@@ -164,8 +220,10 @@ export function AppShell({
   const themeLabel = getThemeLabel(themeId).label;
   const serializedState = serializeOperationsUrlState({
     themeId,
-    mapMode,
-    selectedId: validSelectedId
+    selectedId: validSelectedId,
+    layerId: activeLayer.id,
+    mapModeOverride: effectiveMapModeOverride,
+    workspaceView
   });
   const sharePath = serializedState ? `${pathname}?${serializedState}` : pathname;
   const shellStyle = {
@@ -197,10 +255,22 @@ export function AppShell({
   };
 
   useEffect(() => {
+    if (layerId !== activeLayer.id) {
+      setLayerId(activeLayer.id);
+    }
+
+    if (mapModeOverride !== effectiveMapModeOverride) {
+      setMapModeOverride(effectiveMapModeOverride);
+    }
+  }, [activeLayer.id, effectiveMapModeOverride, layerId, mapModeOverride]);
+
+  useEffect(() => {
     const serialized = serializeOperationsUrlState({
       themeId,
-      mapMode,
-      selectedId: validSelectedId
+      selectedId: validSelectedId,
+      layerId: activeLayer.id,
+      mapModeOverride: effectiveMapModeOverride,
+      workspaceView
     });
 
     if (serialized === initialSerializedRef.current) {
@@ -209,16 +279,44 @@ export function AppShell({
 
     initialSerializedRef.current = serialized;
     router.replace(serialized ? `${pathname}?${serialized}` : pathname, { scroll: false });
-  }, [mapMode, pathname, router, themeId, validSelectedId]);
+  }, [activeLayer.id, effectiveMapModeOverride, layerId, mapModeOverride, pathname, router, themeId, validSelectedId, workspaceView]);
 
   function handleThemeChange(nextThemeId: ThemeId) {
+    const nextView = getThemeView(graph, nextThemeId);
+    const nextLiveLogistics = buildLiveLogisticsView(
+      nextThemeId,
+      null,
+      liveLogisticsEvents,
+      new Date(rankingNowRef.current)
+    );
+    const nextWorkspace = buildWorkspacePresentation(graph, nextView, nextLiveLogistics);
+    const nextDefaultLayer = getDefaultLayerDefinition(nextThemeId, nextWorkspace);
+
     startTransition(() => {
       setThemeId(nextThemeId);
       setSelectedId(null);
+      setLayerId(nextDefaultLayer.id);
+      setMapModeOverride(null);
+      setWorkspaceView("map");
       setMapPopupAnchor(null);
       setSearchQuery("");
       setEvidenceOpen(false);
+      setCompareOpen(false);
     });
+  }
+
+  function handleMapModeChange(nextMapMode: OperationMapMode) {
+    const resolved = resolveLegacyPresentation(themeId, nextMapMode, workspace);
+
+    setLayerId(resolved.layer.id);
+    setMapModeOverride(resolved.mapModeOverride);
+  }
+
+  function handleCompareToggle() {
+    const nextIsOpen = !isCompareOpen;
+
+    setCompareOpen(nextIsOpen);
+    setWorkspaceView(nextIsOpen ? "comparison" : "map");
   }
 
   function handleSelect(nextSelectedId: string) {
@@ -282,9 +380,9 @@ export function AppShell({
               detailPopup={mapDetailPopup}
               focusTargetId={focusTargetId}
               mapDisclosure={mapDisclosure}
-              mapMode={mapMode}
+              mapMode={desktopMapMode}
               model={mapModel}
-              onMapModeChange={setMapMode}
+              onMapModeChange={handleMapModeChange}
               onOpenEvidence={() => setEvidenceOpen(true)}
               overlayInsets={mapOverlayInsets}
               onCloseDetail={handleCloseDetail}
@@ -372,7 +470,7 @@ export function AppShell({
               statusPalette={statusPalette}
               themeId={themeId}
               themePalette={themePalette}
-              onToggleCollapsed={() => setCompareOpen((value) => !value)}
+              onToggleCollapsed={handleCompareToggle}
             />
           </section>
         </div>
@@ -399,9 +497,9 @@ export function AppShell({
               detailPopup={mapDetailPopup}
               focusTargetId={focusTargetId}
               mapDisclosure={mapDisclosure}
-              mapMode={mapMode}
+              mapMode={mobileMapMode}
               model={mapModel}
-              onMapModeChange={setMapMode}
+              onMapModeChange={handleMapModeChange}
               onOpenEvidence={() => setEvidenceOpen(true)}
               overlayInsets={{
                 top: 16,
