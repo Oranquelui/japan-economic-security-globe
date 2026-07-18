@@ -535,6 +535,8 @@ describe("map canvas layer config", () => {
               label: "新潟県",
               lat: 37.9026,
               lon: 139.0236,
+              geometryKind: "prefecture-boundary",
+              prefectureCode: "JP-15",
               value: 100,
               rawValue: 514100,
               unit: "トン",
@@ -598,8 +600,25 @@ describe("map canvas layer config", () => {
         model={{
           ...model,
           regions: [
-            { id: "prefecture:niigata", label: "新潟県", lat: 37.9, lon: 139, value: null },
-            { id: "prefecture:hokkaido", label: "北海道", lat: 43.1, lon: 141.3, value: 0, rawValue: 0 }
+            {
+              id: "prefecture:niigata",
+              label: "新潟県",
+              lat: 37.9,
+              lon: 139,
+              geometryKind: "prefecture-boundary",
+              prefectureCode: "JP-15",
+              value: null
+            },
+            {
+              id: "prefecture:hokkaido",
+              label: "北海道",
+              lat: 43.1,
+              lon: 141.3,
+              geometryKind: "prefecture-boundary",
+              prefectureCode: "JP-01",
+              value: 0,
+              rawValue: 0
+            }
           ]
         }}
         onSelect={vi.fn()}
@@ -719,6 +738,7 @@ describe("map canvas layer config", () => {
               label: "東京都",
               lat: 35.6762,
               lon: 139.6503,
+              geometryKind: "representative-radius",
               value: 92,
               rawValue: 92,
               unit: "影響指数",

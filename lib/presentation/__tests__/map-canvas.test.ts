@@ -55,6 +55,7 @@ describe("japan map canvas model", () => {
     expect(niigata?.value).not.toBeNull();
     expect(niigata?.value ?? 0).toBeGreaterThan(osaka?.value ?? 0);
     expect(niigata).toMatchObject({
+      geometryKind: "representative-radius",
       rawValue: expect.any(Number),
       unit: "トン",
       periodLabel: "令和5年産",
@@ -255,12 +256,31 @@ describe("japan map canvas model", () => {
     expect(model.regions.filter((region) => region.rawValue !== undefined)).toHaveLength(47);
     expect(niigata.value ?? 0).toBeGreaterThan(hokkaido.value ?? 0);
     expect(niigata).toMatchObject({
+      geometryKind: "prefecture-boundary",
+      prefectureCode: "JP-15",
       rawValue: 514100,
       unit: "トン",
-      periodLabel: "令和5年産"
+      periodLabel: "令和5年産",
+      sourceIds: [
+        "source:estat-rice-prefecture-harvest-r5",
+        "source:natural-earth-admin1-japan-5-1-1"
+      ]
     });
     expect(model.routes).toEqual([]);
     expect(model.globalRoutes).toEqual([]);
+  });
+
+  test("keeps non-prefecture regional metrics on the representative-radius contract", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "water");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = workspace.layers.find((candidate) => candidate.id === "water-fill-rate")!;
+
+    const model = buildJapanMapCanvasModel(graph, view, "reservoir:ogouchi", layer, null);
+
+    expect(model.regions.length).toBeGreaterThan(0);
+    expect(model.regions.every((region) => region.geometryKind === "representative-radius")).toBe(true);
+    expect(model.regions.every((region) => region.prefectureCode === undefined)).toBe(true);
   });
 
   test("builds distinct selectable observation points for rice price and inventory policy", () => {
@@ -343,6 +363,13 @@ describe("japan map canvas model", () => {
 
       for (const layer of workspace.layers.filter((candidate) => candidate.available)) {
         const model = buildJapanMapCanvasModel(graph, view, activeId, layer, live);
+        expect(
+          [...model.regions, ...(model.logisticsImpactRegions ?? [])].every(
+            (region) => region.geometryKind === "prefecture-boundary"
+              || region.geometryKind === "representative-radius"
+          ),
+          `${themeId}/${layer.id}/geometryKind`
+        ).toBe(true);
         expect(
           visibleFeatureCount(layer.renderMode, model),
           `${themeId}/${layer.id}/${layer.renderMode}`

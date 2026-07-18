@@ -13,6 +13,7 @@ import type {
 } from "../../types/presentation";
 import type { LiveLogisticsViewModel } from "../../types/logistics";
 import type { SemanticGraph, ThemeId } from "../../types/semantic";
+import { NATURAL_EARTH_PREFECTURE_SOURCE_ID } from "../geo/prefecture-map";
 import { localizeAnyLabel } from "./japanese";
 import type { OperationMapMode } from "./operations";
 import { isRenderableMapRoute } from "./route-status";
@@ -43,10 +44,10 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "rice",
       label: "収穫量",
       description: "都道府県別の主食用米収穫量",
-      mapEncodingDescription: "都道府県の代表点の色と大きさで型付き主食用米収穫量を表します。行政区域ポリゴンではありません。",
+      mapEncodingDescription: "都道府県の一般化された地域形状を収穫量の濃淡で表示します。境界線と都道府県名から対象地域を確認できます。",
       renderMode: "choropleth",
       periodLabel: "令和5年産",
-      sourceIds: [RICE_HARVEST_SOURCE_ID],
+      sourceIds: [RICE_HARVEST_SOURCE_ID, NATURAL_EARTH_PREFECTURE_SOURCE_ID],
       legend: continuousLegend("主食用米収穫量", "トン"),
       available: true,
       content: {
@@ -415,7 +416,10 @@ export function buildActiveLayerSummary(
   void liveLogistics;
 
   const sources = layer.sourceIds.flatMap((sourceId) => {
-    const source = view.sources.find((candidate) => candidate.id === sourceId);
+    const source = view.sources.find((candidate) => candidate.id === sourceId)
+      ?? (sourceId === NATURAL_EARTH_PREFECTURE_SOURCE_ID
+        ? graph.sources.find((candidate) => candidate.id === sourceId)
+        : undefined);
     return source ? [source] : [];
   });
 

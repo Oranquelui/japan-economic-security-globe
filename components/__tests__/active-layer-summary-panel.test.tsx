@@ -56,13 +56,16 @@ function renderPanel(
 }
 
 describe("ActiveLayerSummaryPanel", () => {
-  test("renders the rice-harvest reading path and one directly linked official source", () => {
+  test("renders the rice-harvest reading path and ordered metric and geometry sources", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-07-18T00:00:00Z"));
 
     const graph = loadSeedGraph();
     const source = graph.sources.find(
       (candidate) => candidate.id === "source:estat-rice-prefecture-harvest-r5"
+    )!;
+    const geometrySource = graph.sources.find(
+      (candidate) => candidate.id === "source:natural-earth-admin1-japan-5-1-1"
     )!;
 
     renderPanel(graph, "rice", "rice-harvest");
@@ -74,14 +77,21 @@ describe("ActiveLayerSummaryPanel", () => {
     expect(screen.getByText("47都道府県")).toBeTruthy();
     expect(screen.getByText("令和5年産")).toBeTruthy();
     expect(screen.getByText("データなし")).toBeTruthy();
-    expect(screen.getByText(/代表点.*行政区域ポリゴンではありません/)).toBeTruthy();
-    expect(screen.getByText("公式")).toBeTruthy();
+    expect(screen.getByText(/都道府県の一般化された地域形状/)).toBeTruthy();
+    expect(screen.queryByText(/代表点|行政区域ポリゴン|精密/)).toBeNull();
+    expect(screen.getAllByText("公式")).toHaveLength(1);
     expect(screen.getByText("97日前確認")).toBeTruthy();
 
     const link = screen.getByRole("link", { name: source.label });
     expect(link.getAttribute("href")).toBe(source.url);
     expect(link.getAttribute("target")).toBe("_blank");
     expect(link.getAttribute("rel")).toBe("noreferrer");
+    expect(screen.getByRole("link", { name: geometrySource.label })).toBeTruthy();
+    const sourceItems = screen.getAllByTestId("active-layer-source");
+    expect(sourceItems.map((item) => item.textContent)).toEqual([
+      expect.stringContaining(source.label),
+      expect.stringContaining(geometrySource.label)
+    ]);
   });
 
   test("renders every active source in sourceIds order", () => {

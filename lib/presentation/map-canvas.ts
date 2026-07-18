@@ -1,6 +1,7 @@
 import type { LayerDefinition, ThemeView } from "../../types/presentation";
 import type { LiveLogisticsViewModel } from "../../types/logistics";
 import type { DependencyFlow, Observation, SemanticEntity, SemanticGraph } from "../../types/semantic";
+import { prefectureBoundaryByEntityId } from "../geo/prefecture-boundaries";
 import { localizeAnyLabel } from "./japanese";
 import { isRenderableMapRoute } from "./route-status";
 
@@ -27,6 +28,8 @@ export type JapanMapRegion = {
   label: string;
   lat: number;
   lon: number;
+  geometryKind: "prefecture-boundary" | "representative-radius";
+  prefectureCode?: `JP-${string}`;
   value: number | null;
   rawValue?: number;
   unit?: string;
@@ -151,6 +154,7 @@ function buildThemeWideMapCanvasModel(
       label: localizeAnyLabel(candidate.entity.id, candidate.entity.label),
       lat: candidate.entity.coordinates!.lat,
       lon: candidate.entity.coordinates!.lon,
+      geometryKind: "representative-radius" as const,
       value: normalizedValue,
       ...(hasMetric ? { rawValue: candidate.metric } : {}),
       ...(view.id === "rice"
@@ -211,20 +215,35 @@ function buildRegionalMetricMapCanvasModel(
     view.id
   );
   let normalizedIndex = 0;
+  const usesPrefectureBoundary = entityKind === "Prefecture";
 
   return {
     ...emptyMapCanvasModel(),
-    regions: candidates.map(({ entity, metric }) => ({
-      id: entity.id,
-      label: localizeAnyLabel(entity.id, entity.label),
-      lat: entity.coordinates!.lat,
-      lon: entity.coordinates!.lon,
-      value: metric === undefined ? null : normalized[normalizedIndex++],
-      ...(metric === undefined ? {} : { rawValue: metric }),
-      ...(layer.legend.unit ? { unit: layer.legend.unit } : {}),
-      periodLabel: layer.periodLabel,
-      sourceIds: layer.sourceIds
-    }))
+    regions: candidates.map(({ entity, metric }) => {
+      const boundary = usesPrefectureBoundary
+        ? prefectureBoundaryByEntityId.get(entity.id as `prefecture:${string}`)
+        : undefined;
+
+      if (usesPrefectureBoundary && !boundary) {
+        throw new Error(`Missing prefecture boundary for entityId: ${entity.id}`);
+      }
+
+      return {
+        id: entity.id,
+        label: localizeAnyLabel(entity.id, entity.label),
+        lat: entity.coordinates!.lat,
+        lon: entity.coordinates!.lon,
+        geometryKind: usesPrefectureBoundary
+          ? "prefecture-boundary" as const
+          : "representative-radius" as const,
+        ...(boundary ? { prefectureCode: boundary.properties.prefectureCode } : {}),
+        value: metric === undefined ? null : normalized[normalizedIndex++],
+        ...(metric === undefined ? {} : { rawValue: metric }),
+        ...(layer.legend.unit ? { unit: layer.legend.unit } : {}),
+        periodLabel: layer.periodLabel,
+        sourceIds: layer.sourceIds
+      };
+    })
   };
 }
 

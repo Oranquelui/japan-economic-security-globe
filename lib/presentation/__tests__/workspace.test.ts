@@ -132,7 +132,10 @@ describe("buildWorkspacePresentation", () => {
     expect(workspace.layers[0]).toMatchObject({
       renderMode: "choropleth",
       periodLabel: "令和5年産",
-      sourceIds: ["source:estat-rice-prefecture-harvest-r5"]
+      sourceIds: [
+        "source:estat-rice-prefecture-harvest-r5",
+        "source:natural-earth-admin1-japan-5-1-1"
+      ]
     });
   });
 
@@ -181,9 +184,11 @@ describe("workspace layer registry", () => {
   test("resolves semantic and legacy layers without retaining unsupported choropleths", () => {
     expect(getLayerDefinition("energy", "energy-route")?.renderMode).toBe("route");
     expect(getLayerDefinition("energy", "rice-harvest")).toBeNull();
-    expect(getLayerDefinition("rice", "rice-harvest")?.mapEncodingDescription).toMatch(
-      /代表点.*行政区域ポリゴンではありません/
+    const riceHarvestCopy = getLayerDefinition("rice", "rice-harvest")?.mapEncodingDescription;
+    expect(riceHarvestCopy).toBe(
+      "都道府県の一般化された地域形状を収穫量の濃淡で表示します。境界線と都道府県名から対象地域を確認できます。"
     );
+    expect(riceHarvestCopy).not.toMatch(/代表点|行政区域ポリゴン|精密/);
     expect(getLayerDefinition("logistics", "logistics-domestic")?.mapEncodingDescription).toMatch(
       /固定デモデータ.*ライブ/
     );
@@ -381,7 +386,8 @@ describe("active layer summary", () => {
     );
 
     expect(riceHarvest.sources.map((source) => source.id)).toEqual([
-      "source:estat-rice-prefecture-harvest-r5"
+      "source:estat-rice-prefecture-harvest-r5",
+      "source:natural-earth-admin1-japan-5-1-1"
     ]);
     expect(riceInventory.sources.map((source) => source.id)).toEqual(
       riceInventoryLayer.sourceIds
