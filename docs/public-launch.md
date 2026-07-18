@@ -90,7 +90,7 @@ Result: 1 test passed in 12.8 seconds, and port 3101 had no listener after Playw
 - Keyboard zoom changed 5.3 to 6.2678, and the recenter control returned the same map to zoom 5.3.
 - The fixture-only missing-value test proved a neutral polygon fill, border, and label instead of zero-value styling or a circle fallback.
 - At 1024x768 and 390x844, the smoke check found no horizontal overflow, crash, precision inset, or circle fallback. Desktop 47-label cartography was not forced into those layouts. Their existing point-centric presentation is retained; this is not a claim that Mobile redesign is complete.
-- `/sources-license` visibly retained the official, open-data, Natural Earth, and private-company source groupings.
+- The 1440x900 `/sources-license` capture was positioned at the open-data section so one frame visibly includes the `公開・オープンデータ` heading, the Natural Earth entry with its rights and boundary limitation, and the `民間企業ソース` grouping.
 
 Application logic console errors: 0. Page errors: 0. Local application request failures: 0. Other external presentation request failures: 0. During real pan, zoom, and page changes, Chromium recorded 53 Esri raster requests ending in `net::ERR_ABORTED` and MapLibre emitted 44 corresponding external-raster console messages: 7 Light Gray Base, 26 Shaded Relief, and 20 Terrain Base requests were superseded. These are recorded separately as third-party raster transport cancellations, not reclassified as application errors. Every accepted map screenshot independently passed the bounded `tilesLoaded: true` readiness gate.
 
@@ -108,7 +108,7 @@ Application logic console errors: 0. Page errors: 0. Local application request f
 | `prefecture-choropleth-kansai.png` | 1440x900 | `e9888e1ef6df3d177f36b7ffacbd6f0e763bb0de3f68f4a82e089a5b0c327e8a` |
 | `prefecture-choropleth-regression-1024x768.png` | 1024x768 | `241e30a3691fee10aca62d478e2e118d509e4aa01a32a0491969183ce21b1cda` |
 | `prefecture-choropleth-regression-390x844.png` | 390x844 | `f1b8fb6666d2066585364cd557a6b6491e503e272eb59a53f779fe35c39a4206` |
-| `prefecture-choropleth-sources-license.png` | 1440x900 | `cf84f8f42bb31a350298ce8d522c971ff28653d82f232d2b8ab61bb16dd68b79` |
+| `prefecture-choropleth-sources-license.png` | 1440x900 | `02d4d1bd23f9079478c5e3bb556fd8c9e385d7d703b93e260de50c887cdb761a` |
 
 All eleven hashes are unique.
 
