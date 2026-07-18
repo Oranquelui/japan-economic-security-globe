@@ -1,6 +1,6 @@
-import type { ThemeView } from "../../types/presentation";
+import type { LayerDefinition, ThemeView } from "../../types/presentation";
 import type { LiveLogisticsViewModel } from "../../types/logistics";
-import type { DependencyFlow, SemanticEntity, SemanticGraph } from "../../types/semantic";
+import type { DependencyFlow, Observation, SemanticEntity, SemanticGraph } from "../../types/semantic";
 import { localizeAnyLabel } from "./japanese";
 import { isRenderableMapRoute } from "./route-status";
 
@@ -72,6 +72,31 @@ export type JapanMapCanvasModel = {
 };
 
 export function buildJapanMapCanvasModel(
+  graph: SemanticGraph,
+  view: ThemeView,
+  activeId: string,
+  layer: LayerDefinition | null,
+  liveLogistics?: LiveLogisticsViewModel | null
+): JapanMapCanvasModel {
+  if (layer?.content.kind === "theme-composite" || layer === null) {
+    return buildThemeWideMapCanvasModel(graph, view, activeId, liveLogistics);
+  }
+
+  switch (layer.content.kind) {
+    case "regional-metric":
+      return buildRegionalMetricMapCanvasModel(view, layer);
+    case "observations":
+      return buildObservationMapCanvasModel(graph, layer);
+    case "flows":
+      return buildFlowMapCanvasModel(graph, view, activeId, layer);
+    case "entities":
+      return buildEntityMapCanvasModel(view, layer);
+    case "live-logistics":
+      return buildLiveLogisticsMapCanvasModel(graph, view, layer, liveLogistics);
+  }
+}
+
+function buildThemeWideMapCanvasModel(
   graph: SemanticGraph,
   view: ThemeView,
   activeId: string,
@@ -168,6 +193,217 @@ export function buildJapanMapCanvasModel(
     logisticsImpactCorridors,
     foreignWindow: buildForeignWindow(graph, routeScopedFlows, activeId)
   };
+}
+
+function buildRegionalMetricMapCanvasModel(
+  view: ThemeView,
+  layer: LayerDefinition
+): JapanMapCanvasModel {
+  if (layer.content.kind !== "regional-metric") {
+    return emptyMapCanvasModel();
+  }
+
+  const { entityKind, property } = layer.content;
+  const candidates = view.entities
+    .filter((entity) => entity.kind === entityKind && entity.coordinates)
+    .map((entity) => ({
+      entity,
+      metric: typeof entity.properties?.[property] === "number"
+        ? entity.properties[property] as number
+        : undefined
+    }));
+  const normalized = normalizeRegionalMetrics(
+    candidates.flatMap((candidate) => candidate.metric === undefined ? [] : [candidate.metric]),
+    view.id
+  );
+  let normalizedIndex = 0;
+
+  return {
+    ...emptyMapCanvasModel(),
+    regions: candidates.map(({ entity, metric }) => ({
+      id: entity.id,
+      label: localizeAnyLabel(entity.id, entity.label),
+      lat: entity.coordinates!.lat,
+      lon: entity.coordinates!.lon,
+      value: metric === undefined ? null : normalized[normalizedIndex++],
+      ...(metric === undefined ? {} : { rawValue: metric }),
+      ...(layer.legend.unit ? { unit: layer.legend.unit } : {}),
+      periodLabel: layer.periodLabel,
+      sourceIds: layer.sourceIds
+    }))
+  };
+}
+
+function buildObservationMapCanvasModel(
+  graph: SemanticGraph,
+  layer: LayerDefinition
+): JapanMapCanvasModel {
+  if (layer.content.kind !== "observations") {
+    return emptyMapCanvasModel();
+  }
+
+  const observationIds = new Set(layer.content.observationIds);
+  const japan = graph.entities.find((entity) => entity.id === "country:japan" && entity.coordinates);
+  const points = graph.observations
+    .filter((observation) => observationIds.has(observation.id))
+    .flatMap((observation): JapanMapPoint[] => {
+      const subject = graph.entities.find(
+        (entity) => entity.id === observation.subjectId && entity.coordinates
+      );
+      const anchor = subject ?? japan;
+
+      if (!anchor?.coordinates) {
+        return [];
+      }
+
+      return [{
+        id: observation.id,
+        kind: observation.kind,
+        label: localizeAnyLabel(observation.id, observation.label),
+        lat: anchor.coordinates.lat,
+        lon: anchor.coordinates.lon,
+        metaLabel: formatObservationMetaLabel(observation),
+        selectionId: observation.id,
+        tone: "watch"
+      }];
+    });
+
+  return { ...emptyMapCanvasModel(), points };
+}
+
+function buildFlowMapCanvasModel(
+  graph: SemanticGraph,
+  view: ThemeView,
+  activeId: string,
+  layer: LayerDefinition
+): JapanMapCanvasModel {
+  if (layer.content.kind !== "flows") {
+    return emptyMapCanvasModel();
+  }
+
+  const listedIds = layer.content.flowIds === "theme" ? null : new Set(layer.content.flowIds);
+  const flows = view.flows.filter(
+    (flow) => (listedIds === null || listedIds.has(flow.id)) && isRenderableMapRoute(flow)
+  );
+  const japanEntity = graph.entities.find((entity) => entity.id === "country:japan");
+  const points = dedupeById(
+    flows
+      .flatMap((flow) => resolveDomesticSequence(graph, flow.routeIds))
+      .map((entity) => toPoint(entity, classifyDomesticTone(entity)))
+  );
+  const routes = flows
+    .map((flow) => {
+      const sequence = resolveDomesticSequence(graph, flow.routeIds);
+      return sequence.length < 2
+        ? null
+        : {
+            id: flow.id,
+            label: localizeAnyLabel(flow.id, flow.label),
+            pointIds: sequence.map((entity) => entity.id),
+            relatedIds: [flow.id, flow.originId, flow.destinationId, ...flow.routeIds]
+          };
+    })
+    .filter((route): route is JapanMapRoute => route !== null);
+  const globalPoints = buildGlobalPoints(flows, graph, japanEntity);
+
+  return {
+    ...emptyMapCanvasModel(),
+    points,
+    routes,
+    globalPoints,
+    globalRoutes: buildGlobalRoutes(flows, graph, globalPoints, japanEntity),
+    foreignWindow: buildForeignWindow(graph, flows, activeId)
+  };
+}
+
+function buildEntityMapCanvasModel(
+  view: ThemeView,
+  layer: LayerDefinition
+): JapanMapCanvasModel {
+  if (layer.content.kind !== "entities") {
+    return emptyMapCanvasModel();
+  }
+
+  const kinds = new Set(layer.content.entityKinds);
+  const points = view.entities
+    .filter((entity) => kinds.has(entity.kind) && entity.coordinates)
+    .map((entity) => toPoint(entity, classifyDomesticTone(entity)));
+
+  return { ...emptyMapCanvasModel(), points: dedupeById(points) };
+}
+
+function buildLiveLogisticsMapCanvasModel(
+  graph: SemanticGraph,
+  view: ThemeView,
+  layer: LayerDefinition,
+  liveLogistics?: LiveLogisticsViewModel | null
+): JapanMapCanvasModel {
+  if (layer.content.kind !== "live-logistics" || !liveLogistics) {
+    return emptyMapCanvasModel();
+  }
+
+  if (layer.content.view === "arrival") {
+    return {
+      ...emptyMapCanvasModel(),
+      liveVessels: buildLiveVessels(liveLogistics)
+    };
+  }
+
+  if (layer.content.view === "impact") {
+    return {
+      ...emptyMapCanvasModel(),
+      logisticsImpactRegions: buildLogisticsImpactRegions(graph, view.id),
+      logisticsImpactCorridors: buildLogisticsImpactCorridors(view.id)
+    };
+  }
+
+  const liveRoutes = buildLiveRoutes(liveLogistics, graph, view.id);
+  return {
+    ...emptyMapCanvasModel(),
+    livePoints: buildLivePoints(liveRoutes, graph),
+    liveRoutes
+  };
+}
+
+function emptyMapCanvasModel(): JapanMapCanvasModel {
+  return {
+    points: [],
+    routes: [],
+    regions: [],
+    globalPoints: [],
+    globalRoutes: [],
+    livePoints: [],
+    liveRoutes: [],
+    liveVessels: [],
+    logisticsImpactRegions: [],
+    logisticsImpactRoutes: [],
+    logisticsImpactCorridors: []
+  };
+}
+
+const observationNumberFormatter = new Intl.NumberFormat("ja-JP");
+
+function formatObservationMetaLabel(observation: Observation) {
+  const value = typeof observation.value === "number"
+    ? observationNumberFormatter.format(observation.value)
+    : observation.value;
+  return [value, localizeObservationUnit(observation.unit), observation.period]
+    .filter(Boolean)
+    .join(" / ");
+}
+
+function localizeObservationUnit(unit: string | undefined) {
+  if (!unit) {
+    return undefined;
+  }
+
+  const labels: Record<string, string> = {
+    "10k_genmai_tons": "万玄米トン",
+    jpy_per_60kg: "円/玄米60kg",
+    qualitative: "定性",
+    percent: "%"
+  };
+  return labels[unit] ?? unit;
 }
 
 export function hasLogisticsImpactGeometry(

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import type { HomepageMode } from "../lib/config/homepage-mode";
 import type { LiveLogisticsEvent } from "../types/logistics";
-import type { MapPopupAnchor, ThemeView } from "../types/presentation";
+import type { MapPopupAnchor, SemanticLayerId, ThemeView } from "../types/presentation";
 import type { RankingSignal } from "../types/ranking";
 import { THEME_IDS, type SemanticGraph, type ThemeId } from "../types/semantic";
 import { buildRankingDecision } from "../lib/ranking/decision";
@@ -50,6 +50,7 @@ import { MapInboxPanel } from "./MapInboxPanel";
 import { NavigationRail } from "./NavigationRail";
 import { OperationsSignalTable } from "./OperationsSignalTable";
 import { SourceStatusBar } from "./SourceStatusBar";
+import { ScopeContextPanel } from "./ScopeContextPanel";
 import { WatchboardBriefing } from "./WatchboardBriefing";
 
 interface AppShellProps {
@@ -188,11 +189,8 @@ export function AppShell({
   const activeLayer = requestedLayer?.available
     ? requestedLayer
     : getDefaultLayerDefinition(themeId, workspace);
-  const effectiveMapModeOverride = mapModeOverride === "choropleth" && activeLayer.renderMode !== "choropleth"
-    ? "point"
-    : mapModeOverride;
-  const desktopMapMode = effectiveMapModeOverride ?? activeLayer.renderMode;
-  const mobileMapMode = effectiveMapModeOverride ?? "point";
+  const desktopMapMode = mapModeOverride ?? activeLayer.renderMode;
+  const mobileMapMode = mapModeOverride ?? "point";
   const liveLogisticsDetailItem = liveLogistics?.items.find((item) => item.id === activeId) ?? null;
   const focusTargetId = validSelectedId;
   const detail = liveLogisticsDetailItem
@@ -201,7 +199,16 @@ export function AppShell({
   const evidenceGraph = buildEvidenceGraph(graph, themeId);
   const selectionInspector = buildSelectionInspector(graph, activeId, detail);
   const routeStatus = getRouteStatus(detail);
-  const mapModel = buildJapanMapCanvasModel(graph, view, activeId, liveLogistics);
+  const legacyMapModel = buildJapanMapCanvasModel(graph, view, activeId, null, liveLogistics);
+  const semanticDesktopMapModel = buildJapanMapCanvasModel(
+    graph,
+    view,
+    activeId,
+    activeLayer,
+    liveLogistics
+  );
+  const desktopMapModel = mapModeOverride ? legacyMapModel : semanticDesktopMapModel;
+  const mobileMapModel = legacyMapModel;
   const mapDisclosure =
     themeId === "regional-security"
       ? {
@@ -225,7 +232,7 @@ export function AppShell({
     themeId,
     selectedId: validSelectedId,
     layerId: activeLayer.id,
-    mapModeOverride: effectiveMapModeOverride,
+    mapModeOverride,
     workspaceView
   });
   const sharePath = serializedState ? `${pathname}?${serializedState}` : pathname;
@@ -260,18 +267,14 @@ export function AppShell({
     if (layerId !== activeLayer.id) {
       setLayerId(activeLayer.id);
     }
-
-    if (mapModeOverride !== effectiveMapModeOverride) {
-      setMapModeOverride(effectiveMapModeOverride);
-    }
-  }, [activeLayer.id, effectiveMapModeOverride, layerId, mapModeOverride]);
+  }, [activeLayer.id, layerId]);
 
   useEffect(() => {
     const serialized = serializeOperationsUrlState({
       themeId,
       selectedId: validSelectedId,
       layerId: activeLayer.id,
-      mapModeOverride: effectiveMapModeOverride,
+      mapModeOverride,
       workspaceView
     });
 
@@ -281,7 +284,7 @@ export function AppShell({
 
     initialSerializedRef.current = serialized;
     router.replace(serialized ? `${pathname}?${serialized}` : pathname, { scroll: false });
-  }, [activeLayer.id, effectiveMapModeOverride, layerId, mapModeOverride, pathname, router, themeId, validSelectedId, workspaceView]);
+  }, [activeLayer.id, layerId, mapModeOverride, pathname, router, themeId, validSelectedId, workspaceView]);
 
   function handleThemeChange(nextThemeId: ThemeId) {
     const nextView = getThemeView(graph, nextThemeId);
@@ -312,6 +315,27 @@ export function AppShell({
 
     setLayerId(resolved.layer.id);
     setMapModeOverride(resolved.mapModeOverride);
+  }
+
+  function handleLayerChange(nextLayerId: SemanticLayerId) {
+    const nextLayer = getLayerDefinition(themeId, nextLayerId, workspace);
+
+    if (!nextLayer?.available) {
+      return;
+    }
+
+    setLayerId(nextLayer.id);
+    setMapModeOverride(null);
+  }
+
+  function handleOpenSignals() {
+    setCompareOpen(false);
+    setWorkspaceView("signals");
+  }
+
+  function handleOpenComparison() {
+    setCompareOpen(true);
+    setWorkspaceView("comparison");
   }
 
   function handleCompareToggle() {
@@ -367,8 +391,7 @@ export function AppShell({
               focusTargetId={focusTargetId}
               mapDisclosure={mapDisclosure}
               mapMode={desktopMapMode}
-              model={mapModel}
-              onMapModeChange={handleMapModeChange}
+              model={desktopMapModel}
               overlayInsets={mapOverlayInsets}
               onCloseDetail={handleCloseDetail}
               onSelect={handleMapSelect}
@@ -409,18 +432,14 @@ export function AppShell({
                 background: themePalette.surfacePanel
               }}
             >
-              <MapInboxPanel
-                activeId={activeId}
-                briefing={watchboardBriefing}
-                onQueryChange={setSearchQuery}
-                onSelect={handleSelect}
-                query={searchQuery}
-                rows={filteredOperationRows}
-                liveLogistics={liveLogistics}
-                themeId={themeId}
-                themeLabel={themeLabel}
+              <ScopeContextPanel
+                activeLayerId={activeLayer.id}
+                onLayerChange={handleLayerChange}
+                onOpenComparison={handleOpenComparison}
+                onOpenSignals={handleOpenSignals}
+                sources={view.sources}
                 themePalette={themePalette}
-                watchOverlays={watchOverlays}
+                workspace={workspace}
               />
             </aside>
           ) : null}
@@ -495,7 +514,7 @@ export function AppShell({
               focusTargetId={focusTargetId}
               mapDisclosure={mapDisclosure}
               mapMode={mobileMapMode}
-              model={mapModel}
+              model={mobileMapModel}
               onMapModeChange={handleMapModeChange}
               onOpenEvidence={() => setEvidenceOpen(true)}
               overlayInsets={{

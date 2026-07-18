@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
@@ -66,6 +66,9 @@ vi.mock("../NavigationRail", () => ({
       <button type="button" onClick={() => onThemeChange("rice")}>
         change-theme-rice
       </button>
+      <button type="button" onClick={() => onThemeChange("energy")}>
+        change-theme-energy
+      </button>
     </div>
   )
 }));
@@ -90,7 +93,15 @@ vi.mock("../JapanMainMap", () => ({
     } | null;
     focusTargetId: string | null;
     mapMode: OperationMapMode;
-    model?: { liveRoutes?: unknown[] };
+    model?: {
+      liveRoutes?: unknown[];
+      points?: Array<{ selectionId?: string }>;
+      globalPoints?: Array<{ selectionId?: string }>;
+      livePoints?: Array<{ selectionId?: string }>;
+      liveVessels?: Array<{ selectionId?: string }>;
+      regions?: unknown[];
+      logisticsImpactRegions?: unknown[];
+    };
     onMapModeChange?: (mode: OperationMapMode) => void;
     onOpenEvidence?: () => void;
     overlayInsets?: { right: number };
@@ -104,18 +115,28 @@ vi.mock("../JapanMainMap", () => ({
       data-focus={focusTargetId ?? ""}
       data-live-routes={model?.liveRoutes?.length ?? 0}
       data-mode={mapMode}
+      data-points={(model?.points?.length ?? 0) + (model?.globalPoints?.length ?? 0) + (model?.livePoints?.length ?? 0) + (model?.liveVessels?.length ?? 0)}
+      data-regions={(model?.regions?.length ?? 0) + (model?.logisticsImpactRegions?.length ?? 0)}
+      data-selection-ids={[
+        ...(model?.points ?? []),
+        ...(model?.globalPoints ?? []),
+        ...(model?.livePoints ?? []),
+        ...(model?.liveVessels ?? [])
+      ].flatMap((point) => point.selectionId ?? []).join(",")}
       data-overlay-right={overlayInsets?.right ?? ""}
       data-ranking={detailPopup?.rankingExplanation?.rankLabel ?? ""}
       data-watch-overlays={watchOverlays.length}
     >
-      <div data-testid="map-layer-controls">
-        <button type="button" onClick={() => onMapModeChange?.("cluster")}>
-          集約
-        </button>
-        <button type="button" onClick={() => onMapModeChange?.("point")}>
-          地点
-        </button>
-      </div>
+      {onMapModeChange ? (
+        <div data-testid="map-layer-controls">
+          <button type="button" onClick={() => onMapModeChange("cluster")}>
+            集約
+          </button>
+          <button type="button" onClick={() => onMapModeChange("point")}>
+            地点
+          </button>
+        </div>
+      ) : null}
       {detailPopup && onOpenEvidence ? (
         <button type="button" onClick={onOpenEvidence}>
           根拠パネルを開く
@@ -282,7 +303,7 @@ describe("AppShell url sync", () => {
     expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
     expect(screen.getByTestId("layout-map-section")).toBeTruthy();
     expect(screen.queryByTestId("layout-watchboard-overlay")).toBeNull();
-    expect(screen.getByTestId("inbox-watchboard")).toBeTruthy();
+    expect(within(desktopWorkspace).getByTestId("scope-context-panel")).toBeTruthy();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-watch-overlays")).toBe("0");
     expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
     expect(screen.queryByTestId("layout-context-inspector")).toBeNull();
@@ -292,7 +313,9 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("yes");
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(withinActionBar().queryByText("表示レイヤー")).toBeNull();
-    expect(screen.getAllByTestId("map-layer-controls").length).toBeGreaterThan(0);
+    expect(within(desktopWorkspace).queryByTestId("map-layer-controls")).toBeNull();
+    expect(screen.getAllByTestId("map-layer-controls")).toHaveLength(1);
+    expect(screen.getAllByTestId("inbox")).toHaveLength(1);
   });
 
   test("shows the initial notice only when homepage mode is app", async () => {
@@ -340,10 +363,76 @@ describe("AppShell url sync", () => {
   test("uses the default semantic layer mode and does not focus the fallback active item on first load", () => {
     render(<AppShell graph={loadSeedGraph()} />);
 
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    expect(within(desktop).getByRole("button", { name: "収穫量" })).toBeTruthy();
+    expect(within(desktop).getByRole("button", { name: "価格" })).toBeTruthy();
+    expect(within(desktop).getByRole("button", { name: "在庫・政策" })).toBeTruthy();
+    expect(within(desktop).getByRole("button", { name: "物流・投入コスト" })).toBeTruthy();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("choropleth");
+    expect(Number(screen.getAllByTestId("map")[0].getAttribute("data-regions"))).toBeGreaterThan(0);
+    expect(screen.getAllByTestId("map")[1].getAttribute("data-mode")).toBe("point");
+    expect(Number(screen.getAllByTestId("map")[1].getAttribute("data-points"))).toBeGreaterThan(0);
     // Public spine default theme is rice; first selectable rice signal/entity is the fallback active.
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/^(observation:|flow:|prefecture:|product:)/);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
+  });
+
+  test("changes the desktop semantic layer and exposes distinct rice observation features", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    await user.click(within(desktop).getByRole("button", { name: "価格" }));
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("point");
+      expect(screen.getAllByTestId("map")[0].getAttribute("data-selection-ids")).toBe(
+        "observation:rice-price-signal-2026"
+      );
+      expect(replaceMock).toHaveBeenLastCalledWith("/?layer=rice-price", { scroll: false });
+    });
+
+    await user.click(within(desktop).getByRole("button", { name: "在庫・政策" }));
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId("map")[0].getAttribute("data-selection-ids")).toBe(
+        "observation:rice-private-inventory-feb-2026,observation:rice-stockpile-policy-2026"
+      );
+      expect(replaceMock).toHaveBeenLastCalledWith("/?layer=rice-inventory-policy", { scroll: false });
+    });
+  });
+
+  test("routes scope actions to explicit secondary workspace views", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    await user.click(within(desktop).getByRole("button", { name: "シグナルを見る" }));
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenLastCalledWith("/?view=signals", { scroll: false });
+    });
+
+    await user.click(within(desktop).getByRole("button", { name: "比較する" }));
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenLastCalledWith("/?view=comparison", { scroll: false });
+      expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
+    });
+  });
+
+  test("chooses the runtime default layer when the theme changes", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    await user.click(screen.getAllByText("change-theme-energy")[0]);
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("point");
+      expect(replaceMock).toHaveBeenLastCalledWith("/?theme=energy", { scroll: false });
+    });
+    expect(screen.getByRole("button", { name: "供給拠点" }).getAttribute("aria-pressed")).toBe("true");
   });
 
   test("disables pointer hits on the closed inbox pane and reopens it from the rail toggle", async () => {
@@ -527,7 +616,7 @@ describe("AppShell url sync", () => {
       />
     );
 
-    expect(screen.getAllByTestId("inbox-live-logistics").map((element) => element.getAttribute("data-count"))).toEqual(["1", "1"]);
+    expect(screen.getAllByTestId("inbox-live-logistics").map((element) => element.getAttribute("data-count"))).toEqual(["1"]);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-live-routes")).toBe("1");
   });
 

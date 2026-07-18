@@ -1,15 +1,19 @@
 import { describe, expect, test } from "vitest";
 
-import { loadSeedGraph } from "../../data/seed-loader";
+import type { LiveLogisticsViewModel } from "../../../types/logistics";
+import { THEME_IDS } from "../../../types/semantic";
+import { loadSeedGraph, loadSeedLiveLogistics } from "../../data/seed-loader";
+import { buildLiveLogisticsView } from "../live-logistics";
 import { getThemeView } from "../../semantic/selectors";
 import { buildJapanMapCanvasModel } from "../map-canvas";
+import { buildWorkspacePresentation, resolveLegacyPresentation } from "../workspace";
 
 describe("japan map canvas model", () => {
   test("starts Japan-first but prepares global overlay points and routes for zoom-out", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "energy");
 
-    const model = buildJapanMapCanvasModel(graph, view, "flow:qatar-lng-japan");
+    const model = buildJapanMapCanvasModel(graph, view, "flow:qatar-lng-japan", null, null);
 
     expect(model.points.map((point) => point.id)).toEqual(
       expect.arrayContaining(["terminal:sodegaura-lng", "prefecture:tokyo"])
@@ -29,7 +33,7 @@ describe("japan map canvas model", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "rice");
 
-    const model = buildJapanMapCanvasModel(graph, view, "observation:rice-price-signal-2026");
+    const model = buildJapanMapCanvasModel(graph, view, "observation:rice-price-signal-2026", null, null);
     const ricePrefecturePoints = model.points.filter((point) => point.id.startsWith("prefecture:"));
 
     expect(model.points.map((point) => point.id)).toEqual(
@@ -69,7 +73,7 @@ describe("japan map canvas model", () => {
     expect(entity?.coordinates).toBeDefined();
     delete entity?.properties?.[property];
 
-    const model = buildJapanMapCanvasModel(graph, getThemeView(graph, themeId), entity!.id);
+    const model = buildJapanMapCanvasModel(graph, getThemeView(graph, themeId), entity!.id, null, null);
     const region = model.regions.find((candidate) => candidate.id === entity!.id);
 
     expect(region).toBeDefined();
@@ -82,7 +86,9 @@ describe("japan map canvas model", () => {
     const model = buildJapanMapCanvasModel(
       graph,
       getThemeView(graph, "energy"),
-      "observation:lng-electricity-april-2026"
+      "observation:lng-electricity-april-2026",
+      null,
+      null
     );
 
     expect(model.regions).toEqual([]);
@@ -92,7 +98,7 @@ describe("japan map canvas model", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "rice");
 
-    const model = buildJapanMapCanvasModel(graph, view, "observation:rice-stockpile-policy-2026");
+    const model = buildJapanMapCanvasModel(graph, view, "observation:rice-stockpile-policy-2026", null, null);
 
     expect(model.routes).toHaveLength(0);
     expect(model.globalRoutes).toHaveLength(0);
@@ -103,7 +109,7 @@ describe("japan map canvas model", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "rice");
 
-    const model = buildJapanMapCanvasModel(graph, view, "flow:energy-inputs-rice");
+    const model = buildJapanMapCanvasModel(graph, view, "flow:energy-inputs-rice", null, null);
 
     expect(model.routes).toHaveLength(0);
     expect(model.globalRoutes).toHaveLength(0);
@@ -113,9 +119,7 @@ describe("japan map canvas model", () => {
   test("adds live logistics routes and route-only points to the map model", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "logistics");
-    const liveLogistics = {
-      mapVessels: [],
-      mapRoutes: [
+    const liveLogistics = liveLogisticsFixture([
         {
           id: "live-logistics:container-asia-yokohama",
           label: "コンテナ一般貨物: 東アジア → 横浜港 → 首都圏配送",
@@ -128,69 +132,73 @@ describe("japan map canvas model", () => {
           pointIds: ["port:yokohama", "prefecture:tokyo"],
           relatedIds: ["flow:japan-linked-maritime-watch"]
         }
-      ]
-    };
+      ]);
 
-    const model = (buildJapanMapCanvasModel as any)(
+    const model = buildJapanMapCanvasModel(
       graph,
       view,
       "flow:japan-linked-maritime-watch",
+      null,
       liveLogistics
     );
 
-    expect(model.liveRoutes.map((route: { id: string }) => route.id)).toEqual(
+    const liveRoutes = model.liveRoutes ?? [];
+    const livePoints = model.livePoints ?? [];
+    const impactRegions = model.logisticsImpactRegions ?? [];
+    const impactRoutes = model.logisticsImpactRoutes ?? [];
+    const impactCorridors = model.logisticsImpactCorridors ?? [];
+
+    expect(liveRoutes.map((route) => route.id)).toEqual(
       expect.arrayContaining(["live-logistics:container-asia-yokohama", "live-logistics:road-keihin-tokyo"])
     );
-    const containerRoute = model.liveRoutes.find((route: { id: string }) => route.id === "live-logistics:container-asia-yokohama");
+    const containerRoute = liveRoutes.find((route) => route.id === "live-logistics:container-asia-yokohama");
     expect(containerRoute?.pointIds).toEqual(["port:yokohama", "prefecture:tokyo"]);
-    expect(model.livePoints.map((point: { id: string }) => point.id)).toEqual(
+    expect(livePoints.map((point) => point.id)).toEqual(
       expect.arrayContaining(["port:yokohama", "prefecture:tokyo"])
     );
-    expect(model.livePoints.map((point: { id: string }) => point.id)).not.toContain("chokepoint:malacca");
+    expect(livePoints.map((point) => point.id)).not.toContain("chokepoint:malacca");
     expect(model.liveVessels).toEqual([]);
-    expect(model.logisticsImpactRegions.map((region: { id: string }) => region.id)).toEqual(
+    expect(impactRegions.map((region) => region.id)).toEqual(
       expect.arrayContaining(["prefecture:tokyo", "prefecture:aichi", "prefecture:osaka"])
     );
-    expect(model.logisticsImpactRoutes.map((route: { id: string }) => route.id)).toEqual(
+    expect(impactRoutes.map((route) => route.id)).toEqual(
       expect.arrayContaining(["live-logistics:container-asia-yokohama", "live-logistics:road-keihin-tokyo"])
     );
-    expect(model.logisticsImpactCorridors.map((corridor: { id: string }) => corridor.id)).toEqual(
+    expect(impactCorridors.map((corridor) => corridor.id)).toEqual(
       expect.arrayContaining([
         "corridor-band:tomei-shin-tomei-meishin",
         "corridor-band:tokaido-rail-freight",
         "corridor-band:yokohama-tokyo-port-hinterland"
       ])
     );
-    expect(model.logisticsImpactCorridors[0].geometry.type).toBe("Polygon");
-    expect(model.logisticsImpactCorridors[0].geometry.coordinates[0].length).toBeGreaterThan(8);
+    expect(impactCorridors[0].geometry.type).toBe("Polygon");
+    expect(impactCorridors[0].geometry.coordinates[0].length).toBeGreaterThan(8);
   });
 
   test("renders airport operations as facility points without aircraft markers", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "logistics");
-    const liveLogistics = {
-      mapVessels: [],
-      mapRoutes: [
+    const liveLogistics = liveLogisticsFixture([
         {
           id: "live-logistics:airport-haneda-narita-ops",
           label: "空港運用",
           pointIds: ["airport:haneda", "airport:narita", "prefecture:tokyo"],
           relatedIds: ["airport:haneda", "airport:narita"]
         }
-      ]
-    };
+      ]);
 
-    const model = (buildJapanMapCanvasModel as any)(
+    const model = buildJapanMapCanvasModel(
       graph,
       view,
       "live-logistics:airport-haneda-narita-ops",
+      null,
       liveLogistics
     );
 
-    expect(model.liveRoutes.map((route: { id: string }) => route.id)).toEqual([
+    expect((model.liveRoutes ?? []).map((route) => route.id)).toEqual([
       "live-logistics:airport-haneda-narita-ops"
     ]);
-    expect(model.livePoints.map((point: { id: string; kind: string }) => [point.id, point.kind])).toEqual(
+    expect((model.livePoints ?? []).map((point) => [point.id, point.kind])).toEqual(
       expect.arrayContaining([
         ["airport:haneda", "Airport"],
         ["airport:narita", "Airport"]
@@ -203,7 +211,7 @@ describe("japan map canvas model", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "regional-security");
 
-    const model = buildJapanMapCanvasModel(graph, view, "flow:nk-missile-history-japan-watch");
+    const model = buildJapanMapCanvasModel(graph, view, "flow:nk-missile-history-japan-watch", null, null);
 
     expect(model.globalRoutes.find((route) => route.id === "flow:nk-missile-history-japan-watch")?.pointIds).toEqual([
       "country:north-korea",
@@ -225,4 +233,141 @@ describe("japan map canvas model", () => {
     expect(model.liveRoutes).toEqual([]);
     expect(model.liveVessels).toEqual([]);
   });
+
+  test("uses a semantic regional layer to build the rice harvest choropleth", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = workspace.layers.find((candidate) => candidate.id === "rice-harvest")!;
+
+    const model = buildJapanMapCanvasModel(graph, view, "prefecture:niigata", layer, null);
+
+    expect(model.regions).toHaveLength(47);
+    expect(model.regions.find((region) => region.id === "prefecture:niigata")).toMatchObject({
+      rawValue: expect.any(Number),
+      unit: "トン",
+      periodLabel: "令和5年産"
+    });
+    expect(model.routes).toEqual([]);
+    expect(model.globalRoutes).toEqual([]);
+  });
+
+  test("builds distinct selectable observation points for rice price and inventory policy", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const priceLayer = workspace.layers.find((layer) => layer.id === "rice-price")!;
+    const inventoryLayer = workspace.layers.find((layer) => layer.id === "rice-inventory-policy")!;
+
+    const price = buildJapanMapCanvasModel(graph, view, "observation:rice-price-signal-2026", priceLayer, null);
+    const inventory = buildJapanMapCanvasModel(graph, view, "observation:rice-private-inventory-feb-2026", inventoryLayer, null);
+
+    expect(price.points.map((point) => point.selectionId)).toEqual([
+      "observation:rice-price-signal-2026"
+    ]);
+    expect(inventory.points.map((point) => point.selectionId)).toEqual([
+      "observation:rice-private-inventory-feb-2026",
+      "observation:rice-stockpile-policy-2026"
+    ]);
+    expect(price.points.map((point) => point.id)).not.toEqual(inventory.points.map((point) => point.id));
+    expect(price.regions).toEqual([]);
+    expect(inventory.regions).toEqual([]);
+  });
+
+  test("produces visible configured geometry for every runtime-available semantic layer", () => {
+    const graph = loadSeedGraph();
+    const now = new Date("2026-07-18T00:00:00Z");
+
+    for (const themeId of THEME_IDS) {
+      const view = getThemeView(graph, themeId);
+      const live = buildLiveLogisticsView(themeId, null, loadSeedLiveLogistics(), now);
+      const workspace = buildWorkspacePresentation(graph, view, live);
+      const activeId = view.flows[0]?.id ?? view.observations[0]?.id ?? view.entities[0]?.id ?? "country:japan";
+
+      for (const layer of workspace.layers.filter((candidate) => candidate.available)) {
+        const model = buildJapanMapCanvasModel(graph, view, activeId, layer, live);
+        expect(
+          visibleFeatureCount(layer.renderMode, model),
+          `${themeId}/${layer.id}/${layer.renderMode}`
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  test("keeps bare rice mobile points and every valid legacy mode visible", () => {
+    const graph = loadSeedGraph();
+    const riceView = getThemeView(graph, "rice");
+    const mobileModel = buildJapanMapCanvasModel(
+      graph,
+      riceView,
+      "observation:rice-price-signal-2026",
+      null,
+      null
+    );
+    expect(mobileModel.points.length).toBeGreaterThan(0);
+
+    const requestedModes = ["point", "cluster", "choropleth", "route", "static"] as const;
+    const now = new Date("2026-07-18T00:00:00Z");
+
+    for (const themeId of THEME_IDS) {
+      const view = getThemeView(graph, themeId);
+      const live = buildLiveLogisticsView(themeId, null, loadSeedLiveLogistics(), now);
+      const workspace = buildWorkspacePresentation(graph, view, live);
+      const activeId = view.flows[0]?.id ?? view.observations[0]?.id ?? view.entities[0]?.id ?? "country:japan";
+      const legacyModel = buildJapanMapCanvasModel(graph, view, activeId, null, live);
+
+      for (const requestedMode of requestedModes) {
+        const { mapModeOverride } = resolveLegacyPresentation(themeId, requestedMode, workspace);
+        expect(
+          visibleFeatureCount(mapModeOverride, legacyModel),
+          `${themeId}/${requestedMode}->${mapModeOverride}`
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
 });
+
+function visibleFeatureCount(
+  mode: "point" | "cluster" | "choropleth" | "route" | "static",
+  model: ReturnType<typeof buildJapanMapCanvasModel>
+) {
+  const points = model.points.length
+    + model.globalPoints.length
+    + (model.livePoints?.length ?? 0)
+    + (model.liveVessels?.length ?? 0);
+  const routes = model.routes.length
+    + model.globalRoutes.length
+    + (model.liveRoutes?.length ?? 0)
+    + (model.logisticsImpactRoutes?.length ?? 0)
+    + (model.logisticsImpactCorridors?.length ?? 0);
+  const regions = model.regions.length + (model.logisticsImpactRegions?.length ?? 0);
+
+  if (mode === "cluster") {
+    return points;
+  }
+
+  if (mode === "choropleth") {
+    return regions;
+  }
+
+  if (mode === "route") {
+    return points + routes;
+  }
+
+  return points + (mode === "static" ? regions : 0);
+}
+
+function liveLogisticsFixture(
+  mapRoutes: LiveLogisticsViewModel["mapRoutes"]
+): LiveLogisticsViewModel {
+  return {
+    disclosureLabel: "公開系統",
+    items: [],
+    lanes: [],
+    mapRoutes,
+    mapVessels: [],
+    subtitle: "テスト",
+    title: "テスト物流",
+    updatedLabel: "更新済み"
+  };
+}

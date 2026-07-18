@@ -50,13 +50,18 @@ vi.mock("../JapanMainMap", () => ({
     onSelect: (id: string) => void;
   }) => (
     <div data-testid="map" data-mode={mapMode}>
-      <div data-testid="map-layer-controls">
-        <button type="button" onClick={() => onMapModeChange?.("cluster")}>
-          集約
-        </button>
-      </div>
+      {onMapModeChange ? (
+        <div data-testid="map-layer-controls">
+          <button type="button" onClick={() => onMapModeChange("cluster")}>
+            集約
+          </button>
+        </div>
+      ) : null}
       <button type="button" onClick={() => onSelect("prefecture:niigata")}>
         新潟県を選択
+      </button>
+      <button type="button" onClick={() => onSelect("flow:saudi-oil-japan")}>
+        サウジ原油を選択
       </button>
       {detailPopup ? <div data-testid="map-detail-popup-anchor" /> : null}
       {onOpenEvidence ? <button data-testid="map-detail-open-evidence">根拠パネルを開く</button> : null}
@@ -101,8 +106,9 @@ describe("AppShell evidence wiring (real ContextInspector)", () => {
     });
     expect(within(desktop).queryByTestId("map-detail-popup-anchor")).toBeNull();
     expect(within(desktop).queryByTestId("map-detail-open-evidence")).toBeNull();
-    expect(within(desktop).getByText("514,100")).toBeTruthy();
-    expect(within(desktop).getByText("令和5年産")).toBeTruthy();
+    const inspector = within(desktop).getByTestId("context-inspector");
+    expect(within(inspector).getByText("514,100")).toBeTruthy();
+    expect(within(inspector).getByText("令和5年産")).toBeTruthy();
   });
 
   test("opens full evidence content in the desktop inspector on selection", async () => {
@@ -116,7 +122,8 @@ describe("AppShell evidence wiring (real ContextInspector)", () => {
     const desktop = screen.getByTestId("layout-desktop-workspace");
     expect(screen.getByTestId("layout-action-bar")).toBeTruthy();
     expect(within(screen.getByTestId("layout-action-bar")).queryByText("表示レイヤー")).toBeNull();
-    expect(screen.getAllByTestId("map-layer-controls").length).toBeGreaterThan(0);
+    expect(within(desktop).queryByTestId("map-layer-controls")).toBeNull();
+    expect(screen.getAllByTestId("map-layer-controls")).toHaveLength(1);
     const mobileEvidence = screen.getByTestId("layout-evidence-drawer-mobile");
     expect(within(mobileEvidence).queryByRole("tablist")).toBeNull();
     expect(within(mobileEvidence).queryByRole("tab")).toBeNull();
@@ -124,7 +131,7 @@ describe("AppShell evidence wiring (real ContextInspector)", () => {
 
     expect(within(desktop).queryByTestId("context-inspector")).toBeNull();
 
-    await user.click(within(desktop).getByText("select-energy-from-inbox"));
+    await user.click(within(desktop).getByRole("button", { name: "サウジ原油を選択" }));
 
     await waitFor(() => {
       expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();
