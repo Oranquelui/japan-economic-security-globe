@@ -302,6 +302,12 @@ describe("AppShell url sync", () => {
     expect(stackedWorkspace.className).not.toContain("lg:hidden");
     expect(screen.getByRole("banner")).toBeTruthy();
     expect(actionBar).toBeTruthy();
+    expect(screen.getAllByRole("heading", { level: 1, name: "日本レジリエンス地図" })).toHaveLength(1);
+    const currentViewTrail = actionBar.querySelector("h1 + span + p") as HTMLParagraphElement;
+    expect(currentViewTrail).toBeTruthy();
+    expect(currentViewTrail.textContent).toContain(" / ");
+    expect(currentViewTrail.closest("a, button, [role='link'], [role='button']")).toBeNull();
+    expect(currentViewTrail.tabIndex).toBe(-1);
     expect(screen.getByRole("status", { name: "出典状態" })).toBeTruthy();
     const sourceStatusMobile = screen.getByTestId("layout-source-status-mobile");
     expect(sourceStatusMobile.className).toContain("xl:hidden");
@@ -316,9 +322,12 @@ describe("AppShell url sync", () => {
     expect(screen.queryByTestId("layout-context-inspector")).toBeNull();
     expect(screen.queryByTestId("context-inspector")).toBeNull();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-overlay-right")).toBe("16");
-    // The mobile table remains mounted in the mobile workspace only.
+    const stackedMap = within(stackedWorkspace).getByTestId("map");
+    expect(within(stackedMap).getByTestId("map-layer-controls")).toBeTruthy();
+    expect(within(stackedWorkspace).getByTestId("layout-evidence-drawer-mobile")).toBeTruthy();
+    // The operations table remains mounted in the stacked workspace only.
     expect(screen.getAllByTestId("grid")).toHaveLength(1);
-    expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("no");
+    expect(within(stackedWorkspace).getByTestId("grid").getAttribute("data-collapsed")).toBe("no");
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(withinActionBar().queryByText("表示レイヤー")).toBeNull();
     expect(within(desktopWorkspace).queryByTestId("map-layer-controls")).toBeNull();
@@ -336,7 +345,8 @@ describe("AppShell url sync", () => {
 
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByText("MVP/テスト運用中")).toBeTruthy();
-    expect(screen.getByText("更新: 国内物流監視と地形地図を追加しました")).toBeTruthy();
+    expect(screen.getByText("更新: v0.5.0 - 公式統計と意味レイヤーを中心に再構成しました")).toBeTruthy();
+    expect(screen.queryByText("更新: 国内物流監視と地形地図を追加しました")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "お知らせを閉じる" }));
 
     await waitFor(() => {
@@ -381,8 +391,9 @@ describe("AppShell url sync", () => {
     expect(within(desktop).getByRole("button", { name: "物流・投入コスト" })).toBeTruthy();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("choropleth");
     expect(Number(screen.getAllByTestId("map")[0].getAttribute("data-regions"))).toBeGreaterThan(0);
-    expect(screen.getAllByTestId("map")[1].getAttribute("data-mode")).toBe("point");
-    expect(Number(screen.getAllByTestId("map")[1].getAttribute("data-points"))).toBeGreaterThan(0);
+    const stackedMap = within(screen.getByTestId("layout-stacked-workspace")).getByTestId("map");
+    expect(stackedMap.getAttribute("data-mode")).toBe("point");
+    expect(Number(stackedMap.getAttribute("data-points"))).toBeGreaterThan(0);
     // Public spine default theme is rice; first selectable rice signal/entity is the fallback active.
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/^(observation:|flow:|prefecture:|product:)/);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");

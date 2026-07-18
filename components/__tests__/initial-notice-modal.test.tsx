@@ -24,7 +24,8 @@ describe("InitialNoticeModal", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByText("MVP/テスト運用中")).toBeTruthy();
     expect(screen.getByText("無料公開中")).toBeTruthy();
-    expect(screen.getByText("更新: 国内物流監視と地形地図を追加しました")).toBeTruthy();
+    expect(screen.getByText("更新: v0.5.0 - 公式統計と意味レイヤーを中心に再構成しました")).toBeTruthy();
+    expect(screen.queryByText("更新: 国内物流監視と地形地図を追加しました")).toBeNull();
     expect(screen.getByText("仕様は予告なく変更される場合があります")).toBeTruthy();
     expect(screen.getByAltText("Homepage notice seal").getAttribute("src")).toBe("/brand/homepage-notice-seal.webp");
   });
