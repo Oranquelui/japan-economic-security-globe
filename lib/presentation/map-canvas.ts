@@ -242,17 +242,29 @@ function buildObservationMapCanvasModel(
     return emptyMapCanvasModel();
   }
 
-  const observationIds = new Set(layer.content.observationIds);
   const japan = graph.entities.find((entity) => entity.id === "country:japan" && entity.coordinates);
-  const points = graph.observations
-    .filter((observation) => observationIds.has(observation.id))
-    .flatMap((observation): JapanMapPoint[] => {
-      const subject = graph.entities.find(
+  const observationsById = new Map(graph.observations.map((observation) => [observation.id, observation]));
+  const resolvedObservations = layer.content.observationIds
+    .flatMap((id) => {
+      const observation = observationsById.get(id);
+      return observation ? [observation] : [];
+    })
+    .map((observation) => ({
+      observation,
+      subject: graph.entities.find(
         (entity) => entity.id === observation.subjectId && entity.coordinates
-      );
-      const anchor = subject ?? japan;
+      )
+    }));
+  const fallbackTotal = resolvedObservations.filter(({ subject }) => !subject).length;
+  let fallbackIndex = 0;
+  const points = resolvedObservations
+    .flatMap(({ observation, subject }): JapanMapPoint[] => {
+      const coordinates = subject?.coordinates
+        ?? (japan?.coordinates
+          ? offsetFallbackObservation(japan.coordinates, fallbackIndex++, fallbackTotal)
+          : undefined);
 
-      if (!anchor?.coordinates) {
+      if (!coordinates) {
         return [];
       }
 
@@ -260,8 +272,8 @@ function buildObservationMapCanvasModel(
         id: observation.id,
         kind: observation.kind,
         label: localizeAnyLabel(observation.id, observation.label),
-        lat: anchor.coordinates.lat,
-        lon: anchor.coordinates.lon,
+        lat: coordinates.lat,
+        lon: coordinates.lon,
         metaLabel: formatObservationMetaLabel(observation),
         selectionId: observation.id,
         tone: "watch"
@@ -269,6 +281,22 @@ function buildObservationMapCanvasModel(
     });
 
   return { ...emptyMapCanvasModel(), points };
+}
+
+function offsetFallbackObservation(
+  anchor: { lat: number; lon: number },
+  index: number,
+  total: number
+) {
+  if (total <= 1) {
+    return anchor;
+  }
+
+  const angle = -Math.PI / 2 + (index * 2 * Math.PI) / total;
+  return {
+    lat: anchor.lat + Math.sin(angle) * 0.32,
+    lon: anchor.lon + Math.cos(angle) * 0.4
+  };
 }
 
 function buildFlowMapCanvasModel(

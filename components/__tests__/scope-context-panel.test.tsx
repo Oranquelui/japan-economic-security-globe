@@ -8,6 +8,7 @@ import { loadSeedGraph } from "../../lib/data/seed-loader";
 import { getThemePalette } from "../../lib/presentation/palette";
 import { buildWorkspacePresentation } from "../../lib/presentation/workspace";
 import { getThemeView } from "../../lib/semantic/selectors";
+import type { SemanticLayerId } from "../../types/presentation";
 import { ScopeContextPanel } from "../ScopeContextPanel";
 
 afterEach(cleanup);
@@ -70,5 +71,73 @@ describe("ScopeContextPanel", () => {
     expect(onLayerChange).toHaveBeenCalledWith("rice-price");
     expect(onOpenSignals).toHaveBeenCalledTimes(1);
     expect(onOpenComparison).toHaveBeenCalledTimes(1);
+  });
+
+  test("falls back from an unavailable requested layer to the first available layer", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+
+    render(
+      <ScopeContextPanel
+        activeLayerId="rice-logistics-inputs"
+        onLayerChange={vi.fn()}
+        onOpenComparison={vi.fn()}
+        onOpenSignals={vi.fn()}
+        sources={view.sources}
+        themePalette={getThemePalette("rice")}
+        workspace={workspace}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "収穫量" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "物流・投入コスト" }).getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByRole("region", { name: "主食用米収穫量の凡例" })).toBeTruthy();
+  });
+
+  test("falls back from a missing requested layer to the first available layer", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+
+    render(
+      <ScopeContextPanel
+        activeLayerId={"missing-layer" as SemanticLayerId}
+        onLayerChange={vi.fn()}
+        onOpenComparison={vi.fn()}
+        onOpenSignals={vi.fn()}
+        sources={view.sources}
+        themePalette={getThemePalette("rice")}
+        workspace={workspace}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "収穫量" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("region", { name: "主食用米収穫量の凡例" })).toBeTruthy();
+  });
+
+  test("shows no active layer or legend when every layer is unavailable", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const unavailableWorkspace = {
+      ...workspace,
+      layers: workspace.layers.map((layer) => ({ ...layer, available: false }))
+    };
+
+    render(
+      <ScopeContextPanel
+        activeLayerId="rice-harvest"
+        onLayerChange={vi.fn()}
+        onOpenComparison={vi.fn()}
+        onOpenSignals={vi.fn()}
+        sources={view.sources}
+        themePalette={getThemePalette("rice")}
+        workspace={unavailableWorkspace}
+      />
+    );
+
+    expect(screen.getAllByRole("button").every((button) => button.getAttribute("aria-pressed") !== "true")).toBe(true);
+    expect(screen.queryByRole("region", { name: /凡例/ })).toBeNull();
   });
 });

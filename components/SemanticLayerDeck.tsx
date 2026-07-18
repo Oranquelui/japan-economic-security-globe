@@ -6,7 +6,7 @@ import type { ThemePalette } from "../lib/presentation/palette";
 import type { LayerDefinition, SemanticLayerId } from "../types/presentation";
 
 interface SemanticLayerDeckProps {
-  activeLayerId: SemanticLayerId;
+  activeLayerId?: SemanticLayerId;
   layers: LayerDefinition[];
   onLayerChange: (id: SemanticLayerId) => void;
   themePalette: ThemePalette;
@@ -59,7 +59,7 @@ export function SemanticLayerDeck({
       </div>
       <div role="group" aria-label="表示レイヤー" className="mt-3 space-y-2">
         {layers.map((layer, index) => {
-          const active = layer.id === activeLayerId;
+          const active = layer.available && layer.id === activeLayerId;
 
           return (
             <button

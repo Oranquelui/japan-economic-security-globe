@@ -25,9 +25,11 @@ export function ScopeContextPanel({
   themePalette,
   workspace
 }: ScopeContextPanelProps) {
-  const activeLayer = workspace.layers.find((layer) => layer.id === activeLayerId)
-    ?? workspace.layers.find((layer) => layer.available)
-    ?? workspace.layers[0];
+  const requestedLayer = workspace.layers.find((layer) => layer.id === activeLayerId);
+  const activeLayer = requestedLayer?.available
+    ? requestedLayer
+    : workspace.layers.find((layer) => layer.available);
+  const resolvedActiveLayerId = activeLayer?.id;
 
   return (
     <div data-testid="scope-context-panel" className="h-full overflow-y-auto px-4 py-5">
@@ -55,7 +57,7 @@ export function ScopeContextPanel({
 
       <div className="mt-6 border-t pt-5" style={{ borderColor: themePalette.borderSubtle }}>
         <SemanticLayerDeck
-          activeLayerId={activeLayerId}
+          activeLayerId={resolvedActiveLayerId}
           layers={workspace.layers}
           onLayerChange={onLayerChange}
           themePalette={themePalette}

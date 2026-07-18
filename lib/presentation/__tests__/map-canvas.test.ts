@@ -269,9 +269,55 @@ describe("japan map canvas model", () => {
       "observation:rice-private-inventory-feb-2026",
       "observation:rice-stockpile-policy-2026"
     ]);
+    expect(new Set(inventory.points.map((point) => `${point.lat}:${point.lon}`)).size).toBe(2);
     expect(price.points.map((point) => point.id)).not.toEqual(inventory.points.map((point) => point.id));
     expect(price.regions).toEqual([]);
     expect(inventory.regions).toEqual([]);
+  });
+
+  test("keeps every fallback defense observation individually selectable at a stable distinct coordinate", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "defense");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = workspace.layers.find((candidate) => candidate.id === "defense-capability-budget")!;
+    const expectedIds = layer.content.kind === "observations" ? layer.content.observationIds : [];
+    const japan = graph.entities.find((entity) => entity.id === "country:japan")!;
+
+    const model = buildJapanMapCanvasModel(graph, view, expectedIds[0], layer, null);
+    const repeatedModel = buildJapanMapCanvasModel(graph, view, expectedIds[0], layer, null);
+    const coordinates = model.points.map((point) => `${point.lat}:${point.lon}`);
+
+    expect(model.points.map((point) => point.id)).toEqual(expectedIds);
+    expect(model.points.map((point) => point.selectionId)).toEqual(expectedIds);
+    expect(new Set(coordinates).size).toBe(expectedIds.length);
+    expect(repeatedModel.points.map((point) => `${point.lat}:${point.lon}`)).toEqual(coordinates);
+    expect(model.points.every((point) => (
+      Math.abs(point.lat - japan.coordinates!.lat) < 0.5
+      && Math.abs(point.lon - japan.coordinates!.lon) < 0.5
+    ))).toBe(true);
+  });
+
+  test("preserves the coordinates of an observation subject that already has map geometry", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "water");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = workspace.layers.find((candidate) => candidate.id === "water-supply")!;
+    const subject = graph.entities.find((entity) => entity.id === "port:yokohama")!;
+
+    const model = buildJapanMapCanvasModel(
+      graph,
+      view,
+      "observation:capital-lifeline-watch-2026",
+      layer,
+      null
+    );
+
+    expect(model.points).toHaveLength(1);
+    expect(model.points[0]).toMatchObject({
+      selectionId: "observation:capital-lifeline-watch-2026",
+      lat: subject.coordinates?.lat,
+      lon: subject.coordinates?.lon
+    });
   });
 
   test("produces visible configured geometry for every runtime-available semantic layer", () => {
