@@ -1,24 +1,25 @@
 #!/usr/bin/env node
 
 import { createHash } from "node:crypto";
-import { execFile } from "node:child_process";
-import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+import { unzipSync } from "fflate";
+import shapefile from "shapefile";
 
-const execFileAsync = promisify(execFile);
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const UPSTREAM_VERSION = "5.1.1";
 const UPSTREAM_URL =
   "https://naciscdn.org/naturalearth/5.1.1/10m/cultural/ne_10m_admin_1_states_provinces.zip";
 const UPSTREAM_SHA256 = "efc59726337323058f9446210adc96673179cd344e053666ee3d28cb58ba2b05";
-const MAPSHAPER_VERSION = "0.7.45";
-const ARTIFACT_VERSION = "natural-earth-5.1.1-japan-prefectures-v1";
+const SHAPEFILE_VERSION = "0.6.6";
+const FFLATE_VERSION = "0.8.3";
+const ARTIFACT_VERSION = "natural-earth-5.1.1-japan-prefectures-v2";
 const ARTIFACT_NAME = "japan-prefectures-natural-earth-5.1.1.geojson";
 const PROVENANCE_NAME = "japan-prefectures-natural-earth-5.1.1.provenance.json";
+const SHAPEFILE_BASENAME = "ne_10m_admin_1_states_provinces";
+const COORDINATE_PRECISION = 5;
 
 const PREFECTURES = [
   ["JP-01", "prefecture:hokkaido", "北海道"],
@@ -70,21 +71,6 @@ const PREFECTURES = [
   ["JP-47", "prefecture:okinawa", "沖縄県"]
 ].map(([prefectureCode, entityId, label]) => ({ prefectureCode, entityId, label }));
 
-const MAPSHAPER_ARGS = [
-  "<source.zip>",
-  "-target",
-  "ne_10m_admin_1_states_provinces",
-  "-filter",
-  'adm0_a3 == "JPN"',
-  "-filter-fields",
-  "iso_3166_2,name_ja",
-  "-clean",
-  "-o",
-  "format=geojson",
-  "precision=0.00001",
-  "<processed.geojson>"
-];
-
 function parseLocalInput(args) {
   if (args.length === 0) return null;
   if (args.length === 2 && args[0] === "--input") return path.resolve(args[1]);
@@ -116,33 +102,154 @@ function assertPinnedSha(source) {
   }
 }
 
-async function assertLocalMapshaper(mapshaperBinary) {
-  await access(mapshaperBinary);
-  const packageJson = JSON.parse(
-    await readFile(path.join(repositoryRoot, "node_modules/mapshaper/package.json"), "utf8")
-  );
-  if (packageJson.version !== MAPSHAPER_VERSION) {
-    throw new Error(
-      `Local mapshaper version mismatch: expected ${MAPSHAPER_VERSION}, received ${packageJson.version}`
+async function assertLocalProcessorPackages() {
+  for (const [packageName, expectedVersion] of [
+    ["shapefile", SHAPEFILE_VERSION],
+    ["fflate", FFLATE_VERSION]
+  ]) {
+    const packageJson = JSON.parse(
+      await readFile(path.join(repositoryRoot, "node_modules", packageName, "package.json"), "utf8")
     );
+    if (packageJson.version !== expectedVersion) {
+      throw new Error(
+        `Local ${packageName} version mismatch: expected ${expectedVersion}, received ${packageJson.version}`
+      );
+    }
   }
 }
 
-function normalizeFeatures(processedCollection) {
-  if (processedCollection?.type !== "FeatureCollection") {
-    throw new Error("Mapshaper did not produce a GeoJSON FeatureCollection");
+function cleanDbfString(value) {
+  return typeof value === "string" ? value.replaceAll("\0", "").trim() : value;
+}
+
+function positionsEqual(first, second) {
+  return first[0] === second[0] && first[1] === second[1];
+}
+
+function comparePositions(first, second) {
+  return first[0] - second[0] || first[1] - second[1];
+}
+
+function compareRingRotations(positions, firstIndex, secondIndex) {
+  for (let offset = 0; offset < positions.length; offset += 1) {
+    const comparison = comparePositions(
+      positions[(firstIndex + offset) % positions.length],
+      positions[(secondIndex + offset) % positions.length]
+    );
+    if (comparison !== 0) return comparison;
+  }
+  return 0;
+}
+
+function signedRingArea(positions) {
+  let twiceArea = 0;
+  for (let index = 0; index < positions.length; index += 1) {
+    const current = positions[index];
+    const next = positions[(index + 1) % positions.length];
+    twiceArea += current[0] * next[1] - next[0] * current[1];
+  }
+  return twiceArea / 2;
+}
+
+function roundCoordinate(value, code) {
+  if (!Number.isFinite(value)) {
+    throw new Error(`Natural Earth ${code} has a non-finite coordinate`);
+  }
+  const rounded = Number(value.toFixed(COORDINATE_PRECISION));
+  return Object.is(rounded, -0) ? 0 : rounded;
+}
+
+function normalizeRing(sourceRing, isExterior, code) {
+  if (!Array.isArray(sourceRing) || sourceRing.length < 4) {
+    throw new Error(`Natural Earth ${code} has an invalid ring`);
+  }
+
+  const positions = [];
+  for (const sourcePosition of sourceRing) {
+    if (!Array.isArray(sourcePosition) || sourcePosition.length < 2) {
+      throw new Error(`Natural Earth ${code} has an invalid position`);
+    }
+    const position = [
+      roundCoordinate(sourcePosition[0], code),
+      roundCoordinate(sourcePosition[1], code)
+    ];
+    if (positions.length === 0 || !positionsEqual(positions.at(-1), position)) {
+      positions.push(position);
+    }
+  }
+
+  if (positions.length > 1 && positionsEqual(positions[0], positions.at(-1))) {
+    positions.pop();
+  }
+  if (positions.length < 3) {
+    throw new Error(`Natural Earth ${code} ring collapsed after coordinate normalization`);
+  }
+
+  const area = signedRingArea(positions);
+  if (area === 0) {
+    throw new Error(`Natural Earth ${code} has a zero-area ring`);
+  }
+  if ((area > 0) !== isExterior) {
+    positions.reverse();
+  }
+
+  let canonicalStart = 0;
+  for (let index = 1; index < positions.length; index += 1) {
+    if (compareRingRotations(positions, index, canonicalStart) < 0) {
+      canonicalStart = index;
+    }
+  }
+  const canonical = [
+    ...positions.slice(canonicalStart),
+    ...positions.slice(0, canonicalStart)
+  ];
+  canonical.push([...canonical[0]]);
+  return canonical;
+}
+
+function normalizeGeometry(sourceGeometry, code) {
+  if (sourceGeometry?.type === "Polygon") {
+    return {
+      type: "Polygon",
+      coordinates: sourceGeometry.coordinates.map((ring, index) =>
+        normalizeRing(ring, index === 0, code)
+      )
+    };
+  }
+  if (sourceGeometry?.type === "MultiPolygon") {
+    return {
+      type: "MultiPolygon",
+      coordinates: sourceGeometry.coordinates.map((polygon) =>
+        polygon.map((ring, index) => normalizeRing(ring, index === 0, code))
+      )
+    };
+  }
+  throw new Error(`Natural Earth ${code} has unsupported geometry: ${sourceGeometry?.type}`);
+}
+
+function extractArchiveEntries(source) {
+  const archive = unzipSync(source);
+  const shape = archive[`${SHAPEFILE_BASENAME}.shp`];
+  const database = archive[`${SHAPEFILE_BASENAME}.dbf`];
+  if (!shape || !database) {
+    throw new Error("Natural Earth archive is missing the pinned shapefile or dBASE entry");
+  }
+  return { shape, database };
+}
+
+function normalizeFeatures(sourceCollection) {
+  if (sourceCollection?.type !== "FeatureCollection") {
+    throw new Error("Shapefile parser did not produce a GeoJSON FeatureCollection");
   }
 
   const sourceByCode = new Map();
-  for (const feature of processedCollection.features) {
-    const code = feature?.properties?.iso_3166_2;
+  for (const feature of sourceCollection.features) {
+    if (cleanDbfString(feature?.properties?.adm0_a3) !== "JPN") continue;
+    const code = cleanDbfString(feature?.properties?.iso_3166_2);
     if (typeof code !== "string" || sourceByCode.has(code)) {
       throw new Error(`Natural Earth has a missing or duplicate prefecture code: ${String(code)}`);
     }
-    if (feature.geometry?.type !== "Polygon" && feature.geometry?.type !== "MultiPolygon") {
-      throw new Error(`Natural Earth ${code} has unsupported geometry: ${feature.geometry?.type}`);
-    }
-    sourceByCode.set(code, feature);
+    sourceByCode.set(code, normalizeGeometry(feature.geometry, code));
   }
 
   const features = PREFECTURES.map(({ prefectureCode, entityId, label }) => {
@@ -153,7 +260,7 @@ function normalizeFeatures(processedCollection) {
     return {
       type: "Feature",
       properties: { prefectureCode, entityId, label },
-      geometry: sourceFeature.geometry
+      geometry: sourceFeature
     };
   });
 
@@ -170,62 +277,40 @@ async function main() {
   const localInput = parseLocalInput(process.argv.slice(2));
   const source = await loadUpstream(localInput);
   assertPinnedSha(source);
-
-  const mapshaperBinary = path.join(repositoryRoot, "node_modules/.bin/mapshaper");
-  await assertLocalMapshaper(mapshaperBinary);
-
-  const temporaryDirectory = await mkdtemp(path.join(tmpdir(), "jp-prefecture-boundaries-"));
-  const sourcePath = path.join(temporaryDirectory, "natural-earth.zip");
-  const processedPath = path.join(temporaryDirectory, "processed.geojson");
-
-  try {
-    await writeFile(sourcePath, source);
-    await execFileAsync(
-      mapshaperBinary,
-      MAPSHAPER_ARGS.map((argument) => {
-        if (argument === "<source.zip>") return sourcePath;
-        if (argument === "<processed.geojson>") return processedPath;
-        return argument;
-      }),
-      { cwd: repositoryRoot, maxBuffer: 10 * 1024 * 1024 }
-    );
-
-    const processedCollection = JSON.parse(await readFile(processedPath, "utf8"));
-    const boundaryCollection = normalizeFeatures(processedCollection);
-    const provenance = {
-      artifactVersion: ARTIFACT_VERSION,
-      upstreamDataset: "Natural Earth Admin 1 – States, Provinces",
-      upstreamVersion: UPSTREAM_VERSION,
-      immutableUrl: UPSTREAM_URL,
-      upstreamSha256: UPSTREAM_SHA256,
-      termsUrl: "https://www.naturalearthdata.com/about/terms-of-use/",
-      license: "Public domain",
-      worldview: {
-        status: "beta",
-        boundaryType: "de facto"
-      },
-      processingDate: "2026-07-18",
-      processor: {
-        name: "mapshaper",
-        version: MAPSHAPER_VERSION
-      },
-      command:
-        "./node_modules/.bin/mapshaper <source.zip> -target ne_10m_admin_1_states_provinces -filter 'adm0_a3 == \"JPN\"' -filter-fields iso_3166_2,name_ja -clean -o format=geojson precision=0.00001 <processed.geojson>",
-      processing:
-        "Natural Earth 5.1.1 Admin-1 States, Provinces を日本の47都道府県に絞り、本サービスの全国表示向けに属性整理・簡略化して作成",
-      limitation:
-        "Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。"
+  await assertLocalProcessorPackages();
+  const { shape, database } = extractArchiveEntries(source);
+  const processedCollection = await shapefile.read(shape, database, { encoding: "utf-8" });
+  const boundaryCollection = normalizeFeatures(processedCollection);
+  const provenance = {
+    artifactVersion: ARTIFACT_VERSION,
+    upstreamDataset: "Natural Earth Admin 1 – States, Provinces",
+    upstreamVersion: UPSTREAM_VERSION,
+    immutableUrl: UPSTREAM_URL,
+    upstreamSha256: UPSTREAM_SHA256,
+    termsUrl: "https://www.naturalearthdata.com/about/terms-of-use/",
+    license: "Public domain",
+    worldview: {
+      status: "beta",
+      boundaryType: "de facto"
+    },
+    processingDate: "2026-07-18",
+    processor: {
+      name: "repository-local shapefile + fflate",
+      version: `shapefile@${SHAPEFILE_VERSION}; fflate@${FFLATE_VERSION}`
+    },
+    command: "node scripts/build-prefecture-boundaries.mjs --input <source.zip>",
+    processing:
+      "Natural Earth 5.1.1 Admin-1 States, Provinces から日本の47都道府県を抽出し、座標を小数点以下5桁へ丸め、リングの向きと始点を決定論的に正規化して作成",
+    limitation:
+      "Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。"
     };
 
-    const outputDirectory = path.join(repositoryRoot, "data/geo");
-    await mkdir(outputDirectory, { recursive: true });
-    await Promise.all([
-      writeFile(path.join(outputDirectory, ARTIFACT_NAME), `${JSON.stringify(boundaryCollection)}\n`),
-      writeFile(path.join(outputDirectory, PROVENANCE_NAME), `${JSON.stringify(provenance)}\n`)
-    ]);
-  } finally {
-    await rm(temporaryDirectory, { recursive: true, force: true });
-  }
+  const outputDirectory = path.join(repositoryRoot, "data/geo");
+  await mkdir(outputDirectory, { recursive: true });
+  await Promise.all([
+    writeFile(path.join(outputDirectory, ARTIFACT_NAME), `${JSON.stringify(boundaryCollection)}\n`),
+    writeFile(path.join(outputDirectory, PROVENANCE_NAME), `${JSON.stringify(provenance)}\n`)
+  ]);
 }
 
 await main();

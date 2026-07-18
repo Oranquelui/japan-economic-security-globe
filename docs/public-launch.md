@@ -90,7 +90,7 @@ The nationwide camera is centered at `[138.45, 35]` with zoom 5.0 so every requi
 - Keyboard `Equal` zoom changed 5.0 to 6.0, and the recenter control returned the same map to zoom 5.0.
 - The fixture-only missing-value test proved a neutral polygon fill, border, and label instead of zero-value styling or a circle fallback.
 - At 1024x768 and 390x844, the smoke check found no horizontal overflow, crash, precision inset, or circle fallback. The same semantic prefecture-boundary choropleth remained active, with 42 and 31 in-camera polygon IDs respectively, zero representative-radius region IDs, and no forced 47-label desktop cartography. This is not a claim that Mobile redesign is complete.
-- The 1440x900 `/sources-license` capture was positioned at the open-data section so one frame visibly includes the `公開・オープンデータ` heading and the Natural Earth entry with rights, boundary limitation, artifact version `natural-earth-5.1.1-japan-prefectures-v1`, and processing date `2026-07-18`.
+- The 1440x900 `/sources-license` capture was positioned at the open-data section so one frame visibly includes the `公開・オープンデータ` heading and the Natural Earth entry with rights, boundary limitation, artifact version `natural-earth-5.1.1-japan-prefectures-v2`, and processing date `2026-07-18`. Version 2 replaces the generator with exact-pinned repository-local `shapefile@0.6.6` and `fflate@0.8.3`; all 157 rounded ring coordinate sets remain unchanged, while ring direction and start serialization are canonicalized deterministically.
 
 Application logic console errors: 0. Page errors: 0. Local application request failures: 0. External presentation request failures: 0. Every accepted production-like map screenshot independently passed the bounded `tilesLoaded: true` readiness gate.
 
@@ -108,7 +108,7 @@ Application logic console errors: 0. Page errors: 0. Local application request f
 | `prefecture-choropleth-kansai.png` | 1440x900 | `a169476027c4284586b403f6e0fc7d76000d81d4a2b1984e5c1a8f49aac424af` |
 | `prefecture-choropleth-regression-1024x768.png` | 1024x768 | `5d569da2f1631f56ea11e78d778fc1593638d004a5af54632eb3b799d52d2f37` |
 | `prefecture-choropleth-regression-390x844.png` | 390x844 | `283924512b0d25752a10296e33eb7bdc6d9d716231a3b0625296fa8e5fb77ae3` |
-| `prefecture-choropleth-sources-license.png` | 1440x900 | `90972d97a1e5092b65e0e9bc93f0b8ef2f850f6e7cf20bc4c1a91dc16d196b86` |
+| `prefecture-choropleth-sources-license.png` | 1440x900 | `ac0eeca7105cbe30d9e75791e1db13af96dc6b44c2e98f1d7b63059d2abf00e5` |
 
 All eleven hashes are unique.
 

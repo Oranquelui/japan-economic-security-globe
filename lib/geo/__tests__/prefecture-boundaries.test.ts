@@ -15,6 +15,8 @@ import {
 } from "../prefecture-boundaries";
 
 const artifactPath = "data/geo/japan-prefectures-natural-earth-5.1.1.geojson";
+const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
+const packageLock = JSON.parse(readFileSync("package-lock.json", "utf8"));
 
 function mutableJsonClone(value: unknown) {
   return JSON.parse(JSON.stringify(value));
@@ -339,16 +341,32 @@ describe("verified prefecture boundary artifact", () => {
         status: "beta"
       },
       processingDate: "2026-07-18",
-      artifactVersion: "natural-earth-5.1.1-japan-prefectures-v1"
+      artifactVersion: "natural-earth-5.1.1-japan-prefectures-v2",
+      processor: {
+        name: "repository-local shapefile + fflate",
+        version: "shapefile@0.6.6; fflate@0.8.3"
+      },
+      command: "node scripts/build-prefecture-boundaries.mjs --input <source.zip>"
     });
     expect(prefectureBoundaryProvenance.processing).toBe(
-      "Natural Earth 5.1.1 Admin-1 States, Provinces を日本の47都道府県に絞り、本サービスの全国表示向けに属性整理・簡略化して作成"
+      "Natural Earth 5.1.1 Admin-1 States, Provinces から日本の47都道府県を抽出し、座標を小数点以下5桁へ丸め、リングの向きと始点を決定論的に正規化して作成"
     );
-    expect(prefectureBoundaryProvenance.command).toContain("mapshaper");
+    expect(JSON.stringify(prefectureBoundaryProvenance)).not.toContain("mapshaper");
     expect(prefectureBoundaryProvenance.limitation).toBe(
       "Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。"
     );
     expect(prefectureBoundaryProvenance.license).toBe("Public domain");
+  });
+
+  test("pins only the audit-clean repository-local boundary processor packages", () => {
+    expect(packageJson.devDependencies).toMatchObject({
+      fflate: "0.8.3",
+      shapefile: "0.6.6"
+    });
+    expect(packageJson.devDependencies).not.toHaveProperty("mapshaper");
+    expect(packageLock.packages["node_modules/fflate"]?.version).toBe("0.8.3");
+    expect(packageLock.packages["node_modules/shapefile"]?.version).toBe("0.6.6");
+    expect(packageLock.packages).not.toHaveProperty("node_modules/mapshaper");
   });
 
   test("runtime provenance validation rejects missing, nested, scalar, and pin drift", () => {
@@ -366,11 +384,23 @@ describe("verified prefecture boundary artifact", () => {
     const badPinnedField = mutableJsonClone(prefectureBoundaryProvenance);
     badPinnedField.upstreamVersion = "5.1.2";
 
+    const staleArtifactVersion = mutableJsonClone(prefectureBoundaryProvenance);
+    staleArtifactVersion.artifactVersion = "natural-earth-5.1.1-japan-prefectures-v1";
+
+    const staleMapshaperProcessor = mutableJsonClone(prefectureBoundaryProvenance);
+    staleMapshaperProcessor.processor = {
+      name: "mapshaper",
+      version: "0.7.45"
+    };
+    staleMapshaperProcessor.command = "./node_modules/.bin/mapshaper <source.zip>";
+
     for (const fixture of [
       missingProcessor,
       badNestedField,
       badScalarField,
-      badPinnedField
+      badPinnedField,
+      staleArtifactVersion,
+      staleMapshaperProcessor
     ]) {
       expect(() => assertPrefectureBoundaryProvenance(fixture)).toThrow(/provenance/i);
     }

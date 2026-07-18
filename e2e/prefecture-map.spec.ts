@@ -199,7 +199,7 @@ test.describe("prefecture map acceptance", () => {
     await sourceLink.scrollIntoViewIfNeeded();
     const sourceCard = sourceLink.locator("xpath=ancestor::article");
     await expect(sourceCard).toContainText("加工成果物版");
-    await expect(sourceCard).toContainText("natural-earth-5.1.1-japan-prefectures-v1");
+    await expect(sourceCard).toContainText("natural-earth-5.1.1-japan-prefectures-v2");
     await expect(sourceCard).toContainText("加工日");
     await expect(sourceCard).toContainText("2026-07-18");
     expect(network.unexpected).toEqual([]);

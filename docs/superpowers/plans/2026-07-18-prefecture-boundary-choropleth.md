@@ -76,15 +76,16 @@ npx vitest run lib/geo/__tests__/prefecture-boundaries.test.ts
 
 Expected: FAIL because the loader and artifact do not exist.
 
-### Step 1.2: Add the pinned processing dependency
+### Step 1.2: Add the pinned repository-local processing dependencies
 
-Query the npm registry for the exact current stable `mapshaper` version, then install that exact version as a dev dependency. Record the resolved version in `package-lock.json`; do not use an unpinned `npx -y` command in the generator.
+Pin `shapefile@0.6.6` and `fflate@0.8.3` exactly as dev dependencies. `fflate` reads the already SHA-verified ZIP in memory, while `shapefile` decodes the pinned `.shp` and `.dbf` entries. Record both exact versions in `package-lock.json`; do not use an unpinned `npx`, global tool, or environment-only binary. Compare a fresh `npm audit --json` result against base commit `c929715` and reject any generator-only advisory delta.
 
 Run:
 
 ```bash
-npm view mapshaper version
-npm install --save-dev --save-exact mapshaper@<verified-version>
+npm view shapefile version
+npm view fflate version
+npm install --save-dev --save-exact shapefile@0.6.6 fflate@0.8.3
 ```
 
 ### Step 1.3: Implement the deterministic generator
@@ -93,14 +94,16 @@ The script must:
 
 1. download or accept a local copy of `https://naciscdn.org/naturalearth/5.1.1/10m/cultural/ne_10m_admin_1_states_provinces.zip`;
 2. compute and reject any SHA-256 other than the pinned value;
-3. invoke the repository-local `mapshaper` binary;
-4. filter `adm0_a3 == "JPN"`;
-5. retain all 47 island-aware `Polygon`/`MultiPolygon` features;
-6. simplify conservatively with `keep-shapes` and fixed precision only if needed for the agreed budget;
+3. verify the repository-local `shapefile@0.6.6` and `fflate@0.8.3` package versions before parsing;
+4. read only the pinned shapefile/dBASE entries from the verified archive and filter `adm0_a3 == "JPN"`;
+5. trim fixed-width dBASE null padding, select exactly 47 unique `iso_3166_2` codes, and retain every island-aware `Polygon`/`MultiPolygon` feature;
+6. round coordinates to five decimal places, remove consecutive precision-collapsed duplicates, orient exterior/interior rings consistently, and choose a deterministic lexicographic ring start without simplifying or changing the coordinate set;
 7. map `JP-01..JP-47` to the repository's semantic prefecture IDs and full Japanese names through an explicit checked-in mapping in the script;
 8. sort features by `prefectureCode` before serialization;
 9. write stable minified GeoJSON and provenance JSON with no run-specific random values;
-10. include processing date `2026-07-18`, command, upstream version, immutable URL, SHA, public-domain terms, beta/de facto worldview, artifact version, and limitation statement.
+10. include processing date `2026-07-18`, repository-local command, exact processor versions, upstream version, immutable URL, SHA, public-domain terms, beta/de facto worldview, artifact version, and limitation statement.
+
+The repository-local canonicalizer changes serialized ring direction/start while preserving all 157 rounded ring coordinate sets exactly. Because normalized GeoJSON bytes change, the processed artifact version is `natural-earth-5.1.1-japan-prefectures-v2`; this is a processing-version change, not a geographic-boundary change.
 
 Do not make the application build or browser download the upstream archive.
 

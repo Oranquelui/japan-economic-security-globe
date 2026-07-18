@@ -35,7 +35,7 @@ export type PrefectureBoundaryCollection = Readonly<{
 }>;
 
 export type PrefectureBoundaryProvenance = Readonly<{
-  artifactVersion: string;
+  artifactVersion: "natural-earth-5.1.1-japan-prefectures-v2";
   upstreamDataset: string;
   upstreamVersion: string;
   immutableUrl: string;
@@ -48,10 +48,10 @@ export type PrefectureBoundaryProvenance = Readonly<{
   }>;
   processingDate: string;
   processor: Readonly<{
-    name: string;
-    version: string;
+    name: "repository-local shapefile + fflate";
+    version: "shapefile@0.6.6; fflate@0.8.3";
   }>;
-  command: string;
+  command: "node scripts/build-prefecture-boundaries.mjs --input <source.zip>";
   processing: string;
   limitation: string;
 }>;
@@ -192,7 +192,7 @@ export function assertPrefectureBoundaryProvenance(
   assertRecord(value.worldview, "provenance worldview");
   assertRecord(value.processor, "provenance processor");
   if (
-    value.artifactVersion !== "natural-earth-5.1.1-japan-prefectures-v1" ||
+    value.artifactVersion !== "natural-earth-5.1.1-japan-prefectures-v2" ||
     value.upstreamDataset !== "Natural Earth Admin 1 – States, Provinces" ||
     value.upstreamVersion !== "5.1.1" ||
     value.immutableUrl !==
@@ -203,12 +203,11 @@ export function assertPrefectureBoundaryProvenance(
     value.worldview.status !== "beta" ||
     value.worldview.boundaryType !== "de facto" ||
     value.processingDate !== "2026-07-18" ||
-    value.processor.name !== "mapshaper" ||
-    value.processor.version !== "0.7.45" ||
-    value.command !==
-      "./node_modules/.bin/mapshaper <source.zip> -target ne_10m_admin_1_states_provinces -filter 'adm0_a3 == \"JPN\"' -filter-fields iso_3166_2,name_ja -clean -o format=geojson precision=0.00001 <processed.geojson>" ||
+    value.processor.name !== "repository-local shapefile + fflate" ||
+    value.processor.version !== "shapefile@0.6.6; fflate@0.8.3" ||
+    value.command !== "node scripts/build-prefecture-boundaries.mjs --input <source.zip>" ||
     value.processing !==
-      "Natural Earth 5.1.1 Admin-1 States, Provinces を日本の47都道府県に絞り、本サービスの全国表示向けに属性整理・簡略化して作成" ||
+      "Natural Earth 5.1.1 Admin-1 States, Provinces から日本の47都道府県を抽出し、座標を小数点以下5桁へ丸め、リングの向きと始点を決定論的に正規化して作成" ||
     value.limitation !==
       "Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。"
   ) {

@@ -20,7 +20,7 @@ describe("buildSourcesLicenseCatalog", () => {
       ?.items.find((item) => item.id === naturalEarthId);
     expect(naturalEarth).toBeDefined();
     expect(naturalEarth?.rights).toMatchObject({
-      artifactVersion: "natural-earth-5.1.1-japan-prefectures-v1",
+      artifactVersion: "natural-earth-5.1.1-japan-prefectures-v2",
       processingDate: "2026-07-18"
     });
     expect(catalog.groups.find((group) => group.id === "official")?.items.map((item) => item.id)).not.toContain(
