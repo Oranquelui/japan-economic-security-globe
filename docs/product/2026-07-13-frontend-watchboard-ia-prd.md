@@ -12,9 +12,11 @@ Related:
 - `docs/superpowers/specs/2026-04-26-japan-watchboard-reframe-design.md`
 - `docs/review/claude-code-diagnosis-kit.md`
 
-## 1. Problem
+> **Historical scope note:** §§1–10 preserve the original 2026-07-13 pre-reframe problem statement, requirements, and execution context. Present-tense wording in those sections describes that historical baseline, not the current product state. See §17 for accepted reframe criteria and §19 for the current verified delivery record.
 
-The public frontend is weaker than the semantic / ranking / seed layers underneath it.
+## 1. Original problem (historical baseline)
+
+At the 2026-07-13 baseline, the public frontend was weaker than the semantic / ranking / seed layers underneath it.
 
 Observed product symptoms:
 
