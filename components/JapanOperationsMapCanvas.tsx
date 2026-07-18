@@ -3,13 +3,12 @@
 import { useEffect, useEffectEvent, useRef } from "react";
 import type { GeoJSONSourceSpecification } from "maplibre-gl";
 
-import importedPrefectureLabelLayout from "../data/geo/japan-prefecture-labels.json";
 import { buildPrefectureMetricFeatureCollection } from "../lib/geo/prefecture-map";
 import {
   PREFECTURE_LABEL_FONT_SIZE,
   buildPrefectureLabelFeatureCollections,
   inspectProjectedPrefectureLabelLayout,
-  type PrefectureLabelLayoutEntry
+  prefectureLabelLayout
 } from "../lib/geo/prefecture-label-layout";
 import type { OperationMapMode } from "../lib/presentation/operations";
 import type {
@@ -52,7 +51,7 @@ const GRAY_CANVAS_REFERENCE_LAYER_ID = "gray-canvas-reference";
 const XL_DESKTOP_MEDIA_QUERY = "(min-width: 1280px)";
 const MAP_ACCEPTANCE_FIXTURES_ENABLED = process.env.NODE_ENV !== "production"
   && process.env.NEXT_PUBLIC_MAP_ACCEPTANCE_FIXTURES === "1";
-const PREFECTURE_LABEL_LAYOUT = importedPrefectureLabelLayout as unknown as readonly PrefectureLabelLayoutEntry[];
+const PREFECTURE_LABEL_LAYOUT = prefectureLabelLayout;
 const JA_NUMBER_FORMATTER = new Intl.NumberFormat("ja-JP");
 const INTERACTIVE_SEMANTIC_LAYER_IDS = [
   "jp-point-circle",
@@ -1919,12 +1918,17 @@ function buildPrefectureLabelSources(
   activeId: string,
   valueOverrides: ReadonlyMap<string, number | null> = new Map()
 ) {
-  const values = new Map(
-    regions
-      .filter((region): region is PrefectureBoundaryMapRegion => region.geometryKind === "prefecture-boundary")
-      .map((region) => [region.id, region.value] as const)
+  const prefectureRegions = regions.filter(
+    (region): region is PrefectureBoundaryMapRegion => region.geometryKind === "prefecture-boundary"
   );
-  const collections = buildPrefectureLabelFeatureCollections(PREFECTURE_LABEL_LAYOUT, activeId);
+  const values = new Map(prefectureRegions.map((region) => [region.id, region.value] as const));
+  const currentBoundaryTuples = new Set(prefectureRegions.map((region) => (
+    `${region.prefectureCode}\u0000${region.id}`
+  )));
+  const currentLayout = PREFECTURE_LABEL_LAYOUT.filter((entry) => (
+    currentBoundaryTuples.has(`${entry.prefectureCode}\u0000${entry.entityId}`)
+  ));
+  const collections = buildPrefectureLabelFeatureCollections(currentLayout, activeId);
   const addMetricState = <T extends { properties: Record<string, unknown> }>(feature: T) => {
     const entityId = feature.properties.entityId as string;
     const value = valueOverrides.has(entityId) ? valueOverrides.get(entityId)! : values.get(entityId) ?? null;

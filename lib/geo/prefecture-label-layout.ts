@@ -1,3 +1,6 @@
+import importedPrefectureLabelLayout from "../../data/geo/japan-prefecture-labels.json";
+import { prefectureBoundaryCollection } from "./prefecture-boundaries";
+
 export const PREFECTURE_LABEL_FONT_SIZE = 12;
 export const PREFECTURE_LABEL_LINE_HEIGHT = 18;
 export const PREFECTURE_LABEL_LEADER_THRESHOLD_PX = 28;
@@ -47,6 +50,103 @@ const DEFAULT_PROJECTION: PrefectureLabelProjection = {
   zoom: 5.3,
   viewport: { width: 1440, height: 900 }
 };
+
+const JAPAN_LAYOUT_BOUNDS = Object.freeze({
+  minLongitude: 122,
+  maxLongitude: 154,
+  minLatitude: 20,
+  maxLatitude: 46
+});
+
+export function assertPrefectureLabelLayout(
+  value: unknown
+): asserts value is readonly PrefectureLabelLayoutEntry[] {
+  if (!Array.isArray(value)) {
+    throw new Error("Invalid prefecture label layout: root must be an array");
+  }
+  if (value.length !== 47) {
+    throw new Error(
+      `Invalid prefecture label layout: expected exactly 47 entries, received ${value.length}`
+    );
+  }
+
+  const seenCodes = new Set<string>();
+  const seenEntityIds = new Set<string>();
+  const seenLabels = new Set<string>();
+
+  for (const [index, candidate] of value.entries()) {
+    if (candidate === null || typeof candidate !== "object" || Array.isArray(candidate)) {
+      throw new Error(`Invalid prefecture label layout: entry ${index} must be an object`);
+    }
+
+    const record = candidate as Record<string, unknown>;
+    const { prefectureCode, entityId, label } = record;
+    if (typeof prefectureCode !== "string") {
+      throw new Error(`Invalid prefecture label layout: entry ${index} prefectureCode must be a string`);
+    }
+    if (typeof entityId !== "string" || !/^prefecture:[a-z-]+$/.test(entityId)) {
+      throw new Error(`Invalid prefecture label layout: prefectureCode ${prefectureCode} entityId is malformed`);
+    }
+    if (typeof label !== "string" || label.trim() !== label || !/[都道府県]$/.test(label)) {
+      throw new Error(`Invalid prefecture label layout: prefectureCode ${prefectureCode} label is not a full Japanese prefecture name`);
+    }
+    if (seenCodes.has(prefectureCode)) {
+      throw new Error(`Invalid prefecture label layout: duplicate prefectureCode ${prefectureCode}`);
+    }
+    if (seenEntityIds.has(entityId)) {
+      throw new Error(`Invalid prefecture label layout: duplicate entityId ${entityId}`);
+    }
+    if (seenLabels.has(label)) {
+      throw new Error(`Invalid prefecture label layout: duplicate label ${label}`);
+    }
+    seenCodes.add(prefectureCode);
+    seenEntityIds.add(entityId);
+    seenLabels.add(label);
+
+    const expectedCode = `JP-${String(index + 1).padStart(2, "0")}`;
+    if (prefectureCode !== expectedCode) {
+      throw new Error(
+        `Invalid prefecture label layout: entry ${index} prefectureCode mismatch; expected ${expectedCode}, received ${prefectureCode}`
+      );
+    }
+
+    const canonical = prefectureBoundaryCollection.features[index]?.properties;
+    if (!canonical || canonical.prefectureCode !== prefectureCode) {
+      throw new Error(`Invalid prefecture label layout: missing canonical boundary for ${prefectureCode}`);
+    }
+    if (entityId !== canonical.entityId) {
+      throw new Error(
+        `Invalid prefecture label layout: prefectureCode ${prefectureCode} entityId mismatch; expected ${canonical.entityId}, received ${entityId}`
+      );
+    }
+    if (label !== canonical.labelJa) {
+      throw new Error(
+        `Invalid prefecture label layout: prefectureCode ${prefectureCode} label mismatch; expected ${canonical.labelJa}, received ${label}`
+      );
+    }
+
+    assertLayoutCoordinate(record.targetAnchor, prefectureCode, "targetAnchor");
+    assertLayoutCoordinate(record.displayAnchor, prefectureCode, "displayAnchor");
+  }
+}
+
+export function loadPrefectureLabelLayout(value: unknown): readonly PrefectureLabelLayoutEntry[] {
+  assertPrefectureLabelLayout(value);
+  const cloned = value.map((entry): PrefectureLabelLayoutEntry => {
+    const targetAnchor: Coordinate = Object.freeze([entry.targetAnchor[0], entry.targetAnchor[1]]);
+    const displayAnchor: Coordinate = Object.freeze([entry.displayAnchor[0], entry.displayAnchor[1]]);
+    return Object.freeze({
+      prefectureCode: entry.prefectureCode,
+      entityId: entry.entityId,
+      label: entry.label,
+      targetAnchor,
+      displayAnchor
+    });
+  });
+  return Object.freeze(cloned);
+}
+
+export const prefectureLabelLayout = loadPrefectureLabelLayout(importedPrefectureLabelLayout);
 
 export function buildPrefectureLabelFeatureCollections(
   entries: readonly PrefectureLabelLayoutEntry[],
@@ -176,6 +276,34 @@ function projectedDisplacement(entry: PrefectureLabelLayoutEntry, projection: Pr
     projection.viewport
   );
   return Math.hypot(display.x - target.x, display.y - target.y);
+}
+
+function assertLayoutCoordinate(
+  value: unknown,
+  prefectureCode: string,
+  anchorName: "targetAnchor" | "displayAnchor"
+): asserts value is Coordinate {
+  if (!Array.isArray(value) || value.length !== 2) {
+    throw new Error(
+      `Invalid prefecture label layout: prefectureCode ${prefectureCode} ${anchorName} must be a two-coordinate tuple`
+    );
+  }
+  const [longitude, latitude] = value;
+  if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
+    throw new Error(
+      `Invalid prefecture label layout: prefectureCode ${prefectureCode} ${anchorName} must contain finite coordinates`
+    );
+  }
+  if (
+    longitude < JAPAN_LAYOUT_BOUNDS.minLongitude
+    || longitude > JAPAN_LAYOUT_BOUNDS.maxLongitude
+    || latitude < JAPAN_LAYOUT_BOUNDS.minLatitude
+    || latitude > JAPAN_LAYOUT_BOUNDS.maxLatitude
+  ) {
+    throw new Error(
+      `Invalid prefecture label layout: prefectureCode ${prefectureCode} ${anchorName} must stay within Japan bounds`
+    );
+  }
 }
 
 function buildProperties(entry: PrefectureLabelLayoutEntry, activeId: string): LabelProperties {

@@ -217,6 +217,9 @@ describe("map canvas layer config", () => {
       }>;
     };
     const representativeRegions = addedSources.get("jp-regions") as { features: unknown[] };
+    const prefectureLabels = addedSources.get("jp-prefecture-labels") as { features: unknown[] };
+    const selectedPrefectureLabels = addedSources.get("jp-prefecture-selected-labels") as { features: unknown[] };
+    const prefectureLeaders = addedSources.get("jp-prefecture-leaders") as { features: unknown[] };
     const fill = getAddedLayer("jp-prefecture-fill") as any;
     const outline = getAddedLayer("jp-prefecture-outline") as any;
     const selectedOutline = getAddedLayer("jp-prefecture-selected-outline") as any;
@@ -229,6 +232,9 @@ describe("map canvas layer config", () => {
       attribution: "境界: Made with Natural Earth（加工）"
     });
     expect(prefectures.features).toHaveLength(47);
+    expect(prefectureLabels.features).toHaveLength(47);
+    expect(selectedPrefectureLabels.features).toHaveLength(1);
+    expect(prefectureLeaders.features.length).toBeGreaterThan(0);
     expect(prefectures.features[0].geometry).toBe(prefectureBoundaryCollection.features[0].geometry);
     expect(prefectures.features.find((feature) => feature.properties.entityId === "prefecture:tokyo")?.properties.selected).toBe(true);
     expect(representativeRegions.features).toEqual([]);
@@ -757,6 +763,58 @@ describe("map canvas layer config", () => {
       properties: { id: "basin:kanto" }
     });
     expect(representativeRegions.features.some((feature) => feature.properties.id.startsWith("prefecture:"))).toBe(false);
+  });
+
+  test("keeps every prefecture label source empty for representative-radius-only choropleths", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="reservoir:ogouchi"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{
+          ...model,
+          regions: [{
+            id: "reservoir:ogouchi",
+            label: "小河内貯水池",
+            lat: 35.79,
+            lon: 139.05,
+            geometryKind: "representative-radius",
+            value: 77,
+            rawValue: 77,
+            unit: "%",
+            periodLabel: "現在"
+          }]
+        }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("water")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("jp-prefecture-labels")).toBe(true);
+    });
+
+    for (const sourceId of [
+      "jp-prefecture-labels",
+      "jp-prefecture-selected-labels",
+      "jp-prefecture-leaders"
+    ]) {
+      expect(addedSources.get(sourceId), sourceId).toEqual({
+        type: "FeatureCollection",
+        features: []
+      });
+    }
+
+    for (const layerId of [
+      "jp-prefecture-label",
+      "jp-prefecture-selected-label",
+      "jp-prefecture-leader-line"
+    ]) {
+      const layer = getAddedLayer(layerId) as { source: string };
+      const source = addedSources.get(layer.source) as { features: unknown[] };
+      expect(source.features, layerId).toEqual([]);
+    }
   });
 
   test("keeps global relationship lines available when zooming into Japan", async () => {
