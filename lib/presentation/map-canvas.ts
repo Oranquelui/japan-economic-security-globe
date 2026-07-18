@@ -23,19 +23,29 @@ export type JapanMapRoute = {
   relatedIds: string[];
 };
 
-export type JapanMapRegion = {
+type JapanMapRegionCommon = {
   id: string;
   label: string;
   lat: number;
   lon: number;
-  geometryKind: "prefecture-boundary" | "representative-radius";
-  prefectureCode?: `JP-${string}`;
-  value: number | null;
-  rawValue?: number;
   unit?: string;
   periodLabel?: string;
   sourceIds?: string[];
 };
+
+type JapanMapRegionMetricState =
+  | { value: number; rawValue: number }
+  | { value: null; rawValue?: never };
+
+export type PrefectureBoundaryMapRegion = JapanMapRegionCommon &
+  { geometryKind: "prefecture-boundary"; prefectureCode: `JP-${string}` } &
+  JapanMapRegionMetricState;
+
+export type RepresentativeRadiusMapRegion = JapanMapRegionCommon &
+  { geometryKind: "representative-radius"; prefectureCode?: never } &
+  JapanMapRegionMetricState;
+
+export type JapanMapRegion = PrefectureBoundaryMapRegion | RepresentativeRadiusMapRegion;
 
 export type JapanMapCorridor = {
   id: string;
@@ -146,8 +156,12 @@ function buildThemeWideMapCanvasModel(
   );
   let normalizedIndex = 0;
   const regions = regionCandidates.map((candidate) => {
-    const hasMetric = candidate.metric !== undefined;
-    const normalizedValue = hasMetric ? normalizedMetrics[normalizedIndex++] : null;
+    const metricState: JapanMapRegionMetricState = candidate.metric === undefined
+      ? { value: null }
+      : {
+          value: normalizedMetrics[normalizedIndex++],
+          rawValue: candidate.metric
+        };
 
     return {
       id: candidate.entity.id,
@@ -155,8 +169,7 @@ function buildThemeWideMapCanvasModel(
       lat: candidate.entity.coordinates!.lat,
       lon: candidate.entity.coordinates!.lon,
       geometryKind: "representative-radius" as const,
-      value: normalizedValue,
-      ...(hasMetric ? { rawValue: candidate.metric } : {}),
+      ...metricState,
       ...(view.id === "rice"
         ? {
             unit: "トン",
@@ -204,12 +217,15 @@ function buildRegionalMetricMapCanvasModel(
   const { entityKind, property } = layer.content;
   const candidates = view.entities
     .filter((entity) => entity.kind === entityKind && entity.coordinates)
-    .map((entity) => ({
-      entity,
-      metric: typeof entity.properties?.[property] === "number"
-        ? entity.properties[property] as number
-        : undefined
-    }));
+    .map((entity) => {
+      const value = entity.properties?.[property];
+      return {
+        entity,
+        metric: typeof value === "number" && Number.isFinite(value)
+          ? value
+          : undefined
+      };
+    });
   const normalized = normalizeRegionalMetrics(
     candidates.flatMap((candidate) => candidate.metric === undefined ? [] : [candidate.metric]),
     view.id
@@ -220,28 +236,52 @@ function buildRegionalMetricMapCanvasModel(
   return {
     ...emptyMapCanvasModel(),
     regions: candidates.map(({ entity, metric }) => {
-      const boundary = usesPrefectureBoundary
-        ? prefectureBoundaryByEntityId.get(entity.id as `prefecture:${string}`)
-        : undefined;
-
-      if (usesPrefectureBoundary && !boundary) {
-        throw new Error(`Missing prefecture boundary for entityId: ${entity.id}`);
-      }
-
-      return {
+      const common = {
         id: entity.id,
         label: localizeAnyLabel(entity.id, entity.label),
         lat: entity.coordinates!.lat,
         lon: entity.coordinates!.lon,
-        geometryKind: usesPrefectureBoundary
-          ? "prefecture-boundary" as const
-          : "representative-radius" as const,
-        ...(boundary ? { prefectureCode: boundary.properties.prefectureCode } : {}),
-        value: metric === undefined ? null : normalized[normalizedIndex++],
-        ...(metric === undefined ? {} : { rawValue: metric }),
         ...(layer.legend.unit ? { unit: layer.legend.unit } : {}),
         periodLabel: layer.periodLabel,
         sourceIds: layer.sourceIds
+      };
+
+      if (usesPrefectureBoundary) {
+        const boundary = prefectureBoundaryByEntityId.get(
+          entity.id as `prefecture:${string}`
+        );
+        if (!boundary) {
+          throw new Error(`Missing prefecture boundary for entityId: ${entity.id}`);
+        }
+        if (metric === undefined) {
+          return {
+            ...common,
+            geometryKind: "prefecture-boundary" as const,
+            prefectureCode: boundary.properties.prefectureCode,
+            value: null
+          };
+        }
+        return {
+          ...common,
+          geometryKind: "prefecture-boundary" as const,
+          prefectureCode: boundary.properties.prefectureCode,
+          value: normalized[normalizedIndex++],
+          rawValue: metric
+        };
+      }
+
+      if (metric === undefined) {
+        return {
+          ...common,
+          geometryKind: "representative-radius" as const,
+          value: null
+        };
+      }
+      return {
+        ...common,
+        geometryKind: "representative-radius" as const,
+        value: normalized[normalizedIndex++],
+        rawValue: metric
       };
     })
   };
@@ -722,11 +762,21 @@ function classifyDomesticTone(entity: SemanticEntity): JapanMapPoint["tone"] {
 function getRegionalMetric(entity: SemanticEntity, themeId: ThemeView["id"]): number | undefined {
   const properties = entity.properties ?? {};
 
-  if (themeId === "rice" && entity.kind === "Prefecture" && typeof properties.riceMainUseHarvestTonsR5 === "number") {
+  if (
+    themeId === "rice" &&
+    entity.kind === "Prefecture" &&
+    typeof properties.riceMainUseHarvestTonsR5 === "number" &&
+    Number.isFinite(properties.riceMainUseHarvestTonsR5)
+  ) {
     return properties.riceMainUseHarvestTonsR5;
   }
 
-  if (themeId === "water" && entity.kind === "Reservoir" && typeof properties.latestFillRatePercent === "number") {
+  if (
+    themeId === "water" &&
+    entity.kind === "Reservoir" &&
+    typeof properties.latestFillRatePercent === "number" &&
+    Number.isFinite(properties.latestFillRatePercent)
+  ) {
     return properties.latestFillRatePercent;
   }
 

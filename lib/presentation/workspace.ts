@@ -13,7 +13,7 @@ import type {
 } from "../../types/presentation";
 import type { LiveLogisticsViewModel } from "../../types/logistics";
 import type { SemanticGraph, ThemeId } from "../../types/semantic";
-import { NATURAL_EARTH_PREFECTURE_SOURCE_ID } from "../geo/prefecture-map";
+import { NATURAL_EARTH_PREFECTURE_SOURCE_ID } from "../geo/prefecture-source";
 import { localizeAnyLabel } from "./japanese";
 import type { OperationMapMode } from "./operations";
 import { isRenderableMapRoute } from "./route-status";

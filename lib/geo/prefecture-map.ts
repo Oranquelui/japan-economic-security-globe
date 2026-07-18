@@ -3,19 +3,9 @@ import {
   prefectureBoundaryCollection
 } from "./prefecture-boundaries";
 import type { PrefectureBoundaryFeature } from "./prefecture-boundaries";
+import type { PrefectureBoundaryMapRegion } from "../presentation/map-canvas";
 
-export const NATURAL_EARTH_PREFECTURE_SOURCE_ID =
-  "source:natural-earth-admin1-japan-5-1-1";
-
-export type PrefectureMetricRegion = Readonly<{
-  id: string;
-  label: string;
-  value: number | null;
-  rawValue?: number;
-  unit?: string;
-  periodLabel?: string;
-  sourceIds?: readonly string[];
-}>;
+export type PrefectureMetricRegion = PrefectureBoundaryMapRegion;
 
 export type PrefectureMetricFeature = Readonly<{
   type: "Feature";
@@ -87,11 +77,73 @@ function validatePrefectureMetricRegions(
     if (regionByEntityId.has(region.id)) {
       throw new Error(`Duplicate prefecture metric entityId: ${region.id}`);
     }
-    if (!prefectureBoundaryByEntityId.has(region.id as `prefecture:${string}`)) {
-      throw new Error(`Unmatched prefecture metric entityId: ${region.id}`);
-    }
     regionByEntityId.set(region.id, region);
   }
 
+  for (const region of regions) {
+    const boundary = prefectureBoundaryByEntityId.get(region.id as `prefecture:${string}`);
+    if (!boundary) {
+      throw new Error(`Unmatched prefecture metric entityId: ${region.id}`);
+    }
+    validatePrefectureGeometry(region, boundary);
+    validatePrefectureMetricState(region);
+  }
+
   return regionByEntityId;
+}
+
+function validatePrefectureGeometry(
+  region: PrefectureMetricRegion,
+  boundary: PrefectureBoundaryFeature
+): void {
+  const candidate = region as unknown as Record<string, unknown>;
+  const geometryKind = candidate.geometryKind;
+  if (geometryKind !== "prefecture-boundary") {
+    throw new Error(
+      `Invalid prefecture geometryKind for entityId: ${region.id}; expected prefecture-boundary, received ${String(geometryKind)}`
+    );
+  }
+
+  const prefectureCode = candidate.prefectureCode;
+  if (typeof prefectureCode !== "string") {
+    throw new Error(`Missing prefectureCode for entityId: ${region.id}`);
+  }
+  if (prefectureCode !== boundary.properties.prefectureCode) {
+    throw new Error(
+      `Mismatched prefectureCode for entityId: ${region.id}; expected ${boundary.properties.prefectureCode}, received ${prefectureCode}`
+    );
+  }
+}
+
+function validatePrefectureMetricState(region: PrefectureMetricRegion): void {
+  const candidate = region as unknown as Record<string, unknown>;
+  const value = candidate.value;
+  const hasRawValue = Object.prototype.hasOwnProperty.call(candidate, "rawValue");
+
+  if (value === null) {
+    if (hasRawValue) {
+      throw new Error(
+        `Invalid prefecture metric state for entityId: ${region.id}; null value forbids rawValue`
+      );
+    }
+    return;
+  }
+
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(
+      `Invalid prefecture metric value for entityId: ${region.id}; expected a finite number`
+    );
+  }
+  if (!hasRawValue) {
+    throw new Error(
+      `Invalid prefecture metric state for entityId: ${region.id}; finite value requires finite rawValue`
+    );
+  }
+
+  const rawValue = candidate.rawValue;
+  if (typeof rawValue !== "number" || !Number.isFinite(rawValue)) {
+    throw new Error(
+      `Invalid prefecture metric rawValue for entityId: ${region.id}; expected a finite number`
+    );
+  }
 }

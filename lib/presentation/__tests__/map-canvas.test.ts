@@ -6,9 +6,76 @@ import { loadSeedGraph, loadSeedLiveLogistics } from "../../data/seed-loader";
 import { buildLiveLogisticsView } from "../live-logistics";
 import { getThemeView } from "../../semantic/selectors";
 import { buildJapanMapCanvasModel } from "../map-canvas";
+import type { JapanMapRegion } from "../map-canvas";
 import { buildWorkspacePresentation, resolveLegacyPresentation } from "../workspace";
 
 describe("japan map canvas model", () => {
+  test("types geometry and metric state as strict discriminated pairs", () => {
+    const validBoundaryMetric: JapanMapRegion = {
+      id: "prefecture:tokyo",
+      label: "東京都",
+      lat: 35.6762,
+      lon: 139.6503,
+      geometryKind: "prefecture-boundary",
+      prefectureCode: "JP-13",
+      value: 50,
+      rawValue: 465
+    };
+    const validMissingRadius: JapanMapRegion = {
+      id: "reservoir:test",
+      label: "テスト貯水池",
+      lat: 35,
+      lon: 139,
+      geometryKind: "representative-radius",
+      value: null
+    };
+
+    // @ts-expect-error Prefecture boundaries require a stable prefecture code.
+    const boundaryWithoutCode: JapanMapRegion = {
+      id: "prefecture:tokyo",
+      label: "東京都",
+      lat: 35.6762,
+      lon: 139.6503,
+      geometryKind: "prefecture-boundary",
+      value: null
+    };
+    const radiusWithCode: JapanMapRegion = {
+      id: "reservoir:test",
+      label: "テスト貯水池",
+      lat: 35,
+      lon: 139,
+      geometryKind: "representative-radius",
+      // @ts-expect-error Representative-radius regions cannot carry a prefecture code.
+      prefectureCode: "JP-13",
+      value: null
+    };
+    // @ts-expect-error A finite normalized value requires a paired raw value.
+    const normalizedWithoutRaw: JapanMapRegion = {
+      id: "reservoir:test",
+      label: "テスト貯水池",
+      lat: 35,
+      lon: 139,
+      geometryKind: "representative-radius",
+      value: 50
+    };
+    // @ts-expect-error A missing normalized value cannot carry a raw value.
+    const missingWithRaw: JapanMapRegion = {
+      id: "reservoir:test",
+      label: "テスト貯水池",
+      lat: 35,
+      lon: 139,
+      geometryKind: "representative-radius",
+      value: null,
+      rawValue: 10
+    };
+
+    expect([validBoundaryMetric, validMissingRadius]).toHaveLength(2);
+    void boundaryWithoutCode;
+    void radiusWithCode;
+    void normalizedWithoutRaw;
+    void missingWithRaw;
+  });
+
   test("starts Japan-first but prepares global overlay points and routes for zoom-out", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "energy");

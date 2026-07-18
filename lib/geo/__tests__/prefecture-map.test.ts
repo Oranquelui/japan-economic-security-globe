@@ -1,17 +1,67 @@
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, extname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, test } from "vitest";
 
-import type { JapanMapRegion } from "../../presentation/map-canvas";
 import { prefectureBoundaryCollection } from "../prefecture-boundaries";
-import {
-  NATURAL_EARTH_PREFECTURE_SOURCE_ID,
-  buildPrefectureMetricFeatureCollection
-} from "../prefecture-map";
+import { buildPrefectureMetricFeatureCollection } from "../prefecture-map";
+import type { PrefectureMetricRegion } from "../prefecture-map";
+import { NATURAL_EARTH_PREFECTURE_SOURCE_ID } from "../prefecture-source";
 
 const METRIC_SOURCE_ID = "source:estat-rice-prefecture-harvest-r5";
+const testDirectory = dirname(fileURLToPath(import.meta.url));
 
-function metricRegions(): JapanMapRegion[] {
+function collectLocalModuleDependencies(entryPath: string): Set<string> {
+  const dependencies = new Set<string>();
+
+  function visit(modulePath: string): void {
+    if (dependencies.has(modulePath)) {
+      return;
+    }
+
+    dependencies.add(modulePath);
+    const source = readFileSync(modulePath, "utf8");
+    const importPattern = /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*)["']([^"']+)["']/g;
+
+    for (const match of source.matchAll(importPattern)) {
+      const specifier = match[1];
+      if (!specifier.startsWith(".")) {
+        continue;
+      }
+
+      const dependencyPath = resolveLocalModulePath(modulePath, specifier);
+      if (!dependencyPath) {
+        throw new Error(`Cannot resolve local dependency ${specifier} from ${modulePath}`);
+      }
+      visit(dependencyPath);
+    }
+  }
+
+  visit(entryPath);
+  return dependencies;
+}
+
+function resolveLocalModulePath(fromPath: string, specifier: string): string | null {
+  const cleanSpecifier = specifier.split("?")[0];
+  const unresolvedPath = resolve(dirname(fromPath), cleanSpecifier);
+  const candidates = extname(unresolvedPath)
+    ? [unresolvedPath]
+    : [
+        `${unresolvedPath}.ts`,
+        `${unresolvedPath}.tsx`,
+        `${unresolvedPath}.js`,
+        `${unresolvedPath}.json`,
+        resolve(unresolvedPath, "index.ts"),
+        resolve(unresolvedPath, "index.tsx")
+      ];
+
+  return candidates.find((candidate) => existsSync(candidate)) ?? null;
+}
+
+function metricRegions(): PrefectureMetricRegion[] {
   return prefectureBoundaryCollection.features
-    .map((feature, index): JapanMapRegion => ({
+    .map((feature, index) => ({
       id: feature.properties.entityId,
       label: `表示名-${47 - index}`,
       lat: 20 + index,
@@ -23,16 +73,48 @@ function metricRegions(): JapanMapRegion[] {
       unit: "トン",
       periodLabel: "令和5年産",
       sourceIds: [METRIC_SOURCE_ID, NATURAL_EARTH_PREFECTURE_SOURCE_ID]
-    }))
+    } as PrefectureMetricRegion))
     .reverse();
 }
 
+function replaceHokkaido(
+  regions: PrefectureMetricRegion[],
+  replacement: (region: PrefectureMetricRegion) => PrefectureMetricRegion
+): PrefectureMetricRegion[] {
+  return regions.map((region) =>
+    region.id === "prefecture:hokkaido" ? replacement(region) : region
+  );
+}
+
 describe("prefecture metric feature collection", () => {
+  test("keeps presentation-only workspace lookup independent from boundary artifact modules", () => {
+    const workspacePath = resolve(testDirectory, "../../presentation/workspace.ts");
+    const prefectureMapPath = resolve(testDirectory, "../prefecture-map.ts");
+    const prefectureBoundariesPath = resolve(testDirectory, "../prefecture-boundaries.ts");
+    const prefectureSourcePath = resolve(testDirectory, "../prefecture-source.ts");
+    const workspaceDependencies = collectLocalModuleDependencies(workspacePath);
+
+    expect(workspaceDependencies).not.toContain(prefectureMapPath);
+    expect(workspaceDependencies).not.toContain(prefectureBoundariesPath);
+    expect(existsSync(prefectureSourcePath)).toBe(true);
+    expect([...collectLocalModuleDependencies(prefectureSourcePath)]).toEqual([
+      prefectureSourcePath
+    ]);
+  });
+
   test("joins all 47 boundaries by entityId rather than display label", () => {
-    const regions = metricRegions();
+    const originalRegions = metricRegions();
+    const originalTokyo = originalRegions.find((region) => region.id === "prefecture:tokyo")!;
+    const originalOsaka = originalRegions.find((region) => region.id === "prefecture:osaka")!;
+    const regions = originalRegions.map((region) => ({
+      ...region,
+      label: region.id === originalTokyo.id
+        ? originalOsaka.label
+        : region.id === originalOsaka.id
+          ? originalTokyo.label
+          : region.label
+    } as PrefectureMetricRegion));
     const tokyoRegion = regions.find((region) => region.id === "prefecture:tokyo")!;
-    const osakaRegion = regions.find((region) => region.id === "prefecture:osaka")!;
-    [tokyoRegion.label, osakaRegion.label] = [osakaRegion.label, tokyoRegion.label];
 
     const collection = buildPrefectureMetricFeatureCollection(
       regions,
@@ -78,6 +160,82 @@ describe("prefecture metric feature collection", () => {
       rawValue: null,
       selected: false
     });
+  });
+
+  test.each([
+    {
+      name: "missing prefectureCode",
+      replacement: (region: PrefectureMetricRegion) => {
+        const withoutCode = { ...region } as Record<string, unknown>;
+        delete withoutCode.prefectureCode;
+        return withoutCode as unknown as PrefectureMetricRegion;
+      },
+      error: "Missing prefectureCode for entityId: prefecture:hokkaido"
+    },
+    {
+      name: "mismatched prefectureCode",
+      replacement: (region: PrefectureMetricRegion) => ({
+        ...region,
+        prefectureCode: "JP-02"
+      } as PrefectureMetricRegion),
+      error: "Mismatched prefectureCode for entityId: prefecture:hokkaido; expected JP-01, received JP-02"
+    },
+    {
+      name: "representative-radius geometry",
+      replacement: (region: PrefectureMetricRegion) => ({
+        ...region,
+        geometryKind: "representative-radius"
+      } as unknown as PrefectureMetricRegion),
+      error: "Invalid prefecture geometryKind for entityId: prefecture:hokkaido; expected prefecture-boundary, received representative-radius"
+    }
+  ])("rejects $name at the builder boundary", ({ replacement, error }) => {
+    const regions = replaceHokkaido(metricRegions(), replacement);
+
+    expect(() => buildPrefectureMetricFeatureCollection(regions, "prefecture:tokyo")).toThrow(
+      error
+    );
+  });
+
+  test.each([
+    {
+      name: "normalized value without rawValue",
+      replacement: (region: PrefectureMetricRegion) => ({
+        ...region,
+        value: 50
+      } as unknown as PrefectureMetricRegion),
+      error: "Invalid prefecture metric state for entityId: prefecture:hokkaido; finite value requires finite rawValue"
+    },
+    {
+      name: "rawValue attached to null",
+      replacement: (region: PrefectureMetricRegion) => ({
+        ...region,
+        rawValue: 10
+      } as unknown as PrefectureMetricRegion),
+      error: "Invalid prefecture metric state for entityId: prefecture:hokkaido; null value forbids rawValue"
+    }
+  ])("rejects $name", ({ replacement, error }) => {
+    const regions = replaceHokkaido(metricRegions(), replacement);
+
+    expect(() => buildPrefectureMetricFeatureCollection(regions, "prefecture:tokyo")).toThrow(
+      error
+    );
+  });
+
+  test.each([
+    { name: "NaN normalized value", value: Number.NaN, rawValue: 10, field: "value" },
+    { name: "infinite normalized value", value: Number.POSITIVE_INFINITY, rawValue: 10, field: "value" },
+    { name: "NaN raw value", value: 50, rawValue: Number.NaN, field: "rawValue" },
+    { name: "infinite raw value", value: 50, rawValue: Number.NEGATIVE_INFINITY, field: "rawValue" }
+  ])("rejects $name", ({ value, rawValue, field }) => {
+    const regions = replaceHokkaido(metricRegions(), (region) => ({
+      ...region,
+      value,
+      rawValue
+    } as unknown as PrefectureMetricRegion));
+
+    expect(() => buildPrefectureMetricFeatureCollection(regions, "prefecture:tokyo")).toThrow(
+      `Invalid prefecture metric ${field} for entityId: prefecture:hokkaido; expected a finite number`
+    );
   });
 
   test("does not mutate metric inputs or the immutable boundary artifact", () => {
