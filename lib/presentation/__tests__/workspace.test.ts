@@ -201,6 +201,36 @@ describe("workspace layer registry", () => {
       mapModeOverride: "point"
     });
   });
+
+  test("makes route layers available only when their flows can render on the map", () => {
+    const graph = loadSeedGraph();
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-07-18T00:00:00Z")
+    );
+    const cases = [
+      ["rice", "rice-logistics-inputs", false, null],
+      ["defense", "defense-dependencies", false, null],
+      ["semiconductors", "semiconductors-route", false, null],
+      ["energy", "energy-route", true, null],
+      ["regional-security", "regional-security-route", true, null],
+      ["logistics", "logistics-domestic", true, live]
+    ] as const;
+
+    for (const [themeId, layerId, expected, liveInput] of cases) {
+      const workspace = buildWorkspacePresentation(
+        graph,
+        getThemeView(graph, themeId),
+        liveInput
+      );
+      expect(
+        getLayerDefinition(themeId, layerId, workspace)?.available,
+        `${layerId} availability`
+      ).toBe(expected);
+    }
+  });
 });
 
 describe("live logistics layer availability", () => {

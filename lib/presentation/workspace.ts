@@ -15,6 +15,7 @@ import type { SemanticGraph, ThemeId } from "../../types/semantic";
 import { localizeAnyLabel } from "./japanese";
 import { hasLogisticsImpactGeometry } from "./map-canvas";
 import type { OperationMapMode } from "./operations";
+import { isRenderableMapRoute } from "./route-status";
 
 const RICE_HARVEST_SOURCE_ID = "source:estat-rice-prefecture-harvest-r5";
 const numberFormatter = new Intl.NumberFormat("ja-JP");
@@ -560,9 +561,17 @@ function hasLayerInput(
     case "observations":
       return content.observationIds.every((id) => graph.observations.some((observation) => observation.id === id));
     case "flows":
-      return content.flowIds === "theme"
-        ? view.flows.length > 0
-        : content.flowIds.every((id) => graph.flows.some((flow) => flow.id === id));
+      if (content.flowIds === "theme") {
+        return view.flows.some(isRenderableMapRoute);
+      }
+
+      const explicitFlows = content.flowIds.map((id) =>
+        graph.flows.find((flow) => flow.id === id)
+      );
+      return (
+        explicitFlows.every((flow) => flow !== undefined) &&
+        explicitFlows.some((flow) => flow !== undefined && isRenderableMapRoute(flow))
+      );
     case "entities":
       return view.entities.some((entity) => content.entityKinds.includes(entity.kind));
     case "live-logistics":
