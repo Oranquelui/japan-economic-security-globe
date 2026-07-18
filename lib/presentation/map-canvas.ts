@@ -599,6 +599,7 @@ function buildLogisticsImpactRegions(graph: SemanticGraph, themeId: ThemeView["i
 
   return regionIds.flatMap((id, index): JapanMapRegion[] => {
     const entity = graph.entities.find((candidate) => candidate.id === id);
+    const value = [92, 76, 68][index] ?? 60;
 
     if (!entity?.coordinates) {
       return [];
@@ -609,7 +610,10 @@ function buildLogisticsImpactRegions(graph: SemanticGraph, themeId: ThemeView["i
       label: localizeAnyLabel(entity.id, entity.label),
       lat: entity.coordinates.lat,
       lon: entity.coordinates.lon,
-      value: [92, 76, 68][index] ?? 60
+      value,
+      rawValue: value,
+      unit: "影響指数",
+      periodLabel: "現在"
     }];
   });
 }

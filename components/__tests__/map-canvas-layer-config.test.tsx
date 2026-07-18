@@ -9,7 +9,12 @@ import type { JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
 
 const addedLayers: Array<Record<string, unknown>> = [];
 const addedSources = new Map<string, unknown>();
-const registeredLayerHandlers = new Map<string, (...args: any[]) => void>();
+const registeredLayerHandlers: Array<{
+  event: string;
+  handler: (...args: any[]) => void;
+  layerIds: string[];
+  unsubscribe: ReturnType<typeof vi.fn>;
+}> = [];
 let lastMap: {
   fitBounds: ReturnType<typeof vi.fn>;
 } | null = null;
@@ -47,14 +52,23 @@ vi.mock("maplibre-gl", () => {
       lastMap = this;
     }
 
-    on = vi.fn((event: string, layerOrHandler: string | ((...args: unknown[]) => void), handler?: (...args: any[]) => void) => {
+    on = vi.fn((event: string, layerOrHandler: string | string[] | ((...args: unknown[]) => void), handler?: (...args: any[]) => void) => {
       if (event === "load" && typeof layerOrHandler === "function") {
         layerOrHandler();
       }
 
-      if (typeof layerOrHandler === "string" && handler) {
-        registeredLayerHandlers.set(`${event}:${layerOrHandler}`, handler);
+      if ((typeof layerOrHandler === "string" || Array.isArray(layerOrHandler)) && handler) {
+        const registration = {
+          event,
+          handler,
+          layerIds: Array.isArray(layerOrHandler) ? layerOrHandler : [layerOrHandler],
+          unsubscribe: vi.fn()
+        };
+        registeredLayerHandlers.push(registration);
+        return { unsubscribe: registration.unsubscribe };
       }
+
+      return { unsubscribe: vi.fn() };
     });
   }
 
@@ -72,7 +86,7 @@ afterEach(() => {
   cleanup();
   addedLayers.length = 0;
   addedSources.clear();
-  registeredLayerHandlers.clear();
+  registeredLayerHandlers.length = 0;
   lastMap = null;
   mapCanvasSize = { width: 1024, height: 720 };
 });
@@ -456,12 +470,12 @@ describe("map canvas layer config", () => {
     );
 
     await waitFor(() => {
-      expect(registeredLayerHandlers.has("click:live-vessel-halo")).toBe(true);
-      expect(registeredLayerHandlers.has("click:live-vessel-label")).toBe(true);
-      expect(registeredLayerHandlers.has("click:live-vessel-marker")).toBe(true);
+      expect(getLayerHandler("click", "live-vessel-halo")).toBeDefined();
+      expect(getLayerHandler("click", "live-vessel-label")).toBeDefined();
+      expect(getLayerHandler("click", "live-vessel-marker")).toBeDefined();
     });
 
-    registeredLayerHandlers.get("click:live-vessel-halo")?.({
+    getLayerHandler("click", "live-vessel-halo")?.({
       features: [{ properties: { selectionId: "live-logistics:tanker-qatar-tokyo-bay" } }],
       point: { x: 900, y: 280 }
     });
@@ -532,7 +546,7 @@ describe("map canvas layer config", () => {
     );
 
     await waitFor(() => {
-      expect(registeredLayerHandlers.has("mousemove:jp-region-fill")).toBe(true);
+      expect(getLayerHandler("mousemove", "jp-region-fill")).toBeDefined();
     });
 
     const regions = addedSources.get("jp-regions") as {
@@ -550,7 +564,7 @@ describe("map canvas layer config", () => {
       hasData: true
     });
 
-    registeredLayerHandlers.get("mousemove:jp-region-fill")?.({
+    getLayerHandler("mousemove", "jp-region-fill")?.({
       features: [{ properties: regions.features[0].properties }],
       point: { x: 432.4, y: 218.7 }
     });
@@ -566,7 +580,7 @@ describe("map canvas layer config", () => {
     });
     expect(onSelect).not.toHaveBeenCalled();
 
-    registeredLayerHandlers.get("mouseleave:jp-region-fill")?.();
+    getLayerHandler("mouseleave", "jp-region-fill")?.();
     expect(onHover).toHaveBeenLastCalledWith(null);
     expect(onSelect).not.toHaveBeenCalled();
   });
@@ -608,4 +622,127 @@ describe("map canvas layer config", () => {
     expect(JSON.stringify(regionFill.paint["fill-opacity"])).toContain("value");
     expect(JSON.stringify(regionOutline.paint["line-width"])).toContain("selected");
   });
+
+  test("registers one grouped interaction lifecycle for all semantic feature layers", async () => {
+    const { unmount } = render(
+      <JapanOperationsMapCanvas
+        activeId="prefecture:tokyo"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={model}
+        onHover={vi.fn()}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(groupedRegistrations("mousemove")).toHaveLength(1);
+    });
+
+    const groupedLayers = groupedRegistrations("mousemove")[0].layerIds;
+    expect(groupedLayers).toEqual(expect.arrayContaining([
+      "jp-region-fill",
+      "global-route-glow",
+      "logistics-impact-region-fill",
+      "logistics-impact-corridor-fill",
+      "live-vessel-marker"
+    ]));
+    expect(groupedRegistrations("mouseenter")).toHaveLength(1);
+    expect(groupedRegistrations("mouseleave")).toHaveLength(1);
+    expect(groupedRegistrations("click")).toHaveLength(1);
+    expect(getRegistrations("click").filter((registration) => registration.layerIds.includes("jp-cluster-circle"))).toHaveLength(1);
+
+    const groupedSubscriptions = registeredLayerHandlers.filter((registration) => registration.layerIds.length > 1);
+    unmount();
+    expect(groupedSubscriptions.every((registration) => registration.unsubscribe.mock.calls.length === 1)).toBe(true);
+  });
+
+  test("hovers and selects a logistics impact region through the shared handlers", async () => {
+    const onHover = vi.fn();
+    const onSelect = vi.fn();
+
+    render(
+      <JapanOperationsMapCanvas
+        activeId="prefecture:aichi"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{
+          ...model,
+          logisticsImpactRegions: [
+            {
+              id: "prefecture:tokyo",
+              label: "東京都",
+              lat: 35.6762,
+              lon: 139.6503,
+              value: 92,
+              rawValue: 92,
+              unit: "影響指数",
+              periodLabel: "現在"
+            }
+          ]
+        }}
+        onHover={onHover}
+        onSelect={onSelect}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getLayerHandler("mousemove", "logistics-impact-region-fill")).toBeDefined();
+      expect(getLayerHandler("click", "logistics-impact-region-fill")).toBeDefined();
+    });
+
+    const impactRegions = addedSources.get("logistics-impact-regions") as {
+      features: Array<{ properties: Record<string, unknown> }>;
+    };
+    expect(impactRegions.features[0].properties).toMatchObject({
+      id: "prefecture:tokyo",
+      label: "東京都",
+      selectionId: "prefecture:tokyo",
+      rawValue: 92,
+      unit: "影響指数",
+      period: "現在",
+      hasData: true
+    });
+
+    getLayerHandler("mousemove", "logistics-impact-region-fill")?.({
+      features: [{ properties: impactRegions.features[0].properties }],
+      point: { x: 310, y: 240 }
+    });
+    expect(onHover).toHaveBeenLastCalledWith({
+      selectionId: "prefecture:tokyo",
+      label: "東京都",
+      valueLabel: "92",
+      unitLabel: "影響指数",
+      periodLabel: "現在",
+      x: 310,
+      y: 240
+    });
+    expect(onSelect).not.toHaveBeenCalled();
+
+    getLayerHandler("click", "logistics-impact-region-fill")?.({
+      features: [{ properties: impactRegions.features[0].properties }],
+      point: { x: 310, y: 240 }
+    });
+    expect(onSelect).toHaveBeenCalledWith("prefecture:tokyo", {
+      placement: "right",
+      x: 310,
+      y: 240
+    });
+  });
 });
+
+function getRegistrations(event: string) {
+  return registeredLayerHandlers.filter((registration) => registration.event === event);
+}
+
+function groupedRegistrations(event: string) {
+  return getRegistrations(event).filter((registration) => registration.layerIds.length > 1);
+}
+
+function getLayerHandler(event: string, layerId: string) {
+  return getRegistrations(event).find((registration) => registration.layerIds.includes(layerId))?.handler;
+}

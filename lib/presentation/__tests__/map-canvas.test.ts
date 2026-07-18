@@ -161,6 +161,11 @@ describe("japan map canvas model", () => {
     expect(impactRegions.map((region) => region.id)).toEqual(
       expect.arrayContaining(["prefecture:tokyo", "prefecture:aichi", "prefecture:osaka"])
     );
+    expect(impactRegions.find((region) => region.id === "prefecture:tokyo")).toMatchObject({
+      rawValue: 92,
+      unit: "影響指数",
+      periodLabel: "現在"
+    });
     expect(impactRoutes.map((route) => route.id)).toEqual(
       expect.arrayContaining(["live-logistics:container-asia-yokohama", "live-logistics:road-keihin-tokyo"])
     );

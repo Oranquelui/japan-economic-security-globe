@@ -29,6 +29,24 @@ const INITIAL_ZOOM = 5.3;
 const GLOBAL_CONTEXT_MAX_ZOOM = 3.6;
 const DOMESTIC_CONTEXT_MIN_ZOOM = 3.2;
 const JA_NUMBER_FORMATTER = new Intl.NumberFormat("ja-JP");
+const INTERACTIVE_SEMANTIC_LAYER_IDS = [
+  "jp-point-circle",
+  "jp-route-line",
+  "jp-region-fill",
+  "global-point-circle",
+  "global-route-glow",
+  "global-route-line",
+  "live-logistics-route-glow",
+  "live-logistics-route-pulse",
+  "live-logistics-route-label",
+  "logistics-impact-region-fill",
+  "logistics-impact-corridor-fill",
+  "logistics-impact-corridor-outline",
+  "logistics-impact-corridor-label",
+  "live-vessel-halo",
+  "live-vessel-marker",
+  "live-vessel-label"
+];
 
 export function JapanOperationsMapCanvas({
   activeId,
@@ -51,6 +69,7 @@ export function JapanOperationsMapCanvas({
 
   useEffect(() => {
     let disposed = false;
+    const interactionSubscriptions: Array<{ unsubscribe: () => void }> = [];
 
     async function mount() {
       if (!containerRef.current || mapRef.current) {
@@ -627,70 +646,23 @@ export function JapanOperationsMapCanvas({
           }
         });
 
-        for (const layerId of [
-          "jp-point-circle",
-          "jp-route-line",
-          "jp-region-fill",
-          "jp-cluster-circle",
-          "global-point-circle",
-          "global-route-glow",
-          "global-route-line",
-          "live-logistics-route-glow",
-          "live-logistics-route-pulse",
-          "live-logistics-route-label",
-          "logistics-impact-corridor-fill",
-          "logistics-impact-corridor-outline",
-          "logistics-impact-corridor-label",
-          "live-vessel-halo",
-          "live-vessel-marker",
-          "live-vessel-label"
-        ]) {
-          map.on("mouseenter", layerId, () => {
+        interactionSubscriptions.push(
+          map.on("mouseenter", INTERACTIVE_SEMANTIC_LAYER_IDS, () => {
             map.getCanvas().style.cursor = "pointer";
-          });
-          map.on("mouseleave", layerId, () => {
+          }),
+          map.on("mousemove", INTERACTIVE_SEMANTIC_LAYER_IDS, (event: any) => {
+            hoverFeature(event, handleHover);
+          }),
+          map.on("mouseleave", INTERACTIVE_SEMANTIC_LAYER_IDS, () => {
             map.getCanvas().style.cursor = "";
-          });
-        }
+            handleHover(null);
+          }),
+          map.on("click", INTERACTIVE_SEMANTIC_LAYER_IDS, (event: any) => {
+            selectFeatureId(event, handleSelect, map);
+          })
+        );
 
-        for (const layerId of [
-          "jp-point-circle",
-          "jp-route-line",
-          "jp-region-fill",
-          "global-point-circle",
-          "global-route-glow",
-          "global-route-line",
-          "live-logistics-route-glow",
-          "live-logistics-route-pulse",
-          "live-logistics-route-label",
-          "logistics-impact-corridor-fill",
-          "logistics-impact-corridor-outline",
-          "logistics-impact-corridor-label",
-          "live-vessel-halo",
-          "live-vessel-marker",
-          "live-vessel-label"
-        ]) {
-          map.on("mousemove", layerId, (event: any) => hoverFeature(event, handleHover));
-          map.on("mouseleave", layerId, () => handleHover(null));
-        }
-
-        map.on("click", "jp-point-circle", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "jp-route-line", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "jp-region-fill", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "global-point-circle", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "global-route-glow", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "global-route-line", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "live-logistics-route-glow", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "live-logistics-route-pulse", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "live-logistics-route-label", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "logistics-impact-corridor-fill", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "logistics-impact-corridor-outline", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "logistics-impact-corridor-label", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "live-vessel-halo", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "live-vessel-marker", (event: any) => selectFeatureId(event, handleSelect, map));
-        map.on("click", "live-vessel-label", (event: any) => selectFeatureId(event, handleSelect, map));
-
-        map.on("click", "jp-cluster-circle", async (event: any) => {
+        interactionSubscriptions.push(map.on("click", "jp-cluster-circle", async (event: any) => {
           const feature = event.features?.[0];
           const source = map.getSource("jp-points-cluster") as
             | {
@@ -707,7 +679,7 @@ export function JapanOperationsMapCanvas({
             center: feature.geometry.coordinates,
             zoom
           });
-        });
+        }));
 
         applyModeVisibility(map, mapMode);
         startRouteScanAnimation(map, scanPhaseRef, scanRafRef);
@@ -722,6 +694,11 @@ export function JapanOperationsMapCanvas({
 
     return () => {
       disposed = true;
+      for (const subscription of interactionSubscriptions) {
+        subscription.unsubscribe();
+      }
+      interactionSubscriptions.length = 0;
+
       if (scanRafRef.current !== null) {
         cancelAnimationFrame(scanRafRef.current);
         scanRafRef.current = null;
