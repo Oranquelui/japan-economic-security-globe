@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { loadSeedGraph } from "../../lib/data/seed-loader";
+import type { Ref } from "react";
 import type { ThemeId } from "../../types/semantic";
 import type { OperationMapMode } from "../../lib/presentation/operations";
 import { HOMEPAGE_NOTICE_STORAGE_KEY } from "../InitialNoticeModal";
@@ -45,21 +46,23 @@ vi.mock("../NavigationRail", () => ({
     onCloseInbox,
     onOpenInbox,
     onThemeChange,
+    inboxToggleRef,
     themeId
   }: {
     isInboxOpen: boolean;
     onCloseInbox: () => void;
     onOpenInbox: () => void;
     onThemeChange: (themeId: ThemeId) => void;
+    inboxToggleRef?: Ref<HTMLButtonElement>;
     themeId: ThemeId;
   }) => (
     <div data-testid="nav-rail" data-theme={themeId}>
       {isInboxOpen ? (
-        <button type="button" aria-label="監視インボックスを閉じる" onClick={onCloseInbox}>
+        <button ref={inboxToggleRef} type="button" aria-label="監視インボックスを閉じる" onClick={onCloseInbox}>
           close-inbox
         </button>
       ) : (
-        <button type="button" aria-label="監視インボックスを開く" onClick={onOpenInbox}>
+        <button ref={inboxToggleRef} type="button" aria-label="監視インボックスを開く" onClick={onOpenInbox}>
           open-inbox
         </button>
       )}
@@ -472,6 +475,27 @@ describe("AppShell url sync", () => {
     expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
   });
 
+  test.each(["signals", "comparison"] as const)(
+    "closing the command pane resets %s and focuses the rail reopen control",
+    async (secondaryView) => {
+      const user = userEvent.setup();
+      render(<AppShell graph={loadSeedGraph()} />);
+      const desktop = screen.getByTestId("layout-desktop-workspace");
+
+      await user.click(within(desktop).getByRole("button", {
+        name: secondaryView === "signals" ? "シグナルを見る" : "比較する"
+      }));
+      await user.click(within(desktop).getByRole("button", { name: "監視インボックスを閉じる" }));
+
+      await waitFor(() => {
+        expect(within(desktop).queryByTestId("layout-command-pane")).toBeNull();
+        expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
+        expect(within(desktop).queryByTestId("signals-panel")).toBeNull();
+        expect(within(desktop).getByRole("button", { name: "監視インボックスを開く" })).toBe(document.activeElement);
+      });
+    }
+  );
+
   test("Escape closes a secondary view before the inspector", async () => {
     const user = userEvent.setup();
 
@@ -531,6 +555,35 @@ describe("AppShell url sync", () => {
     await waitFor(() => {
       expect(replaceMock).toHaveBeenCalledTimes(1);
       expect(replaceMock).toHaveBeenLastCalledWith("/?layer=rice-price", { scroll: false });
+    });
+  });
+
+  test("keeps the comparison button and URL fallback aligned when the common official source is invalid", async () => {
+    const graph = structuredClone(loadSeedGraph());
+    const source = graph.sources.find((candidate) => candidate.id === "source:estat-rice-prefecture-harvest-r5")!;
+    source.url = "";
+
+    render(
+      <AppShell
+        graph={graph}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "rice",
+          selectedId: null,
+          layerId: "rice-harvest",
+          mapModeOverride: null,
+          workspaceView: "comparison"
+        }}
+      />
+    );
+
+    expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    const comparison = within(desktop).getByRole("button", { name: "比較可能な系列なし" });
+    expect(comparison.hasAttribute("disabled")).toBe(true);
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenCalledTimes(1);
+      expect(replaceMock).toHaveBeenLastCalledWith("/", { scroll: false });
     });
   });
 
@@ -869,7 +922,7 @@ describe("AppShell url sync", () => {
     render(<AppShell graph={loadSeedGraph()} />);
     const desktop = screen.getByTestId("layout-desktop-workspace");
     await user.click(within(desktop).getByRole("button", { name: "比較する" }));
-    await user.click(within(desktop).getByRole("button", { name: /新潟県 514,100/ }));
+    await user.click(within(desktop).getByRole("button", { name: "新潟県" }));
 
     await waitFor(() => {
       expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();

@@ -33,7 +33,7 @@ export function ComparisonPanel({
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [sortKey, setSortKey] = useState<SortKey>("value");
   const [sortDirection, setSortDirection] = useState<"ascending" | "descending">("descending");
-  const validation = validateMetricSeries(series);
+  const validation = validateMetricSeries(series, sources);
 
   useEffect(() => {
     headingRef.current?.focus();
@@ -48,8 +48,12 @@ export function ComparisonPanel({
     });
   }, [series, sortDirection, sortKey]);
 
-  const sourceIds = new Set(series.flatMap((point) => point.sourceIds));
-  const officialSources = sources.filter((source) => source.official && sourceIds.has(source.id));
+  const officialSources = validation.comparable
+    ? validation.sourceIds.flatMap((sourceId) => {
+        const source = sources.find((candidate) => candidate.id.trim() === sourceId);
+        return source ? [source] : [];
+      })
+    : [];
 
   function toggleSort(nextKey: SortKey) {
     if (sortKey === nextKey) {
@@ -118,7 +122,7 @@ export function ComparisonPanel({
                       className="font-semibold"
                       style={{ color: activeId === point.id ? themePalette.accentText : themePalette.textPrimary }}
                     >
-                      {point.label} {numberFormatter.format(point.value)}
+                      {point.label}
                     </button>
                   </td>
                   <td className="px-4 py-2 text-right font-mono" style={{ color: themePalette.textPrimary }}>

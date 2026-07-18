@@ -78,6 +78,8 @@ export function AppShell({
 }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inboxToggleRef = useRef<HTMLButtonElement>(null);
   const rankingNowRef = useRef(new Date().toISOString());
   const homepageDecision = rankingSignals.length
     ? buildRankingDecision({
@@ -129,7 +131,7 @@ export function AppShell({
     initialPresentation.layer.id
   );
   const resolvedInitialWorkspaceView = initialUrlState.workspaceView === "comparison"
-    && !validateMetricSeries(initialMetricSeries).comparable
+    && !validateMetricSeries(initialMetricSeries, initialView.sources).comparable
       ? "map"
       : homepageThemeChanged ? "map" : initialUrlState.workspaceView;
   const resolvedInitialState: OperationsUrlState = {
@@ -202,7 +204,7 @@ export function AppShell({
     ? requestedLayer
     : getDefaultLayerDefinition(themeId, workspace);
   const metricSeries = buildMetricSeries(graph, themeId, activeLayer.id);
-  const comparisonValidation = validateMetricSeries(metricSeries);
+  const comparisonValidation = validateMetricSeries(metricSeries, view.sources);
   const desktopMapMode = mapModeOverride ?? activeLayer.renderMode;
   const mobileMapMode = mapModeOverride ?? "point";
   const liveLogisticsDetailItem = liveLogistics?.items.find((item) => item.id === activeId) ?? null;
@@ -276,6 +278,14 @@ export function AppShell({
   };
 
   useEffect(() => {
+    return () => {
+      if (focusTimerRef.current !== null) {
+        clearTimeout(focusTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (layerId !== activeLayer.id) {
       setLayerId(activeLayer.id);
     }
@@ -339,7 +349,7 @@ export function AppShell({
     setMapModeOverride(null);
     if (workspaceView === "comparison") {
       const nextSeries = buildMetricSeries(graph, themeId, nextLayer.id);
-      if (!validateMetricSeries(nextSeries).comparable) {
+      if (!validateMetricSeries(nextSeries, view.sources).comparable) {
         setWorkspaceView("map");
       }
     }
@@ -358,11 +368,28 @@ export function AppShell({
 
   function handleCloseSecondary(origin: "comparison" | "signals") {
     setWorkspaceView("map");
-    setTimeout(() => {
-      const trigger = document.querySelector<HTMLButtonElement>(
+    scheduleFocus(() => (
+      document.querySelector<HTMLButtonElement>(
         `[data-testid="layout-desktop-workspace"] [data-secondary-action="${origin}"]`
-      );
-      trigger?.focus();
+      ) ?? inboxToggleRef.current
+    ));
+  }
+
+  function handleCloseInbox() {
+    setInboxOpen(false);
+    if (workspaceView !== "map") {
+      setWorkspaceView("map");
+    }
+    scheduleFocus(() => inboxToggleRef.current);
+  }
+
+  function scheduleFocus(resolveTarget: () => HTMLElement | null) {
+    if (focusTimerRef.current !== null) {
+      clearTimeout(focusTimerRef.current);
+    }
+    focusTimerRef.current = setTimeout(() => {
+      focusTimerRef.current = null;
+      resolveTarget()?.focus();
     }, 0);
   }
 
@@ -375,11 +402,11 @@ export function AppShell({
   function handleSecondarySelect(nextSelectedId: string) {
     setWorkspaceView("map");
     handleSelect(nextSelectedId);
-    setTimeout(() => {
+    scheduleFocus(() => (
       document.querySelector<HTMLElement>(
         '[data-testid="layout-desktop-workspace"] [data-testid="context-inspector"] h2'
-      )?.focus();
-    }, 0);
+      )
+    ));
   }
 
   function handleMapSelect(nextSelectedId: string, anchor?: MapPopupAnchor) {
@@ -462,8 +489,9 @@ export function AppShell({
             }}
           >
             <NavigationRail
+              inboxToggleRef={inboxToggleRef}
               isInboxOpen={isInboxOpen}
-              onCloseInbox={() => setInboxOpen(false)}
+              onCloseInbox={handleCloseInbox}
               onOpenInbox={() => setInboxOpen(true)}
               onThemeChange={handleThemeChange}
               themeId={themeId}

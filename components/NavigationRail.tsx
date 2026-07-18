@@ -1,10 +1,13 @@
 "use client";
 
+import type { Ref } from "react";
+
 import { THEME_IDS, type ThemeId } from "../types/semantic";
 import type { ThemePalette } from "../lib/presentation/palette";
 import { getThemeLabel } from "../lib/presentation/japanese";
 
 interface NavigationRailProps {
+  inboxToggleRef?: Ref<HTMLButtonElement>;
   isInboxOpen: boolean;
   onCloseInbox: () => void;
   onOpenInbox: () => void;
@@ -25,6 +28,7 @@ const RAIL_LABELS: Record<ThemeId, string> = {
 };
 
 export function NavigationRail({
+  inboxToggleRef,
   isInboxOpen,
   onCloseInbox,
   onOpenInbox,
@@ -43,6 +47,7 @@ export function NavigationRail({
     >
       {isInboxOpen ? (
         <button
+          ref={inboxToggleRef}
           key="close-inbox"
           type="button"
           onClick={onCloseInbox}
@@ -59,6 +64,7 @@ export function NavigationRail({
         </button>
       ) : (
         <button
+          ref={inboxToggleRef}
           key="open-inbox"
           type="button"
           onClick={onOpenInbox}
