@@ -61,6 +61,16 @@ export function buildPrefectureLabelFeatureCollections(
     },
     properties: buildProperties(entry, activeId)
   }));
+  const selectedLabelPoints = entries
+    .filter((entry) => entry.entityId === activeId)
+    .map((entry) => ({
+      type: "Feature" as const,
+      geometry: {
+        type: "Point" as const,
+        coordinates: [...entry.targetAnchor] as [number, number]
+      },
+      properties: buildProperties(entry, activeId)
+    }));
   const leaderLines = entries
     .filter((entry) => projectedDisplacement(entry, projection) >= PREFECTURE_LABEL_LEADER_THRESHOLD_PX)
     .map((entry) => ({
@@ -79,6 +89,10 @@ export function buildPrefectureLabelFeatureCollections(
     labelPoints: {
       type: "FeatureCollection" as const,
       features: labelPoints
+    },
+    selectedLabelPoints: {
+      type: "FeatureCollection" as const,
+      features: selectedLabelPoints
     },
     leaderLines: {
       type: "FeatureCollection" as const,

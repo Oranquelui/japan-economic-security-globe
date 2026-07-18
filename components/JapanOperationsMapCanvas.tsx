@@ -48,7 +48,6 @@ const DOMESTIC_CONTEXT_MIN_ZOOM = 3.2;
 const PREFECTURE_POLYGON_FADE_START_ZOOM = 6.5;
 const PREFECTURE_POLYGON_MAX_ZOOM = 9;
 const PREFECTURE_LABEL_MAX_ZOOM = 9;
-const PREFECTURE_SELECTED_LABEL_MAX_ZOOM = 10.5;
 const GRAY_CANVAS_REFERENCE_LAYER_ID = "gray-canvas-reference";
 const XL_DESKTOP_MEDIA_QUERY = "(min-width: 1280px)";
 const MAP_ACCEPTANCE_FIXTURES_ENABLED = process.env.NODE_ENV !== "production"
@@ -194,6 +193,10 @@ export function JapanOperationsMapCanvas({
           type: "geojson",
           data: prefectureLabels.labelPoints
         });
+        map.addSource("jp-prefecture-selected-labels", {
+          type: "geojson",
+          data: prefectureLabels.selectedLabelPoints
+        });
         map.addSource("jp-prefecture-leaders", {
           type: "geojson",
           data: prefectureLabels.leaderLines
@@ -304,9 +307,8 @@ export function JapanOperationsMapCanvas({
         map.addLayer({
           id: "jp-prefecture-selected-label",
           type: "symbol",
-          source: "jp-prefecture-labels",
-          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
-          maxzoom: PREFECTURE_SELECTED_LABEL_MAX_ZOOM,
+          source: "jp-prefecture-selected-labels",
+          minzoom: PREFECTURE_LABEL_MAX_ZOOM,
           filter: ["==", ["get", "selected"], true],
           layout: {
             "text-field": ["get", "label"],
@@ -1009,6 +1011,7 @@ export function JapanOperationsMapCanvas({
     }
     const prefectureLabels = buildPrefectureLabelSources(model.regions, activeId);
     updateSource(map, "jp-prefecture-labels", prefectureLabels.labelPoints);
+    updateSource(map, "jp-prefecture-selected-labels", prefectureLabels.selectedLabelPoints);
     updateSource(map, "jp-prefecture-leaders", prefectureLabels.leaderLines);
     updateSource(map, "jp-regions", representativeRadiusRegionsToFeatureCollection(model.regions, activeId));
     applyModeVisibility(map, mapMode, isXlDesktopViewport());
@@ -1102,6 +1105,7 @@ type PrefectureMapDiagnostics = Readonly<{
     collisionReport: ReturnType<typeof inspectProjectedPrefectureLabelLayout>;
     renderedFeatures: Array<{
       entityId: string;
+      hasData: boolean;
       layers: string[];
       value: number | null;
     }>;
@@ -1162,6 +1166,7 @@ function installPrefectureMapDiagnostics(
     const polygonFeatures = queryRenderedLayerFeatures(map, ["jp-prefecture-fill"]);
     const renderedByEntityId = new Map<string, {
       entityId: string;
+      hasData: boolean;
       layers: Set<string>;
       value: number | null;
     }>();
@@ -1179,10 +1184,14 @@ function installPrefectureMapDiagnostics(
         }
         const current = renderedByEntityId.get(entityId) ?? {
           entityId,
+          hasData: false,
           layers: new Set<string>(),
           value: null
         };
         current.layers.add(layerId);
+        current.hasData = typeof feature?.properties?.hasData === "boolean"
+          ? feature.properties.hasData
+          : current.hasData;
         current.value = typeof feature?.properties?.value === "number"
           ? feature.properties.value
           : null;
@@ -1196,6 +1205,7 @@ function installPrefectureMapDiagnostics(
         .sort((left, right) => left.entityId.localeCompare(right.entityId))
         .map((feature) => ({
           entityId: feature.entityId,
+          hasData: feature.hasData,
           layers: [...feature.layers],
           value: feature.value
         })),
@@ -1237,6 +1247,7 @@ function installPrefectureMapDiagnostics(
               new Map([[entityId, null]])
             );
             updateSource(map, "jp-prefecture-labels", labels.labelPoints);
+            updateSource(map, "jp-prefecture-selected-labels", labels.selectedLabelPoints);
             updateSource(map, "jp-prefecture-leaders", labels.leaderLines);
             await waitForMapIdle(map);
           }
@@ -1921,6 +1932,7 @@ function buildPrefectureLabelSources(
       ...feature,
       properties: {
         ...feature.properties,
+        hasData: value !== null,
         neutral: value === null,
         value
       }
@@ -1931,6 +1943,10 @@ function buildPrefectureLabelSources(
     labelPoints: {
       ...collections.labelPoints,
       features: collections.labelPoints.features.map(addMetricState)
+    },
+    selectedLabelPoints: {
+      ...collections.selectedLabelPoints,
+      features: collections.selectedLabelPoints.features.map(addMetricState)
     },
     leaderLines: {
       ...collections.leaderLines,

@@ -61,6 +61,15 @@ describe("prefecture label layout", () => {
 
     expect(collections.labelPoints.type).toBe("FeatureCollection");
     expect(collections.labelPoints.features).toHaveLength(47);
+    expect(collections.selectedLabelPoints.features).toEqual([
+      expect.objectContaining({
+        geometry: { type: "Point", coordinates: labelData[12].targetAnchor },
+        properties: expect.objectContaining({
+          entityId: selectedId,
+          selected: true
+        })
+      })
+    ]);
     expect(collections.labelPoints.features[12]).toMatchObject({
       geometry: { type: "Point", coordinates: labelData[12].displayAnchor },
       properties: {

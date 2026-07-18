@@ -282,11 +282,11 @@ describe("map canvas layer config", () => {
     expect(selectedLabel).toMatchObject({
       id: "jp-prefecture-selected-label",
       type: "symbol",
-      source: "jp-prefecture-labels",
-      minzoom: 3.2,
-      maxzoom: 10.5,
+      source: "jp-prefecture-selected-labels",
+      minzoom: 9,
       filter: ["==", ["get", "selected"], true]
     });
+    expect(selectedLabel).not.toHaveProperty("maxzoom");
     expect(getAddedLayerCall("jp-prefecture-fill")?.beforeId).toBe("gray-canvas-reference");
     expect(getAddedLayerCall("jp-prefecture-outline")?.beforeId).toBe("gray-canvas-reference");
     expect(getAddedLayerCall("jp-prefecture-leader-line")?.beforeId).toBe("jp-prefecture-selected-outline");

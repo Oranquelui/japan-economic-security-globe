@@ -18,7 +18,12 @@ type Diagnostics = {
   };
   renderedLabelIds: string[];
   renderedPolygonIds: string[];
-  renderedFeatures: Array<{ entityId: string; layers: string[]; value: number | null }>;
+  renderedFeatures: Array<{
+    entityId: string;
+    hasData: boolean;
+    layers: string[];
+    value: number | null;
+  }>;
   zoom: number;
 };
 
@@ -57,23 +62,25 @@ test.describe("prefecture map acceptance", () => {
   test("removes polygons at detailed zoom and keeps clicks from changing selection", async ({ page }) => {
     const network = await installLocalNetworkGuard(page);
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/?theme=rice&layer=rice-harvest");
+    await page.goto("/?theme=rice&layer=rice-harvest&selected=prefecture%3Atokyo");
     const map = page.locator('[data-testid="jp-operations-map-canvas"]:visible');
     await expect.poll(async () => map.evaluate((element: any) => Boolean(element.__prefectureMapDiagnostics))).toBe(true);
 
     const initialUrl = page.url();
     const zoomIn = page.locator('button[aria-label="地図を拡大"]:visible');
-    for (let index = 0; index < 4; index += 1) {
+    for (let index = 0; index < 6; index += 1) {
       await zoomIn.click();
     }
     await expect.poll(async () => map.evaluate((element: any) => (
       element.__prefectureMapDiagnostics.read([])
     )) as Promise<Diagnostics>, { timeout: 10_000 }).toMatchObject({
+      renderedLabelIds: ["prefecture:tokyo"],
       renderedPolygonIds: [],
       zoom: expect.any(Number)
     });
     const detailed = await map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([])) as Diagnostics;
-    expect(detailed.zoom).toBeGreaterThanOrEqual(9);
+    expect(detailed.zoom).toBeCloseTo(10.5, 1);
+    expect(detailed.renderedLabelIds).toEqual(["prefecture:tokyo"]);
     expect(detailed.renderedPolygonIds).toEqual([]);
     await map.click({ position: { x: 720, y: 450 } });
     expect(page.url()).toBe(initialUrl);
@@ -93,10 +100,17 @@ test.describe("prefecture map acceptance", () => {
     )) as Promise<Diagnostics["renderedFeatures"]>).toEqual(expect.arrayContaining([
       expect.objectContaining({
         entityId: "prefecture:tokyo",
+        hasData: false,
         layers: expect.arrayContaining(["jp-prefecture-fill", "jp-prefecture-outline", "jp-prefecture-label"]),
         value: null
       })
     ]));
+    const renderedFeatures = await map.evaluate((element: any) => (
+      element.__prefectureMapDiagnostics.read([]).renderedFeatures
+    )) as Diagnostics["renderedFeatures"];
+    expect(renderedFeatures.some((feature) => feature.entityId !== "prefecture:tokyo"
+      && feature.hasData
+      && typeof feature.value === "number")).toBe(true);
     expect(network.unexpected).toEqual([]);
   });
 });
