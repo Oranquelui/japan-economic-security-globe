@@ -33,6 +33,7 @@ import {
 import { getThemeLabel, localizeAnyLabel, localizeKind } from "../lib/presentation/japanese";
 import { getRouteStatus } from "../lib/presentation/route-status";
 import {
+  buildSelectionInspector,
   buildWorkspacePresentation,
   getDefaultLayerDefinition,
   getLayerDefinition,
@@ -40,6 +41,7 @@ import {
 } from "../lib/presentation/workspace";
 import { summarizeSourceStatus } from "../lib/official/source-freshness";
 import { ActionBar } from "./ActionBar";
+import { ContextInspector } from "./ContextInspector";
 import { EvidencePanel } from "./EvidencePanel";
 import { InitialNoticeModal } from "./InitialNoticeModal";
 import { JapanMainMap } from "./JapanMainMap";
@@ -197,6 +199,7 @@ export function AppShell({
     ? buildLiveLogisticsDetail(graph, liveLogisticsDetailItem)
     : getDetailView(graph, activeId);
   const evidenceGraph = buildEvidenceGraph(graph, themeId);
+  const selectionInspector = buildSelectionInspector(graph, activeId, detail);
   const routeStatus = getRouteStatus(detail);
   const mapModel = buildJapanMapCanvasModel(graph, view, activeId, liveLogistics);
   const mapDisclosure =
@@ -240,17 +243,16 @@ export function AppShell({
   } as CSSProperties;
   const railWidth = 72;
   const paneWidth = 376;
-  const evidenceExpandedWidth = 360;
-  const evidenceCollapsedWidth = 56;
+  const inspectorExpandedWidth = 360;
   const visiblePaneWidth = isInboxOpen ? paneWidth : 0;
-  const evidenceWidth = isEvidenceOpen ? evidenceExpandedWidth : evidenceCollapsedWidth;
+  const inspectorWidth = isEvidenceOpen ? inspectorExpandedWidth : 0;
   const compareExpandedHeight = 264;
   const compareCollapsedHeight = 76;
   const compareHeight = isCompareOpen ? compareExpandedHeight : compareCollapsedHeight;
   const mapOverlayInsets = {
     top: 16,
     left: railWidth + visiblePaneWidth + 16,
-    right: evidenceWidth + 16,
+    right: inspectorWidth + 16,
     bottom: compareHeight + 16
   };
 
@@ -336,21 +338,6 @@ export function AppShell({
     setMapPopupAnchor(null);
   }
 
-  const evidencePanel = (
-    <EvidencePanel
-      collapsed={!isEvidenceOpen}
-      detail={detail}
-      evidenceGraph={evidenceGraph}
-      onSelect={handleSelect}
-      onToggleCollapsed={() => setEvidenceOpen((value) => !value)}
-      rankingExplanation={liveLogisticsDetailItem ? null : rankingExplanation}
-      selectedId={activeId}
-      statusPalette={statusPalette}
-      themePalette={themePalette}
-      themeTitle={view.title}
-    />
-  );
-
   return (
     <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 lg:grid lg:grid-rows-[56px,auto,minmax(0,1fr)]" style={shellStyle}>
       <InitialNoticeModal homepageMode={homepageMode} locale={locale} />
@@ -373,17 +360,15 @@ export function AppShell({
       />
 
       <div className="h-full min-h-0 min-w-0 overflow-x-hidden overflow-y-auto lg:overflow-hidden">
-        <div className="relative hidden h-full min-h-0 lg:block">
+        <div data-testid="layout-desktop-workspace" className="relative hidden h-full min-h-0 lg:block">
           <section data-testid="layout-map-section" className="absolute inset-0 min-h-0">
             <JapanMainMap
               activeId={activeId}
-              detailPopup={mapDetailPopup}
               focusTargetId={focusTargetId}
               mapDisclosure={mapDisclosure}
               mapMode={desktopMapMode}
               model={mapModel}
               onMapModeChange={handleMapModeChange}
-              onOpenEvidence={() => setEvidenceOpen(true)}
               overlayInsets={mapOverlayInsets}
               onCloseDetail={handleCloseDetail}
               onSelect={handleMapSelect}
@@ -440,24 +425,36 @@ export function AppShell({
             </aside>
           ) : null}
 
-          <aside
-            data-testid="layout-evidence-drawer"
-            className="absolute top-0 z-30 min-h-0 overflow-hidden"
-            style={{
-              right: 0,
-              width: evidenceWidth,
-              bottom: 0
-            }}
-          >
-            {evidencePanel}
-          </aside>
+          {isEvidenceOpen ? (
+            <aside
+              data-testid="layout-context-inspector"
+              className="absolute top-0 z-30 min-h-0 overflow-hidden"
+              style={{
+                right: 0,
+                width: inspectorWidth,
+                bottom: 0
+              }}
+            >
+              <ContextInspector
+                evidenceGraph={evidenceGraph}
+                inspector={selectionInspector}
+                onClose={() => setEvidenceOpen(false)}
+                onSelect={handleSelect}
+                rankingExplanation={liveLogisticsDetailItem ? null : rankingExplanation}
+                selectedId={activeId}
+                statusPalette={statusPalette}
+                themePalette={themePalette}
+                themeTitle={view.title}
+              />
+            </aside>
+          ) : null}
 
           <section
             data-testid="layout-compare-drawer"
             className="absolute bottom-0 z-30 min-h-0"
             style={{
               left: railWidth + visiblePaneWidth,
-              right: evidenceWidth,
+              right: inspectorWidth,
               height: compareHeight
             }}
           >

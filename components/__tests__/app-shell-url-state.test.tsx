@@ -79,6 +79,7 @@ vi.mock("../JapanMainMap", () => ({
     model,
     onMapModeChange,
     onOpenEvidence,
+    overlayInsets,
     watchOverlays = []
   }: {
     activeId: string;
@@ -92,6 +93,7 @@ vi.mock("../JapanMainMap", () => ({
     model?: { liveRoutes?: unknown[] };
     onMapModeChange?: (mode: OperationMapMode) => void;
     onOpenEvidence?: () => void;
+    overlayInsets?: { right: number };
     watchOverlays?: unknown[];
   }) => (
     <div
@@ -102,6 +104,7 @@ vi.mock("../JapanMainMap", () => ({
       data-focus={focusTargetId ?? ""}
       data-live-routes={model?.liveRoutes?.length ?? 0}
       data-mode={mapMode}
+      data-overlay-right={overlayInsets?.right ?? ""}
       data-ranking={detailPopup?.rankingExplanation?.rankLabel ?? ""}
       data-watch-overlays={watchOverlays.length}
     >
@@ -156,6 +159,44 @@ vi.mock("../EvidencePanel", () => ({
         </>
       ) : null}
     </div>
+  )
+}));
+
+vi.mock("../ContextInspector", () => ({
+  ContextInspector: ({
+    inspector,
+    onClose,
+    rankingExplanation,
+    themeTitle
+  }: {
+    inspector: {
+      detail: {
+        id: string;
+        summary?: string;
+        whyItMatters?: string;
+        sources?: unknown[];
+        relatedEntities?: unknown[];
+      };
+      primaryMetric?: { valueLabel: string; periodLabel?: string } | null;
+    };
+    onClose: () => void;
+    rankingExplanation?: { rankLabel?: string } | null;
+    themeTitle: string;
+  }) => (
+    <aside
+      aria-label="選択中の詳細と根拠"
+      data-testid="context-inspector"
+      data-id={inspector.detail.id}
+      data-period={inspector.primaryMetric?.periodLabel ?? ""}
+      data-ranking={rankingExplanation?.rankLabel ?? ""}
+      data-summary={inspector.detail.summary ?? ""}
+      data-theme={themeTitle}
+      data-value={inspector.primaryMetric?.valueLabel ?? ""}
+    >
+      <button type="button" aria-label="詳細を閉じる" onClick={onClose}>
+        close-inspector
+      </button>
+    </aside>
   )
 }));
 
@@ -225,8 +266,9 @@ describe("AppShell url sync", () => {
     expect(screen.getByTestId("inbox-watchboard")).toBeTruthy();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-watch-overlays")).toBe("0");
     expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
-    expect(screen.getByTestId("layout-evidence-drawer")).toBeTruthy();
-    expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("yes");
+    expect(screen.queryByTestId("layout-context-inspector")).toBeNull();
+    expect(screen.queryByTestId("context-inspector")).toBeNull();
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-overlay-right")).toBe("16");
     // Homepage ranking lead may pin a selection for map focus without opening evidence.
     expect(screen.getAllByTestId("grid")[0].getAttribute("data-collapsed")).toBe("yes");
     expect(screen.queryByRole("dialog")).toBeNull();
@@ -257,6 +299,7 @@ describe("AppShell url sync", () => {
     render(
       <AppShell
         graph={loadSeedGraph()}
+        hasExplicitUrlState
         initialUrlState={{
           themeId: "rice",
           selectedId: "observation:rice-price-signal-2026",
@@ -271,7 +314,7 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("cluster");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("observation:rice-price-signal-2026");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("observation:rice-price-signal-2026");
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("Rice price pressure signal");
+    expect(screen.getByTestId("context-inspector").getAttribute("data-id")).toBe("observation:rice-price-signal-2026");
     expect(replaceMock).not.toHaveBeenCalled();
   });
 
@@ -361,6 +404,7 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("nav-rail")[0].getAttribute("data-theme")).toBe("rice");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/rice|observation:rice/);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toMatch(/rice|observation:rice|^$/);
+    expect(screen.queryByTestId("context-inspector")).toBeNull();
   });
 
   test("uses the ranked theme default layer instead of carrying the rice layer", () => {
@@ -395,10 +439,11 @@ describe("AppShell url sync", () => {
     expect(replaceMock).not.toHaveBeenCalled();
   });
 
-  test("passes ranking explanation to the map detail popup for the selected ranked item", () => {
+  test("passes ranking explanation to the context inspector for the selected ranked item", () => {
     render(
       <AppShell
         graph={loadSeedGraph()}
+        hasExplicitUrlState
         initialUrlState={{
           themeId: "energy",
           selectedId: "flow:saudi-oil-japan",
@@ -425,7 +470,8 @@ describe("AppShell url sync", () => {
       />
     );
 
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-ranking")).toBe("#1");
+    expect(screen.getByTestId("context-inspector").getAttribute("data-ranking")).toBe("#1");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("");
   });
 
   test("passes live logistics into the command pane and map model", () => {
@@ -523,10 +569,11 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
   });
 
-  test("keeps an individual live tanker selection and maps it to a tanker detail popup", () => {
+  test("keeps an individual live tanker selection and maps it to a safe inspector detail", () => {
     render(
       <AppShell
         graph={loadSeedGraph()}
+        hasExplicitUrlState
         initialUrlState={{
           themeId: "logistics",
           selectedId: "live-logistics:tanker-qatar-tokyo-bay",
@@ -556,7 +603,9 @@ describe("AppShell url sync", () => {
     );
 
     expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("live-logistics:tanker-qatar-tokyo-bay");
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("Tanker corridor: Hormuz → Malacca → Tokyo Bay");
+    expect(screen.getByTestId("context-inspector").getAttribute("data-id")).toBe("live-logistics:tanker-qatar-tokyo-bay");
+    expect(screen.getByTestId("context-inspector").getAttribute("data-summary")).toBeTruthy();
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("");
   });
 
   test("normalizes an unavailable runtime layer to the theme default", async () => {
@@ -615,31 +664,20 @@ describe("AppShell url sync", () => {
     });
   });
 
-  test("opens first-class evidence with summary, why-it-matters, sources, and related after inbox selection", async () => {
+  test("opens the desktop context inspector after inbox selection", async () => {
     const user = userEvent.setup();
 
     render(<AppShell graph={loadSeedGraph()} />);
 
-    expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("yes");
+    expect(screen.queryByTestId("context-inspector")).toBeNull();
 
     await user.click(screen.getAllByText("select-rice-from-inbox")[0]);
 
     await waitFor(() => {
-      expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("no");
+      expect(screen.getByTestId("context-inspector")).toBeTruthy();
     });
-
-    const openEvidenceNodes = screen
-      .getAllByTestId("evidence")
-      .filter((node) => node.getAttribute("data-collapsed") === "no");
-    expect(openEvidenceNodes.length).toBeGreaterThan(0);
-    const openEvidence = openEvidenceNodes[0];
-    expect(openEvidence.getAttribute("data-summary")).toBeTruthy();
-    expect(openEvidence.getAttribute("data-why")).toBeTruthy();
-    expect(Number(openEvidence.getAttribute("data-sources") ?? "0")).toBeGreaterThan(0);
-    expect(screen.getAllByTestId("evidence-summary")[0].textContent?.length).toBeGreaterThan(0);
-    expect(screen.getAllByTestId("evidence-why")[0].textContent).toContain("日本にとっての意味");
-    expect(screen.getAllByTestId("evidence-sources")[0].textContent).toMatch(/出典/);
-    expect(screen.getAllByTestId("evidence-related")[0].textContent).toMatch(/関連/);
+    expect(screen.getByTestId("context-inspector").getAttribute("data-summary")).toBeTruthy();
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-overlay-right")).toBe("376");
   });
 
   test("opens evidence when a compare-table selection is made", async () => {
@@ -661,9 +699,37 @@ describe("AppShell url sync", () => {
     await user.click(screen.getAllByText("select-rice-observation")[0]);
 
     await waitFor(() => {
-      expect(screen.getAllByTestId("evidence")[0].getAttribute("data-collapsed")).toBe("no");
+      expect(screen.getByTestId("context-inspector")).toBeTruthy();
     });
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("Rice price pressure signal");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-detail-popup")).toBe("");
+  });
+
+  test("closes the inspector without changing the selected theme or layer", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "rice",
+          selectedId: "prefecture:niigata",
+          layerId: "rice-harvest",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+      />
+    );
+
+    expect(screen.getByTestId("context-inspector").getAttribute("data-theme")).toBe("コメ");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("choropleth");
+
+    await user.click(screen.getByRole("button", { name: "詳細を閉じる" }));
+
+    expect(screen.queryByTestId("context-inspector")).toBeNull();
+    expect(screen.getAllByTestId("nav-rail")[0].getAttribute("data-theme")).toBe("rice");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-mode")).toBe("choropleth");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-overlay-right")).toBe("16");
   });
 });
 

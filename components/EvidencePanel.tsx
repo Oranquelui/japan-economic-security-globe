@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react";
 
 import { getSourceFreshness } from "../lib/official/source-freshness";
 import type { RankingExplanationViewModel } from "../lib/ranking/explain";
-import type { DetailViewModel, EvidenceGraphViewModel } from "../types/presentation";
+import type { DetailViewModel, EvidenceGraphViewModel, SelectionInspectorViewModel } from "../types/presentation";
 import type { SourceDocument } from "../types/semantic";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
 import { getSignalTrend } from "../lib/presentation/trends";
@@ -34,19 +34,34 @@ interface EvidencePanelProps {
   themeTitle: string;
 }
 
-export function EvidencePanel({
+interface EvidenceSurfaceProps extends EvidencePanelProps {
+  ariaLabel?: string;
+  onClose?: () => void;
+  primaryMetric?: SelectionInspectorViewModel["primaryMetric"];
+  rootTestId?: string;
+}
+
+export function EvidencePanel(props: EvidencePanelProps) {
+  return <EvidenceSurface {...props} />;
+}
+
+export function EvidenceSurface({
+  ariaLabel,
   collapsed,
   collapsible = true,
   detail,
   evidenceGraph,
+  onClose,
   onSelect,
   onToggleCollapsed,
+  primaryMetric,
   rankingExplanation,
+  rootTestId = "evidence-panel",
   selectedId,
   statusPalette,
   themePalette,
   themeTitle
-}: EvidencePanelProps) {
+}: EvidenceSurfaceProps) {
   const [tab, setTab] = useState<"summary" | "sources" | "related">("summary");
   const routeStatus = getRouteStatus(detail);
   const trend = rankingExplanation ? getSignalTrend(rankingExplanation.signalId) : null;
@@ -54,7 +69,8 @@ export function EvidencePanel({
   if (collapsible && collapsed) {
     return (
       <aside
-        data-testid="evidence-panel"
+        aria-label={ariaLabel}
+        data-testid={rootTestId}
         data-collapsed="yes"
         className="flex h-full flex-col items-center border-l py-3 backdrop-blur-xl"
         style={{
@@ -96,7 +112,8 @@ export function EvidencePanel({
 
   return (
     <aside
-      data-testid="evidence-panel"
+      aria-label={ariaLabel}
+      data-testid={rootTestId}
       data-collapsed="no"
       className="h-full overflow-y-auto border-l p-4 backdrop-blur-2xl"
       style={{
@@ -111,6 +128,21 @@ export function EvidencePanel({
             根拠
           </p>
           <h2 className="ops-title mt-2 text-xl text-white">{localizeAnyLabel(detail.id, detail.label)}</h2>
+          {primaryMetric ? (
+            <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span className="text-2xl font-semibold tracking-tight text-white">{primaryMetric.valueLabel}</span>
+              {primaryMetric.unitLabel ? (
+                <span className="text-sm" style={{ color: themePalette.textPrimary }}>
+                  {primaryMetric.unitLabel}
+                </span>
+              ) : null}
+              {primaryMetric.periodLabel ? (
+                <span className="text-[0.72rem]" style={{ color: themePalette.textMuted }}>
+                  {primaryMetric.periodLabel}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
           <p className="mt-1 text-[0.72rem]" style={{ color: themePalette.textMuted }}>
             {themeTitle}
           </p>
@@ -123,7 +155,21 @@ export function EvidencePanel({
               boxShadow: `0 0 24px ${themePalette.accent}`
             }}
           />
-          {collapsible ? (
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="grid h-8 w-8 place-items-center rounded-lg border text-sm transition"
+              style={{
+                borderColor: themePalette.borderSubtle,
+                background: themePalette.surfacePanelElevated,
+                color: themePalette.textMuted
+              }}
+              aria-label="詳細を閉じる"
+            >
+              ×
+            </button>
+          ) : collapsible ? (
             <button
               type="button"
               onClick={onToggleCollapsed}

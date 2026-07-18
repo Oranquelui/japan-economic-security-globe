@@ -37,11 +37,17 @@ vi.mock("../NavigationRail", () => ({
 
 vi.mock("../JapanMainMap", () => ({
   JapanMainMap: ({
+    detailPopup,
     mapMode,
-    onMapModeChange
+    onMapModeChange,
+    onOpenEvidence,
+    onSelect
   }: {
+    detailPopup?: unknown;
     mapMode: OperationMapMode;
     onMapModeChange?: (mode: OperationMapMode) => void;
+    onOpenEvidence?: () => void;
+    onSelect: (id: string) => void;
   }) => (
     <div data-testid="map" data-mode={mapMode}>
       <div data-testid="map-layer-controls">
@@ -49,6 +55,11 @@ vi.mock("../JapanMainMap", () => ({
           集約
         </button>
       </div>
+      <button type="button" onClick={() => onSelect("prefecture:niigata")}>
+        新潟県を選択
+      </button>
+      {detailPopup ? <div data-testid="map-detail-popup-anchor" /> : null}
+      {onOpenEvidence ? <button data-testid="map-detail-open-evidence">根拠パネルを開く</button> : null}
     </div>
   )
 }));
@@ -74,8 +85,27 @@ beforeEach(() => {
   window.localStorage.clear();
 });
 
-describe("AppShell evidence wiring (real EvidencePanel)", () => {
-  test("mounts EvidencePanel in the live shell and opens full evidence content on selection", async () => {
+describe("AppShell evidence wiring (real ContextInspector)", () => {
+  test("uses one context inspector as the only detailed desktop selection surface", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    expect(within(desktop).queryByTestId("context-inspector")).toBeNull();
+
+    await user.click(within(desktop).getByRole("button", { name: "新潟県を選択" }));
+
+    await waitFor(() => {
+      expect(within(desktop).getAllByTestId("context-inspector")).toHaveLength(1);
+    });
+    expect(within(desktop).queryByTestId("map-detail-popup-anchor")).toBeNull();
+    expect(within(desktop).queryByTestId("map-detail-open-evidence")).toBeNull();
+    expect(within(desktop).getByText("514,100")).toBeTruthy();
+    expect(within(desktop).getByText("令和5年産")).toBeTruthy();
+  });
+
+  test("opens full evidence content in the desktop inspector on selection", async () => {
     const user = userEvent.setup();
 
     render(<AppShell graph={loadSeedGraph()} />);
@@ -83,33 +113,28 @@ describe("AppShell evidence wiring (real EvidencePanel)", () => {
     expect(screen.getByTestId("layout-map-section")).toBeTruthy();
     expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
     expect(screen.getByTestId("layout-compare-drawer")).toBeTruthy();
-    expect(screen.getByTestId("layout-evidence-drawer")).toBeTruthy();
+    const desktop = screen.getByTestId("layout-desktop-workspace");
     expect(screen.getByTestId("layout-action-bar")).toBeTruthy();
     expect(within(screen.getByTestId("layout-action-bar")).queryByText("表示レイヤー")).toBeNull();
     expect(screen.getAllByTestId("map-layer-controls").length).toBeGreaterThan(0);
 
-    const collapsedEvidence = screen.getAllByTestId("evidence-panel").find((node) => node.getAttribute("data-collapsed") === "yes");
-    expect(collapsedEvidence).toBeTruthy();
+    expect(within(desktop).queryByTestId("context-inspector")).toBeNull();
 
-    await user.click(screen.getAllByText("select-energy-from-inbox")[0]);
+    await user.click(within(desktop).getByText("select-energy-from-inbox"));
 
     await waitFor(() => {
-      expect(
-        screen.getAllByTestId("evidence-panel").some((node) => node.getAttribute("data-collapsed") === "no")
-      ).toBe(true);
+      expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();
     });
 
-    const openPanel = screen.getAllByTestId("evidence-panel").find((node) => node.getAttribute("data-collapsed") === "no");
-    expect(openPanel).toBeTruthy();
-    expect(within(openPanel as HTMLElement).getByText("根拠")).toBeTruthy();
-    expect(within(openPanel as HTMLElement).getByText("概要")).toBeTruthy();
-    expect(within(openPanel as HTMLElement).getByText("出典")).toBeTruthy();
-    expect(within(openPanel as HTMLElement).getByText("関連")).toBeTruthy();
-    expect(within(openPanel as HTMLElement).getByText("日本にとっての意味")).toBeTruthy();
-    expect(within(openPanel as HTMLElement).getAllByText(/サウジ原油/).length).toBeGreaterThan(0);
+    const inspector = within(desktop).getByTestId("context-inspector");
+    expect(within(inspector).getByText("概要")).toBeTruthy();
+    expect(within(inspector).getByText("出典")).toBeTruthy();
+    expect(within(inspector).getByText("関連")).toBeTruthy();
+    expect(within(inspector).getByText("日本にとっての意味")).toBeTruthy();
+    expect(within(inspector).getAllByText(/サウジ原油/).length).toBeGreaterThan(0);
 
-    await user.click(within(openPanel as HTMLElement).getByRole("button", { name: "出典" }));
-    expect(within(openPanel as HTMLElement).getAllByRole("link").length).toBeGreaterThan(0);
+    await user.click(within(inspector).getByRole("button", { name: "出典" }));
+    expect(within(inspector).getAllByRole("link").length).toBeGreaterThan(0);
   });
 
   test("table selection also opens the real evidence surface", async () => {
@@ -117,12 +142,11 @@ describe("AppShell evidence wiring (real EvidencePanel)", () => {
 
     render(<AppShell graph={loadSeedGraph()} />);
 
-    await user.click(screen.getAllByText("select-energy-from-table")[0]);
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    await user.click(within(desktop).getByText("select-energy-from-table"));
 
     await waitFor(() => {
-      expect(
-        screen.getAllByTestId("evidence-panel").some((node) => node.getAttribute("data-collapsed") === "no")
-      ).toBe(true);
+      expect(within(desktop).getByTestId("context-inspector")).toBeTruthy();
     });
   });
 });

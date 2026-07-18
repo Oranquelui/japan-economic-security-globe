@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 
 import type { JapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import type { OperationMapMode } from "../lib/presentation/operations";
@@ -201,65 +201,27 @@ export function JapanMainMap({
         </aside>
       ) : null}
       {detailPopup ? (
-        <>
-          <div
-            className="fixed inset-x-0 z-50 px-3 lg:hidden"
-            style={{
-              bottom: overlayInsets.bottom
-            }}
-          >
-            <MapDetailPopup
-              detail={detailPopup.detail}
-              onClose={onCloseDetail ?? (() => undefined)}
-              onOpenEvidence={onOpenEvidence}
-              onSelect={onSelect}
-              rankingExplanation={detailPopup.rankingExplanation}
-              routeStatusLabel={detailPopup.routeStatusLabel}
-              statusPalette={statusPalette}
-              themePalette={themePalette}
-              themeTitle={detailPopup.themeTitle}
-            />
-          </div>
-          <div
-            data-testid="map-detail-popup-anchor"
-            data-placement={detailPopup.anchor?.placement ?? "fixed"}
-            className="absolute z-30 hidden w-[23rem] lg:block"
-            style={getDesktopPopupStyle(detailPopup.anchor ?? null, overlayInsets)}
-          >
-            <MapDetailPopup
-              detail={detailPopup.detail}
-              onClose={onCloseDetail ?? (() => undefined)}
-              onOpenEvidence={onOpenEvidence}
-              onSelect={onSelect}
-              rankingExplanation={detailPopup.rankingExplanation}
-              routeStatusLabel={detailPopup.routeStatusLabel}
-              statusPalette={statusPalette}
-              themePalette={themePalette}
-              themeTitle={detailPopup.themeTitle}
-            />
-          </div>
-        </>
+        <div
+          className="fixed inset-x-0 z-50 px-3 lg:hidden"
+          style={{
+            bottom: overlayInsets.bottom
+          }}
+        >
+          <MapDetailPopup
+            detail={detailPopup.detail}
+            onClose={onCloseDetail ?? (() => undefined)}
+            onOpenEvidence={onOpenEvidence}
+            onSelect={onSelect}
+            rankingExplanation={detailPopup.rankingExplanation}
+            routeStatusLabel={detailPopup.routeStatusLabel}
+            statusPalette={statusPalette}
+            themePalette={themePalette}
+            themeTitle={detailPopup.themeTitle}
+          />
+        </div>
       ) : null}
     </section>
   );
-}
-
-function getDesktopPopupStyle(
-  anchor: MapPopupAnchor | null,
-  overlayInsets: NonNullable<JapanMainMapProps["overlayInsets"]>
-): CSSProperties {
-  if (!anchor) {
-    return {
-      right: overlayInsets.right,
-      top: overlayInsets.top
-    };
-  }
-
-  return {
-    left: anchor.x,
-    top: `clamp(${overlayInsets.top}px, ${anchor.y}px, calc(100% - ${overlayInsets.bottom}px))`,
-    transform: anchor.placement === "right" ? "translate(16px, -50%)" : "translate(calc(-100% - 16px), -50%)"
-  };
 }
 
 function MapControlButton({ ariaLabel, label, onClick }: { ariaLabel: string; label: string; onClick: () => void }) {

@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe("JapanMainMap popup placement", () => {
-  test("anchors the desktop detail popup near the map click position", () => {
+  test("keeps detail popup mobile-only without a desktop anchor", () => {
     const graph = loadSeedGraph();
     const detail = getDetailView(graph, "flow:japan-linked-maritime-watch");
 
@@ -46,10 +46,8 @@ describe("JapanMainMap popup placement", () => {
       </div>
     );
 
-    const anchor = screen.getByTestId("map-detail-popup-anchor");
-    expect(anchor.getAttribute("data-placement")).toBe("right");
-    expect(anchor.getAttribute("style")).toContain("left: 420px");
-    expect(anchor.getAttribute("style")).toContain("translate(16px, -50%)");
+    expect(screen.getAllByTestId("map-detail-popup")).toHaveLength(1);
+    expect(screen.queryByTestId("map-detail-popup-anchor")).toBeNull();
   });
 
   test("shows a regional-security map disclosure when provided", () => {
