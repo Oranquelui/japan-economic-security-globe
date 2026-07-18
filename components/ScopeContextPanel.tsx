@@ -34,19 +34,19 @@ export function ScopeContextPanel({
   const resolvedActiveLayerId = activeLayer?.id;
 
   return (
-    <div data-testid="scope-context-panel" className="h-full overflow-y-auto px-4 py-5">
+    <div data-testid="scope-context-panel" className="h-full overflow-y-auto px-3 py-3">
       <div>
         <div className="font-mono text-[0.6rem] uppercase tracking-[0.28em]" style={{ color: themePalette.accentText }}>
           テーマ / 対象範囲
         </div>
-        <h2 className="mt-2 text-lg font-semibold" style={{ color: themePalette.textPrimary }}>{workspace.scope.title}</h2>
-        <p className="mt-2 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>{workspace.scope.description}</p>
+        <h2 className="mt-1 text-base font-semibold" style={{ color: themePalette.textPrimary }}>{workspace.scope.title}</h2>
+        <p className="mt-1 text-[0.68rem] leading-4" style={{ color: themePalette.textMuted }}>{workspace.scope.description}</p>
       </div>
 
-      <section aria-label="対象範囲の要約" className="mt-5 grid grid-cols-2 gap-2">
+      <section aria-label="対象範囲の要約" className="mt-3 grid grid-cols-2 gap-2">
         <SummaryCard label={workspace.scope.coverage.label} value={workspace.scope.coverage.value} themePalette={themePalette} />
         <SummaryCard label="対象期間" value={workspace.scope.periodLabel} themePalette={themePalette} />
-        {workspace.scope.metrics.slice(0, 4).map((metric) => (
+        {workspace.scope.metrics.slice(0, 2).map((metric) => (
           <SummaryCard
             key={metric.id}
             label={metric.label}
@@ -57,7 +57,7 @@ export function ScopeContextPanel({
         ))}
       </section>
 
-      <div className="mt-6 border-t pt-5" style={{ borderColor: themePalette.borderSubtle }}>
+      <div className="mt-3 border-t pt-3" style={{ borderColor: themePalette.borderSubtle }}>
         <SemanticLayerDeck
           activeLayerId={resolvedActiveLayerId}
           layers={workspace.layers}
@@ -67,7 +67,7 @@ export function ScopeContextPanel({
       </div>
 
       {activeLayer ? (
-        <div className="mt-5">
+        <div className="mt-3">
           <MapLegend
             legend={activeLayer.legend}
             periodLabel={activeLayer.periodLabel}
@@ -78,7 +78,7 @@ export function ScopeContextPanel({
         </div>
       ) : null}
 
-      <div className="mt-5 grid grid-cols-2 gap-2">
+      <div className="mt-3 grid grid-cols-2 gap-2">
         <SecondaryAction actionId="signals" label="シグナルを見る" onClick={onOpenSignals} themePalette={themePalette} />
         <SecondaryAction
           actionId="comparison"
@@ -104,10 +104,10 @@ function SummaryCard({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border p-3" style={{ borderColor: themePalette.borderSubtle, background: themePalette.surfacePanelElevated }}>
+    <div className="rounded-lg border p-2" style={{ borderColor: themePalette.borderSubtle, background: themePalette.surfacePanelElevated }}>
       <div className="text-[0.6rem]" style={{ color: themePalette.textMuted }}>{label}</div>
-      <div className="mt-1 text-sm font-semibold" style={{ color: themePalette.textPrimary }}>{value}</div>
-      {detail ? <div className="mt-1 text-[0.6rem]" style={{ color: themePalette.textMuted }}>{detail}</div> : null}
+      <div className="mt-0.5 text-xs font-semibold" style={{ color: themePalette.textPrimary }}>{value}</div>
+      {detail ? <div className="mt-0.5 text-[0.56rem]" style={{ color: themePalette.textMuted }}>{detail}</div> : null}
     </div>
   );
 }
@@ -131,7 +131,7 @@ function SecondaryAction({
       data-secondary-action={actionId}
       disabled={disabled}
       onClick={onClick}
-      className="rounded-xl border px-3 py-2.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-55"
+      className="rounded-lg border px-3 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-55"
       style={{
         borderColor: themePalette.borderStrong,
         background: themePalette.surfacePanelElevated,

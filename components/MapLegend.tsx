@@ -25,7 +25,7 @@ export function MapLegend({
     <section
       role="region"
       aria-label={`${legend.title}の凡例`}
-      className="rounded-xl border p-3"
+      className="rounded-lg border p-2"
       style={{ borderColor: themePalette.borderSubtle, background: themePalette.surfacePanelElevated }}
     >
       <div className="flex items-start justify-between gap-3">
@@ -34,7 +34,7 @@ export function MapLegend({
       </div>
 
       {legend.kind === "continuous" ? (
-        <div className="mt-3">
+        <div className="mt-2">
           <div
             aria-hidden="true"
             className="h-2 rounded-full border"
@@ -48,7 +48,7 @@ export function MapLegend({
             {legend.unit ? <span>{legend.unit}</span> : null}
             <span>{legend.maxLabel ?? "高"}</span>
           </div>
-          <div className="mt-3 flex items-center gap-2 text-[0.68rem]" style={{ color: themePalette.textMuted }}>
+          <div className="mt-2 flex items-center gap-2 text-[0.64rem]" style={{ color: themePalette.textMuted }}>
             <span
               aria-hidden="true"
               className="h-3 w-3 rounded-sm border"
@@ -58,7 +58,7 @@ export function MapLegend({
           </div>
         </div>
       ) : (
-        <ul role="list" aria-label={legend.title} className="mt-3 space-y-2">
+        <ul role="list" aria-label={legend.title} className="mt-2 space-y-1.5">
           {categoricalItems.map((item) => (
             <li key={`${item.colorToken}:${item.label}`} className="flex items-center gap-2 text-[0.7rem]" style={{ color: themePalette.textMuted }}>
               <span
@@ -73,16 +73,16 @@ export function MapLegend({
       )}
 
       {officialSources.length ? (
-        <div className="mt-3 border-t pt-3" style={{ borderColor: themePalette.borderSubtle }}>
+        <div className="mt-2 border-t pt-2" style={{ borderColor: themePalette.borderSubtle }}>
           <div className="text-[0.6rem] uppercase tracking-[0.18em]" style={{ color: themePalette.textMuted }}>公式出典</div>
-          <ul className="mt-2 space-y-1">
+          <ul className="mt-1 space-y-1">
             {officialSources.map((source) => (
               <li key={source.id}>
                 <a
                   href={source.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[0.68rem] underline decoration-dotted underline-offset-4"
+                  className="text-[0.6rem] leading-4 underline decoration-dotted underline-offset-4"
                   style={{ color: themePalette.accentText }}
                 >
                   公式出典: {source.label}

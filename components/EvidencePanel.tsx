@@ -317,10 +317,11 @@ export function EvidenceSurface({
           </TabButton>
         </div>
 
-        {tab === "summary" ? (
+        {accessibleTabs || tab === "summary" ? (
           <div
             aria-labelledby={accessibleTabs ? getTabId("summary") : undefined}
             className="mt-4 space-y-4"
+            hidden={accessibleTabs && tab !== "summary"}
             id={accessibleTabs ? getPanelId("summary") : undefined}
             role={accessibleTabs ? "tabpanel" : undefined}
           >
@@ -486,10 +487,11 @@ export function EvidenceSurface({
           </div>
         ) : null}
 
-        {tab === "sources" ? (
+        {accessibleTabs || tab === "sources" ? (
           <div
             aria-labelledby={accessibleTabs ? getTabId("sources") : undefined}
             className="mt-4 space-y-4"
+            hidden={accessibleTabs && tab !== "sources"}
             id={accessibleTabs ? getPanelId("sources") : undefined}
             role={accessibleTabs ? "tabpanel" : undefined}
           >
@@ -582,10 +584,11 @@ export function EvidenceSurface({
           </div>
         ) : null}
 
-        {tab === "related" ? (
+        {accessibleTabs || tab === "related" ? (
           <div
             aria-labelledby={accessibleTabs ? getTabId("related") : undefined}
             className="mt-4 space-y-4"
+            hidden={accessibleTabs && tab !== "related"}
             id={accessibleTabs ? getPanelId("related") : undefined}
             role={accessibleTabs ? "tabpanel" : undefined}
           >

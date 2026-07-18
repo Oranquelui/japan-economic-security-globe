@@ -33,6 +33,17 @@ describe("ScopeContextPanel", () => {
     );
 
     const panel = screen.getByTestId("scope-context-panel");
+    const summary = screen.getByRole("region", { name: "対象範囲の要約" });
+    const layerRegion = screen.getByRole("region", { name: "表示レイヤー" });
+    const layerGroup = screen.getByRole("group", { name: "表示レイヤー" });
+    const legend = screen.getByRole("region", { name: "主食用米収穫量の凡例" });
+    const signalsAction = screen.getByRole("button", { name: "シグナルを見る" });
+
+    expect(panel.className).toContain("px-3");
+    expect(panel.className).toContain("py-3");
+    expect(summary.children).toHaveLength(4);
+    expect(layerGroup.className).toContain("grid-cols-2");
+    expect(legend.className).toContain("p-2");
     expect(screen.getByText("47都道府県")).toBeTruthy();
     expect(screen.getByText("6,610,315")).toBeTruthy();
     expect(screen.getAllByText("令和5年産").length).toBeGreaterThan(0);
@@ -44,6 +55,9 @@ describe("ScopeContextPanel", () => {
     expect(text.indexOf(workspace.scope.description)).toBeLessThan(text.indexOf("収穫量"));
     expect(text.indexOf("収穫量")).toBeLessThan(text.indexOf("主食用米収穫量"));
     expect(text.indexOf("主食用米収穫量")).toBeLessThan(text.indexOf("シグナルを見る"));
+    expect(summary.compareDocumentPosition(layerRegion) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(layerRegion.compareDocumentPosition(legend) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(legend.compareDocumentPosition(signalsAction) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   test("routes semantic-layer and secondary-view actions", async () => {

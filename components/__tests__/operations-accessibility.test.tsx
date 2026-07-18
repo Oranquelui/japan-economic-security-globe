@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { EvidencePanel } from "../EvidencePanel";
+import { AppShell } from "../AppShell";
 import { ContextInspector } from "../ContextInspector";
 import { JapanMainMap } from "../JapanMainMap";
 import { NavigationRail } from "../NavigationRail";
@@ -21,6 +23,11 @@ import type { WatchOverlayItemViewModel } from "../../lib/presentation/watch-ove
 
 vi.mock("../JapanOperationsMapCanvas", () => ({
   JapanOperationsMapCanvas: () => <div data-testid="ops-canvas" />
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+  useRouter: () => ({ replace: vi.fn() })
 }));
 
 afterEach(() => {
@@ -113,6 +120,33 @@ const watchOverlays: WatchOverlayItemViewModel[] = [
 ];
 
 describe("operations accessibility", () => {
+  test("keeps every desktop id and ARIA id reference unique in the real AppShell composition", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    expect(within(desktop).queryByTestId("layout-context-inspector")).toBeNull();
+    expect(within(desktop).queryByTestId("layout-compare-drawer")).toBeNull();
+    expect(within(desktop).queryByTestId("signals-panel")).toBeNull();
+    expectUniqueDesktopIdReferences(desktop);
+
+    await user.click(within(desktop).getByRole("button", { name: "シグナルを見る" }));
+    expect(within(desktop).getByTestId("signals-panel")).toBeTruthy();
+    expectUniqueDesktopIdReferences(desktop);
+
+    await user.click(within(within(desktop).getByTestId("signals-panel")).getByRole("button", { name: /新潟県/ }));
+    await waitFor(() => {
+      expect(within(desktop).getByTestId("layout-context-inspector")).toBeTruthy();
+      expect(within(desktop).queryByTestId("signals-panel")).toBeNull();
+    });
+    expectUniqueDesktopIdReferences(desktop);
+
+    await user.click(within(desktop).getByRole("button", { name: "比較する" }));
+    expect(within(desktop).getByTestId("layout-compare-drawer")).toBeTruthy();
+    expectUniqueDesktopIdReferences(desktop);
+  });
+
   test("exposes a logical scope, semantic-layer, and legend heading hierarchy", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "rice");
@@ -339,3 +373,20 @@ describe("operations accessibility", () => {
     expect(screen.getByText("公式公開情報 / bounded overlay")).toBeTruthy();
   });
 });
+
+function expectUniqueDesktopIdReferences(desktop: HTMLElement) {
+  const desktopIds = Array.from(desktop.querySelectorAll<HTMLElement>("[id]")).map((element) => element.id);
+  const documentIds = Array.from(document.querySelectorAll<HTMLElement>("[id]")).map((element) => element.id);
+
+  expect(desktopIds.every(Boolean)).toBe(true);
+  expect(new Set(desktopIds).size).toBe(desktopIds.length);
+
+  for (const controller of desktop.querySelectorAll<HTMLElement>("[aria-controls], [aria-labelledby]")) {
+    for (const attribute of ["aria-controls", "aria-labelledby"] as const) {
+      for (const token of controller.getAttribute(attribute)?.split(/\s+/).filter(Boolean) ?? []) {
+        expect(documentIds.filter((id) => id === token), `${attribute}=${token} document target`).toHaveLength(1);
+        expect(desktopIds.filter((id) => id === token), `${attribute}=${token} desktop target`).toHaveLength(1);
+      }
+    }
+  }
+}

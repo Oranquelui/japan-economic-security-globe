@@ -57,7 +57,7 @@ export function SemanticLayerDeck({
       >
         表示レイヤー
       </h3>
-      <div role="group" aria-label="表示レイヤー" className="mt-3 space-y-2">
+      <div role="group" aria-label="表示レイヤー" className="mt-2 grid grid-cols-2 gap-2">
         {layers.map((layer, index) => {
           const active = layer.available && layer.id === activeLayerId;
 
@@ -90,7 +90,7 @@ export function SemanticLayerDeck({
                   onLayerChange(layer.id);
                 }
               }}
-              className="w-full rounded-xl border px-3 py-3 text-left transition disabled:cursor-not-allowed disabled:opacity-55"
+              className="w-full rounded-lg border px-2 py-2 text-left transition disabled:cursor-not-allowed disabled:opacity-55"
               style={
                 active
                   ? {
@@ -105,15 +105,15 @@ export function SemanticLayerDeck({
                     }
               }
             >
-              <span className="flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold">{layer.label}</span>
+              <span className="flex items-start justify-between gap-1.5">
+                <span className="text-xs font-semibold leading-4">{layer.label}</span>
                 {!layer.available ? (
-                  <span className="rounded-full border px-2 py-0.5 text-[0.62rem]" style={{ borderColor: themePalette.borderSubtle, color: themePalette.textMuted }}>
+                  <span className="shrink-0 rounded-full border px-1.5 py-0.5 text-[0.52rem]" style={{ borderColor: themePalette.borderSubtle, color: themePalette.textMuted }}>
                     データなし
                   </span>
                 ) : null}
               </span>
-              <span className="mt-1 block text-[0.7rem] leading-5" style={{ color: themePalette.textMuted }}>
+              <span className="mt-1 block h-8 overflow-hidden text-[0.6rem] leading-4" style={{ color: themePalette.textMuted }}>
                 {layer.description}
               </span>
             </button>
