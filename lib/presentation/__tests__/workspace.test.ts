@@ -288,6 +288,42 @@ describe("active layer summary", () => {
     expect(scopeTotal).not.toHaveProperty("unit");
   });
 
+  test("withholds the rice total when a prefecture entity is absent", () => {
+    const graph = structuredClone(loadSeedGraph());
+    const prefecture = graph.entities.find(
+      (entity) => entity.kind === "Prefecture" && entity.themes.includes("rice")
+    )!;
+    graph.entities = graph.entities.filter((entity) => entity.id !== prefecture.id);
+
+    const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = getLayerDefinition("rice", "rice-harvest", workspace)!;
+    const summary = buildActiveLayerSummary(graph, view, layer, workspace.scope);
+    const scopeTotal = workspace.scope.metrics.find((metric) => metric.id === "rice-harvest-total");
+
+    expect(summary.primaryMetric).toBeNull();
+    expect(summary.coverage.value).toBe("46/47件");
+    expect(scopeTotal).not.toHaveProperty("unit");
+  });
+
+  test("withholds the rice total when a prefecture value is not finite", () => {
+    const graph = structuredClone(loadSeedGraph());
+    const prefecture = graph.entities.find(
+      (entity) => entity.kind === "Prefecture" && entity.themes.includes("rice")
+    )!;
+    prefecture.properties!.riceMainUseHarvestTonsR5 = Number.NaN;
+
+    const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = getLayerDefinition("rice", "rice-harvest", workspace)!;
+    const summary = buildActiveLayerSummary(graph, view, layer, workspace.scope);
+    const scopeTotal = workspace.scope.metrics.find((metric) => metric.id === "rice-harvest-total");
+
+    expect(summary.primaryMetric).toBeNull();
+    expect(summary.coverage.value).toBe("46/47件");
+    expect(scopeTotal).not.toHaveProperty("unit");
+  });
+
   test("reports numeric water-source coverage without aggregating percentages", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "water");
@@ -298,6 +334,17 @@ describe("active layer summary", () => {
     expect(summary.primaryMetric).toBeNull();
     expect(summary.coverage).toEqual({ label: "データ収録", value: "5/5件" });
     expect(summary.coverage.value).not.toMatch(/%|合計|平均/);
+  });
+
+  test("marks an unavailable categorical live-logistics layer as missing data", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = getLayerDefinition("logistics", "logistics-domestic", workspace)!;
+    const summary = buildActiveLayerSummary(graph, view, layer, workspace.scope);
+
+    expect(layer.available).toBe(false);
+    expect(summary.missingDataLabel).toBe("データなし");
   });
 
   test("resolves active sources in registry order and labels fixed demo data", () => {

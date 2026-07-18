@@ -18,6 +18,7 @@ import type { OperationMapMode } from "./operations";
 import { isRenderableMapRoute } from "./route-status";
 
 const RICE_HARVEST_SOURCE_ID = "source:estat-rice-prefecture-harvest-r5";
+const RICE_NATIONWIDE_PREFECTURE_COUNT = 47;
 const numberFormatter = new Intl.NumberFormat("ja-JP");
 
 function categoricalLegend(title: string): LayerLegend {
@@ -425,7 +426,9 @@ export function buildActiveLayerSummary(
     periodLabel: layer.periodLabel,
     primaryMetric: buildActiveLayerPrimaryMetric(graph, view, layer),
     missingDataLabel:
-      layer.content.kind === "regional-metric" || layer.legend.kind === "continuous"
+      !layer.available ||
+      layer.content.kind === "regional-metric" ||
+      layer.legend.kind === "continuous"
         ? "データなし"
         : null,
     mapEncodingDescription: layer.mapEncodingDescription,
@@ -692,15 +695,18 @@ function buildActiveLayerCoverage(
   const { eligibleCount, numericValues } = getRegionalMetricValues(view, layer.content);
   if (
     layer.content.property === "riceMainUseHarvestTonsR5" &&
-    eligibleCount > 0 &&
-    numericValues.length === eligibleCount
+    hasCompleteNationwideRiceCoverage(eligibleCount, numericValues.length)
   ) {
     return scope.coverage;
   }
 
   return {
     label: "データ収録",
-    value: `${numericValues.length}/${eligibleCount}件`
+    value: `${numericValues.length}/${
+      layer.content.property === "riceMainUseHarvestTonsR5"
+        ? RICE_NATIONWIDE_PREFECTURE_COUNT
+        : eligibleCount
+    }件`
   };
 }
 
@@ -715,7 +721,7 @@ function buildActiveLayerPrimaryMetric(
     }
 
     const { eligibleCount, numericValues } = getRegionalMetricValues(view, layer.content);
-    if (eligibleCount === 0 || numericValues.length !== eligibleCount) {
+    if (!hasCompleteNationwideRiceCoverage(eligibleCount, numericValues.length)) {
       return null;
     }
 
@@ -758,10 +764,20 @@ function getRegionalMetricValues(
   const eligibleEntities = view.entities.filter((entity) => entity.kind === content.entityKind);
   const numericValues = eligibleEntities.flatMap((entity) => {
     const value = entity.properties?.[content.property];
-    return typeof value === "number" ? [value] : [];
+    return typeof value === "number" && Number.isFinite(value) ? [value] : [];
   });
 
   return { eligibleCount: eligibleEntities.length, numericValues };
+}
+
+function hasCompleteNationwideRiceCoverage(
+  eligibleCount: number,
+  numericCount: number
+): boolean {
+  return (
+    eligibleCount === RICE_NATIONWIDE_PREFECTURE_COUNT &&
+    numericCount === RICE_NATIONWIDE_PREFECTURE_COUNT
+  );
 }
 
 function buildScopeSummary(view: ThemeView, layers: LayerDefinition[]): ScopeSummary {
@@ -769,11 +785,13 @@ function buildScopeSummary(view: ThemeView, layers: LayerDefinition[]): ScopeSum
     const prefectures = view.entities.filter((entity) => entity.kind === "Prefecture");
     const numericHarvests = prefectures.flatMap((entity) => {
       const value = entity.properties?.riceMainUseHarvestTonsR5;
-      return typeof value === "number" ? [value] : [];
+      return typeof value === "number" && Number.isFinite(value) ? [value] : [];
     });
     const harvestTotal = numericHarvests.reduce((total, harvest) => total + harvest, 0);
-    const hasCompleteHarvestCoverage =
-      prefectures.length > 0 && numericHarvests.length === prefectures.length;
+    const hasCompleteHarvestCoverage = hasCompleteNationwideRiceCoverage(
+      prefectures.length,
+      numericHarvests.length
+    );
     const observationMetrics = view.observations
       .filter((observation) => typeof observation.value === "number")
       .map(toScopeObservationMetric);
@@ -789,7 +807,7 @@ function buildScopeSummary(view: ThemeView, layers: LayerDefinition[]): ScopeSum
           label: "主食用米収穫量",
           value: hasCompleteHarvestCoverage
             ? numberFormatter.format(harvestTotal)
-            : `データ不足（${numericHarvests.length}/${prefectures.length}件）`,
+            : `データ不足（${numericHarvests.length}/${RICE_NATIONWIDE_PREFECTURE_COUNT}件）`,
           ...(hasCompleteHarvestCoverage ? { unit: "トン" } : {}),
           periodLabel: "令和5年産",
           sourceIds: [RICE_HARVEST_SOURCE_ID]
