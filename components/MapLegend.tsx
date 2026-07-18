@@ -1,37 +1,26 @@
 import { getStatusPalette, type ThemePalette } from "../lib/presentation/palette";
 import type { LayerLegend } from "../types/presentation";
-import type { SourceDocument } from "../types/semantic";
 
 interface MapLegendProps {
   legend: LayerLegend;
-  periodLabel: string;
-  sourceIds: string[];
-  sources: SourceDocument[];
+  mapEncodingDescription: string;
   themePalette: ThemePalette;
 }
 
 export function MapLegend({
   legend,
-  periodLabel,
-  sourceIds,
-  sources,
+  mapEncodingDescription,
   themePalette
 }: MapLegendProps) {
-  const sourceIdSet = new Set(sourceIds);
-  const officialSources = sources.filter((source) => sourceIdSet.has(source.id) && source.official && source.url);
   const categoricalItems = legend.items ?? [{ colorToken: "accent", label: legend.title }];
 
   return (
     <section
       role="region"
       aria-label={`${legend.title}の凡例`}
-      className="rounded-lg border p-2"
-      style={{ borderColor: themePalette.borderSubtle, background: themePalette.surfacePanelElevated }}
+      className="p-2"
     >
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-xs font-semibold" style={{ color: themePalette.textPrimary }}>{legend.title}</h3>
-        <span className="text-[0.66rem]" style={{ color: themePalette.textMuted }}>{periodLabel}</span>
-      </div>
+      <h3 className="text-xs font-semibold" style={{ color: themePalette.textPrimary }}>{legend.title}</h3>
 
       {legend.kind === "continuous" ? (
         <div className="mt-2">
@@ -47,14 +36,6 @@ export function MapLegend({
             <span>{legend.minLabel ?? "低"}</span>
             {legend.unit ? <span>{legend.unit}</span> : null}
             <span>{legend.maxLabel ?? "高"}</span>
-          </div>
-          <div className="mt-2 flex items-center gap-2 text-[0.64rem]" style={{ color: themePalette.textMuted }}>
-            <span
-              aria-hidden="true"
-              className="h-3 w-3 rounded-sm border"
-              style={{ borderColor: themePalette.borderStrong, background: themePalette.surfacePanel }}
-            />
-            <span>{legend.missingLabel}</span>
           </div>
         </div>
       ) : (
@@ -72,26 +53,23 @@ export function MapLegend({
         </ul>
       )}
 
-      {officialSources.length ? (
-        <div className="mt-2 border-t pt-2" style={{ borderColor: themePalette.borderSubtle }}>
-          <div className="text-[0.6rem] uppercase tracking-[0.18em]" style={{ color: themePalette.textMuted }}>公式出典</div>
-          <ul className="mt-1 space-y-1">
-            {officialSources.map((source) => (
-              <li key={source.id}>
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[0.6rem] leading-4 underline decoration-dotted underline-offset-4"
-                  style={{ color: themePalette.accentText }}
-                >
-                  公式出典: {source.label}
-                </a>
-              </li>
-            ))}
-          </ul>
+      <div className="mt-2 flex items-center gap-2 text-[0.64rem]" style={{ color: themePalette.textMuted }}>
+        <span
+          aria-hidden="true"
+          className="h-3 w-3 rounded-sm border"
+          style={{ borderColor: themePalette.borderStrong, background: themePalette.surfacePanel }}
+        />
+        <span>{legend.missingLabel}</span>
+      </div>
+
+      <div className="mt-3">
+        <div className="text-[0.6rem] font-semibold" style={{ color: themePalette.textMuted }}>
+          地図の読み方
         </div>
-      ) : null}
+        <p className="mt-1 text-[0.66rem] leading-4" style={{ color: themePalette.textMuted }}>
+          {mapEncodingDescription}
+        </p>
+      </div>
     </section>
   );
 }

@@ -23,7 +23,6 @@ export function ScopeContextPanel({
   onLayerChange,
   onOpenComparison,
   onOpenSignals,
-  sources,
   themePalette,
   workspace
 }: ScopeContextPanelProps) {
@@ -70,9 +69,7 @@ export function ScopeContextPanel({
         <div className="mt-3">
           <MapLegend
             legend={activeLayer.legend}
-            periodLabel={activeLayer.periodLabel}
-            sourceIds={activeLayer.sourceIds}
-            sources={sources}
+            mapEncodingDescription={activeLayer.mapEncodingDescription}
             themePalette={themePalette}
           />
         </div>
