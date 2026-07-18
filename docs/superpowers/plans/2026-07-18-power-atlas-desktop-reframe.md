@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 16, React 19, TypeScript 5.8, Tailwind CSS, MapLibre GL 5, Vitest 3, Testing Library.
 
-**Delivery status (2026-07-18):** Tasks 1–9 and P0–P3 are implemented, verified, and independently approved on `codex/power-atlas-desktop-reframe`. Product-doc base: `9e32d82`. Pre-documentation delivery head: `c6a06cf487a8e0a26acbce114c920f58f9d15979`. Final remediation head: `e731ff7`. PR: **not opened / awaiting explicit authorization**. Mobile redesign remains deferred and is not complete.
+**Delivery status (2026-07-18):** Tasks 1–9 and P0–P3 are implemented, verified, and independently approved on `codex/power-atlas-desktop-reframe`. Product-doc base: `9e32d82`. Pre-documentation delivery head: `c6a06cf487a8e0a26acbce114c920f58f9d15979`. Final remediation head: `e731ff7`. Distribution: **`v0.5.0` direct to `main` authorized; no PR requested**. Mobile redesign remains deferred and is not complete.
 
 ---
 
@@ -1408,18 +1408,19 @@ git add docs/product/2026-07-13-frontend-watchboard-ia-prd.md docs/product/2026-
 git commit -m "docs: record desktop map workspace delivery"
 ~~~
 
-- [ ] **Step 5: Push and open a draft PR only when authorized**
+- [x] **Step 5: Record the authorized publication path**
 
-Status: **not authorized**. No temporary PR body, push, or PR has been created; publication awaits explicit authorization.
+Status: the product owner authorized direct `v0.5.0` distribution to `main` on 2026-07-18. This release does not require a draft PR; CI deployment and live-site verification remain mandatory release operations.
 
-Create /tmp/power-atlas-desktop-reframe-pr-body.md with the verified P0–P3 summary, exact command outputs, acceptance screenshot paths, legacy URL behavior, and the line Mobile redesign: deferred. Use apply_patch so the body is reviewable before sending it.
+Release operations:
 
-~~~bash
-git push -u origin codex/power-atlas-desktop-reframe
-gh pr create --draft --title "Reframe the desktop Japan map workspace" --body-file /tmp/power-atlas-desktop-reframe-pr-body.md
-~~~
+- bump package and public documentation to `v0.5.0`;
+- verify tests, typecheck, production build, and diff hygiene;
+- fast-forward the public `main` branch to the verified release commit;
+- wait for GitHub Actions `verify -> deploy` and smoke-test production;
+- create the `v0.5.0` tag and GitHub release only after deployment succeeds.
 
-The PR body leads with the IA outcome, lists P0–P3, verification and screenshots, states Mobile redesign: deferred, and describes legacy URL compatibility.
+No draft PR or temporary PR body is required for this owner-authorized direct release. Release notes must state Mobile redesign: deferred, legacy URL compatibility, and the fixed-demo boundary for logistics impact.
 
 ## Final acceptance checklist
 

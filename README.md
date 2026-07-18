@@ -1,14 +1,14 @@
-# Japan Watchboard for Economic Security
+# Japan Resilience Map
 
 English | [日本語](README.ja.md)
 
-Japan Economic Security Globe is a public-interest Japan Watchboard MVP. It explains what Japan should watch now through a Japan-first operations map, a ranking-led briefing layer, bounded watch overlays, an evidence graph, and an operations table.
+Japan Resilience Map is a public-interest, official-statistics-first map workspace. It explains household, industry, infrastructure, and strategic dependencies in Japan through semantic map layers, one contextual inspector, source provenance, and explicit signals/comparison views.
 
-The default view starts with `Energy`, but `Logistics` is now a first-class theme rather than a hidden sub-story. As of April 2026, oil, LNG, chokepoints, ports, electricity costs, and disaster-relevant lifeline stress are still the strongest public entry points. This project is not meant to end as a one-off news visualization, though. `Rice`, `Water`, `Defense`, `Semiconductors`, and `Regional Security` are already modeled on the same ontology.
+The default view starts with `Rice` and the official e-Stat prefecture harvest layer. `Energy`, `Logistics`, `Water`, `Defense`, `Semiconductors`, and `Regional Security` remain available on the same ontology, while global routes and demo logistics data stay supporting context rather than the homepage claim.
 
 ## Product direction (updated 2026-07)
 
-**Approved (Option A):** public MVP is re-centered on an **e-Stat / official-statistics spine**. Public title direction: **Japan Resilience Map (日本レジリエンス地図)**. Economic security remains a **question lens**, not a strategic radar claim. Global routes and AIS demos stay supporting context and are **not** the homepage lead.
+**Approved (Option A):** public MVP is re-centered on an **e-Stat / official-statistics spine**. Public title: **Japan Resilience Map (日本レジリエンス地図)**. Economic security remains a **question lens**, not a strategic radar claim. Global routes and AIS demos stay supporting context and are **not** the homepage lead.
 
 - **Agent handoff (start here in Codex):** [`docs/product/2026-07-13-estat-spine-handoff-prd.md`](docs/product/2026-07-13-estat-spine-handoff-prd.md)
 - Decision memo: [`docs/product/2026-07-13-estat-spine-decision-memo.md`](docs/product/2026-07-13-estat-spine-decision-memo.md)
@@ -18,13 +18,15 @@ The default view starts with `Energy`, but `Logistics` is now a first-class them
 
 ## Public Demo
 
-- Version: `0.4.0`
+- Version: `0.5.0`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
-- Launch view: [Japan domestic logistics watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
-- First-screen promise: `What Japan should watch now` (being redefined: explain household/industry stress with official numbers)
-- Public framing: domestic logistics visibility, port follow-through, road/rail/coastal/air-cargo/airport-operations lanes, non-energy general cargo support, official-source trust, source-status freshness, bounded near-live overlays, and terrain-aware mapping
+- Launch view: [Rice harvest by prefecture](https://economic-security.quadrillionaaa.com/?theme=rice&layer=rice-harvest)
+- First-screen promise: explain household and industry stress with official numbers and traceable sources
+- Public framing: Japan-first scope, semantic map layers, official source/unit/period context, one contextual inspector, and optional signals/comparison views
 
 ## Current Version
+
+`v0.5.0` reframes the desktop product as a map-dominant workspace. The left pane owns scope, period, unit, source, and semantic-layer selection; the center remains the map; the right inspector opens only for the current selection. Signals and comparison are intentional secondary views, legacy URLs remain compatible, and the existing mobile composition is preserved without claiming a mobile redesign. Bundled logistics routes are labeled as fixed demo data, and the regional logistics-impact layer remains disabled until typed, sourced metrics exist.
 
 `v0.4.0` introduces the `Regional Security` theme and the source-adapter foundation for public-data layers. The initial slice covers North Korea missile-test history, representative launch/impact/route context, and public aggregate placeholders for neighboring air and maritime activity. It is deliberately historical, public, delayed, and aggregate; it does not claim live warning, operational tracking, targeting, or complete threat coverage.
 
@@ -36,26 +38,22 @@ The default view starts with `Energy`, but `Logistics` is now a first-class them
 
 ## Launch Preview
 
-![Japan Watchboard logistics view showing domestic logistics lanes, terrain basemap, and evidence detail popup](docs/assets/japan-watchboard-logistics.png)
+![Japan Resilience Map desktop workspace showing the rice harvest layer and one contextual inspector](docs/assets/power-atlas-desktop-rice-niigata.png)
 
-The current launch surface focuses on a Japan domestic logistics watch: domestic landing points, port follow-through, road/rail/coastal/air-cargo/airport-operations lanes, terrain context, source confidence, and bounded non-energy general cargo support are shown together instead of as separate charts.
+The current launch surface starts with the e-Stat rice harvest layer. Scope, period, unit, legend, and official source remain visible beside the map; selecting a prefecture opens one evidence-backed inspector. Signals and the 47-prefecture comparison appear only when requested.
 
 ## Core Question
 
 > What should Japan watch now, and where do those signals land in everyday life, public spending, and domestic infrastructure?
 
-The app answers that question through eight primary surfaces:
+The app answers that question through a disciplined workspace:
 
-- `Watchboard briefing`: ranks what Japan should watch now with freshness, confidence, and why-now context.
-- `Japan operations map`: shows ports, LNG terminals, refineries, reservoirs, prefectures, and other domestic landing points.
-- `Bounded watch overlays`: keeps near-live or delayed watch items visible without implying unrestricted live tracking.
-- `Domestic logistics watch`: foregrounds domestic road, rail, coastal, air cargo, airport operations, port follow-through, and bounded non-energy general cargo. Energy tankers and LNG/crude routes stay in the `Energy` theme.
-- `Regional security watch`: shows Japan-facing missile history and neighboring air/maritime activity context only as public, historical, delayed, or aggregate evidence.
-- `Source status strip`: summarizes official/API/document source coverage and freshness for the active theme.
-- `Evidence graph`: connects policy, budgets, laws, organizations, and source documents.
-- `Operations table`: lists routes, signals, and domestic landing points in an operational reading order.
-
-- `Global supporting layer` still exists behind these surfaces. It shows supplier countries, sea routes, chokepoints, and external context only insofar as they explain impact on Japan.
+- `Scope and semantic layers`: keeps the target geography, period, unit, legend, and source context visible.
+- `Japan map workspace`: shows official regional metrics, observations, entities, and dependency routes without mixing their meanings.
+- `Context inspector`: provides the selected fact, provenance, and related evidence in one desktop detail surface.
+- `Signals and comparison`: open only on request and preserve shared unit, period, and source constraints.
+- `Supporting themes`: retain energy, bounded logistics, water, defense, semiconductors, and historical/aggregate regional-security context.
+- `Global supporting layer`: shows supplier countries, sea routes, chokepoints, and external context only when they explain impact on Japan.
 
 The grammatical subject of this project is Japan. Foreign countries are shown only to explain effects on people, infrastructure, and policy in Japan. This is not a generic country profile explorer.
 

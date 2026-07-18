@@ -1,6 +1,6 @@
 # PRD / Handoff: e-Stat Spine — Japan Resilience Map
 
-**Status:** Option A **approved**; rice/e-Stat public path present; desktop surface reframe P0–P3 implemented and Task 8 accepted; PR not opened / awaiting explicit authorization
+**Status:** Option A **approved**; rice/e-Stat public path present; desktop surface reframe P0–P3 implemented and independently approved; direct `v0.5.0` distribution to `main` authorized
 **Date:** 2026-07-13  
 **Historical pause:** 2026-07-13 (usage budget) — superseded by the 2026-07-18 implementation authorization
 **Repo:** `jp-strategic-dependency-graph` (public remote: `Oranquelui/japan-economic-security-globe`)  
@@ -21,7 +21,7 @@
 | **2026-07-13 WP2 pause** | Historical only; do not restart the old checklist |
 | **Desktop surface reframe** | P0–P3 implemented; Task 8 desktop acceptance completed |
 | Implementation branch | `codex/power-atlas-desktop-reframe` (product-doc base `9e32d82`; pre-documentation delivery head `c6a06cf487a8e0a26acbce114c920f58f9d15979`) |
-| PR | **Not opened / awaiting explicit authorization** |
+| Distribution | `v0.5.0` via direct `main` push; no PR required for this authorized release |
 | Production | `https://economic-security.quadrillionaaa.com/` |
 
 ### Continuation checklist (agent or human)
@@ -59,7 +59,7 @@ DON'T
 | 4 | Map/list: rice = prefecture choropleth or ranked list first (not global route hero) | Default rice UX matches spine story |
 | 5 | One monthly auxiliary (うるち米価格 or food CPI) card/trend | Habit-loop note in briefing/evidence |
 | 6 | Tests + typecheck | `npm test` + `npm run typecheck` green |
-| 7 | PR → CI → merge → production smoke (`?theme=rice`) | Acceptance checklist §5.3 all true |
+| 7 | Authorized release path → `main` → CI deploy → production smoke (`?theme=rice`) | Acceptance checklist §5.3 all true |
 
 **Timebox hint:** one focused session for steps 1–3 + tests; second session for auxiliary + polish + ship if needed.
 
@@ -363,7 +363,7 @@ If anything conflicts with older Phase 0 PRD (`.taskmaster/docs/japan-economic-s
 | Surface apply | Title, default rice, disable energy AIS, briefing copy (PR #27) |
 | Handoff PRD | Agent bootstrap + WP2 acceptance (§0–5) written for Codex |
 | **Historical pause** | 2026-07-13 usage-budget pause; superseded after current-state verification |
-| **Delivered desktop work** | P0–P3 completed on `codex/power-atlas-desktop-reframe`; PR not opened / awaiting explicit authorization (`docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md`) |
+| **Delivered desktop work** | P0–P3 completed and independently approved on `codex/power-atlas-desktop-reframe`; direct `v0.5.0` distribution authorized (`docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md`) |
 
 ---
 
@@ -371,7 +371,7 @@ If anything conflicts with older Phase 0 PRD (`.taskmaster/docs/japan-economic-s
 
 **Canonical UI decision:** `docs/product/2026-07-13-frontend-watchboard-ia-prd.md` §11–18
 **Decision:** Adopt the reference video's surface responsibilities, not its brand or global-infrastructure product scope.
-**Implementation status:** P0–P3 implemented and Task 8 accepted on `codex/power-atlas-desktop-reframe`; PR not opened / awaiting explicit authorization.
+**Implementation status:** P0–P3 implemented and independently approved on `codex/power-atlas-desktop-reframe`; direct `v0.5.0` distribution to `main` authorized.
 
 ### Current guardrails and delivered state
 
@@ -403,7 +403,7 @@ Acceptance screenshots (all 1440×900):
 - [Signals view](../assets/power-atlas-desktop-signals.png)
 - [Comparison view](../assets/power-atlas-desktop-comparison.png)
 
-At pre-documentation head `c6a06cf487a8e0a26acbce114c920f58f9d15979`, fresh Task 8 verification passed: `npm test` (72 files / 322 tests), `npm run typecheck`, `npm run build`, and `git diff --check`; the worktree was clean. Final cross-cutting review then identified that bundled logistics demo items could be read as current official regional impact data. The remediation keeps fixed demo routes explicitly labeled and unattributed to official sources, disables `物流影響` until typed values with units, periods, and provenance exist, removes fabricated regional scores/`現在`, gates prefecture harvest metrics to the active rice-harvest layer, and renders a source with no URL as non-link text. It also keeps relative fixture labels out of `SourceDocument.accessed`; an unprovided verification time renders as `確認時点不明` / `確認日不明` instead of a fabricated calendar freshness claim. Fresh remediation verification passed `npm test` (72 files / 331 tests), `npm run typecheck`, `npm run build`, and `git diff --check`. Independent re-review approved remediation head `e731ff7` with no blocking findings. No push or PR is authorized. Broader external-data coverage and provenance expansion remain separate data work rather than a UI blocker.
+At pre-documentation head `c6a06cf487a8e0a26acbce114c920f58f9d15979`, fresh Task 8 verification passed: `npm test` (72 files / 322 tests), `npm run typecheck`, `npm run build`, and `git diff --check`; the worktree was clean. Final cross-cutting review then identified that bundled logistics demo items could be read as current official regional impact data. The remediation keeps fixed demo routes explicitly labeled and unattributed to official sources, disables `物流影響` until typed values with units, periods, and provenance exist, removes fabricated regional scores/`現在`, gates prefecture harvest metrics to the active rice-harvest layer, and renders a source with no URL as non-link text. It also keeps relative fixture labels out of `SourceDocument.accessed`; an unprovided verification time renders as `確認時点不明` / `確認日不明` instead of a fabricated calendar freshness claim. Fresh remediation verification passed `npm test` (72 files / 331 tests), `npm run typecheck`, `npm run build`, and `git diff --check`. Independent re-review approved remediation head `e731ff7` with no blocking findings. The product owner authorized direct `v0.5.0` distribution to `main` on 2026-07-18; no PR is required for this release. Broader external-data coverage and provenance expansion remain separate data work rather than a UI blocker.
 
 ### Handoff file policy
 

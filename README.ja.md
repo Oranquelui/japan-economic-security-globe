@@ -1,14 +1,14 @@
-# 日本経済安全保障ウォッチボード
+# 日本レジリエンス地図
 
 [English](README.md) | 日本語
 
-日本経済安全保障グローブは、「日本が今なにを注視すべきか」を主語にした公共目的の Watchboard MVP です。日本中心の運用マップ、ランキング主導の briefing、bounded な watch overlay、根拠グラフ、オペレーション表を通じて、日本の戦略的依存を説明します。
+日本レジリエンス地図は、公式統計を入口にした公共目的の地図ワークスペースです。意味別の地図レイヤー、単一のコンテキストインスペクタ、出典根拠、明示的に開くシグナル／比較ビューを通じて、日本の暮らし・産業・インフラ・戦略的依存を説明します。
 
-最初の表示は `Energy` を中心にしていますが、`Logistics` はもう隠れた補助テーマではなく、独立した public theme です。2026年4月時点では、原油、LNG、海上輸送路、港湾、電気代、災害時の生活基盤ストレスが、もっとも直感的な入口です。ただし、このプロジェクトは一時的なニュース可視化で終わらせません。`Rice`、`Water`、`Defense`、`Semiconductors`、`Regional Security / 地域安全保障` も同じオントロジー上に最初から載せています。
+初期表示は `Rice / コメ` と e-Stat の都道府県別収穫量です。`Energy`、`Logistics`、`Water`、`Defense`、`Semiconductors`、`Regional Security / 地域安全保障` も同じオントロジー上に残し、全球ルートや物流デモは初期画面の主張ではなく補助文脈として扱います。
 
 ## 製品方針（2026-07 更新）
 
-公開MVPの骨格を **e-Stat など公式統計** に寄せる方針を **承認** しました（Option A）。公開タイトル方向は **日本レジリエンス地図**。経済安全保障は「監視レーダー製品名」ではなく、**問いのレンズ**です。全球ルートや AIS デモは文脈の補助線で、ホーム初期表示には出しません。
+公開MVPの骨格を **e-Stat など公式統計** に寄せる方針を **承認** しました（Option A）。公開タイトルは **日本レジリエンス地図**。経済安全保障は「監視レーダー製品名」ではなく、**問いのレンズ**です。全球ルートや AIS デモは文脈の補助線で、ホーム初期表示には出しません。
 
 - **エージェント引き継ぎ（Codex 等はここから）:** [`docs/product/2026-07-13-estat-spine-handoff-prd.md`](docs/product/2026-07-13-estat-spine-handoff-prd.md)
 - 決定メモ: [`docs/product/2026-07-13-estat-spine-decision-memo.md`](docs/product/2026-07-13-estat-spine-decision-memo.md)
@@ -18,13 +18,15 @@
 
 ## 公開デモ
 
-- Version: `0.4.0`
+- Version: `0.5.0`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
-- Launch view: [国内物流 watch](https://economic-security.quadrillionaaa.com/?theme=logistics&mode=route)
-- 最初の約束: `日本が今なにを注視すべきか`（再定義中: 公式数字で暮らしと産業の脆さを説明する）
-- 公開 framing: 国内物流の見え方、港湾後続、道路・鉄道・内航・航空貨物・空港運用、非エネルギー一般貨物の補助線、公式ソース信頼、出典 freshness、bounded な near-live overlay、地形が読める地図
+- Launch view: [都道府県別コメ収穫量](https://economic-security.quadrillionaaa.com/?theme=rice&layer=rice-harvest)
+- 最初の約束: 公式数字と追跡可能な出典から、暮らしと産業の脆さを説明する
+- 公開 framing: 日本中心の対象範囲、意味別レイヤー、公式出典・単位・期間、単一インスペクタ、必要時だけ開くシグナル／比較
 
 ## 現在のバージョン
+
+`v0.5.0` では、デスクトップを地図中心のワークスペースへ再構成しました。左ペインに対象範囲、期間、単位、出典、意味レイヤーを集約し、中央は地図、右は選択時だけ開く単一インスペクタに整理しています。シグナルと比較は明示操作で開く副次ビューです。従来URLとの互換性を保ち、既存Mobile構成は維持しますが、Mobile再設計の完了は主張しません。物流経路は固定デモと明示し、型付き・出典付き指標がない物流影響レイヤーは無効のままです。
 
 `v0.4.0` では `Regional Security / 地域安全保障` theme と、公式公開データを重複なく取り込むための source adapter foundation を追加しました。初期 slice は、北朝鮮ミサイル発射履歴、代表発射地域・落下/影響推定区域・代表軌道、中国など周辺航空・海上活動の公開集約 placeholder を扱います。公開・履歴・遅延・集約情報に限定し、ライブ警報、作戦追跡、ターゲティング、完全な脅威 coverage は主張しません。
 
@@ -36,25 +38,22 @@
 
 ## 公開プレビュー
 
-![Japan Watchboard logistics view showing domestic logistics lanes, terrain basemap, and evidence detail popup](docs/assets/japan-watchboard-logistics.png)
+![コメ収穫量レイヤーと単一のコンテキストインスペクタを表示した日本レジリエンス地図](docs/assets/power-atlas-desktop-rice-niigata.png)
 
-現在の公開面では、国内 logistics watch を前面に出しています。港湾着地点、道路・鉄道・内航・航空貨物・空港運用の国内後続、地形文脈、出典信頼、bounded な非エネルギー一般貨物の補助線を別々の図ではなく同じ画面で確認できます。
+現在の公開面は、e-Stat のコメ収穫量レイヤーから始まります。対象範囲、期間、単位、凡例、公式出典を地図の横に保ち、都道府県を選ぶと出典付きのインスペクタが1つだけ開きます。シグナルと47都道府県比較は必要なときだけ表示します。
 
 ## 中心となる問い
 
 > 日本は今なにを注視すべきか。そして、そのシグナルは暮らし、公共支出、国内インフラのどこに着地するのか。
 
-この問いを、次の主要レイヤーで見せます。
+この問いを、次の規律あるワークスペースで見せます。
 
-- `Watchboard briefing`: 国家的重要度、freshness、confidence、why now を先に出す。
-- `Japan operations map`: コメ、水、貯水池、港湾、LNG受入基地、製油所、都道府県など、国内に着地する影響を主画面で見せる。
-- `Bounded watch overlays`: 公開可能な範囲に限定した、近接監視・遅延監視の情報を重ねる。
-- `Domestic logistics watch`: 国内の道路・鉄道・内航・航空貨物・空港運用、港湾後続、bounded な非エネルギー一般貨物を主表示する。エネルギー系タンカーと LNG/原油ルートは `Energy` theme に残す。
-- `Regional security watch`: 日本周辺のミサイル履歴と航空・海上活動文脈を、公開・履歴・遅延・集約された根拠としてだけ表示する。
-- `Source status strip`: active theme の公式/API/文書ソース coverage と freshness を要約する。
-- `Global supporting layer`: 原油、LNG、石炭、半導体、供給国、海上輸送路、チョークポイントなど、世界依存の関係を日本への補助文脈として見せる。
-- `Evidence graph`: 政策、予算、法令、組織、出典文書、provenance の関係を見せる。
-- `Operations table`: 依存ルート、観測シグナル、国内着地点を運用リストとして並べ、Palantir 的な意思決定画面の情報構造に寄せる。
+- `対象範囲と意味レイヤー`: 対象地域、期間、単位、凡例、出典を常に確認できるようにする。
+- `日本地図ワークスペース`: 公式地域統計、観測値、拠点、依存ルートを意味を混ぜずに表示する。
+- `コンテキストインスペクタ`: 選択した事実、provenance、関連根拠を1つの詳細面にまとめる。
+- `シグナルと比較`: 必要時だけ開き、単位・期間・共通出典が揃うデータだけを比較する。
+- `補助テーマ`: Energy、bounded な Logistics、Water、Defense、Semiconductors、履歴・集約型の Regional Security を保持する。
+- `全球補助レイヤー`: 日本への影響を説明する場合に限り、供給国、海上ルート、チョークポイントを表示する。
 
 このプロジェクトの主語は日本です。外国は、あくまで日本人の暮らしや安全保障への影響を説明するために表示します。一般的な国別プロフィール集ではありません。
 

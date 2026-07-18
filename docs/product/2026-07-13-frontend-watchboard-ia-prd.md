@@ -1,9 +1,9 @@
 # PRD: Frontend Watchboard Information Architecture
 
-Status: Desktop Power Atlas surface reframe P0–P3 implemented and Task 8 accepted; PR not opened / awaiting explicit authorization
+Status: Desktop Power Atlas surface reframe P0–P3 implemented, independently approved, and authorized for direct `v0.5.0` distribution to `main`
 Date: 2026-07-13  
 Repository: `jp-strategic-dependency-graph`  
-Version context: public Phase 0 / `v0.4.x`
+Version context: public Phase 0 / `v0.5.0`
 Related:
 
 - `.taskmaster/docs/japan-economic-security-globe-prd.txt` (Phase 0 product PRD)
@@ -362,7 +362,7 @@ This addendum originally recorded a product and IA decision only. On 2026-07-18,
 
 ## 19. Verified delivery record (2026-07-18)
 
-The desktop reframe was implemented on `codex/power-atlas-desktop-reframe`, starting from the product-doc decision commit `9e32d82`. The pre-documentation delivery head was `c6a06cf487a8e0a26acbce114c920f58f9d15979`. No PR has been opened; publishing remains **awaiting explicit authorization**.
+The desktop reframe was implemented on `codex/power-atlas-desktop-reframe`, starting from the product-doc decision commit `9e32d82`. The pre-documentation delivery head was `c6a06cf487a8e0a26acbce114c920f58f9d15979`. The product owner authorized direct `v0.5.0` distribution to `main` on 2026-07-18; no PR is required for this release path.
 
 Delivered phases:
 
@@ -388,4 +388,4 @@ The checked no-live-overclaim criterion means the delivered UI does not present 
 
 Fresh remediation verification passed `npm test` (72 files / 331 tests), `npm run typecheck`, `npm run build`, and `git diff --check`.
 
-Independent re-review approved remediation head `e731ff7` with no blocking findings. The only remaining delivery step is push/PR publication after explicit authorization. Broader external-data coverage and provenance expansion remain separate data work, not a blocker for this UI delivery. Mobile redesign remains explicitly deferred and is not complete; only the existing stacked-tree smoke boundary passed.
+Independent re-review approved remediation head `e731ff7` with no blocking findings. Direct `v0.5.0` distribution to `main` is authorized; deployment remains subject to the repository CI and live-site verification gates. Broader external-data coverage and provenance expansion remain separate data work, not a blocker for this UI delivery. Mobile redesign remains explicitly deferred and is not complete; only the existing stacked-tree smoke boundary passed.
