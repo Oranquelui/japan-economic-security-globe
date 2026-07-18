@@ -4,6 +4,8 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { EvidencePanel } from "../EvidencePanel";
+import { loadSeedGraph } from "../../lib/data/seed-loader";
+import { buildLiveLogisticsDetail } from "../../lib/presentation/live-logistics-detail";
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
 import type { DetailViewModel, EvidenceGraphViewModel } from "../../types/presentation";
 import type { RankingExplanationViewModel } from "../../lib/ranking/explain";
@@ -206,21 +208,29 @@ describe("evidence panel structure", () => {
     expect(screen.getByText("確認日 2026-04-11")).toBeTruthy();
   });
 
-  test("renders a source without a URL as non-link text", () => {
+  test("renders an actual demo fallback source without a false freshness date", () => {
+    const fallbackDetail = buildLiveLogisticsDetail(loadSeedGraph(), {
+      confidenceLabel: "デモ",
+      corridorLabel: "Yokohama → Tokyo",
+      disclosureLabel: "固定デモ / 公式ライブフィードではありません",
+      etaLabel: "デモ",
+      id: "live-logistics:road-keihin-tokyo",
+      kindLabel: "道路物流",
+      laneId: "road",
+      lastSeenLabel: "22分前",
+      pointIds: ["port:yokohama", "prefecture:tokyo"],
+      priority: 50,
+      relatedIds: [],
+      signalTone: "monitoring",
+      sourceLabel: "Domestic logistics demo fixture",
+      statusLabel: "デモ",
+      title: "固定デモ経路: 横浜港 → 首都圏配送"
+    });
+
     render(
       <EvidencePanel
         collapsed={false}
-        detail={{
-          ...detail,
-          sources: [{
-            ...detail.sources[0],
-            id: "demo:source",
-            label: "Domestic logistics demo fixture",
-            url: "",
-            official: false
-          }],
-          sourceHighlights: []
-        }}
+        detail={fallbackDetail}
         evidenceGraph={evidenceGraph}
         onSelect={vi.fn()}
         onToggleCollapsed={vi.fn()}
@@ -233,9 +243,12 @@ describe("evidence panel structure", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "出典" }));
 
-    expect(screen.getByText("Domestic logistics demo fixture")).toBeTruthy();
+    expect(screen.getAllByText("Domestic logistics demo fixture")).toHaveLength(2);
     expect(screen.queryByRole("link", { name: /Domestic logistics demo fixture/ })).toBeNull();
     expect(document.querySelector('a[href="#"]')).toBeNull();
+    expect(screen.getByText("確認時点不明")).toBeTruthy();
+    expect(screen.getByText("確認日不明")).toBeTruthy();
+    expect(screen.queryByText(/NaN|日前確認|確認日 22分前/)).toBeNull();
   });
 
   test("shows a why-ranked section when ranking context is available", () => {

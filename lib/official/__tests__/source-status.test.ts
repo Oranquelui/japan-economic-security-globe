@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { summarizeSourceStatus } from "../source-freshness";
+import { getSourceFreshness, summarizeSourceStatus } from "../source-freshness";
 import type { SourceDocument } from "../../../types/semantic";
 
 function source(overrides: Partial<SourceDocument>): SourceDocument {
@@ -17,6 +17,32 @@ function source(overrides: Partial<SourceDocument>): SourceDocument {
 }
 
 describe("source status summary", () => {
+  test.each(["", "22分前", "not-a-date", "2026-02-31"])(
+    "treats an unparseable accessed value %j as unknown rather than fresh",
+    (accessed) => {
+      expect(getSourceFreshness({ accessed }, new Date("2026-04-18T00:00:00.000Z"))).toEqual({
+        accessedLabel: "確認日不明",
+        daysSince: null,
+        label: "確認時点不明",
+        tone: "unknown"
+      });
+    }
+  );
+
+  test("keeps unknown verification times out of calendar bounds and uses an unknown summary tone", () => {
+    const summary = summarizeSourceStatus(
+      [source({ accessed: "22分前", official: false, accessMode: "html" })],
+      new Date("2026-04-18T00:00:00.000Z")
+    );
+
+    expect(summary).toMatchObject({
+      staleSources: 0,
+      overallTone: "unknown",
+      freshestAccessed: undefined,
+      oldestAccessed: undefined
+    });
+  });
+
   test("summarizes official, api-like, document, and freshness counts for theme sources", () => {
     const summary = summarizeSourceStatus(
       [

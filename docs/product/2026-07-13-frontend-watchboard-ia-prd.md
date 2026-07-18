@@ -384,8 +384,8 @@ Acceptance screenshots (all 1440×900):
 
 Fresh Task 8 quality evidence: `npm test` passed 72 files / 322 tests, `npm run typecheck` passed, `npm run build` passed, `git diff --check` was clean, and the worktree was clean at `c6a06cf`.
 
-The checked no-live-overclaim criterion means the delivered UI does not present the bundled logistics fixture as current official impact data: fixed demo routes are disclosed as demo, fabricated regional impact scores and `現在` labels are not rendered, and an unavailable demo source is shown as non-link text rather than `href="#"`. A requested `layer=logistics-impact` normalizes to an available visible layer when one exists. Typed, sourced logistics-impact data remains future data work, not silently inferred from route items.
+The checked no-live-overclaim criterion means the delivered UI does not present the bundled logistics fixture as current official impact data: fixed demo routes are disclosed as demo, fabricated regional impact scores and `現在` labels are not rendered, and an unavailable demo source is shown as non-link text rather than `href="#"`. Relative fixture labels such as `22分前` are not treated as retrieval dates; when verification time is not provided, the evidence surface says `確認時点不明` / `確認日不明`. A requested `layer=logistics-impact` normalizes to an available visible layer when one exists. Typed, sourced logistics-impact data remains future data work, not silently inferred from route items.
 
-Fresh remediation verification passed `npm test` (72 files / 326 tests), `npm run typecheck`, `npm run build`, and `git diff --check`.
+Fresh remediation verification passed `npm test` (72 files / 331 tests), `npm run typecheck`, `npm run build`, and `git diff --check`.
 
 There are no known desktop acceptance blockers after that truth-labeling remediation. Remaining delivery work is final independent re-review and, only after explicit authorization, push/PR publication. Broader external-data coverage and provenance expansion remain separate data work, not a blocker for this UI delivery. Mobile redesign remains explicitly deferred and is not complete; only the existing stacked-tree smoke boundary passed.

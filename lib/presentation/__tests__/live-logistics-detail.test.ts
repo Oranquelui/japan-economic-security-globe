@@ -89,6 +89,7 @@ describe("live logistics detail", () => {
     expect(detail.sources[0].description).toContain("not an official live-provider feed");
     expect(detail.sources[0].url).toBe("");
     expect(detail.sources[0].url).not.toBe("#");
+    expect(detail.sources[0].accessed).toBe("");
   });
 
   test("frames airport operations as public aggregate logistics rather than flight tracking", () => {

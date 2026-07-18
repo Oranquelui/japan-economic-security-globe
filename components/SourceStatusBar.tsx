@@ -103,6 +103,8 @@ function getToneColor(tone: SourceFreshnessTone, themePalette: ThemePalette) {
       return themePalette.borderStrong;
     case "stale":
       return themePalette.textMuted;
+    case "unknown":
+      return themePalette.borderStrong;
   }
 }
 

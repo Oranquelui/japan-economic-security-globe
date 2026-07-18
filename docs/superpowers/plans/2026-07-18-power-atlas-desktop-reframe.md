@@ -469,7 +469,9 @@ Implementation note: the delivered builder computes availability from the actual
 
 Final-review remediation note: the bundled logistics route input is a fixed demo, not a current official impact feed. `logistics-domestic` is therefore labeled `固定デモデータ` with no official source IDs. `logistics-impact` remains registered for URL compatibility but is runtime-unavailable until a typed impact metric includes a numeric value, unit, period, and provenance. Demo route items alone never enable it, and an unavailable impact URL normalizes to a visible available layer.
 
-Remediation verification: `npm test` passed 72 files / 326 tests; `npm run typecheck`, `npm run build`, and `git diff --check` also passed. Final independent re-review is still required before Task 9 Step 3 is checked.
+Fallback-source verification times follow the same truth boundary: relative fixture labels such as `22分前` are presentation context, not retrieval dates. When no valid `YYYY-MM-DD` verification date exists, freshness is `unknown` and the UI renders `確認時点不明` / `確認日不明`; it must never render `NaN日前確認` or imply a calendar date.
+
+Remediation verification: `npm test` passed 72 files / 331 tests; `npm run typecheck`, `npm run build`, and `git diff --check` also passed. Final independent re-review is still required before Task 9 Step 3 is checked.
 
 buildSelectionInspector must use the already-resolved DetailViewModel supplied by AppShell; it must not call getDetailView internally. This preserves live-logistics:* selections, whose detail comes from buildLiveLogisticsDetail and is not stored in SemanticGraph. Selection metric rules:
 

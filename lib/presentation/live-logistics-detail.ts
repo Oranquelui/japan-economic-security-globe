@@ -172,7 +172,7 @@ function buildItemFallbackSource(item: LiveLogisticsItemViewModel): SourceDocume
       label: item.sourceLabel,
       url: "",
       publisher: item.sourceLabel,
-      accessed: item.lastSeenLabel,
+      accessed: "",
       description: `${item.disclosureLabel} / demo seed, not an official live-provider feed`,
       official: false,
       accessMode: "html",

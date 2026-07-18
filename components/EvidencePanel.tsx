@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
-import { getSourceFreshness } from "../lib/official/source-freshness";
+import { getSourceFreshness, type SourceFreshnessTone } from "../lib/official/source-freshness";
 import type { RankingExplanationViewModel } from "../lib/ranking/explain";
 import type { DetailViewModel, EvidenceGraphViewModel, SelectionInspectorViewModel } from "../types/presentation";
 import type { SourceDocument } from "../types/semantic";
@@ -699,7 +699,7 @@ function getSourceModeLabel(mode: NonNullable<SourceDocument["accessMode"]>) {
   }
 }
 
-function getFreshnessBorderColor(tone: "fresh" | "recent" | "stale", themePalette: ThemePalette) {
+function getFreshnessBorderColor(tone: SourceFreshnessTone, themePalette: ThemePalette) {
   switch (tone) {
     case "fresh":
       return themePalette.accent;
@@ -707,16 +707,20 @@ function getFreshnessBorderColor(tone: "fresh" | "recent" | "stale", themePalett
       return themePalette.borderStrong;
     case "stale":
       return themePalette.borderSubtle;
+    case "unknown":
+      return themePalette.borderSubtle;
   }
 }
 
-function getFreshnessTextColor(tone: "fresh" | "recent" | "stale", themePalette: ThemePalette) {
+function getFreshnessTextColor(tone: SourceFreshnessTone, themePalette: ThemePalette) {
   switch (tone) {
     case "fresh":
       return themePalette.textPrimary;
     case "recent":
       return themePalette.textPrimary;
     case "stale":
+      return themePalette.textMuted;
+    case "unknown":
       return themePalette.textMuted;
   }
 }
