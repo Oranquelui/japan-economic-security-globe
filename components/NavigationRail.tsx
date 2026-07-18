@@ -88,6 +88,7 @@ export function NavigationRail({
             <button
               key={id}
               type="button"
+              aria-pressed={isActive}
               onClick={() => onThemeChange(id)}
               className="relative grid h-12 w-12 place-items-center rounded-[12px] border text-[0.68rem] font-semibold tracking-tight transition"
               style={

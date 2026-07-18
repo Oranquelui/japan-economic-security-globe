@@ -67,6 +67,13 @@ interface AppShellProps {
   rankingSignals?: RankingSignal[];
 }
 
+const DESKTOP_WORKSPACE_GEOMETRY = {
+  comparisonHeight: 264,
+  contextPaneWidth: 320,
+  inspectorWidth: 360,
+  railWidth: 72
+} as const;
+
 export function AppShell({
   graph,
   hasExplicitUrlState = false,
@@ -264,12 +271,12 @@ export function AppShell({
     "--ops-text-primary": themePalette.textPrimary,
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
-  const railWidth = 72;
-  const paneWidth = 376;
-  const inspectorExpandedWidth = 360;
+  const railWidth = DESKTOP_WORKSPACE_GEOMETRY.railWidth;
+  const paneWidth = DESKTOP_WORKSPACE_GEOMETRY.contextPaneWidth;
+  const inspectorExpandedWidth = DESKTOP_WORKSPACE_GEOMETRY.inspectorWidth;
   const visiblePaneWidth = isInboxOpen ? paneWidth : 0;
   const inspectorWidth = isEvidenceOpen ? inspectorExpandedWidth : 0;
-  const compareHeight = workspaceView === "comparison" ? 264 : 0;
+  const compareHeight = workspaceView === "comparison" ? DESKTOP_WORKSPACE_GEOMETRY.comparisonHeight : 0;
   const mapOverlayInsets = {
     top: 16,
     left: railWidth + visiblePaneWidth + 16,
@@ -571,7 +578,7 @@ export function AppShell({
               style={{
                 left: railWidth + visiblePaneWidth,
                 right: inspectorWidth,
-                height: 264
+                height: compareHeight
               }}
             >
               <ComparisonPanel

@@ -107,7 +107,7 @@ vi.mock("../JapanMainMap", () => ({
     };
     onMapModeChange?: (mode: OperationMapMode) => void;
     onOpenEvidence?: () => void;
-    overlayInsets?: { right: number };
+    overlayInsets?: { bottom: number; left: number; right: number; top: number };
     watchOverlays?: unknown[];
   }) => (
     <div
@@ -127,6 +127,8 @@ vi.mock("../JapanMainMap", () => ({
         ...(model?.liveVessels ?? [])
       ].flatMap((point) => point.selectionId ?? []).join(",")}
       data-overlay-right={overlayInsets?.right ?? ""}
+      data-overlay-bottom={overlayInsets?.bottom ?? ""}
+      data-overlay-left={overlayInsets?.left ?? ""}
       data-ranking={detailPopup?.rankingExplanation?.rankLabel ?? ""}
       data-watch-overlays={watchOverlays.length}
     >
@@ -890,6 +892,31 @@ describe("AppShell url sync", () => {
     });
     expect(screen.getByTestId("context-inspector").getAttribute("data-summary")).toBeTruthy();
     expect(screen.getAllByTestId("map")[0].getAttribute("data-overlay-right")).toBe("376");
+  });
+
+  test("locks desktop workspace geometry and keeps 528px of map at 1280px with the inspector open", async () => {
+    const user = userEvent.setup();
+
+    render(<AppShell graph={loadSeedGraph()} />);
+
+    const rail = screen.getByTestId("layout-navigation-rail");
+    const commandPane = screen.getByTestId("layout-command-pane");
+    expect(rail.style.width).toBe("72px");
+    expect(commandPane.style.width).toBe("320px");
+
+    await user.click(screen.getAllByText("select-rice-from-inbox")[0]);
+
+    const inspector = screen.getByTestId("layout-context-inspector");
+    expect(inspector.style.width).toBe("360px");
+    expect(1280 - Number.parseInt(rail.style.width) - Number.parseInt(commandPane.style.width) - Number.parseInt(inspector.style.width)).toBe(528);
+
+    const map = screen.getAllByTestId("map")[0];
+    expect(map.getAttribute("data-overlay-left")).toBe("408");
+    expect(map.getAttribute("data-overlay-right")).toBe("376");
+
+    await user.click(within(screen.getByTestId("layout-desktop-workspace")).getByRole("button", { name: "比較する" }));
+    expect(screen.getByTestId("layout-compare-drawer").style.height).toBe("264px");
+    expect(map.getAttribute("data-overlay-bottom")).toBe("280");
   });
 
   test("opens evidence when a compare-table selection is made", async () => {

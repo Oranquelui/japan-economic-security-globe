@@ -1,12 +1,20 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { EvidencePanel } from "../EvidencePanel";
+import { ContextInspector } from "../ContextInspector";
 import { JapanMainMap } from "../JapanMainMap";
+import { NavigationRail } from "../NavigationRail";
 import { OperationsSignalTable } from "../OperationsSignalTable";
+import { ScopeContextPanel } from "../ScopeContextPanel";
+import { loadSeedGraph } from "../../lib/data/seed-loader";
+import { buildSelectionInspector, buildWorkspacePresentation } from "../../lib/presentation/workspace";
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
+import { getDetailView } from "../../lib/semantic/detail";
+import { getThemeView } from "../../lib/semantic/selectors";
+import { buildEvidenceGraph } from "../../lib/semantic/view-models";
 import type { DetailViewModel, EvidenceGraphViewModel } from "../../types/presentation";
 import type { JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
 import type { WatchOverlayItemViewModel } from "../../lib/presentation/watch-overlays";
@@ -105,6 +113,76 @@ const watchOverlays: WatchOverlayItemViewModel[] = [
 ];
 
 describe("operations accessibility", () => {
+  test("exposes a logical scope, semantic-layer, and legend heading hierarchy", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+
+    render(
+      <ScopeContextPanel
+        activeLayerId="rice-harvest"
+        comparisonAvailable
+        onLayerChange={() => undefined}
+        onOpenComparison={() => undefined}
+        onOpenSignals={() => undefined}
+        sources={view.sources}
+        themePalette={getThemePalette("rice")}
+        workspace={buildWorkspacePresentation(graph, view)}
+      />
+    );
+
+    expect(screen.getByRole("heading", { level: 2, name: "コメ" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 3, name: "表示レイヤー" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 3, name: "主食用米収穫量" })).toBeTruthy();
+
+    const layerGroup = screen.getByRole("group", { name: "表示レイヤー" });
+    expect(within(layerGroup).getByRole("button", { name: "収穫量" }).getAttribute("aria-pressed")).toBe("true");
+    expect(within(layerGroup).getByRole("button", { name: "価格" }).getAttribute("aria-pressed")).toBe("false");
+  });
+
+  test("announces the active theme in the desktop navigation rail", () => {
+    render(
+      <NavigationRail
+        isInboxOpen
+        onCloseInbox={() => undefined}
+        onOpenInbox={() => undefined}
+        onThemeChange={() => undefined}
+        themeId="rice"
+        themeIds={["rice", "energy"]}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "コメ" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "エネルギー" }).getAttribute("aria-pressed")).toBe("false");
+  });
+
+  test("gives the inspector a Japanese close name, discernible source links, and unique interactive ids", () => {
+    const graph = loadSeedGraph();
+    const selectedId = "prefecture:niigata";
+
+    render(
+      <ContextInspector
+        evidenceGraph={buildEvidenceGraph(graph, "rice")}
+        inspector={buildSelectionInspector(graph, selectedId, getDetailView(graph, selectedId))}
+        onClose={() => undefined}
+        onSelect={() => undefined}
+        selectedId={selectedId}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+        themeTitle="コメ"
+      />
+    );
+
+    const inspector = screen.getByTestId("context-inspector");
+    expect(within(inspector).getByRole("button", { name: "詳細を閉じる" })).toBeTruthy();
+    fireEvent.click(within(inspector).getByRole("tab", { name: "出典" }));
+    expect(within(inspector).getByRole("link", { name: /e-Stat/ }).getAttribute("href")).toMatch(/^https:\/\//);
+
+    const interactiveIds = Array.from(inspector.querySelectorAll("button[id], a[id]")).map((element) => element.id);
+    expect(interactiveIds.length).toBeGreaterThan(0);
+    expect(new Set(interactiveIds).size).toBe(interactiveIds.length);
+  });
+
   test("supports keyboard selection in the operations grid", () => {
     const onSelect = vi.fn();
 

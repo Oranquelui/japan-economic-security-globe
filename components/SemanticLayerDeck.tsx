@@ -50,13 +50,13 @@ export function SemanticLayerDeck({
 
   return (
     <section aria-labelledby="semantic-layer-heading">
-      <div
+      <h3
         id="semantic-layer-heading"
         className="font-mono text-[0.6rem] uppercase tracking-[0.24em]"
         style={{ color: themePalette.textMuted }}
       >
         表示レイヤー
-      </div>
+      </h3>
       <div role="group" aria-label="表示レイヤー" className="mt-3 space-y-2">
         {layers.map((layer, index) => {
           const active = layer.available && layer.id === activeLayerId;
