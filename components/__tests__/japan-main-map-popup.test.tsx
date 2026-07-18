@@ -47,6 +47,9 @@ describe("JapanMainMap popup placement", () => {
     );
 
     expect(screen.getAllByTestId("map-detail-popup")).toHaveLength(1);
+    const mobilePopupContainer = screen.getByTestId("map-detail-popup").parentElement;
+    expect(mobilePopupContainer?.className).toContain("xl:hidden");
+    expect(mobilePopupContainer?.className).not.toContain("lg:hidden");
     expect(screen.queryByTestId("map-detail-popup-anchor")).toBeNull();
   });
 

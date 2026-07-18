@@ -30,6 +30,7 @@ export function ContextInspector({
 }: ContextInspectorProps) {
   return (
     <EvidenceSurface
+      accessibleTabs
       ariaLabel="選択中の詳細と根拠"
       collapsed={false}
       collapsible={false}

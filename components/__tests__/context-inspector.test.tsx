@@ -43,13 +43,13 @@ describe("ContextInspector", () => {
     expect(within(inspector).getByText("514,100")).toBeTruthy();
     expect(within(inspector).getByText("トン")).toBeTruthy();
     expect(within(inspector).getByText("令和5年産")).toBeTruthy();
-    expect(within(inspector).getByRole("button", { name: "概要" })).toBeTruthy();
+    expect(within(inspector).getByRole("tab", { name: "概要" })).toBeTruthy();
     expect(within(inspector).getByText("日本にとっての意味")).toBeTruthy();
 
-    await user.click(within(inspector).getByRole("button", { name: "出典" }));
+    await user.click(within(inspector).getByRole("tab", { name: "出典" }));
     expect(within(inspector).getByRole("link", { name: /e-Stat/ })).toBeTruthy();
 
-    await user.click(within(inspector).getByRole("button", { name: "関連" }));
+    await user.click(within(inspector).getByRole("tab", { name: "関連" }));
     const related = within(inspector).getAllByRole("button").find((button) =>
       button.getAttribute("aria-label")?.startsWith("根拠ノード ")
     );
@@ -59,5 +59,66 @@ describe("ContextInspector", () => {
 
     await user.click(within(inspector).getByRole("button", { name: "詳細を閉じる" }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  test("exposes linked tabs and moves active focus with keyboard navigation", async () => {
+    const user = userEvent.setup();
+    const graph = loadSeedGraph();
+    const selectedId = "prefecture:niigata";
+
+    render(
+      <ContextInspector
+        evidenceGraph={buildEvidenceGraph(graph, "rice")}
+        inspector={buildSelectionInspector(graph, selectedId, getDetailView(graph, selectedId))}
+        onClose={vi.fn()}
+        onSelect={vi.fn()}
+        selectedId={selectedId}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+        themeTitle="米"
+      />
+    );
+
+    const inspector = screen.getByTestId("context-inspector");
+    expect(within(inspector).getByRole("tablist", { name: "詳細セクション" })).toBeTruthy();
+    const summaryTab = within(inspector).getByRole("tab", { name: "概要" });
+    const sourcesTab = within(inspector).getByRole("tab", { name: "出典" });
+    const relatedTab = within(inspector).getByRole("tab", { name: "関連" });
+    const controlledPanelIds = [summaryTab, sourcesTab, relatedTab].map((tab) => tab.getAttribute("aria-controls"));
+
+    expect(controlledPanelIds.every(Boolean)).toBe(true);
+    expect(new Set(controlledPanelIds).size).toBe(3);
+    expect(summaryTab.getAttribute("aria-selected")).toBe("true");
+    expect(summaryTab.getAttribute("tabindex")).toBe("0");
+    expect(sourcesTab.getAttribute("aria-selected")).toBe("false");
+    expect(sourcesTab.getAttribute("tabindex")).toBe("-1");
+
+    const summaryPanel = within(inspector).getByRole("tabpanel");
+    expect(summaryTab.id).toBeTruthy();
+    expect(summaryTab.getAttribute("aria-controls")).toBe(summaryPanel.id);
+    expect(summaryPanel.getAttribute("aria-labelledby")).toBe(summaryTab.id);
+
+    summaryTab.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(document.activeElement).toBe(sourcesTab);
+    expect(sourcesTab.getAttribute("aria-selected")).toBe("true");
+    const sourcesPanel = within(inspector).getByRole("tabpanel");
+    expect(sourcesTab.getAttribute("aria-controls")).toBe(sourcesPanel.id);
+    expect(sourcesPanel.getAttribute("aria-labelledby")).toBe(sourcesTab.id);
+
+    await user.keyboard("{End}");
+    expect(document.activeElement).toBe(relatedTab);
+    expect(relatedTab.getAttribute("aria-selected")).toBe("true");
+    const relatedPanel = within(inspector).getByRole("tabpanel");
+    expect(relatedTab.getAttribute("aria-controls")).toBe(relatedPanel.id);
+    expect(relatedPanel.getAttribute("aria-labelledby")).toBe(relatedTab.id);
+
+    await user.keyboard("{Home}");
+    expect(document.activeElement).toBe(summaryTab);
+    expect(summaryTab.getAttribute("aria-selected")).toBe("true");
+
+    await user.keyboard("{ArrowLeft}");
+    expect(document.activeElement).toBe(relatedTab);
+    expect(relatedTab.getAttribute("aria-selected")).toBe("true");
   });
 });

@@ -202,7 +202,7 @@ export function JapanMainMap({
       ) : null}
       {detailPopup ? (
         <div
-          className="fixed inset-x-0 z-50 px-3 lg:hidden"
+          className="fixed inset-x-0 z-50 px-3 xl:hidden"
           style={{
             bottom: overlayInsets.bottom
           }}

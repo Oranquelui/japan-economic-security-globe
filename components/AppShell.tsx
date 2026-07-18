@@ -339,7 +339,7 @@ export function AppShell({
   }
 
   return (
-    <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 lg:grid lg:grid-rows-[56px,auto,minmax(0,1fr)]" style={shellStyle}>
+    <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 xl:grid xl:grid-rows-[56px,auto,minmax(0,1fr)]" style={shellStyle}>
       <InitialNoticeModal homepageMode={homepageMode} locale={locale} />
 
       <ActionBar
@@ -359,8 +359,8 @@ export function AppShell({
         variant={themeId === "regional-security" ? "public-history" : "default"}
       />
 
-      <div className="h-full min-h-0 min-w-0 overflow-x-hidden overflow-y-auto lg:overflow-hidden">
-        <div data-testid="layout-desktop-workspace" className="relative hidden h-full min-h-0 lg:block">
+      <div data-testid="layout-workspace-scroll" className="h-full min-h-0 min-w-0 overflow-x-hidden overflow-y-auto xl:overflow-hidden">
+        <div data-testid="layout-desktop-workspace" className="relative hidden h-full min-h-0 xl:block">
           <section data-testid="layout-map-section" className="absolute inset-0 min-h-0">
             <JapanMainMap
               activeId={activeId}
@@ -472,7 +472,7 @@ export function AppShell({
           </section>
         </div>
 
-        <div className="min-w-0 space-y-4 overflow-x-hidden pb-6 lg:hidden">
+        <div data-testid="layout-stacked-workspace" className="min-w-0 space-y-4 overflow-x-hidden pb-6 xl:hidden">
           {themeId === "logistics" && liveLogistics ? (
             <section className="pt-4">
               <LogisticsImpactBoard

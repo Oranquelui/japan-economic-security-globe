@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import { getSourceFreshness } from "../lib/official/source-freshness";
 import type { RankingExplanationViewModel } from "../lib/ranking/explain";
@@ -35,6 +35,7 @@ interface EvidencePanelProps {
 }
 
 interface EvidenceSurfaceProps extends EvidencePanelProps {
+  accessibleTabs?: boolean;
   ariaLabel?: string;
   onClose?: () => void;
   primaryMetric?: SelectionInspectorViewModel["primaryMetric"];
@@ -46,6 +47,7 @@ export function EvidencePanel(props: EvidencePanelProps) {
 }
 
 export function EvidenceSurface({
+  accessibleTabs = false,
   ariaLabel,
   collapsed,
   collapsible = true,
@@ -62,9 +64,54 @@ export function EvidenceSurface({
   themePalette,
   themeTitle
 }: EvidenceSurfaceProps) {
-  const [tab, setTab] = useState<"summary" | "sources" | "related">("summary");
+  const [tab, setTab] = useState<TabId>("summary");
+  const tabsId = useId();
+  const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
+    summary: null,
+    sources: null,
+    related: null
+  });
   const routeStatus = getRouteStatus(detail);
   const trend = rankingExplanation ? getSignalTrend(rankingExplanation.signalId) : null;
+
+  function getTabId(tabId: TabId) {
+    return `${tabsId}-${tabId}-tab`;
+  }
+
+  function getPanelId(tabId: TabId) {
+    return `${tabsId}-${tabId}-panel`;
+  }
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, currentTab: TabId) {
+    if (!accessibleTabs) {
+      return;
+    }
+
+    const currentIndex = TAB_IDS.indexOf(currentTab);
+    let nextIndex: number | null = null;
+
+    switch (event.key) {
+      case "ArrowRight":
+        nextIndex = (currentIndex + 1) % TAB_IDS.length;
+        break;
+      case "ArrowLeft":
+        nextIndex = (currentIndex - 1 + TAB_IDS.length) % TAB_IDS.length;
+        break;
+      case "Home":
+        nextIndex = 0;
+        break;
+      case "End":
+        nextIndex = TAB_IDS.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    const nextTab = TAB_IDS[nextIndex];
+    setTab(nextTab);
+    tabRefs.current[nextTab]?.focus();
+  }
 
   if (collapsible && collapsed) {
     return (
@@ -215,20 +262,68 @@ export function EvidenceSurface({
         </div>
         <p className="mt-3 text-[0.82rem] leading-6 text-slate-300">{localizeSummary(detail.id, detail.summary)}</p>
 
-        <div className="mt-4 flex gap-2 border-t border-white/10 pt-4">
-          <TabButton active={tab === "summary"} onClick={() => setTab("summary")} themePalette={themePalette}>
+        <div
+          aria-label={accessibleTabs ? "詳細セクション" : undefined}
+          className="mt-4 flex gap-2 border-t border-white/10 pt-4"
+          role={accessibleTabs ? "tablist" : undefined}
+        >
+          <TabButton
+            active={tab === "summary"}
+            ariaControls={accessibleTabs ? getPanelId("summary") : undefined}
+            ariaSelected={accessibleTabs ? tab === "summary" : undefined}
+            buttonRef={accessibleTabs ? (node) => {
+              tabRefs.current.summary = node;
+            } : undefined}
+            id={accessibleTabs ? getTabId("summary") : undefined}
+            onClick={() => setTab("summary")}
+            onKeyDown={accessibleTabs ? (event) => handleTabKeyDown(event, "summary") : undefined}
+            role={accessibleTabs ? "tab" : undefined}
+            tabIndex={accessibleTabs ? (tab === "summary" ? 0 : -1) : undefined}
+            themePalette={themePalette}
+          >
             概要
           </TabButton>
-          <TabButton active={tab === "sources"} onClick={() => setTab("sources")} themePalette={themePalette}>
+          <TabButton
+            active={tab === "sources"}
+            ariaControls={accessibleTabs ? getPanelId("sources") : undefined}
+            ariaSelected={accessibleTabs ? tab === "sources" : undefined}
+            buttonRef={accessibleTabs ? (node) => {
+              tabRefs.current.sources = node;
+            } : undefined}
+            id={accessibleTabs ? getTabId("sources") : undefined}
+            onClick={() => setTab("sources")}
+            onKeyDown={accessibleTabs ? (event) => handleTabKeyDown(event, "sources") : undefined}
+            role={accessibleTabs ? "tab" : undefined}
+            tabIndex={accessibleTabs ? (tab === "sources" ? 0 : -1) : undefined}
+            themePalette={themePalette}
+          >
             出典
           </TabButton>
-          <TabButton active={tab === "related"} onClick={() => setTab("related")} themePalette={themePalette}>
+          <TabButton
+            active={tab === "related"}
+            ariaControls={accessibleTabs ? getPanelId("related") : undefined}
+            ariaSelected={accessibleTabs ? tab === "related" : undefined}
+            buttonRef={accessibleTabs ? (node) => {
+              tabRefs.current.related = node;
+            } : undefined}
+            id={accessibleTabs ? getTabId("related") : undefined}
+            onClick={() => setTab("related")}
+            onKeyDown={accessibleTabs ? (event) => handleTabKeyDown(event, "related") : undefined}
+            role={accessibleTabs ? "tab" : undefined}
+            tabIndex={accessibleTabs ? (tab === "related" ? 0 : -1) : undefined}
+            themePalette={themePalette}
+          >
             関連
           </TabButton>
         </div>
 
         {tab === "summary" ? (
-          <div className="mt-4 space-y-4">
+          <div
+            aria-labelledby={accessibleTabs ? getTabId("summary") : undefined}
+            className="mt-4 space-y-4"
+            id={accessibleTabs ? getPanelId("summary") : undefined}
+            role={accessibleTabs ? "tabpanel" : undefined}
+          >
             {rankingExplanation ? (
               <section
                 className="rounded-xl border p-4"
@@ -392,7 +487,12 @@ export function EvidenceSurface({
         ) : null}
 
         {tab === "sources" ? (
-          <div className="mt-4 space-y-4">
+          <div
+            aria-labelledby={accessibleTabs ? getTabId("sources") : undefined}
+            className="mt-4 space-y-4"
+            id={accessibleTabs ? getPanelId("sources") : undefined}
+            role={accessibleTabs ? "tabpanel" : undefined}
+          >
             <section
               className="rounded-xl border p-4"
               style={{
@@ -483,7 +583,12 @@ export function EvidenceSurface({
         ) : null}
 
         {tab === "related" ? (
-          <div className="mt-4 space-y-4">
+          <div
+            aria-labelledby={accessibleTabs ? getTabId("related") : undefined}
+            className="mt-4 space-y-4"
+            id={accessibleTabs ? getPanelId("related") : undefined}
+            role={accessibleTabs ? "tabpanel" : undefined}
+          >
             <section
               className="rounded-xl border p-4"
               style={{
@@ -694,21 +799,45 @@ function EvidenceGraph({
   );
 }
 
+const TAB_IDS = ["summary", "sources", "related"] as const;
+type TabId = (typeof TAB_IDS)[number];
+
 function TabButton({
   active,
+  ariaControls,
+  ariaSelected,
+  buttonRef,
   children,
+  id,
   onClick,
+  onKeyDown,
+  role,
+  tabIndex,
   themePalette
 }: {
   active: boolean;
+  ariaControls?: string;
+  ariaSelected?: boolean;
+  buttonRef?: (node: HTMLButtonElement | null) => void;
   children: string;
+  id?: string;
   onClick: () => void;
+  onKeyDown?: (event: KeyboardEvent<HTMLButtonElement>) => void;
+  role?: "tab";
+  tabIndex?: number;
   themePalette: ThemePalette;
 }) {
   return (
     <button
+      aria-controls={ariaControls}
+      aria-selected={ariaSelected}
+      id={id}
       type="button"
       onClick={onClick}
+      onKeyDown={onKeyDown}
+      ref={buttonRef}
+      role={role}
+      tabIndex={tabIndex}
       className="rounded-lg border px-3 py-2 text-xs transition"
       style={
         active

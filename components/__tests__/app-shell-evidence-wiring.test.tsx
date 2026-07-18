@@ -117,6 +117,10 @@ describe("AppShell evidence wiring (real ContextInspector)", () => {
     expect(screen.getByTestId("layout-action-bar")).toBeTruthy();
     expect(within(screen.getByTestId("layout-action-bar")).queryByText("表示レイヤー")).toBeNull();
     expect(screen.getAllByTestId("map-layer-controls").length).toBeGreaterThan(0);
+    const mobileEvidence = screen.getByTestId("layout-evidence-drawer-mobile");
+    expect(within(mobileEvidence).queryByRole("tablist")).toBeNull();
+    expect(within(mobileEvidence).queryByRole("tab")).toBeNull();
+    expect(within(mobileEvidence).getByRole("button", { name: "概要" })).toBeTruthy();
 
     expect(within(desktop).queryByTestId("context-inspector")).toBeNull();
 
@@ -133,7 +137,7 @@ describe("AppShell evidence wiring (real ContextInspector)", () => {
     expect(within(inspector).getByText("日本にとっての意味")).toBeTruthy();
     expect(within(inspector).getAllByText(/サウジ原油/).length).toBeGreaterThan(0);
 
-    await user.click(within(inspector).getByRole("button", { name: "出典" }));
+    await user.click(within(inspector).getByRole("tab", { name: "出典" }));
     expect(within(inspector).getAllByRole("link").length).toBeGreaterThan(0);
   });
 
