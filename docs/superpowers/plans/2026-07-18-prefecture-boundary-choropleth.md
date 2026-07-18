@@ -534,6 +534,8 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 
 **Files:**
 
+- Modify: `components/JapanOperationsMapCanvas.tsx`
+- Modify: `components/__tests__/map-canvas-layer-config.test.tsx`
 - Create: `docs/assets/prefecture-choropleth-default-1280x800.png`
 - Create: `docs/assets/prefecture-choropleth-default-1440x900.png`
 - Create: `docs/assets/prefecture-choropleth-default-1680x900.png`
@@ -546,6 +548,23 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 - Create: `docs/assets/prefecture-choropleth-regression-390x844.png`
 - Create: `docs/assets/prefecture-choropleth-sources-license.png`
 - Modify: `docs/public-launch.md`
+
+### Step 7.0: Keep prefecture selection semantic and camera-neutral
+
+Write a failing regression test first. With `focusTargetId` set to a `prefecture-boundary` region, selecting the prefecture must continue to update the semantic selection outside the canvas, but the canvas must not call `easeTo` or `fitBounds` and must preserve its current zoom/camera. Keep the existing focus behavior for representative-radius regions, points, and routes.
+
+After the RED test proves the current automatic zoom, add the smallest canvas-side guard that suppresses focus only for `prefecture-boundary` selections. Run the focused test, full unit suite, typecheck, production build, and prefecture Playwright acceptance. Commit this behavior fix separately before recapturing evidence, then run fresh spec and code-quality reviews for the fix.
+
+```bash
+npx vitest run components/__tests__/map-canvas-layer-config.test.tsx
+npm test
+npm run typecheck
+npm run build
+npm run test:e2e:prefecture
+git diff --check
+git add components/JapanOperationsMapCanvas.tsx components/__tests__/map-canvas-layer-config.test.tsx
+git commit -m "fix: preserve camera on prefecture selection"
+```
 
 ### Step 7.1: Capture the fixture-only missing state, then start one production-like server
 
