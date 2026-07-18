@@ -24,6 +24,9 @@ describe("operations basemap style", () => {
     expect(style.layers.map((layer) => layer.id).indexOf("terrain-shaded-relief")).toBeLessThan(
       style.layers.map((layer) => layer.id).indexOf("gray-canvas-base")
     );
+    expect(style.layers.map((layer) => layer.id).indexOf("world-land-fill")).toBeLessThan(
+      style.layers.map((layer) => layer.id).indexOf("gray-canvas-reference")
+    );
     expect(style.layers.find((layer) => layer.id === "ops-background")).toMatchObject({
       paint: { "background-color": "#0a121c" }
     });

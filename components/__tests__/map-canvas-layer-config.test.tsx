@@ -4,11 +4,17 @@ import { cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { JapanOperationsMapCanvas } from "../JapanOperationsMapCanvas";
+import { prefectureBoundaryCollection } from "../../lib/geo/prefecture-boundaries";
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
 import type { JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
 
 const addedLayers: Array<Record<string, unknown>> = [];
+const addedLayerCalls: Array<{
+  beforeId: string | undefined;
+  layer: Record<string, unknown>;
+}> = [];
 const addedSources = new Map<string, unknown>();
+const addedSourceConfigs = new Map<string, Record<string, unknown>>();
 const registeredLayerHandlers: Array<{
   event: string;
   handler: (...args: any[]) => void;
@@ -29,10 +35,12 @@ vi.mock("maplibre-gl", () => {
 
     addControl = vi.fn();
     addSource = vi.fn((id: string, source: Record<string, unknown>) => {
+      addedSourceConfigs.set(id, source);
       addedSources.set(id, source.data);
     });
-    addLayer = vi.fn((layer: Record<string, unknown>) => {
+    addLayer = vi.fn((layer: Record<string, unknown>, beforeId?: string) => {
       addedLayers.push(layer);
+      addedLayerCalls.push({ beforeId, layer });
     });
     remove = vi.fn();
     easeTo = vi.fn();
@@ -47,7 +55,12 @@ vi.mock("maplibre-gl", () => {
       style: { cursor: "" }
     };
     getCanvas = vi.fn(() => this.canvas);
-    getSource = vi.fn(() => ({ setData: vi.fn(), getClusterExpansionZoom: vi.fn(async () => 6) }));
+    getSource = vi.fn((id: string) => ({
+      setData: vi.fn((data: unknown) => {
+        addedSources.set(id, data);
+      }),
+      getClusterExpansionZoom: vi.fn(async () => 6)
+    }));
     isStyleLoaded = vi.fn(() => true);
     getZoom = vi.fn(() => 5.3);
     off = vi.fn();
@@ -89,7 +102,9 @@ vi.mock("maplibre-gl", () => {
 afterEach(() => {
   cleanup();
   addedLayers.length = 0;
+  addedLayerCalls.length = 0;
   addedSources.clear();
+  addedSourceConfigs.clear();
   registeredLayerHandlers.length = 0;
   lastMap = null;
   mapCanvasSize = { width: 1024, height: 720 };
@@ -116,7 +131,240 @@ const model: JapanMapCanvasModel = {
   ]
 };
 
+function prefectureMetricRegions(): JapanMapCanvasModel["regions"] {
+  return prefectureBoundaryCollection.features.map((feature, index) => ({
+    id: feature.properties.entityId,
+    label: feature.properties.labelJa,
+    lat: 24 + index * 0.5,
+    lon: 123 + index * 0.5,
+    geometryKind: "prefecture-boundary",
+    prefectureCode: feature.properties.prefectureCode,
+    value: index,
+    rawValue: index * 1_000,
+    unit: "トン",
+    periodLabel: "令和5年産",
+    sourceIds: ["source:estat-rice-prefecture-harvest-r5"]
+  }));
+}
+
 describe("map canvas layer config", () => {
+  test("renders joined prefecture boundaries around the reference raster with an explicit selected treatment", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="prefecture:tokyo"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{ ...model, regions: prefectureMetricRegions() }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("jp-prefectures")).toBe(true);
+    });
+
+    const source = addedSourceConfigs.get("jp-prefectures");
+    const prefectures = addedSources.get("jp-prefectures") as {
+      features: Array<{
+        geometry: unknown;
+        properties: { entityId: string; selected: boolean };
+      }>;
+    };
+    const representativeRegions = addedSources.get("jp-regions") as { features: unknown[] };
+    const fill = getAddedLayer("jp-prefecture-fill") as any;
+    const outline = getAddedLayer("jp-prefecture-outline") as any;
+    const selectedOutline = getAddedLayer("jp-prefecture-selected-outline") as any;
+
+    expect(source).toMatchObject({
+      type: "geojson",
+      attribution: "境界: Made with Natural Earth（加工）"
+    });
+    expect(prefectures.features).toHaveLength(47);
+    expect(prefectures.features[0].geometry).toBe(prefectureBoundaryCollection.features[0].geometry);
+    expect(prefectures.features.find((feature) => feature.properties.entityId === "prefecture:tokyo")?.properties.selected).toBe(true);
+    expect(representativeRegions.features).toEqual([]);
+    expect(fill).toMatchObject({
+      id: "jp-prefecture-fill",
+      type: "fill",
+      source: "jp-prefectures",
+      minzoom: 3.2,
+      maxzoom: 9
+    });
+    expect(outline).toMatchObject({
+      id: "jp-prefecture-outline",
+      type: "line",
+      source: "jp-prefectures",
+      minzoom: 3.2,
+      maxzoom: 9
+    });
+    expect(selectedOutline).toMatchObject({
+      id: "jp-prefecture-selected-outline",
+      type: "line",
+      source: "jp-prefectures",
+      minzoom: 3.2,
+      maxzoom: 9,
+      filter: ["==", ["get", "selected"], true]
+    });
+    expect(getAddedLayerCall("jp-prefecture-fill")?.beforeId).toBe("gray-canvas-reference");
+    expect(getAddedLayerCall("jp-prefecture-outline")?.beforeId).toBe("gray-canvas-reference");
+    expect(getAddedLayerCall("jp-prefecture-selected-outline")?.beforeId).toBeUndefined();
+    expect(getAddedLayerCallIndex("jp-prefecture-selected-outline")).toBeLessThan(
+      getAddedLayerCallIndex("global-route-glow")
+    );
+  });
+
+  test("keeps prefecture opacity stable through zoom 6.5 then fades every polygon layer to zero by zoom 9", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="prefecture:tokyo"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{ ...model, regions: prefectureMetricRegions() }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getAddedLayer("jp-prefecture-selected-outline")).toBeDefined();
+    });
+
+    const fill = getAddedLayer("jp-prefecture-fill") as any;
+    const outline = getAddedLayer("jp-prefecture-outline") as any;
+    const selectedOutline = getAddedLayer("jp-prefecture-selected-outline") as any;
+    const fillOpacity = fill.paint["fill-opacity"];
+
+    expect(fillOpacity.slice(0, 4)).toEqual(["interpolate", ["linear"], ["zoom"], 3.2]);
+    expect(fillOpacity[4]).toEqual(fillOpacity[6]);
+    expect(fillOpacity.slice(5)).toEqual([6.5, fillOpacity[4], 9, 0]);
+    expect(outline.paint["line-opacity"]).toEqual([
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      3.2,
+      0.68,
+      6.5,
+      0.68,
+      9,
+      0
+    ]);
+    expect(selectedOutline.paint["line-opacity"]).toEqual([
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      3.2,
+      1,
+      6.5,
+      1,
+      9,
+      0
+    ]);
+    expect(JSON.stringify(fill.paint["fill-color"])).toContain("selected");
+    expect(selectedOutline.paint["line-width"]).toBeGreaterThan(outline.paint["line-width"]);
+  });
+
+  test("keeps prefecture selection in source state across the maxzoom boundary without a hidden interaction layer", async () => {
+    const { rerender } = render(
+      <JapanOperationsMapCanvas
+        activeId="prefecture:hokkaido"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{ ...model, regions: prefectureMetricRegions() }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getLayerHandler("click", "jp-prefecture-fill")).toBeDefined();
+    });
+
+    rerender(
+      <JapanOperationsMapCanvas
+        activeId="prefecture:tokyo"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{ ...model, regions: prefectureMetricRegions() }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    await waitFor(() => {
+      const prefectures = addedSources.get("jp-prefectures") as {
+        features: Array<{ properties: { entityId: string; selected: boolean } }>;
+      };
+      expect(prefectures.features.find((feature) => feature.properties.entityId === "prefecture:tokyo")?.properties.selected).toBe(true);
+    });
+
+    const prefectureLayerIds = addedLayers
+      .map((layer) => String(layer.id))
+      .filter((id) => id.startsWith("jp-prefecture"));
+    expect(prefectureLayerIds).toEqual([
+      "jp-prefecture-fill",
+      "jp-prefecture-outline",
+      "jp-prefecture-selected-outline"
+    ]);
+    expect(getAddedLayer("jp-prefecture-fill")).toMatchObject({ maxzoom: 9 });
+    expect(groupedRegistrations("click")[0].layerIds).toContain("jp-prefecture-fill");
+    expect(groupedRegistrations("click")[0].layerIds).not.toContain("jp-prefecture-outline");
+    expect(groupedRegistrations("click")[0].layerIds).not.toContain("jp-prefecture-selected-outline");
+    expect(lastMap?.fitBounds).not.toHaveBeenCalled();
+  });
+
+  test("keeps representative-radius circles separate from joined prefecture boundaries", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="basin:kanto"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{
+          ...model,
+          regions: [
+            ...prefectureMetricRegions(),
+            {
+              id: "basin:kanto",
+              label: "関東流域",
+              lat: 36,
+              lon: 139,
+              geometryKind: "representative-radius",
+              value: 60,
+              rawValue: 60
+            }
+          ]
+        }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("water")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("jp-prefectures")).toBe(true);
+    });
+
+    const prefectures = addedSources.get("jp-prefectures") as {
+      features: Array<{ geometry: { type: string }; properties: { entityId: string } }>;
+    };
+    const representativeRegions = addedSources.get("jp-regions") as {
+      features: Array<{ geometry: { type: string }; properties: { id: string } }>;
+    };
+
+    expect(prefectures.features).toHaveLength(47);
+    expect(prefectures.features.every((feature) => feature.properties.entityId.startsWith("prefecture:"))).toBe(true);
+    expect(representativeRegions.features).toHaveLength(1);
+    expect(representativeRegions.features[0]).toMatchObject({
+      geometry: { type: "Polygon" },
+      properties: { id: "basin:kanto" }
+    });
+    expect(representativeRegions.features.some((feature) => feature.properties.id.startsWith("prefecture:"))).toBe(false);
+  });
+
   test("keeps global relationship lines available when zooming into Japan", async () => {
     render(
       <JapanOperationsMapCanvas
@@ -529,20 +777,9 @@ describe("map canvas layer config", () => {
         mapMode="choropleth"
         model={{
           ...model,
-          regions: [
-            {
-              id: "prefecture:niigata",
-              label: "新潟県",
-              lat: 37.9026,
-              lon: 139.0236,
-              geometryKind: "prefecture-boundary",
-              prefectureCode: "JP-15",
-              value: 100,
-              rawValue: 514100,
-              unit: "トン",
-              periodLabel: "令和5年産"
-            }
-          ]
+          regions: prefectureMetricRegions().map((region) => region.id === "prefecture:niigata"
+            ? { ...region, value: 100, rawValue: 514100 }
+            : region)
         }}
         onHover={onHover}
         onSelect={onSelect}
@@ -552,26 +789,26 @@ describe("map canvas layer config", () => {
     );
 
     await waitFor(() => {
-      expect(getLayerHandler("mousemove", "jp-region-fill")).toBeDefined();
+      expect(getLayerHandler("mousemove", "jp-prefecture-fill")).toBeDefined();
     });
 
-    const regions = addedSources.get("jp-regions") as {
+    const regions = addedSources.get("jp-prefectures") as {
       features: Array<{ properties: Record<string, unknown> }>;
     };
-    expect(regions.features[0].properties).toMatchObject({
+    const niigata = regions.features.find((feature) => feature.properties.entityId === "prefecture:niigata")!;
+    expect(niigata.properties).toMatchObject({
       id: "prefecture:niigata",
+      entityId: "prefecture:niigata",
       label: "新潟県",
-      selectionId: "prefecture:niigata",
       selected: false,
       value: 100,
       rawValue: 514100,
       unit: "トン",
-      period: "令和5年産",
-      hasData: true
+      periodLabel: "令和5年産"
     });
 
-    getLayerHandler("mousemove", "jp-region-fill")?.({
-      features: [{ properties: regions.features[0].properties }],
+    getLayerHandler("mousemove", "jp-prefecture-fill")?.({
+      features: [{ properties: niigata.properties }],
       point: { x: 432.4, y: 218.7 }
     });
 
@@ -586,7 +823,7 @@ describe("map canvas layer config", () => {
     });
     expect(onSelect).not.toHaveBeenCalled();
 
-    getLayerHandler("mouseleave", "jp-region-fill")?.();
+    getLayerHandler("mouseleave", "jp-prefecture-fill")?.();
     expect(onHover).toHaveBeenLastCalledWith(null);
     expect(onSelect).not.toHaveBeenCalled();
   });
@@ -599,27 +836,16 @@ describe("map canvas layer config", () => {
         mapMode="choropleth"
         model={{
           ...model,
-          regions: [
-            {
-              id: "prefecture:niigata",
-              label: "新潟県",
-              lat: 37.9,
-              lon: 139,
-              geometryKind: "prefecture-boundary",
-              prefectureCode: "JP-15",
-              value: null
-            },
-            {
-              id: "prefecture:hokkaido",
-              label: "北海道",
-              lat: 43.1,
-              lon: 141.3,
-              geometryKind: "prefecture-boundary",
-              prefectureCode: "JP-01",
-              value: 0,
-              rawValue: 0
+          regions: prefectureMetricRegions().map((region) => {
+            if (region.id === "prefecture:niigata") {
+              const { rawValue: _rawValue, ...regionWithoutRawValue } = region;
+              return { ...regionWithoutRawValue, value: null };
             }
-          ]
+            if (region.id === "prefecture:hokkaido") {
+              return { ...region, value: 0, rawValue: 0 };
+            }
+            return region;
+          })
         }}
         onSelect={vi.fn()}
         statusPalette={getStatusPalette()}
@@ -628,22 +854,25 @@ describe("map canvas layer config", () => {
     );
 
     await waitFor(() => {
-      expect(addedSources.has("jp-regions")).toBe(true);
+      expect(addedSources.has("jp-prefectures")).toBe(true);
     });
 
-    const regions = addedSources.get("jp-regions") as {
-      features: Array<{ geometry: { coordinates: number[][][] }; properties: Record<string, unknown> }>;
+    const regions = addedSources.get("jp-prefectures") as {
+      features: Array<{ geometry: unknown; properties: Record<string, unknown> }>;
     };
-    const regionFill = addedLayers.find((layer) => layer.id === "jp-region-fill") as any;
-    const regionOutline = addedLayers.find((layer) => layer.id === "jp-region-outline") as any;
+    const niigata = regions.features.find((feature) => feature.properties.entityId === "prefecture:niigata")!;
+    const hokkaido = regions.features.find((feature) => feature.properties.entityId === "prefecture:hokkaido")!;
+    const regionFill = getAddedLayer("jp-prefecture-fill") as any;
+    const regionOutline = getAddedLayer("jp-prefecture-outline") as any;
+    const selectedOutline = getAddedLayer("jp-prefecture-selected-outline") as any;
 
-    expect(regions.features[0].properties).toMatchObject({ hasData: false, rawValue: null, value: null });
-    expect(regions.features[1].properties).toMatchObject({ hasData: true, rawValue: 0, value: 0 });
-    expect(regions.features[0].geometry.coordinates).not.toEqual(regions.features[1].geometry.coordinates);
-    expect(JSON.stringify(regionFill.paint["fill-color"])).toContain("hasData");
-    expect(JSON.stringify(regionFill.paint["fill-color"])).not.toContain("selected");
+    expect(niigata.properties).toMatchObject({ rawValue: null, value: null });
+    expect(hokkaido.properties).toMatchObject({ rawValue: 0, value: 0 });
+    expect(niigata.geometry).not.toEqual(hokkaido.geometry);
+    expect(JSON.stringify(regionFill.paint["fill-color"])).toContain("value");
+    expect(JSON.stringify(regionFill.paint["fill-color"])).toContain("selected");
     expect(JSON.stringify(regionFill.paint["fill-opacity"])).toContain("value");
-    expect(JSON.stringify(regionOutline.paint["line-width"])).toContain("selected");
+    expect(selectedOutline.paint["line-width"]).toBeGreaterThan(regionOutline.paint["line-width"]);
   });
 
   test("registers one grouped interaction lifecycle for all semantic feature layers", async () => {
@@ -666,6 +895,7 @@ describe("map canvas layer config", () => {
 
     const groupedLayers = groupedRegistrations("mousemove")[0].layerIds;
     expect(groupedLayers).toEqual(expect.arrayContaining([
+      "jp-prefecture-fill",
       "jp-region-fill",
       "global-route-glow",
       "logistics-impact-region-fill",
@@ -814,4 +1044,16 @@ function getClusterCursorRegistration(event: "mouseenter" | "mouseleave") {
   return getRegistrations(event).find((registration) => (
     registration.layerIds.length === 1 && registration.layerIds[0] === "jp-cluster-circle"
   ));
+}
+
+function getAddedLayer(layerId: string) {
+  return addedLayers.find((layer) => layer.id === layerId);
+}
+
+function getAddedLayerCall(layerId: string) {
+  return addedLayerCalls.find((call) => call.layer.id === layerId);
+}
+
+function getAddedLayerCallIndex(layerId: string) {
+  return addedLayerCalls.findIndex((call) => call.layer.id === layerId);
 }

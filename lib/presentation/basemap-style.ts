@@ -101,6 +101,15 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
       }
     },
     {
+      id: "world-land-fill",
+      type: "fill",
+      source: "world-land",
+      paint: {
+        "fill-color": "rgba(92, 128, 148, 0.12)",
+        "fill-opacity": 1
+      }
+    },
+    {
       id: "gray-canvas-reference",
       type: "raster",
       source: "gray-canvas-reference",
@@ -111,15 +120,6 @@ export function buildOperationsBasemapStyle(themePalette: ThemePalette) {
         "raster-brightness-max": 0.8,
         "raster-saturation": -0.3,
         "raster-fade-duration": 0
-      }
-    },
-    {
-      id: "world-land-fill",
-      type: "fill",
-      source: "world-land",
-      paint: {
-        "fill-color": "rgba(92, 128, 148, 0.12)",
-        "fill-opacity": 1
       }
     }
   ];

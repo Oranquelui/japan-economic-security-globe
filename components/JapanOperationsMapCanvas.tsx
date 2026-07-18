@@ -1,9 +1,19 @@
 "use client";
 
 import { useEffect, useEffectEvent, useRef } from "react";
+import type { GeoJSONSourceSpecification } from "maplibre-gl";
 
+import { buildPrefectureMetricFeatureCollection } from "../lib/geo/prefecture-map";
 import type { OperationMapMode } from "../lib/presentation/operations";
-import type { JapanMapCanvasModel, JapanMapCorridor, JapanMapPoint, JapanMapRegion, JapanMapRoute } from "../lib/presentation/map-canvas";
+import type {
+  JapanMapCanvasModel,
+  JapanMapCorridor,
+  JapanMapPoint,
+  JapanMapRegion,
+  JapanMapRoute,
+  PrefectureBoundaryMapRegion,
+  RepresentativeRadiusMapRegion
+} from "../lib/presentation/map-canvas";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
 import { buildMaritimeRouteCoordinates, densifyGeodesicPolyline, type LonLat } from "../lib/presentation/route-geometry";
 import type { MapHoverViewModel, MapPopupAnchor } from "../types/presentation";
@@ -28,10 +38,14 @@ const INITIAL_CENTER: [number, number] = [138.45, 36.25];
 const INITIAL_ZOOM = 5.3;
 const GLOBAL_CONTEXT_MAX_ZOOM = 3.6;
 const DOMESTIC_CONTEXT_MIN_ZOOM = 3.2;
+const PREFECTURE_POLYGON_FADE_START_ZOOM = 6.5;
+const PREFECTURE_POLYGON_MAX_ZOOM = 9;
+const GRAY_CANVAS_REFERENCE_LAYER_ID = "gray-canvas-reference";
 const JA_NUMBER_FORMATTER = new Intl.NumberFormat("ja-JP");
 const INTERACTIVE_SEMANTIC_LAYER_IDS = [
   "jp-point-circle",
   "jp-route-line",
+  "jp-prefecture-fill",
   "jp-region-fill",
   "global-point-circle",
   "global-route-glow",
@@ -134,7 +148,13 @@ export function JapanOperationsMapCanvas({
 
         map.addSource("jp-regions", {
           type: "geojson",
-          data: regionsToFeatureCollection(model.regions, activeId)
+          data: representativeRadiusRegionsToFeatureCollection(model.regions, activeId)
+        });
+
+        map.addSource("jp-prefectures", {
+          type: "geojson",
+          data: prefectureRegionsToFeatureCollection(model.regions, activeId),
+          attribution: "境界: Made with Natural Earth（加工）"
         });
 
         map.addSource("global-points", {
@@ -154,7 +174,7 @@ export function JapanOperationsMapCanvas({
 
         map.addSource("logistics-impact-regions", {
           type: "geojson",
-          data: regionsToFeatureCollection(model.logisticsImpactRegions ?? [], activeId)
+          data: representativeRadiusRegionsToFeatureCollection(model.logisticsImpactRegions ?? [], activeId)
         });
 
         map.addSource("logistics-impact-routes", {
@@ -170,6 +190,40 @@ export function JapanOperationsMapCanvas({
         map.addSource("live-vessels", {
           type: "geojson",
           data: pointsToFeatureCollection(model.liveVessels ?? [], activeId)
+        });
+
+        map.addLayer({
+          id: "jp-prefecture-fill",
+          type: "fill",
+          source: "jp-prefectures",
+          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          maxzoom: PREFECTURE_POLYGON_MAX_ZOOM,
+          paint: {
+            ...getPrefectureFillPaint(themePalette, statusPalette)
+          }
+        }, GRAY_CANVAS_REFERENCE_LAYER_ID);
+
+        map.addLayer({
+          id: "jp-prefecture-outline",
+          type: "line",
+          source: "jp-prefectures",
+          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          maxzoom: PREFECTURE_POLYGON_MAX_ZOOM,
+          paint: {
+            ...getPrefectureOutlinePaint(themePalette)
+          }
+        }, GRAY_CANVAS_REFERENCE_LAYER_ID);
+
+        map.addLayer({
+          id: "jp-prefecture-selected-outline",
+          type: "line",
+          source: "jp-prefectures",
+          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          maxzoom: PREFECTURE_POLYGON_MAX_ZOOM,
+          filter: ["==", ["get", "selected"], true],
+          paint: {
+            ...getPrefectureSelectedOutlinePaint(statusPalette)
+          }
         });
 
         map.addLayer({
@@ -783,6 +837,9 @@ export function JapanOperationsMapCanvas({
       statusPalette.watch,
       statusPalette.normal
     ]);
+    applyPaintObject(map, "jp-prefecture-fill", getPrefectureFillPaint(themePalette, statusPalette));
+    applyPaintObject(map, "jp-prefecture-outline", getPrefectureOutlinePaint(themePalette));
+    applyPaintObject(map, "jp-prefecture-selected-outline", getPrefectureSelectedOutlinePaint(statusPalette));
     applyPaintObject(map, "jp-region-fill", getRegionFillPaint(themePalette));
     applyPaintObject(map, "jp-region-outline", getRegionOutlinePaint(themePalette, statusPalette));
     map.setPaintProperty("jp-route-line", "line-color", [
@@ -819,14 +876,15 @@ export function JapanOperationsMapCanvas({
     updateSource(map, "global-points", pointsToFeatureCollection(model.globalPoints, activeId));
     updateSource(map, "global-routes", routesToFeatureCollection(model.globalRoutes, model.globalPoints, activeId));
     updateSource(map, "live-logistics-routes", routesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId));
-    updateSource(map, "logistics-impact-regions", regionsToFeatureCollection(model.logisticsImpactRegions ?? [], activeId));
+    updateSource(map, "logistics-impact-regions", representativeRadiusRegionsToFeatureCollection(model.logisticsImpactRegions ?? [], activeId));
     updateSource(map, "logistics-impact-routes", routesToFeatureCollection(model.logisticsImpactRoutes ?? [], model.livePoints ?? [], activeId));
     updateSource(map, "logistics-impact-corridors", corridorsToFeatureCollection(model.logisticsImpactCorridors ?? [], activeId));
     updateSource(map, "live-vessels", pointsToFeatureCollection(model.liveVessels ?? [], activeId));
     updateSource(map, "jp-points", pointsToFeatureCollection(model.points, activeId));
     updateSource(map, "jp-points-cluster", pointsToFeatureCollection(model.points, activeId));
     updateSource(map, "jp-routes", routesToFeatureCollection(model.routes, model.points, activeId));
-    updateSource(map, "jp-regions", regionsToFeatureCollection(model.regions, activeId));
+    updateSource(map, "jp-prefectures", prefectureRegionsToFeatureCollection(model.regions, activeId));
+    updateSource(map, "jp-regions", representativeRadiusRegionsToFeatureCollection(model.regions, activeId));
     applyModeVisibility(map, mapMode);
   }, [activeId, mapMode, model, statusPalette, themePalette]);
 
@@ -894,6 +952,9 @@ function applyModeVisibility(map: any, mapMode: OperationMapMode) {
   map.setLayoutProperty("jp-point-label", "visibility", visibility(showPoints));
   map.setLayoutProperty("jp-route-line", "visibility", visibility(showRoutes));
   map.setLayoutProperty("jp-route-direction", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("jp-prefecture-fill", "visibility", visibility(showRegions));
+  map.setLayoutProperty("jp-prefecture-outline", "visibility", visibility(showRegions));
+  map.setLayoutProperty("jp-prefecture-selected-outline", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-region-fill", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-region-outline", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-cluster-circle", "visibility", visibility(showClusters));
@@ -1197,6 +1258,67 @@ function getDomesticRoutePaint(themePalette: ThemePalette, statusPalette: Status
   };
 }
 
+function getPrefectureFillPaint(themePalette: ThemePalette, statusPalette: StatusPalette): any {
+  const visibleOpacity = [
+    "case",
+    ["boolean", ["get", "selected"], false],
+    0.78,
+    [
+      "case",
+      ["==", ["get", "value"], null],
+      0.34,
+      ["interpolate", ["linear"], ["get", "value"], 0, 0.18, 100, 0.62]
+    ]
+  ];
+
+  return {
+    "fill-color": [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      statusPalette.selected,
+      ["==", ["get", "value"], null],
+      "rgba(116, 126, 137, 0.28)",
+      themePalette.accent
+    ],
+    "fill-opacity": getPrefectureZoomFadeOpacity(visibleOpacity)
+  };
+}
+
+function getPrefectureOutlinePaint(themePalette: ThemePalette): any {
+  return {
+    "line-color": [
+      "case",
+      ["==", ["get", "value"], null],
+      "rgba(125, 137, 149, 0.68)",
+      themePalette.accent
+    ],
+    "line-opacity": getPrefectureZoomFadeOpacity(0.68),
+    "line-width": 1.1
+  };
+}
+
+function getPrefectureSelectedOutlinePaint(statusPalette: StatusPalette): any {
+  return {
+    "line-color": statusPalette.selected,
+    "line-opacity": getPrefectureZoomFadeOpacity(1),
+    "line-width": 3.2
+  };
+}
+
+function getPrefectureZoomFadeOpacity(visibleOpacity: unknown): any {
+  return [
+    "interpolate",
+    ["linear"],
+    ["zoom"],
+    DOMESTIC_CONTEXT_MIN_ZOOM,
+    visibleOpacity,
+    PREFECTURE_POLYGON_FADE_START_ZOOM,
+    visibleOpacity,
+    PREFECTURE_POLYGON_MAX_ZOOM,
+    0
+  ];
+}
+
 function getRegionFillPaint(themePalette: ThemePalette): any {
   return {
     "fill-color": [
@@ -1250,8 +1372,9 @@ function hoverFeature(event: any, onHover: (hover: MapHoverViewModel | null) => 
   const unitLabel = typeof properties.unit === "string" && properties.unit.length > 0
     ? properties.unit
     : undefined;
-  const periodLabel = typeof properties.period === "string" && properties.period.length > 0
-    ? properties.period
+  const period = properties.period ?? properties.periodLabel;
+  const periodLabel = typeof period === "string" && period.length > 0
+    ? period
     : undefined;
 
   onHover({
@@ -1421,10 +1544,36 @@ function corridorsToFeatureCollection(corridors: JapanMapCorridor[], activeId: s
   };
 }
 
-function regionsToFeatureCollection(regions: JapanMapRegion[], activeId: string) {
+function prefectureRegionsToFeatureCollection(
+  regions: JapanMapRegion[],
+  activeId: string
+): GeoJSONSourceSpecification["data"] {
+  const prefectureRegions = regions.filter(
+    (region): region is PrefectureBoundaryMapRegion => region.geometryKind === "prefecture-boundary"
+  );
+
+  if (prefectureRegions.length === 0) {
+    return {
+      type: "FeatureCollection" as const,
+      features: []
+    };
+  }
+
+  // MapLibre consumes source data without mutation, but its public type requires mutable GeoJSON arrays.
+  return buildPrefectureMetricFeatureCollection(
+    prefectureRegions,
+    activeId
+  ) as unknown as GeoJSONSourceSpecification["data"];
+}
+
+function representativeRadiusRegionsToFeatureCollection(regions: JapanMapRegion[], activeId: string) {
+  const representativeRegions = regions.filter(
+    (region): region is RepresentativeRadiusMapRegion => region.geometryKind === "representative-radius"
+  );
+
   return {
     type: "FeatureCollection" as const,
-    features: regions.map((region) => ({
+    features: representativeRegions.map((region) => ({
       type: "Feature" as const,
       geometry: {
         type: "Polygon" as const,
