@@ -244,6 +244,7 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 - Modify: `lib/presentation/__tests__/map-canvas.test.ts`
 - Modify: `lib/presentation/__tests__/workspace.test.ts`
 - Modify: `components/__tests__/active-layer-summary-panel.test.tsx`
+- Modify: `components/__tests__/map-canvas-layer-config.test.tsx`
 
 ### Step 3.1: Write failing join and regression tests
 
@@ -281,10 +282,10 @@ Add a shared Natural Earth source ID constant. Update only the rice-harvest laye
 ### Step 3.5: Verify and commit
 
 ```bash
-npx vitest run lib/geo/__tests__/prefecture-map.test.ts lib/presentation/__tests__/map-canvas.test.ts lib/presentation/__tests__/workspace.test.ts components/__tests__/active-layer-summary-panel.test.tsx
+npx vitest run lib/geo/__tests__/prefecture-map.test.ts lib/presentation/__tests__/map-canvas.test.ts lib/presentation/__tests__/workspace.test.ts components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/map-canvas-layer-config.test.tsx
 npm run typecheck
 git diff --check
-git add lib/geo/prefecture-map.ts lib/geo/__tests__/prefecture-map.test.ts lib/presentation/map-canvas.ts lib/presentation/workspace.ts lib/presentation/__tests__/map-canvas.test.ts lib/presentation/__tests__/workspace.test.ts components/__tests__/active-layer-summary-panel.test.tsx
+git add lib/geo/prefecture-map.ts lib/geo/__tests__/prefecture-map.test.ts lib/presentation/map-canvas.ts lib/presentation/workspace.ts lib/presentation/__tests__/map-canvas.test.ts lib/presentation/__tests__/workspace.test.ts components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/map-canvas-layer-config.test.tsx
 git commit -m "feat: join prefecture metrics to boundaries"
 ```
 
