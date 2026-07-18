@@ -1,6 +1,6 @@
 # PRD / Handoff: e-Stat Spine — Japan Resilience Map
 
-**Status:** Option A **approved**; rice/e-Stat public path present; **desktop surface reframe authorized 2026-07-18**
+**Status:** Option A **approved**; rice/e-Stat public path present; desktop surface reframe P0–P3 implemented and Task 8 accepted; PR not opened / awaiting explicit authorization
 **Date:** 2026-07-13  
 **Historical pause:** 2026-07-13 (usage budget) — superseded by the 2026-07-18 implementation authorization
 **Repo:** `jp-strategic-dependency-graph` (public remote: `Oranquelui/japan-economic-security-globe`)  
@@ -19,8 +19,9 @@
 | Theater UI | Done earlier: Night Atlas, scanner, curved maritime routes |
 | **Rice/e-Stat path** | Present on current `main` and reviewed production: 47 prefectures, Niigata `514,100 トン`, survey context, official source |
 | **2026-07-13 WP2 pause** | Historical only; do not restart the old checklist |
-| **Authorized next work** | Desktop Power Atlas-style surface responsibilities, P0–P3 |
-| Branch | work on feature branch off `main`; merge via PR when green |
+| **Desktop surface reframe** | P0–P3 implemented; Task 8 desktop acceptance completed |
+| Implementation branch | `codex/power-atlas-desktop-reframe` (product-doc base `9e32d82`; pre-documentation delivery head `c6a06cf487a8e0a26acbce114c920f58f9d15979`) |
+| PR | **Not opened / awaiting explicit authorization** |
 | Production | `https://economic-security.quadrillionaaa.com/` |
 
 ### Continuation checklist (agent or human)
@@ -29,7 +30,7 @@
 2. Read `docs/product/2026-07-13-frontend-watchboard-ia-prd.md` §11–18.
 3. Read `docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md`.
 4. Use the isolated branch `codex/power-atlas-desktop-reframe`.
-5. Execute P0–P3 in order; do not restart the historical WP2 checklist or redesign Mobile.
+5. Review the completed P0–P3 delivery and Task 8 evidence; do not restart the historical WP2 checklist or treat Mobile as redesigned.
 
 ### Implementation direction (north star for code)
 
@@ -78,7 +79,7 @@ If you are continuing from Codex or a new session:
    - `docs/product/2026-07-13-estat-data-theme-map.md`  
    - `lib/config/estat-theme-map.ts`  
 3. **Do not** reopen the product-strategy debate (A vs B vs C). A is closed.  
-4. **Next engineering work is the authorized desktop surface reframe**; the old WP2 pause instructions are historical.
+4. **The authorized desktop surface reframe is implemented through P0–P3 and Task 8 acceptance**; the old WP2 pause instructions are historical.
 5. Keep Japan-first map shell, evidence panel, ranking, URL state, provenance discipline.
 
 ### One-line product identity
@@ -369,7 +370,7 @@ If anything conflicts with older Phase 0 PRD (`.taskmaster/docs/japan-economic-s
 
 **Canonical UI decision:** `docs/product/2026-07-13-frontend-watchboard-ia-prd.md` §11–18
 **Decision:** Adopt the reference video's surface responsibilities, not its brand or global-infrastructure product scope.
-**Implementation status:** Authorized by product owner on 2026-07-18; execute the reviewed formal plan P0–P3 in an isolated worktree.
+**Implementation status:** P0–P3 implemented and Task 8 accepted on `codex/power-atlas-desktop-reframe`; PR not opened / awaiting explicit authorization.
 
 ### Next-agent summary
 
@@ -386,6 +387,21 @@ If anything conflicts with older Phase 0 PRD (`.taskmaster/docs/japan-economic-s
 The earlier sections in this handoff record the 2026-07-13 pause state as `WP2 not started`. A live production review on 2026-07-15 showed a rice-first surface with 47 prefectures and a Niigata detail path exposing `514,100 トン`, survey context, official sources, and related flows.
 
 The reconciliation confirmed that current `main` already contains the rice-first semantic/data path described above. The 2026-07-13 `WP2 not started` wording is historical, not an instruction to rebuild or delete current work.
+
+### Desktop delivery evidence (2026-07-18)
+
+The implementation branch starts from the product-doc decision commit `9e32d82`. P0 consolidated desktop selection into one inspector and preserved legacy URLs; P1 added the scope/semantic-layer workspace with data-aware runtime availability; P2 preserved raw and null regional values and added disciplined hover; P3 made signals and comparison explicit secondary views, with comparable series constrained to a shared unit, period, and common source. New `layer=` and `view=` URLs are supported without invalidating legacy `theme=`, `mode=`, and `selected=` links.
+
+Task 8 browser acceptance covered desktop at 1280×800, 1440×900, and 1680×900. Non-regression smoke covered the existing stacked tree at 1024×768 and 390×844 only; Mobile redesign remains deferred and is not complete.
+
+Acceptance screenshots (all 1440×900):
+
+- [Default rice workspace](../assets/power-atlas-desktop-rice-default.png)
+- [Niigata inspector](../assets/power-atlas-desktop-rice-niigata.png)
+- [Signals view](../assets/power-atlas-desktop-signals.png)
+- [Comparison view](../assets/power-atlas-desktop-comparison.png)
+
+At pre-documentation head `c6a06cf487a8e0a26acbce114c920f58f9d15979`, fresh Task 8 verification passed: `npm test` (72 files / 322 tests), `npm run typecheck`, `npm run build`, and `git diff --check`; the worktree was clean. There are no known desktop acceptance blockers. Independent final code review remains outstanding, and no push or PR is authorized. Broader external-data coverage and provenance expansion remain separate data work rather than a UI blocker.
 
 ### Handoff file policy
 

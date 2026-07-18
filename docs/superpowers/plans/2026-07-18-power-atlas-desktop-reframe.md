@@ -8,6 +8,8 @@
 
 **Tech Stack:** Next.js 16, React 19, TypeScript 5.8, Tailwind CSS, MapLibre GL 5, Vitest 3, Testing Library.
 
+**Delivery status (2026-07-18):** Tasks 1–8 and P0–P3 are implemented and verified on `codex/power-atlas-desktop-reframe`. Product-doc base: `9e32d82`. Pre-documentation delivery head: `c6a06cf487a8e0a26acbce114c920f58f9d15979`. PR: **not opened / awaiting explicit authorization**. Mobile redesign remains deferred and is not complete.
+
 ---
 
 ## 0. Authoritative inputs and delivery boundary
@@ -129,7 +131,7 @@ Do not begin a phase until the prior phase is green and reviewable.
 - Modify only if stale: docs/product/2026-07-13-estat-spine-handoff-prd.md
 - Create: isolated worktree outside the current dirty main worktree
 
-- [ ] **Step 1: Preserve user-owned changes**
+- [x] **Step 1: Preserve user-owned changes**
 
 Run:
 
@@ -142,7 +144,7 @@ git log -5 --oneline --decorate
 
 At plan-writing time the repository is main at 192e12b with dirty product docs and untracked reference screenshots. Do not discard, stash, stage, or rewrite them without authorization.
 
-- [ ] **Step 2: Land or carry the docs decision safely**
+- [x] **Step 2: Land or carry the docs decision safely**
 
 Use one route based on live state:
 
@@ -161,7 +163,7 @@ git add -f docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md
 
 Do not unignore or bulk-add other local agent planning files.
 
-- [ ] **Step 3: Create the implementation worktree**
+- [x] **Step 3: Create the implementation worktree**
 
 ~~~bash
 git fetch origin
@@ -172,7 +174,7 @@ git status --short
 
 Expected: branch codex/power-atlas-desktop-reframe and clean status.
 
-- [ ] **Step 4: Reconcile historical WP2 status**
+- [x] **Step 4: Reconcile historical WP2 status**
 
 ~~~bash
 git log --oneline -- data/seed/entities.json data/seed/sources.json components/AppShell.tsx
@@ -181,7 +183,7 @@ rg -n "riceMainUseHarvestTonsR5|source:estat-rice-prefecture-harvest-r5" data/se
 
 If the handoff still presents WP2 not started as current rather than historical, update only status wording. Preserve the pause history and cite current commit evidence.
 
-- [ ] **Step 5: Record fresh baseline**
+- [x] **Step 5: Record fresh baseline**
 
 ~~~bash
 npm test
@@ -190,7 +192,7 @@ npm run typecheck
 
 Expected at plan-writing time: 64 test files and 228 tests pass; Next typegen and tsc pass. If live counts differ but pass, record them. If either fails, stop and diagnose baseline first.
 
-- [ ] **Step 6: Commit any status-only correction separately**
+- [x] **Step 6: Commit any status-only correction separately**
 
 ~~~bash
 git add docs/product/2026-07-13-estat-spine-handoff-prd.md
@@ -209,7 +211,7 @@ Skip when no correction is needed.
 - Modify: lib/presentation/map-canvas.ts
 - Modify: lib/presentation/__tests__/map-canvas.test.ts
 
-- [ ] **Step 1: Write the failing rice contract test**
+- [x] **Step 1: Write the failing rice contract test**
 
 ~~~ts
 describe("buildWorkspacePresentation", () => {
@@ -261,7 +263,7 @@ npx vitest run lib/presentation/__tests__/workspace.test.ts
 
 Expected: fail because builder and contracts do not exist.
 
-- [ ] **Step 2: Add focused contracts to types/presentation.ts**
+- [x] **Step 2: Add focused contracts to types/presentation.ts**
 
 ~~~ts
 export type WorkspaceView = "map" | "signals" | "comparison";
@@ -370,7 +372,7 @@ export interface MetricSeriesPoint {
 
 Import OperationMapMode, ThemeId, and EntityKind as types. Do not move semantic-domain interfaces.
 
-- [ ] **Step 3: Implement lib/presentation/workspace.ts**
+- [x] **Step 3: Implement lib/presentation/workspace.ts**
 
 Required exports:
 
@@ -463,6 +465,8 @@ Use this exact non-rice registry order and default (first row per theme):
 
 Mark missing-input layers available: false and disable them in UI. Legacy mode mapping chooses the first available layer with the same render mode. Cluster, route, and static may use the theme default plus the legacy/theme-wide model because each mode can still display theme-wide points. Choropleth is retained only when the theme has an available choropleth layer; otherwise resolveLegacyPresentation normalizes it to point plus the theme default so the map cannot open blank.
 
+Implementation note: the delivered builder computes availability from the actual runtime workspace input, including live-logistics data. Registry metadata without runtime input is retained only for URL/capability parsing; it is not allowed to advertise a layer whose current workspace model has no usable feature.
+
 buildSelectionInspector must use the already-resolved DetailViewModel supplied by AppShell; it must not call getDetailView internally. This preserves live-logistics:* selections, whose detail comes from buildLiveLogisticsDetail and is not stored in SemanticGraph. Selection metric rules:
 
 ~~~text
@@ -477,7 +481,7 @@ Use Intl.NumberFormat("ja-JP"). Centralize unit localization in the builder.
 
 Add a test with id live-logistics:tanker-qatar-tokyo-bay and a supplied DetailViewModel fixture. Assert the builder returns that detail and does not throw even though the ID is absent from SemanticGraph.
 
-- [ ] **Step 4: Add raw region metadata without changing normalization**
+- [x] **Step 4: Add raw region metadata without changing normalization**
 
 Extend JapanMapRegion:
 
@@ -499,7 +503,7 @@ Rice receives rawValue, トン, 令和5年産, and the e-Stat source. Preserve t
 
 For regional-metric content, retain every in-scope coordinate-bearing entity of the requested kind. Entities with the property receive normalized value and rawValue; entities without it receive value: null and no rawValue. Geometry may use a fixed minimum display radius when value is null, but must not write zero into data or feature properties. Add a fixture test with one missing prefecture/reservoir and assert it remains in the model as value: null.
 
-- [ ] **Step 5: Run focused checks**
+- [x] **Step 5: Run focused checks**
 
 ~~~bash
 npx vitest run lib/presentation/__tests__/workspace.test.ts lib/presentation/__tests__/map-canvas.test.ts
@@ -508,7 +512,7 @@ npm run typecheck
 
 Expected: pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ~~~bash
 git add types/presentation.ts lib/presentation/workspace.ts lib/presentation/__tests__/workspace.test.ts lib/presentation/map-canvas.ts lib/presentation/__tests__/map-canvas.test.ts
@@ -526,7 +530,7 @@ git commit -m "feat: add semantic map workspace contracts"
 - Modify: components/AppShell.tsx
 - Modify: components/__tests__/app-shell-url-state.test.tsx
 
-- [ ] **Step 1: Write failing URL tests**
+- [x] **Step 1: Write failing URL tests**
 
 ~~~ts
 test("defaults rice to harvest with no legacy mode override", () => {
@@ -592,7 +596,7 @@ npx vitest run lib/presentation/__tests__/url-state.test.ts app/__tests__/app-pa
 
 Expected: fail on missing fields and old point default.
 
-- [ ] **Step 2: Implement parsing precedence**
+- [x] **Step 2: Implement parsing precedence**
 
 ~~~text
 1. Validate theme; default rice.
@@ -616,7 +620,7 @@ Serialization:
 
 Use the workspace registry, not duplicate hard-coded validation sets.
 
-- [ ] **Step 3: Update explicit URL detection**
+- [x] **Step 3: Update explicit URL detection**
 
 In app/_components/AppPage.tsx:
 
@@ -630,7 +634,7 @@ const hasExplicitUrlState =
 
 Test layer, view, and legacy mode individually.
 
-- [ ] **Step 4: Migrate AppShell state in the same task**
+- [x] **Step 4: Migrate AppShell state in the same task**
 
 Do not leave AppShell consuming the removed mapMode field. Before this task can be green:
 
@@ -658,7 +662,7 @@ When homepageLead overrides the initial theme and that theme differs from initia
 
 Every serializeOperationsUrlState call and effect dependency uses layerId, mapModeOverride, and workspaceView. On theme change choose getDefaultLayerDefinition(nextThemeId).id and clear the override. Update AppShell URL tests so this task typechecks and passes before Task 4 begins.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 ~~~bash
 npx vitest run lib/presentation/__tests__/url-state.test.ts app/__tests__/app-page.test.tsx components/__tests__/app-shell-url-state.test.tsx
@@ -682,7 +686,7 @@ git commit -m "feat: add semantic layer URL state"
 - Preserve: components/MapDetailPopup.tsx
 - Preserve: components/__tests__/map-detail-popup.test.tsx
 
-- [ ] **Step 1: Write one-surface tests first**
+- [x] **Step 1: Write one-surface tests first**
 
 Desktop integration must assert absence of duplication:
 
@@ -707,7 +711,7 @@ test("opens one desktop inspector and no anchored map detail", async () => {
 
 Mock JapanMainMap in this integration file with a button named 新潟県を選択 that calls onSelect("prefecture:niigata"). Scope assertions to the desktop root because jsdom mounts the separate mobile tree too.
 
-- [ ] **Step 2: Extract ContextInspector**
+- [x] **Step 2: Extract ContextInspector**
 
 Props:
 
@@ -729,7 +733,7 @@ Render primary value/unit/period near the title, then tabs 概要, 出典, 関�
 
 EvidencePanel remains a compatibility wrapper for deferred mobile. It may reuse the body, but mobile DOM order and collapsible=false behavior do not change.
 
-- [ ] **Step 3: Remove only the desktop popup branch**
+- [x] **Step 3: Remove only the desktop popup branch**
 
 In JapanMainMap.tsx:
 
@@ -739,7 +743,7 @@ In JapanMainMap.tsx:
 
 The AppShell desktop call passes no detailPopup and no onOpenEvidence. The mobile call remains unchanged.
 
-- [ ] **Step 4: Wire selection to one right inspector**
+- [x] **Step 4: Wire selection to one right inspector**
 
 In AppShell.tsx:
 
@@ -764,7 +768,7 @@ const inspector = buildSelectionInspector(graph, activeId, detail);
 
 This ordering is required for live-logistics:* selections.
 
-- [ ] **Step 5: Verify and commit P0**
+- [x] **Step 5: Verify and commit P0**
 
 ~~~bash
 npx vitest run components/__tests__/context-inspector.test.tsx components/__tests__/app-shell-evidence-wiring.test.tsx components/__tests__/app-shell-url-state.test.tsx components/__tests__/japan-main-map-popup.test.tsx components/__tests__/map-detail-popup.test.tsx
@@ -790,7 +794,7 @@ git commit -m "feat: consolidate desktop selection into one inspector"
 - Preserve: components/MapInboxPanel.tsx
 - Preserve: components/__tests__/map-inbox-structure.test.tsx
 
-- [ ] **Step 1: Write component tests**
+- [x] **Step 1: Write component tests**
 
 ~~~ts
 test("shows the rice scope before ranked content", () => {
@@ -830,7 +834,7 @@ test("selects by semantic layer id", async () => {
 
 Expected first run: fail.
 
-- [ ] **Step 2: Implement SemanticLayerDeck**
+- [x] **Step 2: Implement SemanticLayerDeck**
 
 - Buttons use aria-pressed.
 - Unavailable layers are disabled with 準備中 or データなし.
@@ -838,14 +842,14 @@ Expected first run: fail.
 - Arrow keys move within the group; Enter/Space activates.
 - Use existing palette tokens.
 
-- [ ] **Step 3: Implement MapLegend**
+- [x] **Step 3: Implement MapLegend**
 
 - Continuous: min/max, unit, period, and separate neutral missing swatch.
 - Categorical: ordered labeled swatches.
 - Source disclosure: official source label and real URL.
 - Meaning never depends on color alone.
 
-- [ ] **Step 4: Implement ScopeContextPanel**
+- [x] **Step 4: Implement ScopeContextPanel**
 
 Props:
 
@@ -873,7 +877,7 @@ Order:
 
 Never render the 47-row list in this default desktop pane.
 
-- [ ] **Step 5: Wire AppShell**
+- [x] **Step 5: Wire AppShell**
 
 ~~~ts
 const workspace = buildWorkspacePresentation(graph, view);
@@ -948,7 +952,7 @@ The synthetic national observation point uses country:japan coordinates, the loc
 
 Pass desktopMapModel only to the xl desktop JapanMainMap and mobileMapModel only to the stacked/mobile JapanMainMap. When a legacy/mobile override is active, desktopMapModel is also legacy/theme-wide so its point/cluster/route/static visibility matches its features. Add a visible-feature regression test proving bare-URL rice has desktop regions and mobile points, so the mobile point mode is not blank.
 
-- [ ] **Step 6: Update AppShell tests**
+- [x] **Step 6: Update AppShell tests**
 
 Assert:
 
@@ -964,7 +968,7 @@ Assert:
 - theme changes choose the theme default;
 - mobile MapInboxPanel remains mounted.
 
-- [ ] **Step 7: Verify and commit P1**
+- [x] **Step 7: Verify and commit P1**
 
 ~~~bash
 npx vitest run components/__tests__/scope-context-panel.test.tsx components/__tests__/semantic-layer-deck.test.tsx components/__tests__/map-legend.test.tsx components/__tests__/app-shell-url-state.test.tsx components/__tests__/map-inbox-structure.test.tsx lib/presentation/__tests__/map-canvas.test.ts
@@ -986,7 +990,7 @@ git commit -m "feat: add desktop scope and semantic layer pane"
 - Modify: components/__tests__/map-canvas-layer-config.test.tsx
 - Modify: components/__tests__/japan-main-map-popup.test.tsx
 
-- [ ] **Step 1: Write raw-value and hover tests**
+- [x] **Step 1: Write raw-value and hover tests**
 
 ~~~ts
 test("publishes raw rice metadata", async () => {
@@ -1036,7 +1040,7 @@ test("hover reports value without selecting", () => {
 
 Expected first run: fail.
 
-- [ ] **Step 2: Add MapHoverViewModel**
+- [x] **Step 2: Add MapHoverViewModel**
 
 ~~~ts
 export interface MapHoverViewModel {
@@ -1052,7 +1056,7 @@ export interface MapHoverViewModel {
 
 Add optional onHover to JapanOperationsMapCanvas and emit null on mouseleave. Use feature properties; do not build a full detail model on pointer movement.
 
-- [ ] **Step 3: Publish raw metadata in region GeoJSON**
+- [x] **Step 3: Publish raw metadata in region GeoJSON**
 
 ~~~ts
 properties: {
@@ -1070,15 +1074,15 @@ properties: {
 
 Use hasData for neutral missing-value paint. regionsToFeatureCollection uses a fixed minimum display radius only for geometry when value is null; it leaves properties.value as null and never turns missing into zero. Keep selected outline and focus distinguishable from magnitude.
 
-- [ ] **Step 4: Implement MapHoverCard**
+- [x] **Step 4: Implement MapHoverCard**
 
 The card contains only label, primary value/unit, and period. It is pointer-events-none, stays inside map bounds, disappears on leave/layer change, and never contains source lists, why-it-matters, or related links.
 
-- [ ] **Step 5: Remove desktop mechanical controls**
+- [x] **Step 5: Remove desktop mechanical controls**
 
 Omit onMapModeChange from the desktop JapanMainMap call and pass desktopMapMode. Keep the mobile call and MAP_MODES controls unchanged, pass mobileMapMode, and have its existing handler apply resolveLegacyPresentation before setting layerId/mapModeOverride. Continue passing the compatible resolved mode to MapLibre.
 
-- [ ] **Step 6: Prove rice behavior**
+- [x] **Step 6: Prove rice behavior**
 
 Tests cover:
 
@@ -1094,7 +1098,7 @@ click opens one inspector
 hover changes neither selection nor URL
 ~~~
 
-- [ ] **Step 7: Verify and commit P2**
+- [x] **Step 7: Verify and commit P2**
 
 ~~~bash
 npx vitest run lib/presentation/__tests__/workspace.test.ts lib/presentation/__tests__/map-canvas.test.ts components/__tests__/map-canvas-layer-config.test.tsx components/__tests__/map-hover-card.test.tsx components/__tests__/japan-main-map-popup.test.tsx components/__tests__/app-shell-evidence-wiring.test.tsx
@@ -1118,7 +1122,7 @@ git commit -m "feat: make semantic map layers legible"
 - Modify: components/__tests__/scope-context-panel.test.tsx
 - Preserve: components/MapInboxPanel.tsx and components/OperationsSignalTable.tsx for mobile
 
-- [ ] **Step 1: Write failing secondary-view tests**
+- [x] **Step 1: Write failing secondary-view tests**
 
 ~~~ts
 test("does not mount persistent desktop secondary chrome", () => {
@@ -1141,7 +1145,7 @@ test("opens one secondary view at a time", async () => {
 
 Expected first run: fail because current compare chrome is always mounted.
 
-- [ ] **Step 2: Extract SignalsPanel**
+- [x] **Step 2: Extract SignalsPanel**
 
 Props:
 
@@ -1161,7 +1165,7 @@ interface SignalsPanelProps {
 
 Reuse existing presentation data. Selection returns to map, focuses the object, and opens the inspector. Keep ranking/freshness evidence. Do not delete mobile MapInboxPanel.
 
-- [ ] **Step 3: Implement a real MetricSeries comparison surface**
+- [x] **Step 3: Implement a real MetricSeries comparison surface**
 
 Create ComparisonPanel with:
 
@@ -1177,7 +1181,7 @@ interface ComparisonPanelProps {
 }
 ~~~
 
-It renders one sortable row per comparable point with label, formatted numeric value, one shared unit, one period, and source disclosure. For rice-harvest it compares all 47 prefectures; selecting 新潟県 selects prefecture:niigata and opens the normal inspector. It must reject mixed units or periods in the builder/test rather than silently placing them in one comparison.
+It renders one sortable row per comparable point with label, formatted numeric value, one shared unit, one period, and source disclosure. For rice-harvest it compares all 47 prefectures; selecting 新潟県 selects prefecture:niigata and opens the normal inspector. It must reject mixed units or periods, missing provenance, or series without at least one common source in the builder/test rather than silently placing incompatible rows in one comparison.
 
 Add tests:
 
@@ -1208,7 +1212,7 @@ test("compares rice prefectures with disciplined metadata", () => {
 
 ScopeContextPanel enables 比較する only when buildMetricSeries returns at least two points with one unit and period. Otherwise the action is disabled with 比較可能な系列なし. Do not substitute OperationRow data.
 
-- [ ] **Step 4: Conditionally mount comparison**
+- [x] **Step 4: Conditionally mount comparison**
 
 ~~~text
 view=map:
@@ -1226,7 +1230,7 @@ view=comparison:
 
 Remove compareCollapsedHeight and the permanent desktop OperationsSignalTable. Close returns to map. Keep the current mobile OperationsSignalTable call unchanged.
 
-- [ ] **Step 5: Implement focus and Escape behavior**
+- [x] **Step 5: Implement focus and Escape behavior**
 
 - Opening signals focuses its heading/back control.
 - Opening comparison focuses its heading/close control.
@@ -1235,11 +1239,11 @@ Remove compareCollapsedHeight and the permanent desktop OperationsSignalTable. C
 - Row selection returns to map, opens inspector, and focuses its heading.
 - Use buttons/headings, not clickable divs.
 
-- [ ] **Step 6: Test URL hydration**
+- [x] **Step 6: Test URL hydration**
 
 Cover view=signals, view=comparison, invalid view fallback, comparison requested for a layer without a comparable series falling back to map, secondary selection, and theme reset to view=map.
 
-- [ ] **Step 7: Verify and commit P3**
+- [x] **Step 7: Verify and commit P3**
 
 ~~~bash
 npx vitest run components/__tests__/signals-panel.test.tsx components/__tests__/comparison-panel.test.tsx components/__tests__/scope-context-panel.test.tsx components/__tests__/operations-accessibility.test.tsx components/__tests__/app-shell-url-state.test.tsx components/__tests__/app-shell-evidence-wiring.test.tsx lib/presentation/__tests__/workspace.test.ts
@@ -1261,7 +1265,7 @@ git commit -m "feat: make signals and comparison secondary views"
 - Create: docs/assets/power-atlas-desktop-signals.png
 - Create: docs/assets/power-atlas-desktop-comparison.png
 
-- [ ] **Step 1: Lock desktop geometry**
+- [x] **Step 1: Lock desktop geometry**
 
 ~~~ts
 const DESKTOP_RAIL_WIDTH = 72;
@@ -1274,7 +1278,7 @@ Move the AppShell workspace branches from hidden lg:block / lg:hidden to hidden 
 
 Map insets derive only from open surfaces. At the minimum 1280 px desktop workspace, an open inspector still leaves 528 px for the map (1280 - 72 - 320 - 360). The map is the largest single surface by width and area at 1280×800, 1440×900, and 1680×900. Add data-testid=layout-desktop-workspace so tests do not count the separate stacked/mobile tree.
 
-- [ ] **Step 2: Add accessibility regressions**
+- [x] **Step 2: Add accessibility regressions**
 
 Test:
 
@@ -1287,7 +1291,7 @@ Test:
 - accessible map controls;
 - no duplicated desktop interactive IDs.
 
-- [ ] **Step 3: Run the app and verify desktop**
+- [x] **Step 3: Run the app and verify desktop**
 
 ~~~bash
 npm run dev
@@ -1313,15 +1317,15 @@ Comparison:
 only opens deliberately; map controls are not covered.
 ~~~
 
-- [ ] **Step 4: Capture four screenshots**
+- [x] **Step 4: Capture four screenshots**
 
 Save at the exact paths listed above. Preserve existing current/reference screenshots.
 
-- [ ] **Step 5: Perform mobile non-regression smoke only**
+- [x] **Step 5: Perform mobile non-regression smoke only**
 
 At 1024×768 and one narrow phone viewport, confirm the existing stacked layout renders, theme buttons work, the existing popup opens, and no horizontal crash appears. Do not redesign or approve mobile. Record regressions caused by this branch; defer design issues.
 
-- [ ] **Step 6: Run full verification**
+- [x] **Step 6: Run full verification**
 
 ~~~bash
 npm test
@@ -1333,12 +1337,14 @@ git status --short
 
 Expected: all tests pass, typecheck passes, production build succeeds, diff check is clean, and status contains only intended changes.
 
-- [ ] **Step 7: Commit visual evidence**
+- [x] **Step 7: Commit visual evidence**
 
 ~~~bash
 git add components app lib types docs/assets
 git commit -m "test: verify desktop map workspace reframe"
 ~~~
+
+Verified Task 8 result: desktop browser acceptance passed at 1280×800, 1440×900, and 1680×900. The existing stacked tree passed non-regression smoke at 1024×768 and 390×844 only. All four captured screenshots are 1440×900. Fresh checks at the Task 8 acceptance head passed 72 test files / 322 tests, typecheck, production build, and diff check; the worktree was clean.
 
 ## Task 9: Record delivery and prepare review handoff
 
@@ -1348,7 +1354,7 @@ git commit -m "test: verify desktop map workspace reframe"
 - Modify: docs/product/2026-07-13-estat-spine-handoff-prd.md
 - Modify: docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md
 
-- [ ] **Step 1: Record actual status only after verification**
+- [x] **Step 1: Record actual status only after verification**
 
 Append:
 
@@ -1361,13 +1367,15 @@ known desktop follow-ups
 Mobile: explicitly deferred, not complete
 ~~~
 
-Update the e-Stat handoff with the implementation PR and current status. Do not create a generic handoff.md.
+Update the e-Stat handoff with the implementation branch and truthful PR status. Do not create a generic handoff.md.
 
-- [ ] **Step 2: Mark plan checkboxes from evidence**
+- [x] **Step 2: Mark plan checkboxes from evidence**
 
 Check only completed/verified tasks. Never claim mobile complete.
 
 - [ ] **Step 3: Request final code review**
+
+Status: awaiting independent parent review; do not mark complete from the documentation implementer's own pass.
 
 Use superpowers:requesting-code-review, then run:
 
@@ -1385,12 +1393,16 @@ Review for duplicate desktop detail, false live/comprehensive claims, lost prove
 
 - [ ] **Step 4: Commit documentation evidence**
 
+Status before this commit: intentionally unchecked. The parent can close it after verifying the resulting documentation commit.
+
 ~~~bash
 git add docs/product/2026-07-13-frontend-watchboard-ia-prd.md docs/product/2026-07-13-estat-spine-handoff-prd.md docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md
 git commit -m "docs: record desktop map workspace delivery"
 ~~~
 
 - [ ] **Step 5: Push and open a draft PR only when authorized**
+
+Status: **not authorized**. No temporary PR body, push, or PR has been created; publication awaits explicit authorization.
 
 Create /tmp/power-atlas-desktop-reframe-pr-body.md with the verified P0–P3 summary, exact command outputs, acceptance screenshot paths, legacy URL behavior, and the line Mobile redesign: deferred. Use apply_patch so the body is reviewable before sending it.
 
@@ -1403,25 +1415,25 @@ The PR body leads with the IA outcome, lists P0–P3, verification and screensho
 
 ## Final acceptance checklist
 
-- [ ] Desktop launch makes the Japan map the largest and clearest surface.
-- [ ] Default left pane starts with scope metrics and semantic layers.
-- [ ] Rice defaults to 収穫量 with a magnitude-bearing regional presentation.
-- [ ] Rice legend shows unit, period, missing-data treatment, and official e-Stat source.
-- [ ] Layer labels describe subjects, not MapLibre mechanics.
-- [ ] Every enabled layer produces at least one feature visible in its configured render mode.
-- [ ] Missing regional data remains visible as neutral データなし and is never converted to zero.
-- [ ] Hover shows only label, value, unit, and period.
-- [ ] Selecting Niigata opens exactly one desktop inspector.
-- [ ] Niigata exposes 514,100 トン, 令和5年産, official URL, and why it matters.
-- [ ] No desktop long-form map popup duplicates the inspector.
-- [ ] Signals and comparison are reachable but absent from default chrome.
-- [ ] New layer= and view= URLs hydrate correctly.
-- [ ] Legacy theme=, mode=, and selected= links still work.
-- [ ] Keyboard/focus behavior works across changed desktop surfaces.
-- [ ] No copy implies live threat monitoring or comprehensive infrastructure coverage.
-- [ ] Full tests, typecheck, build, diff check, and desktop smoke pass.
-- [ ] Mobile redesign remains explicitly deferred and is not claimed complete.
-- [ ] Deferred mobile keeps a non-empty legacy/theme-wide point model on the bare rice URL.
+- [x] Desktop launch makes the Japan map the largest and clearest surface.
+- [x] Default left pane starts with scope metrics and semantic layers.
+- [x] Rice defaults to 収穫量 with a magnitude-bearing regional presentation.
+- [x] Rice legend shows unit, period, missing-data treatment, and official e-Stat source.
+- [x] Layer labels describe subjects, not MapLibre mechanics.
+- [x] Every enabled layer produces at least one feature visible in its configured render mode.
+- [x] Missing regional data remains visible as neutral データなし and is never converted to zero.
+- [x] Hover shows only label, value, unit, and period.
+- [x] Selecting Niigata opens exactly one desktop inspector.
+- [x] Niigata exposes 514,100 トン, 令和5年産, official URL, and why it matters.
+- [x] No desktop long-form map popup duplicates the inspector.
+- [x] Signals and comparison are reachable but absent from default chrome.
+- [x] New layer= and view= URLs hydrate correctly.
+- [x] Legacy theme=, mode=, and selected= links still work.
+- [x] Keyboard/focus behavior works across changed desktop surfaces.
+- [x] No copy implies live threat monitoring or comprehensive infrastructure coverage.
+- [x] Full tests, typecheck, build, diff check, and desktop smoke pass.
+- [x] Mobile redesign remains explicitly deferred and is not claimed complete.
+- [x] Deferred mobile keeps a non-empty legacy/theme-wide point model on the bare rice URL.
 
 ## Stop conditions
 

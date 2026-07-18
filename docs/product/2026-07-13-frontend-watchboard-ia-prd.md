@@ -1,6 +1,6 @@
 # PRD: Frontend Watchboard Information Architecture
 
-Status: P0 implemented (IA + evidence rewiring)  
+Status: Desktop Power Atlas surface reframe P0–P3 implemented and Task 8 accepted; PR not opened / awaiting explicit authorization
 Date: 2026-07-13  
 Repository: `jp-strategic-dependency-graph`  
 Version context: public Phase 0 / `v0.3.x`  
@@ -344,16 +344,42 @@ OperationsSignalTable          -> explicit comparison/table view
 
 ## 17. Acceptance criteria for the reframe
 
-- [ ] At desktop launch, the map is the largest and clearest surface.
-- [ ] Left pane shows scope metrics and semantic layers before ranked monitoring content.
-- [ ] Selecting Niigata opens exactly one detailed inspector.
-- [ ] Niigata still exposes value, unit, survey year, official source, and why it matters.
-- [ ] The map is not covered by a second long-form detail popup.
-- [ ] Rice layer names describe user subjects, not rendering mechanics.
-- [ ] Comparison and signals remain reachable but are not permanently open.
-- [ ] URL state, source links, mobile conceptual order, and accessibility remain intact.
-- [ ] No copy implies live threat monitoring or comprehensive infrastructure coverage.
+- [x] At desktop launch, the map is the largest and clearest surface.
+- [x] Left pane shows scope metrics and semantic layers before ranked monitoring content.
+- [x] Selecting Niigata opens exactly one detailed inspector.
+- [x] Niigata still exposes value, unit, survey year, official source, and why it matters.
+- [x] The map is not covered by a second long-form detail popup.
+- [x] Rice layer names describe user subjects, not rendering mechanics.
+- [x] Comparison and signals remain reachable but are not permanently open.
+- [x] URL state, source links, mobile conceptual order, and accessibility remain intact.
+- [x] No copy implies live threat monitoring or comprehensive infrastructure coverage.
 
 ## 18. Execution boundary
 
 This addendum originally recorded a product and IA decision only. On 2026-07-18, the product owner authorized desktop implementation P0–P3 with Mobile redesign deferred. The reviewed execution source is `docs/superpowers/plans/2026-07-18-power-atlas-desktop-reframe.md`; implementation must remain within that plan and its phased review gates.
+
+## 19. Verified delivery record (2026-07-18)
+
+The desktop reframe was implemented on `codex/power-atlas-desktop-reframe`, starting from the product-doc decision commit `9e32d82`. The pre-documentation delivery head was `c6a06cf487a8e0a26acbce114c920f58f9d15979`. No PR has been opened; publishing remains **awaiting explicit authorization**.
+
+Delivered phases:
+
+| Phase | Verified outcome |
+|-------|------------------|
+| P0 | Desktop selection resolves into one contextual inspector; the long-form desktop map popup no longer duplicates it. Legacy `theme=`, `mode=`, and `selected=` URLs remain supported, alongside new `layer=` and `view=` state. |
+| P1 | The default desktop left pane now owns scope metrics, source/period context, legend, and user-meaningful semantic layers. Layer availability is computed from the runtime workspace inputs so unavailable content is not advertised as usable. |
+| P2 | Regional values keep raw display metadata, missing values remain neutral `データなし`, and hover is limited to label, value, unit, and period. |
+| P3 | Signals and comparison are explicit secondary views. Comparison series enforce a shared unit, period, and at least one common source rather than silently combining incompatible rows. URL hydration, Escape/close behavior, and focus restoration are covered. |
+
+Task 8 acceptance was completed with desktop browser checks at 1280×800, 1440×900, and 1680×900. The existing stacked tree received non-regression smoke checks only at 1024×768 and 390×844; this is not Mobile design acceptance.
+
+Acceptance screenshots (all 1440×900):
+
+- [Default rice workspace](../assets/power-atlas-desktop-rice-default.png)
+- [Niigata inspector](../assets/power-atlas-desktop-rice-niigata.png)
+- [Signals view](../assets/power-atlas-desktop-signals.png)
+- [Comparison view](../assets/power-atlas-desktop-comparison.png)
+
+Fresh Task 8 quality evidence: `npm test` passed 72 files / 322 tests, `npm run typecheck` passed, `npm run build` passed, `git diff --check` was clean, and the worktree was clean at `c6a06cf`.
+
+There are no known desktop acceptance blockers. Remaining delivery work is an independent final code review and, only after explicit authorization, push/PR publication. Broader external-data coverage and provenance expansion remain separate data work, not a blocker for this UI delivery. Mobile redesign remains explicitly deferred and is not complete; only the existing stacked-tree smoke boundary passed.
