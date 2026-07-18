@@ -499,4 +499,113 @@ describe("map canvas layer config", () => {
       left: 46
     });
   });
+
+  test("emits formatted semantic region hover data without selecting and clears it on leave", async () => {
+    const onHover = vi.fn();
+    const onSelect = vi.fn();
+
+    render(
+      <JapanOperationsMapCanvas
+        activeId="prefecture:hokkaido"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{
+          ...model,
+          regions: [
+            {
+              id: "prefecture:niigata",
+              label: "新潟県",
+              lat: 37.9026,
+              lon: 139.0236,
+              value: 100,
+              rawValue: 514100,
+              unit: "トン",
+              periodLabel: "令和5年産"
+            }
+          ]
+        }}
+        onHover={onHover}
+        onSelect={onSelect}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(registeredLayerHandlers.has("mousemove:jp-region-fill")).toBe(true);
+    });
+
+    const regions = addedSources.get("jp-regions") as {
+      features: Array<{ properties: Record<string, unknown> }>;
+    };
+    expect(regions.features[0].properties).toMatchObject({
+      id: "prefecture:niigata",
+      label: "新潟県",
+      selectionId: "prefecture:niigata",
+      selected: false,
+      value: 100,
+      rawValue: 514100,
+      unit: "トン",
+      period: "令和5年産",
+      hasData: true
+    });
+
+    registeredLayerHandlers.get("mousemove:jp-region-fill")?.({
+      features: [{ properties: regions.features[0].properties }],
+      point: { x: 432.4, y: 218.7 }
+    });
+
+    expect(onHover).toHaveBeenLastCalledWith({
+      selectionId: "prefecture:niigata",
+      label: "新潟県",
+      valueLabel: "514,100",
+      unitLabel: "トン",
+      periodLabel: "令和5年産",
+      x: 432,
+      y: 219
+    });
+    expect(onSelect).not.toHaveBeenCalled();
+
+    registeredLayerHandlers.get("mouseleave:jp-region-fill")?.();
+    expect(onHover).toHaveBeenLastCalledWith(null);
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  test("keeps a missing region neutral and distinct from a zero-valued metric", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="prefecture:hokkaido"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{
+          ...model,
+          regions: [
+            { id: "prefecture:niigata", label: "新潟県", lat: 37.9, lon: 139, value: null },
+            { id: "prefecture:hokkaido", label: "北海道", lat: 43.1, lon: 141.3, value: 0, rawValue: 0 }
+          ]
+        }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("jp-regions")).toBe(true);
+    });
+
+    const regions = addedSources.get("jp-regions") as {
+      features: Array<{ geometry: { coordinates: number[][][] }; properties: Record<string, unknown> }>;
+    };
+    const regionFill = addedLayers.find((layer) => layer.id === "jp-region-fill") as any;
+    const regionOutline = addedLayers.find((layer) => layer.id === "jp-region-outline") as any;
+
+    expect(regions.features[0].properties).toMatchObject({ hasData: false, rawValue: null, value: null });
+    expect(regions.features[1].properties).toMatchObject({ hasData: true, rawValue: 0, value: 0 });
+    expect(regions.features[0].geometry.coordinates).not.toEqual(regions.features[1].geometry.coordinates);
+    expect(JSON.stringify(regionFill.paint["fill-color"])).toContain("hasData");
+    expect(JSON.stringify(regionFill.paint["fill-color"])).not.toContain("selected");
+    expect(JSON.stringify(regionFill.paint["fill-opacity"])).toContain("value");
+    expect(JSON.stringify(regionOutline.paint["line-width"])).toContain("selected");
+  });
 });

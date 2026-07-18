@@ -6,7 +6,7 @@ import type { OperationMapMode } from "../lib/presentation/operations";
 import type { JapanMapCanvasModel, JapanMapCorridor, JapanMapPoint, JapanMapRegion, JapanMapRoute } from "../lib/presentation/map-canvas";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
 import { buildMaritimeRouteCoordinates, densifyGeodesicPolyline, type LonLat } from "../lib/presentation/route-geometry";
-import type { MapPopupAnchor } from "../types/presentation";
+import type { MapHoverViewModel, MapPopupAnchor } from "../types/presentation";
 import { buildOperationsBasemapStyle } from "../lib/presentation/basemap-style";
 
 interface JapanOperationsMapCanvasProps {
@@ -18,6 +18,7 @@ interface JapanOperationsMapCanvasProps {
   focusTargetId: string | null;
   mapMode: OperationMapMode;
   model: JapanMapCanvasModel;
+  onHover?: (hover: MapHoverViewModel | null) => void;
   onSelect: (id: string, anchor?: MapPopupAnchor) => void;
   statusPalette: StatusPalette;
   themePalette: ThemePalette;
@@ -27,6 +28,7 @@ const INITIAL_CENTER: [number, number] = [138.45, 36.25];
 const INITIAL_ZOOM = 5.3;
 const GLOBAL_CONTEXT_MAX_ZOOM = 3.6;
 const DOMESTIC_CONTEXT_MIN_ZOOM = 3.2;
+const JA_NUMBER_FORMATTER = new Intl.NumberFormat("ja-JP");
 
 export function JapanOperationsMapCanvas({
   activeId,
@@ -34,6 +36,7 @@ export function JapanOperationsMapCanvas({
   focusTargetId,
   mapMode,
   model,
+  onHover,
   onSelect,
   statusPalette,
   themePalette
@@ -43,6 +46,7 @@ export function JapanOperationsMapCanvas({
   const zoomRef = useRef(INITIAL_ZOOM);
   const scanPhaseRef = useRef(0);
   const scanRafRef = useRef<number | null>(null);
+  const handleHover = useEffectEvent((hover: MapHoverViewModel | null) => onHover?.(hover));
   const handleSelect = useEffectEvent(onSelect);
 
   useEffect(() => {
@@ -480,13 +484,7 @@ export function JapanOperationsMapCanvas({
           source: "jp-regions",
           minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
           paint: {
-            "fill-color": [
-              "case",
-              ["boolean", ["get", "selected"], false],
-              statusPalette.selected,
-              themePalette.accent
-            ],
-            "fill-opacity": 0.18
+            ...getRegionFillPaint(themePalette)
           }
         });
 
@@ -496,8 +494,7 @@ export function JapanOperationsMapCanvas({
           source: "jp-regions",
           minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
           paint: {
-            "line-color": "rgba(62, 73, 85, 0.42)",
-            "line-width": 1.2
+            ...getRegionOutlinePaint(themePalette, statusPalette)
           }
         });
 
@@ -656,6 +653,27 @@ export function JapanOperationsMapCanvas({
           });
         }
 
+        for (const layerId of [
+          "jp-point-circle",
+          "jp-route-line",
+          "jp-region-fill",
+          "global-point-circle",
+          "global-route-glow",
+          "global-route-line",
+          "live-logistics-route-glow",
+          "live-logistics-route-pulse",
+          "live-logistics-route-label",
+          "logistics-impact-corridor-fill",
+          "logistics-impact-corridor-outline",
+          "logistics-impact-corridor-label",
+          "live-vessel-halo",
+          "live-vessel-marker",
+          "live-vessel-label"
+        ]) {
+          map.on("mousemove", layerId, (event: any) => hoverFeature(event, handleHover));
+          map.on("mouseleave", layerId, () => handleHover(null));
+        }
+
         map.on("click", "jp-point-circle", (event: any) => selectFeatureId(event, handleSelect, map));
         map.on("click", "jp-route-line", (event: any) => selectFeatureId(event, handleSelect, map));
         map.on("click", "jp-region-fill", (event: any) => selectFeatureId(event, handleSelect, map));
@@ -768,12 +786,8 @@ export function JapanOperationsMapCanvas({
       statusPalette.watch,
       statusPalette.normal
     ]);
-    map.setPaintProperty("jp-region-fill", "fill-color", [
-      "case",
-      ["boolean", ["get", "selected"], false],
-      statusPalette.selected,
-      themePalette.accent
-    ]);
+    applyPaintObject(map, "jp-region-fill", getRegionFillPaint(themePalette));
+    applyPaintObject(map, "jp-region-outline", getRegionOutlinePaint(themePalette, statusPalette));
     map.setPaintProperty("jp-route-line", "line-color", [
       ...(getDomesticRoutePaint(themePalette, statusPalette, mapMode)["line-color"] as unknown[])
     ]);
@@ -1186,6 +1200,74 @@ function getDomesticRoutePaint(themePalette: ThemePalette, statusPalette: Status
   };
 }
 
+function getRegionFillPaint(themePalette: ThemePalette): any {
+  return {
+    "fill-color": [
+      "case",
+      ["boolean", ["get", "hasData"], false],
+      themePalette.accent,
+      "rgba(116, 126, 137, 0.28)"
+    ],
+    "fill-opacity": [
+      "case",
+      ["boolean", ["get", "hasData"], false],
+      ["interpolate", ["linear"], ["get", "value"], 0, 0.18, 100, 0.62],
+      0.34
+    ]
+  };
+}
+
+function getRegionOutlinePaint(themePalette: ThemePalette, statusPalette: StatusPalette): any {
+  return {
+    "line-color": [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      statusPalette.selected,
+      ["boolean", ["get", "hasData"], false],
+      themePalette.accent,
+      "rgba(125, 137, 149, 0.68)"
+    ],
+    "line-opacity": ["case", ["boolean", ["get", "selected"], false], 1, 0.68],
+    "line-width": ["case", ["boolean", ["get", "selected"], false], 2.8, 1.1]
+  };
+}
+
+function hoverFeature(event: any, onHover: (hover: MapHoverViewModel | null) => void) {
+  const properties = event.features?.[0]?.properties;
+  const selectionId = properties?.selectionId ?? properties?.id;
+  const label = properties?.label;
+  const x = typeof event?.point?.x === "number" ? Math.round(event.point.x) : null;
+  const y = typeof event?.point?.y === "number" ? Math.round(event.point.y) : null;
+
+  if (!selectionId || !label || x === null || y === null) {
+    onHover(null);
+    return;
+  }
+
+  const rawValue = typeof properties.rawValue === "number" ? properties.rawValue : null;
+  const valueLabel = rawValue !== null
+    ? JA_NUMBER_FORMATTER.format(rawValue)
+    : typeof properties.valueLabel === "string" && properties.valueLabel.length > 0
+      ? properties.valueLabel
+      : undefined;
+  const unitLabel = typeof properties.unit === "string" && properties.unit.length > 0
+    ? properties.unit
+    : undefined;
+  const periodLabel = typeof properties.period === "string" && properties.period.length > 0
+    ? properties.period
+    : undefined;
+
+  onHover({
+    selectionId,
+    label,
+    ...(valueLabel ? { valueLabel } : {}),
+    ...(unitLabel ? { unitLabel } : {}),
+    ...(periodLabel ? { periodLabel } : {}),
+    x,
+    y
+  });
+}
+
 function selectFeatureId(event: any, onSelect: (id: string, anchor?: MapPopupAnchor) => void, map: any) {
   const feature = event.features?.[0];
   const id = feature?.properties?.selectionId ?? feature?.properties?.id;
@@ -1227,6 +1309,7 @@ function pointsToFeatureCollection(points: JapanMapPoint[], activeId?: string) {
         kind: point.kind,
         label: point.label,
         metaLabel: point.metaLabel,
+        valueLabel: point.metaLabel ?? null,
         selectionId: point.selectionId ?? point.id,
         selected: point.id === activeId || point.selectionId === activeId,
         tone: point.tone
@@ -1262,6 +1345,9 @@ function routesToFeatureCollection(routes: JapanMapRoute[], points: JapanMapPoin
           properties: {
             id: route.id,
             label: route.label,
+            rawValue: null,
+            unit: null,
+            period: null,
             selectionId: resolveRouteSelectionId(route),
             selected:
               route.id === activeId ||
@@ -1328,7 +1414,11 @@ function corridorsToFeatureCollection(corridors: JapanMapCorridor[], activeId: s
         label: corridor.label,
         selectionId: corridor.selectionId,
         selected: corridor.id === activeId || corridor.selectionId === activeId,
-        value: corridor.value
+        value: corridor.value,
+        rawValue: corridor.value,
+        unit: null,
+        period: null,
+        hasData: true
       }
     }))
   };
@@ -1345,7 +1435,7 @@ function regionsToFeatureCollection(regions: JapanMapRegion[], activeId: string)
           createCirclePolygon(
             region.lon,
             region.lat,
-            48 + (region.value === null ? 0 : region.value * 0.25)
+            region.value === null ? 28 : 48 + region.value * 0.25
           )
         ]
       },
@@ -1354,7 +1444,11 @@ function regionsToFeatureCollection(regions: JapanMapRegion[], activeId: string)
         label: region.label,
         selectionId: region.id,
         selected: region.id === activeId,
-        value: region.value
+        value: region.value,
+        rawValue: region.rawValue ?? null,
+        unit: region.unit ?? null,
+        period: region.periodLabel ?? null,
+        hasData: region.rawValue !== undefined
       }
     }))
   };

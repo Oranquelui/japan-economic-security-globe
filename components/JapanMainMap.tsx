@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { JapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import type { OperationMapMode } from "../lib/presentation/operations";
 import { getOperationModeLabel } from "../lib/presentation/operations";
 import type { RankingExplanationViewModel } from "../lib/ranking/explain";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
-import type { DetailViewModel, MapPopupAnchor } from "../types/presentation";
+import type { DetailViewModel, MapHoverViewModel, MapPopupAnchor } from "../types/presentation";
 import type { WatchOverlayItemViewModel } from "../lib/presentation/watch-overlays";
 import { JapanOperationsMapCanvas } from "./JapanOperationsMapCanvas";
 import { MapDetailPopup } from "./MapDetailPopup";
+import { MapHoverCard } from "./MapHoverCard";
 
 interface JapanMainMapProps {
   activeId: string;
@@ -67,6 +68,11 @@ export function JapanMainMap({
   watchOverlays = []
 }: JapanMainMapProps) {
   const [command, setCommand] = useState<{ nonce: number; type: "recenter" | "zoomIn" | "zoomOut" }>();
+  const [hover, setHover] = useState<MapHoverViewModel | null>(null);
+
+  useEffect(() => {
+    setHover(null);
+  }, [mapMode, model]);
 
   return (
     <section
@@ -81,10 +87,12 @@ export function JapanMainMap({
         focusTargetId={focusTargetId}
         mapMode={mapMode}
         model={model}
+        onHover={setHover}
         onSelect={onSelect}
         statusPalette={statusPalette}
         themePalette={themePalette}
       />
+      {hover ? <MapHoverCard hover={hover} themePalette={themePalette} /> : null}
       <div
         className="pointer-events-none absolute inset-0"
         style={{

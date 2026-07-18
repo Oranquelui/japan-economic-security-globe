@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { loadSeedGraph } from "../../lib/data/seed-loader";
@@ -8,12 +8,18 @@ import { getStatusPalette, getThemePalette } from "../../lib/presentation/palett
 import { getDetailView } from "../../lib/semantic/detail";
 import { JapanMainMap } from "../JapanMainMap";
 
+let emitHover: ((hover: any) => void) | undefined;
+
 vi.mock("../JapanOperationsMapCanvas", () => ({
-  JapanOperationsMapCanvas: () => <div data-testid="mock-map-canvas" />
+  JapanOperationsMapCanvas: ({ onHover }: { onHover?: (hover: any) => void }) => {
+    emitHover = onHover;
+    return <div data-testid="mock-map-canvas" />;
+  }
 }));
 
 afterEach(() => {
   cleanup();
+  emitHover = undefined;
 });
 
 describe("JapanMainMap popup placement", () => {
@@ -80,5 +86,60 @@ describe("JapanMainMap popup placement", () => {
 
     expect(screen.getByText("代表軌道")).toBeTruthy();
     expect(screen.getByText("公開情報 / 履歴・集約 / ライブ追跡ではありません")).toBeTruthy();
+  });
+
+  test("keeps hover transient and clears it when the map model changes", () => {
+    const onSelect = vi.fn();
+    const initialUrl = window.location.href;
+    const model = {
+      points: [],
+      routes: [],
+      regions: [],
+      globalPoints: [],
+      globalRoutes: []
+    };
+    const { rerender } = render(
+      <JapanMainMap
+        activeId="prefecture:hokkaido"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={model}
+        onSelect={onSelect}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    act(() => {
+      emitHover?.({
+        selectionId: "prefecture:niigata",
+        label: "新潟県",
+        valueLabel: "514,100",
+        unitLabel: "トン",
+        periodLabel: "令和5年産",
+        x: 320,
+        y: 180
+      });
+    });
+
+    expect(screen.getByRole("tooltip")).toBeTruthy();
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(window.location.href).toBe(initialUrl);
+
+    rerender(
+      <JapanMainMap
+        activeId="prefecture:hokkaido"
+        focusTargetId={null}
+        mapMode="choropleth"
+        model={{ ...model }}
+        onSelect={onSelect}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("rice")}
+      />
+    );
+
+    expect(screen.queryByRole("tooltip")).toBeNull();
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(window.location.href).toBe(initialUrl);
   });
 });

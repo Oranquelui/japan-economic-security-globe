@@ -95,6 +95,16 @@ export interface MapPopupAnchor {
   y: number;
 }
 
+export interface MapHoverViewModel {
+  selectionId: string;
+  label: string;
+  valueLabel?: string;
+  unitLabel?: string;
+  periodLabel?: string;
+  x: number;
+  y: number;
+}
+
 export type WorkspaceView = "map" | "signals" | "comparison";
 
 export type SemanticLayerId =

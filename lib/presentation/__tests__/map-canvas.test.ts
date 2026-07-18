@@ -241,10 +241,14 @@ describe("japan map canvas model", () => {
     const layer = workspace.layers.find((candidate) => candidate.id === "rice-harvest")!;
 
     const model = buildJapanMapCanvasModel(graph, view, "prefecture:niigata", layer, null);
+    const niigata = model.regions.find((region) => region.id === "prefecture:niigata")!;
+    const hokkaido = model.regions.find((region) => region.id === "prefecture:hokkaido")!;
 
     expect(model.regions).toHaveLength(47);
-    expect(model.regions.find((region) => region.id === "prefecture:niigata")).toMatchObject({
-      rawValue: expect.any(Number),
+    expect(model.regions.filter((region) => region.rawValue !== undefined)).toHaveLength(47);
+    expect(niigata.value ?? 0).toBeGreaterThan(hokkaido.value ?? 0);
+    expect(niigata).toMatchObject({
+      rawValue: 514100,
       unit: "トン",
       periodLabel: "令和5年産"
     });
