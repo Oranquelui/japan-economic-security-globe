@@ -107,7 +107,7 @@ Define which official statistics should power each public theme under the **e-St
 - render the 47 prefectures with Natural Earth 5.1.1 Admin-1 generalized polygons joined by stable prefecture code or semantic entity ID;
 - encode harvest value with restrained choropleth fill and visible borders;
 - show full Japanese prefecture names on the national desktop view;
-- keep municipality, city, and road names as progressive zoom context;
+- keep municipality and city names plus road-network linework as progressive zoom context; a stable road-name or route-shield layer is a separately sourced future task, not a `v0.6.0` claim;
 - use the primary map's existing zoom rather than adding a centered `精密表示` inset or second map state.
 - progressively fade the generalized prefecture fill and borders above zoom 6.5, making them visually absent by zoom 9 so street context does not imply boundary precision;
 - treat the shared-map boundary replacement as a correctness fix at every viewport while deferring Mobile layout and interaction redesign.

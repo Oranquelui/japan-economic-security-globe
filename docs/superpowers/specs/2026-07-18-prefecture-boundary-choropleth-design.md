@@ -37,7 +37,7 @@ At the default desktop rice-harvest URL, a first-time user must be able to answe
 1. Which prefecture does each value belong to?
 2. Which prefectures have relatively higher or lower harvest values?
 3. Which prefecture is selected?
-4. Where can the user zoom for municipality, city, and road context?
+4. Where can the user zoom for municipality and city labels plus road-network context?
 5. Which source supports the official statistic, and which separate source supports the map geometry?
 
 The design succeeds when all 47 prefectures have a valid boundary feature and readable name treatment, the choropleth remains subordinate to labels and borders, and selection still reaches the existing inspector and evidence path.
@@ -112,7 +112,7 @@ Rendering order from bottom to top:
 1. neutral basemap;
 2. prefecture choropleth fill;
 3. prefecture border;
-4. contextual basemap roads and place labels;
+4. contextual basemap road linework and place labels;
 5. app-owned prefecture labels;
 6. point-native semantic entities, routes, hover, and selected-state treatment.
 
@@ -129,9 +129,9 @@ Borders must remain legible in both supported color themes and against every aut
 Because the Natural Earth artifact is intentionally generalized, it must not imply higher precision as the camera approaches street context:
 
 - from zoom 3.2 through 6.5, show the full choropleth, borders, and selected treatment;
-- from zoom 6.5 through 8.5, progressively fade the base fill and borders while city and road context becomes dominant;
+- from zoom 6.5 through 8.5, progressively fade the base fill and borders while city labels and road-network context become dominant;
 - by zoom 9, base prefecture fill and borders are visually absent and the polygon layers reach `maxzoom: 9`, removing them from feature queries and pointer hit-testing; the selected prefecture label and inspector state remain;
-- verify zoom 7 and zoom 9 against coastline, city, and road context so the generalized source is not mistaken for a precise municipal or legal boundary.
+- verify zoom 7 and zoom 9 against coastline, city-label, and road-network context so the generalized source is not mistaken for a precise municipal or legal boundary.
 
 ### 5.4 Prefecture labels
 
@@ -141,12 +141,12 @@ Use an app-owned symbol source so the initial zoom does not depend on the raster
 
 At 1280x800, 1440x900, and 1680x900, the default national viewport must render exactly 47 unique full names, with no pair of label boxes overlapping and no label clipped by the map viewport or permanent UI. The selected prefecture label must remain visible at every supported desktop zoom. The implementation may adjust label size across desktop zoom levels, but it must not omit a prefecture or reduce every prefecture to an unexplained abbreviation.
 
-Municipality, city, and road labels remain progressive context: they appear through the contextual basemap as the user zooms in. This work does not ingest municipality polygons or create a second municipality dataset.
+Municipality and city labels plus road-network linework remain progressive context through the retained basemap as the user zooms in. The selected Esri Light Gray reference service is intentionally minimal and does not publish stable road names or route shields at the required Kanto zoom. This release must not invent that content or imply it is present. Adding a separately sourced road-name layer requires its own data, attribution, visual-density, and interaction review. This work does not ingest municipality polygons or create a second municipality or road-label dataset.
 
 Context-label acceptance examples:
 
 - in the Niigata area at zoom 7 or closer, at least two city labels, including the selected area's city context, are readable above the choropleth;
-- in the Kanto area at zoom 9 or closer, at least one road label and two city/ward labels are readable above the choropleth;
+- in the Kanto area at zoom 9 or closer, at least two city/ward labels and recognizable road/corridor linework are readable after the generalized polygons disappear;
 - the implementation plan must capture the exact stable labels observed from the retained basemap and convert these examples into visual regression assertions.
 
 ### 5.5 Selection and zoom
@@ -262,7 +262,7 @@ Visual verification must cover:
 - lowest value, highest value, and missing-data treatments;
 - light and dark supported themes if both remain product-supported;
 - Niigata at zoom 7 or closer with at least two readable city labels;
-- Kanto at zoom 9 or closer with at least one readable road label and two city/ward labels;
+- Kanto at zoom 9 or closer with at least two readable city/ward labels and recognizable road/corridor linework;
 - zoom 7 and zoom 9 comparisons showing that generalized boundaries fade instead of implying street-level precision;
 - 1024x768 and 390x844 regression smoke checks only, with no Mobile redesign.
 
@@ -270,6 +270,7 @@ Visual verification must cover:
 
 - Mobile layout or interaction redesign; shared geometry correctness still applies;
 - municipality or city boundary ingestion;
+- a separately sourced road-name or route-shield dataset; the retained basemap road linework remains contextual only;
 - a precision inset, mini-map, magnifier, modal map, or locked map feature;
 - live dependence on experimental GSI vector tiles;
 - use of National Land Numerical Information N03 until this project has the required GSI approval and wording;

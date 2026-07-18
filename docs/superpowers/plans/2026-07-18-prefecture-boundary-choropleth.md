@@ -304,7 +304,6 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 - Modify: `lib/geo/__tests__/prefecture-map.test.ts`
 - Modify: `components/JapanOperationsMapCanvas.tsx`
 - Modify: `components/__tests__/map-canvas-layer-config.test.tsx`
-- Modify: `e2e/prefecture-map.spec.ts`
 - Modify: `lib/presentation/basemap-style.ts`
 - Modify: `lib/presentation/__tests__/basemap-style.test.ts`
 
@@ -537,6 +536,7 @@ After the implementer commits and self-reviews, run the spec-review loop to appr
 
 - Modify: `components/JapanOperationsMapCanvas.tsx`
 - Modify: `components/__tests__/map-canvas-layer-config.test.tsx`
+- Modify: `e2e/prefecture-map.spec.ts`
 - Create: `docs/assets/prefecture-choropleth-default-1280x800.png`
 - Create: `docs/assets/prefecture-choropleth-default-1440x900.png`
 - Create: `docs/assets/prefecture-choropleth-default-1680x900.png`
@@ -585,6 +585,21 @@ npm run start -- --hostname 127.0.0.1 --port 3100
 
 Use the in-app browser only after confirming port 3100 is owned by this worktree. Evaluate the map-container diagnostics and prove the test-only missing-value mutation method is absent in this production build. Do not touch other local ports or servers.
 
+The read-only diagnostics must expose bounded MapLibre readiness in addition to rendered feature counts. Write a failing test first, then add a `tilesLoaded` result backed by `map.areTilesLoaded()` without adding a new global hook or production mutation. The automated E2E must poll this readiness together with its existing rendered-label requirements. The production evidence harness must wait for remote tile completion, 47 rendered overview labels, and the selected-label expectation before every relevant screenshot; arbitrary sleep alone is not acceptance evidence.
+
+Run the focused unit test, full unit suite, typecheck, production build, and prefecture Playwright acceptance. Commit the readiness change separately, then run fresh spec and code-quality reviews before recapturing evidence.
+
+```bash
+npx vitest run components/__tests__/map-canvas-layer-config.test.tsx
+npm test
+npm run typecheck
+npm run build
+npm run test:e2e:prefecture
+git diff --check
+git add components/JapanOperationsMapCanvas.tsx components/__tests__/map-canvas-layer-config.test.tsx e2e/prefecture-map.spec.ts
+git commit -m "fix: wait for prefecture map readiness"
+```
+
 ### Step 7.2: Verify required desktop viewports
 
 At `?theme=rice&layer=rice-harvest`, verify 1280x800, 1440x900, and 1680x900:
@@ -606,7 +621,7 @@ Select Niigata and one dense-region prefecture:
 - URL and inspector update to the same semantic ID;
 - selected border and label dominate through overview zoom;
 - zoom 7 exposes at least `新潟市` and `長岡市` (or the exact stable two-city labels observed from the retained basemap) above the fading polygon;
-- Kanto zoom 9 exposes at least two stable city/ward labels and one road label;
+- Kanto zoom 9 exposes at least two stable city/ward labels and recognizable road/corridor linework; the retained Esri Light Gray reference does not publish a stable road name or route shield at this scale, so `v0.6.0` does not claim one;
 - by zoom 9, generalized fill/borders are absent and invisible polygon clicks do not change selection;
 - zoom/pan/recenter/keyboard controls still work;
 - the map keeps one camera and no automatic selection zoom.
