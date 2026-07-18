@@ -13,7 +13,6 @@ import type {
 import type { LiveLogisticsViewModel } from "../../types/logistics";
 import type { SemanticGraph, ThemeId } from "../../types/semantic";
 import { localizeAnyLabel } from "./japanese";
-import { hasLogisticsImpactGeometry } from "./map-canvas";
 import type { OperationMapMode } from "./operations";
 import { isRenderableMapRoute } from "./route-status";
 
@@ -144,10 +143,10 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       id: "logistics-domestic",
       themeId: "logistics",
       label: "国内物流",
-      description: "港湾から国内配送網への物流経路",
+      description: "固定デモデータによる港湾から国内配送網への物流経路",
       renderMode: "route",
-      periodLabel: "最新公開情報",
-      sourceIds: ["source:customs-trade-statistics", "source:mlit-road-traffic-public", "source:jrfreight-public-status"],
+      periodLabel: "固定デモデータ",
+      sourceIds: [],
       legend: categoricalLegend("国内物流"),
       available: true,
       content: { kind: "live-logistics", view: "domestic" }
@@ -156,10 +155,10 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       id: "logistics-arrival",
       themeId: "logistics",
       label: "到着見込み",
-      description: "日本側拠点への到着見込み",
+      description: "提供データ内の日本側拠点への到着見込み",
       renderMode: "point",
-      periodLabel: "最新公開情報",
-      sourceIds: ["source:customs-trade-statistics"],
+      periodLabel: "提供データの時点",
+      sourceIds: [],
       legend: categoricalLegend("到着見込み"),
       available: true,
       content: { kind: "live-logistics", view: "arrival" }
@@ -168,10 +167,10 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       id: "logistics-impact",
       themeId: "logistics",
       label: "物流影響",
-      description: "国内物流への影響を地域別に表示",
+      description: "型付き影響指標が提供された場合に地域別表示",
       renderMode: "choropleth",
-      periodLabel: "最新公開情報",
-      sourceIds: ["source:mlit-road-traffic-public", "source:jrfreight-public-status"],
+      periodLabel: "指標データ未提供",
+      sourceIds: [],
       legend: continuousLegend("物流影響", "指数"),
       available: true,
       content: { kind: "live-logistics", view: "impact" }
@@ -453,7 +452,8 @@ function getLayerSource(
 export function buildSelectionInspector(
   graph: SemanticGraph,
   id: string,
-  detail: DetailViewModel
+  detail: DetailViewModel,
+  activeLayer: LayerDefinition | null = null
 ): SelectionInspectorViewModel {
   const observation = graph.observations.find((candidate) => candidate.id === id);
   if (observation) {
@@ -469,7 +469,13 @@ export function buildSelectionInspector(
 
   const entity = graph.entities.find((candidate) => candidate.id === id);
   const harvest = entity?.properties?.riceMainUseHarvestTonsR5;
-  if (entity?.kind === "Prefecture" && entity.themes.includes("rice") && typeof harvest === "number") {
+  if (
+    activeLayer?.themeId === "rice" &&
+    activeLayer.id === "rice-harvest" &&
+    entity?.kind === "Prefecture" &&
+    entity.themes.includes("rice") &&
+    typeof harvest === "number"
+  ) {
     return {
       detail,
       primaryMetric: {
@@ -611,7 +617,9 @@ function hasLiveLogisticsInput(
     );
   }
 
-  return liveLogistics.items.length > 0 && hasLogisticsImpactGeometry(graph, themeId);
+  // Runtime logistics items describe routes and arrival context, not a typed regional impact metric.
+  // Keep the impact layer unavailable until the view model carries sourced values, units, and periods.
+  return false;
 }
 
 function buildScopeSummary(view: ThemeView, layers: LayerDefinition[]): ScopeSummary {

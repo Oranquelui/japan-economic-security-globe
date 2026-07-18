@@ -158,26 +158,28 @@ describe("japan map canvas model", () => {
     );
     expect(livePoints.map((point) => point.id)).not.toContain("chokepoint:malacca");
     expect(model.liveVessels).toEqual([]);
-    expect(impactRegions.map((region) => region.id)).toEqual(
-      expect.arrayContaining(["prefecture:tokyo", "prefecture:aichi", "prefecture:osaka"])
+    expect(impactRegions).toEqual([]);
+    expect(impactRoutes).toEqual([]);
+    expect(impactCorridors).toEqual([]);
+  });
+
+  test("does not fabricate a semantic logistics impact model without typed impact metrics", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-07-18T00:00:00Z")
     );
-    expect(impactRegions.find((region) => region.id === "prefecture:tokyo")).toMatchObject({
-      rawValue: 92,
-      unit: "影響指数",
-      periodLabel: "現在"
-    });
-    expect(impactRoutes.map((route) => route.id)).toEqual(
-      expect.arrayContaining(["live-logistics:container-asia-yokohama", "live-logistics:road-keihin-tokyo"])
-    );
-    expect(impactCorridors.map((corridor) => corridor.id)).toEqual(
-      expect.arrayContaining([
-        "corridor-band:tomei-shin-tomei-meishin",
-        "corridor-band:tokaido-rail-freight",
-        "corridor-band:yokohama-tokyo-port-hinterland"
-      ])
-    );
-    expect(impactCorridors[0].geometry.type).toBe("Polygon");
-    expect(impactCorridors[0].geometry.coordinates[0].length).toBeGreaterThan(8);
+    const workspace = buildWorkspacePresentation(graph, view, live);
+    const impactLayer = workspace.layers.find((layer) => layer.id === "logistics-impact")!;
+    const model = buildJapanMapCanvasModel(graph, view, "prefecture:tokyo", impactLayer, live);
+
+    expect(impactLayer.available).toBe(false);
+    expect(model.logisticsImpactRegions).toEqual([]);
+    expect(model.logisticsImpactCorridors).toEqual([]);
+    expect(JSON.stringify(model)).not.toMatch(/影響指数|\"rawValue\":(?:92|76|68)|\"periodLabel\":\"現在\"/);
   });
 
   test("renders airport operations as facility points without aircraft markers", () => {

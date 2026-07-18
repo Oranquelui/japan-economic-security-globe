@@ -511,59 +511,48 @@ export function EvidenceSurface({
                   const highlights = detail.sourceHighlights
                     .filter((item) => item.sourceId === source.id)
                     .slice(0, 2);
-
-                  return (
-                  <a
-                    key={source.id}
-                    href={source.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block rounded-xl border p-3 transition hover:bg-white/[0.06]"
-                    style={{
-                      borderColor: themePalette.borderSubtle,
-                      background: themePalette.surfacePanel
-                    }}
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="text-sm font-semibold text-white">{localizeSourceLabel(source.id, source.label)}</div>
-                      {source.official !== false ? (
-                        <PanelChip borderColor={themePalette.accent} textColor={themePalette.textPrimary}>
-                          公式
+                  const sourceContent = (
+                    <>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="text-sm font-semibold text-white">{localizeSourceLabel(source.id, source.label)}</div>
+                        {source.official !== false ? (
+                          <PanelChip borderColor={themePalette.accent} textColor={themePalette.textPrimary}>
+                            公式
+                          </PanelChip>
+                        ) : (
+                          <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+                            補助
+                          </PanelChip>
+                        )}
+                        {source.accessMode ? (
+                          <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+                            {getSourceModeLabel(source.accessMode)}
+                          </PanelChip>
+                        ) : null}
+                        {source.tier ? (
+                          <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
+                            Tier {source.tier}
+                          </PanelChip>
+                        ) : null}
+                        <PanelChip
+                          borderColor={getFreshnessBorderColor(freshness.tone, themePalette)}
+                          textColor={getFreshnessTextColor(freshness.tone, themePalette)}
+                        >
+                          {freshness.label}
                         </PanelChip>
-                      ) : (
-                        <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
-                          補助
-                        </PanelChip>
-                      )}
-                      {source.accessMode ? (
-                        <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
-                          {getSourceModeLabel(source.accessMode)}
-                        </PanelChip>
-                      ) : null}
-                      {source.tier ? (
-                        <PanelChip borderColor={themePalette.borderSubtle} textColor={themePalette.textMuted}>
-                          Tier {source.tier}
-                        </PanelChip>
-                      ) : null}
-                      <PanelChip
-                        borderColor={getFreshnessBorderColor(freshness.tone, themePalette)}
-                        textColor={getFreshnessTextColor(freshness.tone, themePalette)}
-                      >
-                        {freshness.label}
-                      </PanelChip>
-                    </div>
-                    <div className="mt-1 text-xs" style={{ color: themePalette.textMuted }}>
-                      {localizePublisher(source.publisher)}
-                    </div>
-                    <div className="mt-2 text-[0.72rem]" style={{ color: themePalette.textMuted }}>
-                      {freshness.accessedLabel}
-                    </div>
-                    {!highlights.length && source.description ? (
-                      <div className="mt-2 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
-                        {source.description}
                       </div>
-                    ) : null}
-                    {highlights.map((highlight) => (
+                      <div className="mt-1 text-xs" style={{ color: themePalette.textMuted }}>
+                        {localizePublisher(source.publisher)}
+                      </div>
+                      <div className="mt-2 text-[0.72rem]" style={{ color: themePalette.textMuted }}>
+                        {freshness.accessedLabel}
+                      </div>
+                      {!highlights.length && source.description ? (
+                        <div className="mt-2 text-[0.72rem] leading-5" style={{ color: themePalette.textMuted }}>
+                          {source.description}
+                        </div>
+                      ) : null}
+                      {highlights.map((highlight) => (
                         <div
                           key={`${source.id}:${highlight.claim}`}
                           className="mt-2 rounded-lg border px-3 py-2 text-[0.72rem] leading-5"
@@ -575,8 +564,30 @@ export function EvidenceSurface({
                         >
                           {highlight.claim}
                         </div>
-                    ))}
-                  </a>
+                      ))}
+                    </>
+                  );
+                  const sourceCardClass = "block rounded-xl border p-3";
+                  const sourceCardStyle = {
+                    borderColor: themePalette.borderSubtle,
+                    background: themePalette.surfacePanel
+                  };
+
+                  return source.url.trim() ? (
+                    <a
+                      key={source.id}
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`${sourceCardClass} transition hover:bg-white/[0.06]`}
+                      style={sourceCardStyle}
+                    >
+                      {sourceContent}
+                    </a>
+                  ) : (
+                    <div key={source.id} className={sourceCardClass} style={sourceCardStyle}>
+                      {sourceContent}
+                    </div>
                   );
                 })}
               </div>

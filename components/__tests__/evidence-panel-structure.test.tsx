@@ -206,6 +206,38 @@ describe("evidence panel structure", () => {
     expect(screen.getByText("確認日 2026-04-11")).toBeTruthy();
   });
 
+  test("renders a source without a URL as non-link text", () => {
+    render(
+      <EvidencePanel
+        collapsed={false}
+        detail={{
+          ...detail,
+          sources: [{
+            ...detail.sources[0],
+            id: "demo:source",
+            label: "Domestic logistics demo fixture",
+            url: "",
+            official: false
+          }],
+          sourceHighlights: []
+        }}
+        evidenceGraph={evidenceGraph}
+        onSelect={vi.fn()}
+        onToggleCollapsed={vi.fn()}
+        selectedId="flow:saudi-oil-japan"
+        statusPalette={statusPalette}
+        themePalette={themePalette}
+        themeTitle="物流"
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "出典" }));
+
+    expect(screen.getByText("Domestic logistics demo fixture")).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /Domestic logistics demo fixture/ })).toBeNull();
+    expect(document.querySelector('a[href="#"]')).toBeNull();
+  });
+
   test("shows a why-ranked section when ranking context is available", () => {
     render(
       <EvidencePanel

@@ -12,7 +12,11 @@ import { NavigationRail } from "../NavigationRail";
 import { OperationsSignalTable } from "../OperationsSignalTable";
 import { ScopeContextPanel } from "../ScopeContextPanel";
 import { loadSeedGraph } from "../../lib/data/seed-loader";
-import { buildSelectionInspector, buildWorkspacePresentation } from "../../lib/presentation/workspace";
+import {
+  buildSelectionInspector,
+  buildWorkspacePresentation,
+  getLayerDefinition
+} from "../../lib/presentation/workspace";
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
 import { getDetailView } from "../../lib/semantic/detail";
 import { getThemeView } from "../../lib/semantic/selectors";
@@ -197,7 +201,12 @@ describe("operations accessibility", () => {
     render(
       <ContextInspector
         evidenceGraph={buildEvidenceGraph(graph, "rice")}
-        inspector={buildSelectionInspector(graph, selectedId, getDetailView(graph, selectedId))}
+        inspector={buildSelectionInspector(
+          graph,
+          selectedId,
+          getDetailView(graph, selectedId),
+          getLayerDefinition("rice", "rice-harvest")
+        )}
         onClose={() => undefined}
         onSelect={() => undefined}
         selectedId={selectedId}

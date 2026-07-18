@@ -843,6 +843,47 @@ describe("AppShell url sync", () => {
     });
   });
 
+  test("normalizes unsourced logistics impact to a visible demo route layer", async () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "logistics",
+          selectedId: null,
+          layerId: "logistics-impact",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+        liveLogisticsEvents={[{
+          id: "live-logistics:road-keihin-tokyo",
+          themeIds: ["logistics"],
+          title: "固定デモ経路: 横浜港 → 首都圏配送",
+          kindLabel: "道路物流",
+          laneId: "road",
+          statusLabel: "デモ",
+          lastSeenLabel: "固定デモデータ",
+          etaLabel: "デモ",
+          sourceLabel: "Domestic logistics demo fixture",
+          disclosureLabel: "固定デモ / 公式ライブフィードではありません",
+          confidenceLabel: "デモ",
+          corridorLabel: "Yokohama → Tokyo",
+          pointIds: ["port:yokohama", "prefecture:tokyo"],
+          relatedIds: [],
+          signalTone: "monitoring"
+        }]}
+      />
+    );
+
+    const map = screen.getAllByTestId("map")[0];
+    expect(map.getAttribute("data-mode")).toBe("route");
+    expect(map.getAttribute("data-live-routes")).toBe("1");
+    expect(map.getAttribute("data-regions")).toBe("0");
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenLastCalledWith("/?theme=logistics", { scroll: false });
+    });
+  });
+
   test("replaces the URL when theme, legacy map mode, and selection change", async () => {
     render(
       <AppShell

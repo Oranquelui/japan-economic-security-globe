@@ -7,7 +7,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { buildEvidenceGraph } from "../../lib/semantic/view-models";
 import { loadSeedGraph } from "../../lib/data/seed-loader";
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
-import { buildSelectionInspector } from "../../lib/presentation/workspace";
+import { buildSelectionInspector, getLayerDefinition } from "../../lib/presentation/workspace";
 import { getDetailView } from "../../lib/semantic/detail";
 import { ContextInspector } from "../ContextInspector";
 
@@ -27,7 +27,7 @@ describe("ContextInspector", () => {
     render(
       <ContextInspector
         evidenceGraph={buildEvidenceGraph(graph, "rice")}
-        inspector={buildSelectionInspector(graph, selectedId, detail)}
+        inspector={buildSelectionInspector(graph, selectedId, detail, getLayerDefinition("rice", "rice-harvest"))}
         onClose={onClose}
         onSelect={onSelect}
         selectedId={selectedId}
@@ -69,7 +69,12 @@ describe("ContextInspector", () => {
     render(
       <ContextInspector
         evidenceGraph={buildEvidenceGraph(graph, "rice")}
-        inspector={buildSelectionInspector(graph, selectedId, getDetailView(graph, selectedId))}
+        inspector={buildSelectionInspector(
+          graph,
+          selectedId,
+          getDetailView(graph, selectedId),
+          getLayerDefinition("rice", "rice-harvest")
+        )}
         onClose={vi.fn()}
         onSelect={vi.fn()}
         selectedId={selectedId}

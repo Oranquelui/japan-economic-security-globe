@@ -369,7 +369,7 @@ Delivered phases:
 | Phase | Verified outcome |
 |-------|------------------|
 | P0 | Desktop selection resolves into one contextual inspector; the long-form desktop map popup no longer duplicates it. Legacy `theme=`, `mode=`, and `selected=` URLs remain supported, alongside new `layer=` and `view=` state. |
-| P1 | The default desktop left pane now owns scope metrics, source/period context, legend, and user-meaningful semantic layers. Layer availability is computed from the runtime workspace inputs so unavailable content is not advertised as usable. |
+| P1 | The default desktop left pane now owns scope metrics, source/period context, legend, and user-meaningful semantic layers. Layer availability is computed from the runtime workspace inputs so unavailable content is not advertised as usable. Fixed logistics seed routes are labeled `固定デモデータ` and carry no official-source attribution; `物流影響` stays disabled until a typed, sourced impact metric exists. |
 | P2 | Regional values keep raw display metadata, missing values remain neutral `データなし`, and hover is limited to label, value, unit, and period. |
 | P3 | Signals and comparison are explicit secondary views. Comparison series enforce a shared unit, period, and at least one common source rather than silently combining incompatible rows. URL hydration, Escape/close behavior, and focus restoration are covered. |
 
@@ -384,4 +384,8 @@ Acceptance screenshots (all 1440×900):
 
 Fresh Task 8 quality evidence: `npm test` passed 72 files / 322 tests, `npm run typecheck` passed, `npm run build` passed, `git diff --check` was clean, and the worktree was clean at `c6a06cf`.
 
-There are no known desktop acceptance blockers. Remaining delivery work is an independent final code review and, only after explicit authorization, push/PR publication. Broader external-data coverage and provenance expansion remain separate data work, not a blocker for this UI delivery. Mobile redesign remains explicitly deferred and is not complete; only the existing stacked-tree smoke boundary passed.
+The checked no-live-overclaim criterion means the delivered UI does not present the bundled logistics fixture as current official impact data: fixed demo routes are disclosed as demo, fabricated regional impact scores and `現在` labels are not rendered, and an unavailable demo source is shown as non-link text rather than `href="#"`. A requested `layer=logistics-impact` normalizes to an available visible layer when one exists. Typed, sourced logistics-impact data remains future data work, not silently inferred from route items.
+
+Fresh remediation verification passed `npm test` (72 files / 326 tests), `npm run typecheck`, `npm run build`, and `git diff --check`.
+
+There are no known desktop acceptance blockers after that truth-labeling remediation. Remaining delivery work is final independent re-review and, only after explicit authorization, push/PR publication. Broader external-data coverage and provenance expansion remain separate data work, not a blocker for this UI delivery. Mobile redesign remains explicitly deferred and is not complete; only the existing stacked-tree smoke boundary passed.

@@ -467,11 +467,16 @@ Mark missing-input layers available: false and disable them in UI. Legacy mode m
 
 Implementation note: the delivered builder computes availability from the actual runtime workspace input, including live-logistics data. Registry metadata without runtime input is retained only for URL/capability parsing; it is not allowed to advertise a layer whose current workspace model has no usable feature.
 
+Final-review remediation note: the bundled logistics route input is a fixed demo, not a current official impact feed. `logistics-domestic` is therefore labeled `固定デモデータ` with no official source IDs. `logistics-impact` remains registered for URL compatibility but is runtime-unavailable until a typed impact metric includes a numeric value, unit, period, and provenance. Demo route items alone never enable it, and an unavailable impact URL normalizes to a visible available layer.
+
+Remediation verification: `npm test` passed 72 files / 326 tests; `npm run typecheck`, `npm run build`, and `git diff --check` also passed. Final independent re-review is still required before Task 9 Step 3 is checked.
+
 buildSelectionInspector must use the already-resolved DetailViewModel supplied by AppShell; it must not call getDetailView internally. This preserves live-logistics:* selections, whose detail comes from buildLiveLogisticsDetail and is not stored in SemanticGraph. Selection metric rules:
 
 ~~~text
 Observation -> value + localized unit + observation.period
-Rice Prefecture -> riceMainUseHarvestTonsR5 + トン + 令和5年産
+Rice Prefecture in the active rice-harvest layer -> riceMainUseHarvestTonsR5 + トン + 令和5年産
+Rice Prefecture in any other theme/layer context -> null
 Flow -> magnitudeLabel + flow.period when magnitude exists
 Other entity -> null; never fabricate a metric
 Live logistics ID -> preserve the supplied detail and return null unless a typed live metric is already present
@@ -937,7 +942,8 @@ entities:
   map only view entities matching the listed kinds
 
 live-logistics:
-  select the existing live points/routes/impact regions for the named view
+  select the provided points/routes for the named view
+  return an empty impact model unless typed, sourced impact metrics exist
 
 theme-composite:
   preserve the current theme-wide fallback
@@ -1430,7 +1436,7 @@ The PR body leads with the IA outcome, lists P0–P3, verification and screensho
 - [x] New layer= and view= URLs hydrate correctly.
 - [x] Legacy theme=, mode=, and selected= links still work.
 - [x] Keyboard/focus behavior works across changed desktop surfaces.
-- [x] No copy implies live threat monitoring or comprehensive infrastructure coverage.
+- [x] No copy implies live threat monitoring or comprehensive infrastructure coverage. Fixed logistics routes are labeled as demo; unsourced regional impact scores are disabled rather than presented as current.
 - [x] Full tests, typecheck, build, diff check, and desktop smoke pass.
 - [x] Mobile redesign remains explicitly deferred and is not claimed complete.
 - [x] Deferred mobile keeps a non-empty legacy/theme-wide point model on the bare rice URL.

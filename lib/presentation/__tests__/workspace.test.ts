@@ -242,7 +242,7 @@ describe("live logistics layer availability", () => {
     expect(workspace.defaultLayerId).toBe("logistics-domestic");
   });
 
-  test("requires resolved domestic routes, vessels, and impact items for their configured modes", () => {
+  test("requires typed renderable inputs and never treats demo items as impact metrics", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "logistics");
     const live = buildLiveLogisticsView(
@@ -254,7 +254,16 @@ describe("live logistics layer availability", () => {
     expect(live).not.toBeNull();
 
     const seededWorkspace = buildWorkspacePresentation(graph, view, live);
-    expect(seededWorkspace.layers.map((layer) => layer.available)).toEqual([true, false, true]);
+    expect(seededWorkspace.layers.map((layer) => layer.available)).toEqual([true, false, false]);
+    expect(seededWorkspace.layers[0]).toMatchObject({
+      periodLabel: "固定デモデータ",
+      sourceIds: []
+    });
+    expect(seededWorkspace.layers[2]).toMatchObject({
+      available: false,
+      periodLabel: "指標データ未提供",
+      sourceIds: []
+    });
 
     const vesselWorkspace = buildWorkspacePresentation(graph, view, {
       ...live!,
@@ -307,7 +316,12 @@ describe("workspace selection and comparison models", () => {
     const observationId = "observation:rice-price-signal-2026";
     const observation = buildSelectionInspector(graph, observationId, getDetailView(graph, observationId));
     const prefectureId = "prefecture:niigata";
-    const prefecture = buildSelectionInspector(graph, prefectureId, getDetailView(graph, prefectureId));
+    const prefecture = buildSelectionInspector(
+      graph,
+      prefectureId,
+      getDetailView(graph, prefectureId),
+      getLayerDefinition("rice", "rice-harvest")
+    );
     const countryId = "country:japan";
     const country = buildSelectionInspector(graph, countryId, getDetailView(graph, countryId));
 
@@ -321,6 +335,26 @@ describe("workspace selection and comparison models", () => {
       periodLabel: "令和5年産"
     });
     expect(country.primaryMetric).toBeNull();
+  });
+
+  test("shows rice harvest only in the explicit rice-harvest layer context", () => {
+    const graph = loadSeedGraph();
+    const id = "prefecture:niigata";
+    const detail = getDetailView(graph, id);
+
+    expect(
+      buildSelectionInspector(graph, id, detail, getLayerDefinition("rice", "rice-harvest"))
+        .primaryMetric
+    ).toMatchObject({ unitLabel: "トン", periodLabel: "令和5年産" });
+    expect(
+      buildSelectionInspector(graph, id, detail, getLayerDefinition("logistics", "logistics-domestic"))
+        .primaryMetric
+    ).toBeNull();
+    expect(
+      buildSelectionInspector(graph, id, detail, getLayerDefinition("rice", "rice-price"))
+        .primaryMetric
+    ).toBeNull();
+    expect(buildSelectionInspector(graph, id, detail).primaryMetric).toBeNull();
   });
 
   test("builds the complete numeric R5 prefecture series", () => {

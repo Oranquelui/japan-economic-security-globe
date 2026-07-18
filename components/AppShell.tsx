@@ -220,7 +220,7 @@ export function AppShell({
     ? buildLiveLogisticsDetail(graph, liveLogisticsDetailItem)
     : getDetailView(graph, activeId);
   const evidenceGraph = buildEvidenceGraph(graph, themeId);
-  const selectionInspector = buildSelectionInspector(graph, activeId, detail);
+  const selectionInspector = buildSelectionInspector(graph, activeId, detail, activeLayer);
   const routeStatus = getRouteStatus(detail);
   const legacyMapModel = buildJapanMapCanvasModel(graph, view, activeId, null, liveLogistics);
   const semanticDesktopMapModel = buildJapanMapCanvasModel(
