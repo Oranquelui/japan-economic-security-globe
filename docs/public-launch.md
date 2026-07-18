@@ -6,6 +6,10 @@ Japan Resilience Map v0.5.0 is available at:
 
 https://economic-security.quadrillionaaa.com/
 
+Desktop map workspace with one fixed context pane, one active-layer reading block,
+one theme/layer control path, one selected-object inspector, and intentional
+Signals/comparison views. Mobile redesign remains deferred.
+
 The default view now starts with official e-Stat rice-harvest data by prefecture. The desktop product is organized as a map-dominant workspace: scope, period, unit, source, and semantic layers on the left; the map in the center; and one evidence-backed inspector on selection. Signals and the 47-prefecture comparison open only when requested.
 
 Repository:

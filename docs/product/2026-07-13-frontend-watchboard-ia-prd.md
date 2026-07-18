@@ -389,3 +389,22 @@ The checked no-live-overclaim criterion means the delivered UI does not present 
 Fresh remediation verification passed `npm test` (72 files / 331 tests), `npm run typecheck`, `npm run build`, and `git diff --check`.
 
 Independent re-review approved remediation head `e731ff7` with no blocking findings. Direct `v0.5.0` distribution to `main` is authorized; deployment remains subject to the repository CI and live-site verification gates. Broader external-data coverage and provenance expansion remain separate data work, not a blocker for this UI delivery. Mobile redesign remains explicitly deferred and is not complete; only the existing stacked-tree smoke boundary passed.
+
+## 20. Verified desktop simplification delivery (2026-07-18)
+
+This section records the later desktop simplification without rewriting the historical P0–P3 account above. Work ran on `codex/power-atlas-desktop-reframe` from baseline `dd4aec8`; the reviewed design and execution plan are commits `5ea1bbc` and `e709f8d`. The implementation range before this documentation update is `bfd56ca` through `baa9b6b` (inclusive).
+
+The delivered desktop shell removes the duplicate selected-object strip, numbered theme rail, and permanent global desktop source strip. It replaces those surfaces with one native theme select, one-column semantic layers, one active-layer reading block, and one selected-object inspector. Every registry layer has authored map-encoding copy. Active-source presentation handles zero, one, or multiple sources, missing URLs, official labels, and unknown freshness without inventing provenance or recency.
+
+Fresh automated verification passed `npm test` (72 files / 359 tests), `npm run typecheck`, `npm run build`, and `git diff --check`. The build emitted only the existing multiple-lockfile warning. Browser acceptance passed at 1280×800, 1440×900, and 1680×900; with the inspector open at 1280 pixels, the verified split was 320-pixel context pane + 600-pixel map + 360-pixel inspector. Stacked-tree non-regression smoke passed at 1024×768 and 390×844. This was smoke coverage only: Mobile redesign remains deferred.
+
+The browser flow preserved `theme=`, `layer=`, `mode=`, `selected=`, and `view=` state. Energy → Rice reset behavior, Niigata inspector open/close, Signals, comparison, Escape, and focus restoration all passed. Application-origin console warnings/errors were zero. Seven identical asynchronous message-channel errors came from a Chrome extension, not the application, and are recorded rather than presented as a clean all-origin console.
+
+Acceptance screenshots (all 1440×900):
+
+- [Default rice workspace](../assets/power-atlas-desktop-rice-default.png)
+- [Niigata inspector](../assets/power-atlas-desktop-rice-niigata.png)
+- [Signals view](../assets/power-atlas-desktop-signals.png)
+- [Comparison view](../assets/power-atlas-desktop-comparison.png)
+
+Truthfulness boundaries remain unchanged and explicit: bundled logistics routes are `固定デモデータ`, representative map points are not precise polygons, unavailable verification time stays `確認時点不明` / `確認日不明`, and a regional logistics-impact layer is not enabled without typed values, units, periods, and sources. Task 8 public `main` deployment, live-site verification, tag, and GitHub Release operations remain pending at this documentation checkpoint.

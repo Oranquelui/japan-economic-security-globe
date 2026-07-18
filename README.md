@@ -26,7 +26,9 @@ The default view starts with `Rice` and the official e-Stat prefecture harvest l
 
 ## Current Version
 
-`v0.5.0` reframes the desktop product as a map-dominant workspace. The left pane owns scope, period, unit, source, and semantic-layer selection; the center remains the map; the right inspector opens only for the current selection. Signals and comparison are intentional secondary views, legacy URLs remain compatible, and the existing mobile composition is preserved without claiming a mobile redesign. Bundled logistics routes are labeled as fixed demo data, and the regional logistics-impact layer remains disabled until typed, sourced metrics exist.
+`v0.5.0`: Desktop map workspace with one fixed context pane, one active-layer reading block, one theme/layer control path, one selected-object inspector, and intentional Signals/comparison views. Mobile redesign remains deferred.
+
+The active-layer block keeps scope, period, unit, map encoding, missing-data treatment, and active sources together. Legacy URLs remain compatible. Bundled logistics routes are labeled as fixed demo data, and the regional logistics-impact layer remains disabled until typed, sourced metrics exist.
 
 `v0.4.0` introduces the `Regional Security` theme and the source-adapter foundation for public-data layers. The initial slice covers North Korea missile-test history, representative launch/impact/route context, and public aggregate placeholders for neighboring air and maritime activity. It is deliberately historical, public, delayed, and aggregate; it does not claim live warning, operational tracking, targeting, or complete threat coverage.
 

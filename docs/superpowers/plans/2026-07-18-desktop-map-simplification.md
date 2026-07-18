@@ -77,7 +77,7 @@ Hard boundaries:
 - Modify: `lib/presentation/workspace.ts:1-370,365-715`
 - Modify: `lib/presentation/__tests__/workspace.test.ts:1-372`
 
-- [ ] **Step 1: Add failing type and registry tests**
+- [x] **Step 1: Add failing type and registry tests**
 
 Import `buildActiveLayerSummary`. Extend the registry test so every layer has authored map copy:
 
@@ -103,7 +103,7 @@ expect(getLayerDefinition("logistics", "logistics-domestic")?.mapEncodingDescrip
 );
 ```
 
-- [ ] **Step 2: Add failing table-driven primary-metric tests**
+- [x] **Step 2: Add failing table-driven primary-metric tests**
 
 Use `buildActiveLayerSummary(graph, view, activeLayer, workspace.scope, live?)` and add these cases:
 
@@ -131,7 +131,7 @@ test.each([
 
 Clone the seed, delete one prefecture's rice value, and assert `primaryMetric` is `null`, coverage is `46/47件`, and no unit-bearing national total survives. Assert water coverage is expressed as numeric/eligible water sources without a sum or average.
 
-- [ ] **Step 3: Add failing source-resolution tests**
+- [x] **Step 3: Add failing source-resolution tests**
 
 Cover zero, one, and multiple sources in registry order:
 
@@ -148,7 +148,7 @@ expect(logisticsDomestic.sourceFallbackLabel).toBe("固定デモデータ");
 
 Create a cloned view with an unresolved non-demo `sourceId` and assert `sourceFallbackLabel` is `出典情報なし` with no fabricated source.
 
-- [ ] **Step 4: Run the tests and verify RED**
+- [x] **Step 4: Run the tests and verify RED**
 
 Run:
 
@@ -158,7 +158,7 @@ npm test -- lib/presentation/__tests__/workspace.test.ts
 
 Expected: FAIL because `ActiveLayerSummary`, `buildActiveLayerSummary`, and `mapEncodingDescription` do not exist.
 
-- [ ] **Step 5: Add the presentation contracts**
+- [x] **Step 5: Add the presentation contracts**
 
 Add to `types/presentation.ts`:
 
@@ -178,7 +178,7 @@ export interface ActiveLayerSummary {
 
 Add `mapEncodingDescription: string` to `LayerDefinition`.
 
-- [ ] **Step 6: Author map-encoding copy for every registry layer**
+- [x] **Step 6: Author map-encoding copy for every registry layer**
 
 Use exact content-boundary language. At minimum the registry text must implement this mapping:
 
@@ -196,7 +196,7 @@ Use exact content-boundary language. At minimum the registry text must implement
 
 Do not derive this copy from `renderMode` alone.
 
-- [ ] **Step 7: Implement the minimal summary builder**
+- [x] **Step 7: Implement the minimal summary builder**
 
 Implement and export:
 
@@ -222,7 +222,7 @@ Rules:
 8. Empty resolved sources use `固定デモデータ` only for the fixed domestic logistics layer, otherwise `出典情報なし`.
 9. Keep the optional `liveLogistics` input required by the approved design contract, but never use it to manufacture a number; live-logistics content always has `primaryMetric: null` and reuses the existing scope coverage.
 
-- [ ] **Step 8: Run focused and presentation tests GREEN**
+- [x] **Step 8: Run focused and presentation tests GREEN**
 
 Run:
 
@@ -233,7 +233,7 @@ npm run typecheck
 
 Expected: all selected tests pass; typecheck exits 0.
 
-- [ ] **Step 9: Commit Task 1**
+- [x] **Step 9: Commit Task 1**
 
 ```bash
 git add types/presentation.ts lib/presentation/workspace.ts lib/presentation/__tests__/workspace.test.ts
@@ -250,7 +250,7 @@ git commit -m "feat: add active layer summary contract"
 - Modify: `components/MapLegend.tsx:1-110`
 - Modify: `components/__tests__/map-legend.test.tsx`
 
-- [ ] **Step 1: Write failing summary-panel tests**
+- [x] **Step 1: Write failing summary-panel tests**
 
 Build summaries through the real presentation builder. Test:
 
@@ -264,7 +264,7 @@ Build summaries through the real presentation builder. Test:
 
 Use `vi.useFakeTimers()` / `vi.setSystemTime(new Date("2026-07-18T00:00:00Z"))` only for a test that asserts relative freshness; restore real timers after the test.
 
-- [ ] **Step 2: Run component tests and verify RED**
+- [x] **Step 2: Run component tests and verify RED**
 
 ```bash
 npm test -- components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/map-legend.test.tsx
@@ -272,7 +272,7 @@ npm test -- components/__tests__/active-layer-summary-panel.test.tsx components/
 
 Expected: FAIL because the new component and updated legend contract do not exist.
 
-- [ ] **Step 3: Make `MapLegend` presentation-only**
+- [x] **Step 3: Make `MapLegend` presentation-only**
 
 Change its props to:
 
@@ -286,7 +286,7 @@ interface MapLegendProps {
 
 Keep continuous/categorical swatches and missing-data treatment. Render `mapEncodingDescription` immediately after the swatches under a visible `地図の読み方` label. Remove source filtering and period/source props from this component.
 
-- [ ] **Step 4: Implement `ActiveLayerSummaryPanel`**
+- [x] **Step 4: Implement `ActiveLayerSummaryPanel`**
 
 Props:
 
@@ -316,7 +316,7 @@ For each `summary.sources` item:
 - otherwise use plain text;
 - show freshness per source and never aggregate authority or freshness.
 
-- [ ] **Step 5: Run focused tests GREEN**
+- [x] **Step 5: Run focused tests GREEN**
 
 ```bash
 npm test -- components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/map-legend.test.tsx components/__tests__/evidence-panel-structure.test.tsx lib/official/__tests__/source-status.test.ts
@@ -325,7 +325,7 @@ npm run typecheck
 
 Expected: all selected tests pass; existing evidence/freshness behavior remains green.
 
-- [ ] **Step 6: Commit Task 2**
+- [x] **Step 6: Commit Task 2**
 
 ```bash
 git add components/ActiveLayerSummaryPanel.tsx components/MapLegend.tsx components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/map-legend.test.tsx
@@ -342,7 +342,7 @@ git commit -m "feat: show active layer scope and provenance"
 - Modify: `components/__tests__/scope-context-panel.test.tsx:1-164`
 - Modify: `components/__tests__/semantic-layer-deck.test.tsx:1-96`
 
-- [ ] **Step 1: Rewrite the context-panel test to the approved contract**
+- [x] **Step 1: Rewrite the context-panel test to the approved contract**
 
 New props:
 
@@ -374,11 +374,11 @@ expect(screen.queryByText("35,056")).toBeNull(); // harvest must not mix price
 
 Use `userEvent.selectOptions(themeSelect, "energy")` and assert `onThemeChange("energy")` exactly once.
 
-- [ ] **Step 2: Add the failing one-column layer assertion**
+- [x] **Step 2: Add the failing one-column layer assertion**
 
 Change the existing expectation from `grid-cols-2` to `grid-cols-1`. Preserve tests for pressed state, disabled `データなし`, Arrow-key skipping, Enter, and Space activation.
 
-- [ ] **Step 3: Run tests and verify RED**
+- [x] **Step 3: Run tests and verify RED**
 
 ```bash
 npm test -- components/__tests__/scope-context-panel.test.tsx components/__tests__/semantic-layer-deck.test.tsx
@@ -386,7 +386,7 @@ npm test -- components/__tests__/scope-context-panel.test.tsx components/__tests
 
 Expected: FAIL on the missing native theme select/new summary props and old two-column class.
 
-- [ ] **Step 4: Implement the native theme select**
+- [x] **Step 4: Implement the native theme select**
 
 At the top of `ScopeContextPanel`:
 
@@ -410,15 +410,15 @@ At the top of `ScopeContextPanel`:
 
 Use the supplied `themeIds` order so the existing ranking decision still controls option order. Do not add a custom dropdown, command palette, or duplicate theme buttons.
 
-- [ ] **Step 5: Replace fragmented scope cards with the summary component**
+- [x] **Step 5: Replace fragmented scope cards with the summary component**
 
 Remove `SummaryCard` and the four-card `対象範囲の要約`. Render `ActiveLayerSummaryPanel` once for the resolved active layer, then the layer deck, then secondary actions. If every layer is unavailable, omit the active summary and keep all layer buttons disabled plus comparison unavailable.
 
-- [ ] **Step 6: Compact the layer list without changing behavior**
+- [x] **Step 6: Compact the layer list without changing behavior**
 
 Change the layer group to `grid grid-cols-1 gap-1.5`. Keep one short description, active border/background, `データなし`, roving focus, and no MapLibre render-mode copy.
 
-- [ ] **Step 7: Run focused tests GREEN**
+- [x] **Step 7: Run focused tests GREEN**
 
 ```bash
 npm test -- components/__tests__/scope-context-panel.test.tsx components/__tests__/semantic-layer-deck.test.tsx components/__tests__/active-layer-summary-panel.test.tsx
@@ -427,7 +427,7 @@ npm run typecheck
 
 Expected: all selected tests pass; typecheck exits 0.
 
-- [ ] **Step 8: Commit Task 3**
+- [x] **Step 8: Commit Task 3**
 
 ```bash
 git add components/ScopeContextPanel.tsx components/SemanticLayerDeck.tsx components/__tests__/scope-context-panel.test.tsx components/__tests__/semantic-layer-deck.test.tsx
@@ -449,7 +449,7 @@ git commit -m "feat: consolidate desktop theme and layer controls"
 - Modify: `components/__tests__/app-shell-evidence-wiring.test.tsx:1-165`
 - Modify: `components/__tests__/operations-accessibility.test.tsx`
 
-- [ ] **Step 1: Write the failing compact-header tests**
+- [x] **Step 1: Write the failing compact-header tests**
 
 Replace selected-row assertions with:
 
@@ -470,7 +470,7 @@ expect(within(header).queryByText("選択中")).toBeNull();
 expect(within(header).queryByRole("button", { name: "フィルター解除" })).toBeNull();
 ```
 
-- [ ] **Step 2: Write failing shell structure and geometry tests**
+- [x] **Step 2: Write failing shell structure and geometry tests**
 
 Update the default shell test:
 
@@ -496,7 +496,7 @@ Delete the tests for closing/reopening the command pane; the fixed pane no longe
 
 In `operations-accessibility.test.tsx`, remove the direct `NavigationRail` import and replace the rail-only pressed-state test with a real `ScopeContextPanel` assertion for the labelled native select and its selected option. In `app-shell-url-state.test.tsx`, remove the `NavigationRail` mock before the production component is deleted.
 
-- [ ] **Step 3: Rewrite theme-change integration tests around the native select**
+- [x] **Step 3: Rewrite theme-change integration tests around the native select**
 
 Replace mocked rail clicks with:
 
@@ -515,7 +515,7 @@ Add one state-reset test starting with a selection, Signals query, comparison or
 
 Add a failing inspector focus-restoration test. Open the inspector from a still-mounted mocked map selection button, close it with `詳細を閉じる`, and assert focus returns to that exact button. Repeat the close with Escape. For selection from Signals or comparison, assert the logical fallback is the corresponding still-mounted `data-secondary-action` trigger because the selected row is unmounted when the view returns to the map.
 
-- [ ] **Step 4: Run shell tests and verify RED**
+- [x] **Step 4: Run shell tests and verify RED**
 
 ```bash
 npm test -- components/__tests__/action-bar-selected-row.test.tsx components/__tests__/navigation-shell.test.tsx components/__tests__/app-shell-url-state.test.tsx components/__tests__/app-shell-evidence-wiring.test.tsx components/__tests__/operations-accessibility.test.tsx
@@ -523,7 +523,7 @@ npm test -- components/__tests__/action-bar-selected-row.test.tsx components/__t
 
 Expected: FAIL against the old selected header, rail, three-row desktop grid, and 72-pixel inset.
 
-- [ ] **Step 5: Implement the compact ActionBar**
+- [x] **Step 5: Implement the compact ActionBar**
 
 Replace the prop contract with:
 
@@ -537,7 +537,7 @@ interface ActionBarProps {
 
 Keep product identity and menu/share. Remove selected kind/label/status, selected scroll/fade, filter reset, and theme chip duplication. Render the current-view trail as non-interactive text.
 
-- [ ] **Step 6: Integrate `ActiveLayerSummary` in AppShell**
+- [x] **Step 6: Integrate `ActiveLayerSummary` in AppShell**
 
 After resolving `activeLayer`, build:
 
@@ -554,7 +554,7 @@ const currentViewLabel = [themeLabel, activeLayer.label, activeLayer.periodLabel
 
 Pass the summary, current theme, ordered theme IDs, and `handleThemeChange` to `ScopeContextPanel`. Pass `currentViewLabel` to `ActionBar`.
 
-- [ ] **Step 7: Remove the rail and closeable-pane state**
+- [x] **Step 7: Remove the rail and closeable-pane state**
 
 Remove:
 
@@ -585,7 +585,7 @@ The required deletion sequence is:
 3. delete those two files;
 4. rerun `rg -n "NavigationRail" components app` and expect no matches before typecheck.
 
-- [ ] **Step 8: Implement inspector focus restoration**
+- [x] **Step 8: Implement inspector focus restoration**
 
 Add an `inspectorReturnFocusRef` for the last connected invoking element and an origin fallback for `signals` or `comparison`. Capture `document.activeElement` before opening the inspector from map, Signals, comparison, or other desktop controls. Route the close button and Escape through one `handleCloseInspector` that closes the inspector and schedules focus in this order:
 
@@ -595,7 +595,7 @@ Add an `inspectorReturnFocusRef` for the last connected invoking element and an 
 
 Do not clear the selected object or change theme/layer state when only the inspector is closed. Add the minimal `data-layer-id` hook to the active layer button only if the deterministic fallback cannot be selected accessibly without it.
 
-- [ ] **Step 9: Make the source strip stacked/mobile-only**
+- [x] **Step 9: Make the source strip stacked/mobile-only**
 
 Keep `SourceStatusBar` and its summary logic, but wrap its AppShell placement:
 
@@ -607,7 +607,7 @@ Keep `SourceStatusBar` and its summary logic, but wrap its AppShell placement:
 
 Change desktop main grid rows to `xl:grid-rows-[56px,minmax(0,1fr)]`. Do not change `SourceStatusBar` content or stacked/mobile behavior.
 
-- [ ] **Step 10: Run focused shell tests GREEN**
+- [x] **Step 10: Run focused shell tests GREEN**
 
 ```bash
 npm test -- components/__tests__/action-bar-selected-row.test.tsx components/__tests__/navigation-shell.test.tsx components/__tests__/app-shell-url-state.test.tsx components/__tests__/app-shell-evidence-wiring.test.tsx components/__tests__/operations-accessibility.test.tsx components/__tests__/source-status-bar.test.tsx
@@ -616,7 +616,7 @@ npm run typecheck
 
 Expected: all selected tests pass; exactly one desktop theme control; no rail or selected header duplication; preserved inspector and URLs.
 
-- [ ] **Step 11: Commit Task 4**
+- [x] **Step 11: Commit Task 4**
 
 ```bash
 git add components/ActionBar.tsx components/AppShell.tsx components/NavigationRail.tsx components/__tests__/action-bar-selected-row.test.tsx components/__tests__/navigation-shell.test.tsx components/__tests__/navigation-rail.test.tsx components/__tests__/app-shell-url-state.test.tsx components/__tests__/app-shell-evidence-wiring.test.tsx components/__tests__/operations-accessibility.test.tsx
@@ -634,7 +634,7 @@ git commit -m "feat: simplify desktop map shell"
 - Modify: `components/__tests__/app-shell-url-state.test.tsx`
 - Modify as required by the approved behavior only: `components/AppShell.tsx`, `components/ScopeContextPanel.tsx`, `components/ActiveLayerSummaryPanel.tsx`
 
-- [ ] **Step 1: Change the notice expectation first**
+- [x] **Step 1: Change the notice expectation first**
 
 ```ts
 expect(
@@ -643,7 +643,7 @@ expect(
 expect(screen.queryByText("更新: 国内物流監視と地形地図を追加しました")).toBeNull();
 ```
 
-- [ ] **Step 2: Run the notice test and verify RED**
+- [x] **Step 2: Run the notice test and verify RED**
 
 ```bash
 npm test -- components/__tests__/initial-notice-modal.test.tsx
@@ -651,7 +651,7 @@ npm test -- components/__tests__/initial-notice-modal.test.tsx
 
 Expected: FAIL because the old logistics/terrain sentence still renders.
 
-- [ ] **Step 3: Make the one-line notice change and verify GREEN**
+- [x] **Step 3: Make the one-line notice change and verify GREEN**
 
 Replace only the release sentence. Preserve the existing storage key, non-blocking region role, Escape dismissal, close button, and localStorage behavior.
 
@@ -661,7 +661,7 @@ npm test -- components/__tests__/initial-notice-modal.test.tsx
 
 Expected: all notice tests pass.
 
-- [ ] **Step 4: Add accessibility and responsive contract assertions**
+- [x] **Step 4: Add accessibility and responsive contract assertions**
 
 Cover:
 
@@ -676,7 +676,7 @@ Cover:
 - `layout-stacked-workspace` remains `xl:hidden` and contains its existing map controls/table/evidence path;
 - desktop-only simplification does not remove the stacked SourceStatusBar or legacy point map.
 
-- [ ] **Step 5: Run the changed-component regression set**
+- [x] **Step 5: Run the changed-component regression set**
 
 ```bash
 npm test -- components/__tests__/initial-notice-modal.test.tsx components/__tests__/operations-accessibility.test.tsx components/__tests__/app-shell-url-state.test.tsx components/__tests__/app-shell-evidence-wiring.test.tsx components/__tests__/scope-context-panel.test.tsx components/__tests__/semantic-layer-deck.test.tsx components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/map-legend.test.tsx
@@ -686,7 +686,7 @@ git diff --check
 
 Expected: all selected tests pass, typecheck passes, diff check is clean.
 
-- [ ] **Step 6: Commit Task 5**
+- [x] **Step 6: Commit Task 5**
 
 ```bash
 git add components/InitialNoticeModal.tsx components/AppShell.tsx components/ScopeContextPanel.tsx components/ActiveLayerSummaryPanel.tsx components/__tests__
@@ -704,7 +704,7 @@ git commit -m "test: lock simplified desktop interactions"
 - Replace: `docs/assets/power-atlas-desktop-comparison.png`
 - Modify production files only if a browser-discovered regression is first reproduced by a failing test and routed back through the responsible task/review loop
 
-- [ ] **Step 1: Run full automated verification before visual review**
+- [x] **Step 1: Run full automated verification before visual review**
 
 ```bash
 npm test
@@ -715,7 +715,7 @@ git diff --check
 
 Expected: all test files/tests pass, typecheck exits 0, production build exits 0, diff check is clean. Record the actual counts; do not reuse the former 72/331 count if it changed.
 
-- [ ] **Step 2: Start an isolated local server**
+- [x] **Step 2: Start an isolated local server**
 
 ```bash
 lsof -nP -iTCP:3100 -sTCP:LISTEN
@@ -724,7 +724,7 @@ npm run dev -- --hostname 127.0.0.1 --port 3100
 
 If port 3100 is occupied, identify the owner before choosing another port. Do not stop an unrelated process. Keep the server session ID for cleanup.
 
-- [ ] **Step 3: Verify desktop at three widths using the Browser skill**
+- [x] **Step 3: Verify desktop at three widths using the Browser skill**
 
 Open `http://127.0.0.1:3100/?theme=rice&layer=rice-harvest` and verify at 1280x800, 1440x900, and 1680x900:
 
@@ -738,7 +738,7 @@ Map: largest surface; controls usable; no permanent Signals/comparison/inspector
 
 At 1280 with inspector open, confirm context 320 + inspector 360 leaves 600 pixels for the map and controls remain reachable.
 
-- [ ] **Step 4: Verify interactions and capture 1440x900 evidence**
+- [x] **Step 4: Verify interactions and capture 1440x900 evidence**
 
 Capture the four exact files:
 
@@ -749,7 +749,7 @@ Capture the four exact files:
 
 Also switch the native theme select to Energy and back to Rice. Confirm default layers, URL state, inspector closure, query reset, focus retention, and absence of stale `mode=`. Exercise Escape and close/focus restoration for Signals, comparison, and inspector. Check browser console errors/warnings.
 
-- [ ] **Step 5: Perform stacked/mobile non-regression smoke only**
+- [x] **Step 5: Perform stacked/mobile non-regression smoke only**
 
 At 1024x768 and 390x844 confirm:
 
@@ -762,11 +762,11 @@ At 1024x768 and 390x844 confirm:
 
 Do not change or approve Mobile design.
 
-- [ ] **Step 6: Stop the local server and reset browser state**
+- [x] **Step 6: Stop the local server and reset browser state**
 
 Stop only the server session started in Step 2. Reset temporary viewport emulation and finalize browser tabs according to the Browser skill.
 
-- [ ] **Step 7: Re-run full verification after screenshots**
+- [x] **Step 7: Re-run full verification after screenshots**
 
 ```bash
 npm test
@@ -778,7 +778,7 @@ git status --short
 
 Expected: all checks pass; status contains only the four intended screenshot replacements. If production code changed during visual review, return to the relevant failing-test task and re-run both review gates before continuing.
 
-- [ ] **Step 8: Commit visual evidence**
+- [x] **Step 8: Commit visual evidence**
 
 ```bash
 git add docs/assets/power-atlas-desktop-rice-default.png docs/assets/power-atlas-desktop-rice-niigata.png docs/assets/power-atlas-desktop-signals.png docs/assets/power-atlas-desktop-comparison.png
@@ -797,7 +797,7 @@ git commit -m "test: refresh desktop simplification evidence"
 - Modify: `README.md`
 - Modify: `README.ja.md`
 
-- [ ] **Step 1: Record only fresh verified facts**
+- [x] **Step 1: Record only fresh verified facts**
 
 Append a new dated delivery section rather than rewriting the historical P0-P3 record. Record:
 
@@ -809,7 +809,7 @@ Append a new dated delivery section rather than rewriting the historical P0-P3 r
 - fixed-demo and unknown-freshness boundaries;
 - Mobile redesign deferred and smoke-only.
 
-- [ ] **Step 2: Update public release descriptions**
+- [x] **Step 2: Update public release descriptions**
 
 README and launch copy must describe `v0.5.0` as:
 
@@ -821,11 +821,11 @@ Signals/comparison views. Mobile redesign remains deferred.
 
 Keep the new screenshots at the existing paths. Do not claim precise polygons, live threat monitoring, comprehensive infrastructure coverage, or current official logistics impact.
 
-- [ ] **Step 3: Mark this plan from evidence**
+- [x] **Step 3: Mark this plan from evidence**
 
 Check only completed steps and add actual verification results. Do not mark Task 8 release operations complete before public deployment/tag/release evidence exists.
 
-- [ ] **Step 4: Verify the documentation diff**
+- [x] **Step 4: Verify the documentation diff**
 
 ```bash
 rg -n "v0.5.0|Mobile|固定デモデータ|代表点|theme=|layer=|view=" README.md README.ja.md docs/public-launch.md docs/product/2026-07-13-frontend-watchboard-ia-prd.md docs/product/2026-07-13-estat-spine-handoff-prd.md docs/superpowers/plans/2026-07-18-desktop-map-simplification.md
@@ -836,7 +836,7 @@ git diff --name-only | sort
 
 Expected: the plan is already tracked from the execution-prerequisite commit, and the sorted diff lists exactly the six authorized Markdown files. No `handoff.md` or release-note file exists.
 
-- [ ] **Step 5: Commit Task 7**
+- [x] **Step 5: Commit Task 7**
 
 ```bash
 git add README.md README.ja.md docs/public-launch.md docs/product/2026-07-13-frontend-watchboard-ia-prd.md docs/product/2026-07-13-estat-spine-handoff-prd.md
@@ -844,6 +844,17 @@ git add -f docs/superpowers/plans/2026-07-18-desktop-map-simplification.md
 git diff --cached --check
 git commit -m "docs: record simplified desktop release"
 ```
+
+### Task 7 documentation checkpoint (2026-07-18)
+
+- Branch: `codex/power-atlas-desktop-reframe`; baseline: `dd4aec8`; implementation: `bfd56ca` through `baa9b6b` (inclusive) before this documentation commit.
+- Automated verification: `npm test` passed 72 files / 359 tests; typecheck, production build, and diff check passed. The build retained only the known multiple-lockfile warning.
+- Desktop Browser acceptance: 1280×800, 1440×900, and 1680×900; the 1280-pixel inspector layout verified 320 + 600 + 360 pixels for context, map, and inspector.
+- Stacked-tree smoke only: 1024×768 and 390×844. Mobile redesign remains deferred.
+- Browser console: zero application-origin warnings/errors; seven identical Chrome-extension-origin asynchronous message-channel errors were observed.
+- Interaction coverage: `theme=`, `layer=`, `mode=`, `selected=`, and `view=` compatibility; Energy → Rice reset; Niigata inspector; Signals; comparison; Escape; and focus restoration all passed.
+- Evidence: `docs/assets/power-atlas-desktop-rice-default.png`, `docs/assets/power-atlas-desktop-rice-niigata.png`, `docs/assets/power-atlas-desktop-signals.png`, and `docs/assets/power-atlas-desktop-comparison.png` at 1440×900.
+- Public `main` deployment, CI/live-site verification, annotated tag, and GitHub Release remain unchecked Task 8 operations.
 
 ## Task 8: Final review, distribution, deployment, and `v0.5.0` release
 
@@ -970,25 +981,25 @@ Expected: public main, reviewed feature branch, and `v0.5.0` tag resolve to the 
 
 ## Final acceptance checklist
 
-- [ ] Desktop header contains identity, current-view trail, and menu only.
-- [ ] Desktop has exactly one theme control and no numbered theme rail.
-- [ ] Fixed 320-pixel context pane begins with one native theme select followed by one active-layer summary.
-- [ ] Rice harvest shows `6,610,315 トン`, `47都道府県`, `令和5年産`, missing-data treatment, representative-point disclosure, and direct official e-Stat source.
-- [ ] Rice harvest does not show the rice-price signal as a second headline.
-- [ ] No unapproved sum or average is created for reservoir percentages, multiple observations, flows, entities, or demo data.
-- [ ] Zero/one/multiple sources, missing URLs, official labels, and unknown freshness render per source without fabrication.
-- [ ] Layer list is one column and preserves roving focus, disabled state, Enter, and Space behavior.
-- [ ] Map remains the largest surface at all three desktop widths and retains 600 pixels at 1280 with inspector open.
-- [ ] Selecting Niigata opens exactly one inspector with `514,100 トン`, period, source, and why-it-matters.
-- [ ] Signals and comparison remain intentional secondary views with Escape/close/focus restoration.
-- [ ] `theme=`, `mode=`, `selected=`, `layer=`, and `view=` compatibility remains green.
-- [ ] Initial notice says `v0.5.0` and remains non-blocking/dismissible.
-- [ ] Desktop has no permanent global source strip; stacked/mobile retains its existing strip and behavior.
-- [ ] No live, comprehensive, precise-polygon, or official-demo overclaim appears.
-- [ ] Full tests, typecheck, build, diff check, desktop browser acceptance, stacked/mobile smoke, and console check pass.
+- [x] Desktop header contains identity, current-view trail, and menu only.
+- [x] Desktop has exactly one theme control and no numbered theme rail.
+- [x] Fixed 320-pixel context pane begins with one native theme select followed by one active-layer summary.
+- [x] Rice harvest shows `6,610,315 トン`, `47都道府県`, `令和5年産`, missing-data treatment, representative-point disclosure, and direct official e-Stat source.
+- [x] Rice harvest does not show the rice-price signal as a second headline.
+- [x] No unapproved sum or average is created for reservoir percentages, multiple observations, flows, entities, or demo data.
+- [x] Zero/one/multiple sources, missing URLs, official labels, and unknown freshness render per source without fabrication.
+- [x] Layer list is one column and preserves roving focus, disabled state, Enter, and Space behavior.
+- [x] Map remains the largest surface at all three desktop widths and retains 600 pixels at 1280 with inspector open.
+- [x] Selecting Niigata opens exactly one inspector with `514,100 トン`, period, source, and why-it-matters.
+- [x] Signals and comparison remain intentional secondary views with Escape/close/focus restoration.
+- [x] `theme=`, `mode=`, `selected=`, `layer=`, and `view=` compatibility remains green.
+- [x] Initial notice says `v0.5.0` and remains non-blocking/dismissible.
+- [x] Desktop has no permanent global source strip; stacked/mobile retains its existing strip and behavior.
+- [x] No live, comprehensive, precise-polygon, or official-demo overclaim appears.
+- [x] Full tests, typecheck, build, diff check, desktop browser acceptance, stacked/mobile smoke, and console check pass.
 - [ ] Public `main` deploy passes CI and live smoke before tag/Release creation.
 - [ ] `v0.5.0` tag and published GitHub Release point to the verified deployment commit.
-- [ ] Mobile redesign remains explicitly deferred and is not claimed complete.
+- [x] Mobile redesign remains explicitly deferred and is not claimed complete.
 
 ## Stop conditions
 

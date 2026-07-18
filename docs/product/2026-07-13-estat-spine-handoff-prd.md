@@ -408,3 +408,20 @@ At pre-documentation head `c6a06cf487a8e0a26acbce114c920f58f9d15979`, fresh Task
 ### Handoff file policy
 
 Do **not** create a new generic `handoff.md`. This file remains the e-Stat/product-state handoff, while the frontend IA PRD above remains the canonical source for the Power Atlas-style UI decision.
+
+### Desktop simplification delivery record (2026-07-18)
+
+The later desktop simplification is implemented on `codex/power-atlas-desktop-reframe` from baseline `dd4aec8`. Design commit `5ea1bbc` and plan commit `e709f8d` govern the work; the implementation range before this documentation update is `bfd56ca` through `baa9b6b` (inclusive). This record supplements the earlier P0–P3 history and does not reopen or rewrite it.
+
+The desktop selected-object strip, numbered theme rail, and permanent global source strip were removed. The current shell has one native theme select, a one-column semantic-layer list, an active-layer reading block, and one selected-object inspector. Layer-specific map-encoding explanations are authored rather than inferred. Active-source rules remain truthful for zero, one, or multiple sources, missing URLs, official labels, and unknown freshness.
+
+Fresh verification passed 72 test files / 359 tests, typecheck, production build, and diff check; the build retained only the known multiple-lockfile warning. Browser acceptance passed at 1280×800, 1440×900, and 1680×900, including a 320 + 600 + 360 context/map/inspector split at 1280. The four 1440×900 evidence images remain at:
+
+- [Default rice workspace](../assets/power-atlas-desktop-rice-default.png)
+- [Niigata inspector](../assets/power-atlas-desktop-rice-niigata.png)
+- [Signals view](../assets/power-atlas-desktop-signals.png)
+- [Comparison view](../assets/power-atlas-desktop-comparison.png)
+
+URL compatibility for `theme=`, `layer=`, `mode=`, `selected=`, and `view=` passed, as did Energy → Rice reset, inspector, Signals, comparison, Escape, and focus-restoration flows. The browser console contained zero application-origin warnings/errors and seven identical Chrome-extension-origin asynchronous message-channel errors. Stacked-tree smoke passed at 1024×768 and 390×844, but Mobile redesign remains deferred and is not accepted as complete.
+
+Fixed logistics routes remain labeled `固定デモデータ`; representative points are not precise polygons; missing verification time remains unknown rather than fabricated; and logistics impact remains unavailable without typed, sourced metrics. Public `main` deployment, production smoke, `v0.5.0` tag, and GitHub Release creation remain Task 8 work and are not marked complete here. No additional generic handoff or release-note file is required.
