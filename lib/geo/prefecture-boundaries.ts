@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
 
 import importedBoundaryCollectionText from "../../data/geo/japan-prefectures-natural-earth-5.1.1.geojson?raw" with {
-  turbopackModuleType: "raw"
+  turbopackLoader: "raw-loader",
+  turbopackAs: "*.js"
 };
 import importedProvenance from "../../data/geo/japan-prefectures-natural-earth-5.1.1.provenance.json";
 
