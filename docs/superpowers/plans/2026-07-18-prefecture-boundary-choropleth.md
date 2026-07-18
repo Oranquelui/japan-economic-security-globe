@@ -157,10 +157,13 @@ The implementer self-reviews the committed diff and fixes any issue in a new sco
 - Modify: `types/semantic.ts`
 - Modify: `data/seed/sources.json`
 - Modify: `lib/legal/source-catalog.ts`
+- Modify: `components/ActiveLayerSummaryPanel.tsx`
+- Modify: `components/EvidencePanel.tsx`
 - Modify: `components/SourcesLicensePage.tsx`
 - Modify: `lib/legal/__tests__/source-catalog.test.ts`
 - Modify: `components/__tests__/sources-license-page.test.tsx`
 - Modify: `components/__tests__/active-layer-summary-panel.test.tsx`
+- Modify: `components/__tests__/evidence-panel-structure.test.tsx`
 - Modify: `lib/semantic/__tests__/source-quality.test.ts`
 
 ### Step 2.1: Write failing authority and rights tests
@@ -174,12 +177,13 @@ Tests must first require:
 - the page shows public-domain, beta/de facto, immutable SHA, processing, and accuracy limitation copy;
 - e-Stat remains in `政府・公的機関ソース` and keeps the `公式` badge;
 - existing `official !== false` records still fall back to `official`, and existing `official: false` records without a category still fall back to `private`;
+- every source badge surface, including `ActiveLayerSummaryPanel` and `EvidencePanel`, uses the centralized category resolver so explicit categories override legacy flags consistently;
 - `policySummary`, `sourceSummary`, and the page's license prose accurately describe all three categories instead of retaining the old official/private binary wording.
 
 Run:
 
 ```bash
-npx vitest run lib/legal/__tests__/source-catalog.test.ts components/__tests__/sources-license-page.test.tsx components/__tests__/active-layer-summary-panel.test.tsx lib/semantic/__tests__/source-quality.test.ts
+npx vitest run lib/legal/__tests__/source-catalog.test.ts components/__tests__/sources-license-page.test.tsx components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/evidence-panel-structure.test.tsx lib/semantic/__tests__/source-quality.test.ts
 ```
 
 Expected: FAIL on the missing category, record, group, and metadata rendering.
@@ -218,10 +222,10 @@ Add `source:natural-earth-admin1-japan-5-1-1` with:
 ### Step 2.5: Verify and commit
 
 ```bash
-npx vitest run lib/legal/__tests__/source-catalog.test.ts components/__tests__/sources-license-page.test.tsx components/__tests__/active-layer-summary-panel.test.tsx lib/semantic/__tests__/source-quality.test.ts
+npx vitest run lib/legal/__tests__/source-catalog.test.ts components/__tests__/sources-license-page.test.tsx components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/evidence-panel-structure.test.tsx lib/semantic/__tests__/source-quality.test.ts
 npm run typecheck
 git diff --check
-git add types/semantic.ts data/seed/sources.json lib/legal/source-catalog.ts components/SourcesLicensePage.tsx lib/legal/__tests__/source-catalog.test.ts components/__tests__/sources-license-page.test.tsx components/__tests__/active-layer-summary-panel.test.tsx lib/semantic/__tests__/source-quality.test.ts
+git add types/semantic.ts data/seed/sources.json lib/legal/source-catalog.ts components/ActiveLayerSummaryPanel.tsx components/EvidencePanel.tsx components/SourcesLicensePage.tsx lib/legal/__tests__/source-catalog.test.ts components/__tests__/sources-license-page.test.tsx components/__tests__/active-layer-summary-panel.test.tsx components/__tests__/evidence-panel-structure.test.tsx lib/semantic/__tests__/source-quality.test.ts
 git commit -m "feat: classify map geometry as open data"
 ```
 
