@@ -95,7 +95,7 @@ export function InitialNoticeModal({ homepageMode, locale }: InitialNoticeModalP
               無料公開中
             </p>
           </div>
-          <p>更新: v0.5.0 - 公式統計と意味レイヤーを中心に再構成しました</p>
+          <p>更新: v0.6.0 - 都道府県の地域形状と読みやすい名称表示を追加しました</p>
           <p style={{ color: "var(--ops-text-muted, #cbd5e1)" }}>仕様は予告なく変更される場合があります</p>
         </div>
         <button

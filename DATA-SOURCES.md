@@ -36,6 +36,20 @@ Operationally, this project does not:
 - republish copied tables as a reusable dataset
 - claim blanket redistribution rights over private-source materials
 
+## Public/open-data map geometry
+
+The prefecture choropleth separates official metric data from non-official map geometry.
+
+- Metric: [e-Stat / Ministry of Agriculture, Forestry and Fisheries, 2023 rice harvest by prefecture](https://www.e-stat.go.jp/dbview?sid=0002114508) is the official statistical source.
+- Geometry: [Natural Earth Admin-1 States, Provinces](https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-1-states-provinces/) is open data and is not an official Japanese government source.
+- Source version: `Natural Earth 5.1.1`.
+- Terms: [Public domain](https://www.naturalearthdata.com/about/terms-of-use/).
+- Fixed archive: [ne_10m_admin_1_states_provinces.zip](https://naciscdn.org/naturalearth/5.1.1/10m/cultural/ne_10m_admin_1_states_provinces.zip).
+- Archive SHA-256: `efc59726337323058f9446210adc96673179cd344e053666ee3d28cb58ba2b05`.
+- Processing: filter the Natural Earth Admin-1 source to Japan's 47 prefectures, organize the attributes, and simplify the shapes for a nationwide display.
+
+Natural Earth describes Admin-1 as beta and generally uses de facto boundaries. The generalized prefecture polygons do not express the Japanese government's position on territory or jurisdiction. They are not legal, surveying, cadastral, or boundary-determination data and must not be used for precise administrative-boundary confirmation.
+
 ## Site-level statement
 
 The public site should explain that:

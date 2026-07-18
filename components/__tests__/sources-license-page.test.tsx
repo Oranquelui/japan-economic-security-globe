@@ -42,11 +42,26 @@ describe("SourcesLicensePage", () => {
     expect(openDataSection).not.toBeNull();
     expect(officialSection).not.toBeNull();
     expect(privateSection).not.toBeNull();
-    expect(within(openDataSection!).getByRole("link", { name: sourceLabel })).toBeTruthy();
+    const sourceLink = within(openDataSection!).getByRole("link", { name: sourceLabel });
+    expect(sourceLink.getAttribute("href")).toBe(
+      "https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-1-states-provinces/"
+    );
+    expect(sourceLink.getAttribute("target")).toBe("_blank");
+    expect(sourceLink.getAttribute("rel")).toBe("noreferrer");
     expect(within(officialSection!).queryByRole("link", { name: sourceLabel })).toBeNull();
     expect(within(privateSection!).queryByRole("link", { name: sourceLabel })).toBeNull();
 
     const rights = within(openDataSection!).getByTestId("source-rights");
+    for (const field of [
+      "利用条件",
+      "ソース版",
+      "固定取得元",
+      "SHA-256",
+      "加工内容",
+      "精度・境界の制約"
+    ]) {
+      expect(within(rights).getByText(field)).toBeTruthy();
+    }
     expect(rights.textContent).toContain("Public domain");
     expect(rights.textContent).toContain("Natural Earth 5.1.1");
     expect(rights.textContent).toContain("efc59726337323058f9446210adc96673179cd344e053666ee3d28cb58ba2b05");

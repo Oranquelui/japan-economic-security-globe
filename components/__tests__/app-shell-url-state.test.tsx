@@ -345,7 +345,7 @@ describe("AppShell url sync", () => {
 
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByText("MVP/テスト運用中")).toBeTruthy();
-    expect(screen.getByText("更新: v0.5.0 - 公式統計と意味レイヤーを中心に再構成しました")).toBeTruthy();
+    expect(screen.getByText("更新: v0.6.0 - 都道府県の地域形状と読みやすい名称表示を追加しました")).toBeTruthy();
     expect(screen.queryByText("更新: 国内物流監視と地形地図を追加しました")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "お知らせを閉じる" }));
 
@@ -378,6 +378,31 @@ describe("AppShell url sync", () => {
     expect(screen.getByTestId("context-inspector").getAttribute("data-id")).toBe("observation:rice-price-signal-2026");
     expect(within(screen.getByTestId("layout-desktop-workspace")).getByTestId("signals-panel")).toBeTruthy();
     expect(screen.queryByTestId("layout-compare-drawer")).toBeNull();
+    expect(replaceMock).not.toHaveBeenCalled();
+  });
+
+  test("keeps a URL-selected prefecture in the inspector when another prefecture geometry is unavailable", () => {
+    const graph = structuredClone(loadSeedGraph());
+    graph.entities = graph.entities.filter((entity) => entity.id !== "prefecture:tokyo");
+
+    render(
+      <AppShell
+        graph={graph}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "rice",
+          selectedId: "prefecture:niigata",
+          layerId: "rice-harvest",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+      />
+    );
+
+    const desktopMap = screen.getAllByTestId("map")[0];
+    expect(desktopMap.getAttribute("data-active")).toBe("prefecture:niigata");
+    expect(desktopMap.getAttribute("data-regions")).toBe("46");
+    expect(screen.getByTestId("context-inspector").getAttribute("data-id")).toBe("prefecture:niigata");
     expect(replaceMock).not.toHaveBeenCalled();
   });
 

@@ -86,12 +86,17 @@ describe("ActiveLayerSummaryPanel", () => {
     expect(link.getAttribute("href")).toBe(source.url);
     expect(link.getAttribute("target")).toBe("_blank");
     expect(link.getAttribute("rel")).toBe("noreferrer");
-    expect(screen.getByRole("link", { name: geometrySource.label })).toBeTruthy();
+    const geometryLink = screen.getByRole("link", { name: geometrySource.label });
+    expect(geometryLink.getAttribute("href")).toBe(geometrySource.url);
+    expect(geometryLink.getAttribute("target")).toBe("_blank");
+    expect(geometryLink.getAttribute("rel")).toBe("noreferrer");
     const sourceItems = screen.getAllByTestId("active-layer-source");
     expect(sourceItems.map((item) => item.textContent)).toEqual([
       expect.stringContaining(source.label),
       expect.stringContaining(geometrySource.label)
     ]);
+    expect(within(sourceItems[0]).getByText("公式")).toBeTruthy();
+    expect(within(sourceItems[1]).queryByText("公式")).toBeNull();
   });
 
   test("renders every active source in sourceIds order", () => {

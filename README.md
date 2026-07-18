@@ -18,7 +18,7 @@ The default view starts with `Rice` and the official e-Stat prefecture harvest l
 
 ## Public Demo
 
-- Version: `0.5.0`
+- Version: `0.6.0`
 - Demo: [economic-security.quadrillionaaa.com](https://economic-security.quadrillionaaa.com/)
 - Launch view: [Rice harvest by prefecture](https://economic-security.quadrillionaaa.com/?theme=rice&layer=rice-harvest)
 - First-screen promise: explain household and industry stress with official numbers and traceable sources
@@ -26,7 +26,11 @@ The default view starts with `Rice` and the official e-Stat prefecture harvest l
 
 ## Current Version
 
-`v0.5.0`: Desktop map workspace with one fixed context pane, one active-layer reading block, one theme/layer control path, one selected-object inspector, and intentional Signals/comparison views. Mobile redesign remains deferred.
+`v0.6.0` adds 47 generalized prefecture polygons, readable full prefecture names, and direct map selection to the rice-harvest view. The official metric remains e-Stat data; the separate geometry source is Natural Earth Admin-1 5.1.1 open data and is not an official Japanese government source. There is no precision inset, and Mobile redesign remains deferred.
+
+Natural Earth Admin-1 is a beta, generally de facto boundary dataset. These generalized shapes do not express the Japanese government's position on territory or jurisdiction and must not be used for legal, surveying, or boundary-determination purposes. See [`DATA-SOURCES.md`](DATA-SOURCES.md) and the public `Sources/License` page for the fixed archive, SHA-256, processing statement, terms, and limitations.
+
+`v0.5.0` introduced the desktop map workspace with one fixed context pane, one active-layer reading block, one theme/layer control path, one selected-object inspector, and intentional Signals/comparison views.
 
 The active-layer block keeps scope, period, unit, map encoding, missing-data treatment, and active sources together. Legacy URLs remain compatible. Bundled logistics routes are labeled as fixed demo data, and the regional logistics-impact layer remains disabled until typed, sourced metrics exist.
 
@@ -42,7 +46,7 @@ The active-layer block keeps scope, period, unit, map encoding, missing-data tre
 
 ![Japan Resilience Map desktop workspace showing the rice harvest layer and one contextual inspector](docs/assets/power-atlas-desktop-rice-niigata.png)
 
-The current launch surface starts with the e-Stat rice harvest layer. Scope, period, unit, legend, and official source remain visible beside the map; selecting a prefecture opens one evidence-backed inspector. Signals and the 47-prefecture comparison appear only when requested.
+The current launch surface starts with the official e-Stat rice harvest metric over 47 generalized Natural Earth prefecture shapes. Full prefecture names remain readable and selecting a shape opens one evidence-backed inspector. Metric authority and geometry provenance are shown separately; Signals and the 47-prefecture comparison appear only when requested.
 
 ## Core Question
 

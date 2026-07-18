@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useEffectEvent, useRef } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import type { GeoJSONSourceSpecification } from "maplibre-gl";
 
 import { buildPrefectureMetricFeatureCollection } from "../lib/geo/prefecture-map";
@@ -53,6 +53,10 @@ const MAP_ACCEPTANCE_FIXTURES_ENABLED = process.env.NODE_ENV !== "production"
   && process.env.NEXT_PUBLIC_MAP_ACCEPTANCE_FIXTURES === "1";
 const PREFECTURE_LABEL_LAYOUT = prefectureLabelLayout;
 const JA_NUMBER_FORMATTER = new Intl.NumberFormat("ja-JP");
+const EMPTY_FEATURE_COLLECTION = Object.freeze({
+  type: "FeatureCollection" as const,
+  features: Object.freeze([])
+});
 const INTERACTIVE_SEMANTIC_LAYER_IDS = [
   "jp-point-circle",
   "jp-route-line",
@@ -93,6 +97,7 @@ export function JapanOperationsMapCanvas({
   const zoomRef = useRef(INITIAL_ZOOM);
   const scanPhaseRef = useRef(0);
   const scanRafRef = useRef<number | null>(null);
+  const [prefectureGeometryUnavailable, setPrefectureGeometryUnavailable] = useState(false);
   const handleHover = useEffectEvent((hover: MapHoverViewModel | null) => onHover?.(hover));
   const handleSelect = useEffectEvent(onSelect);
   latestModelRef.current = model;
@@ -180,25 +185,26 @@ export function JapanOperationsMapCanvas({
         });
 
         const prefectureSourceSignature = getPrefectureSourceSignature(model.regions, activeId);
+        const prefectureSources = buildPrefectureMapSources(model.regions, activeId);
+        setPrefectureGeometryUnavailable(prefectureSources.unavailable);
         map.addSource("jp-prefectures", {
           type: "geojson",
-          data: prefectureRegionsToFeatureCollection(model.regions, activeId),
+          data: prefectureSources.prefectures,
           attribution: "境界: Made with Natural Earth（加工）"
         });
         prefectureSourceSignatureRef.current = prefectureSourceSignature;
 
-        const prefectureLabels = buildPrefectureLabelSources(model.regions, activeId);
         map.addSource("jp-prefecture-labels", {
           type: "geojson",
-          data: prefectureLabels.labelPoints
+          data: prefectureSources.labels.labelPoints
         });
         map.addSource("jp-prefecture-selected-labels", {
           type: "geojson",
-          data: prefectureLabels.selectedLabelPoints
+          data: prefectureSources.labels.selectedLabelPoints
         });
         map.addSource("jp-prefecture-leaders", {
           type: "geojson",
-          data: prefectureLabels.leaderLines
+          data: prefectureSources.labels.leaderLines
         });
 
         map.addSource("global-points", {
@@ -1002,16 +1008,17 @@ export function JapanOperationsMapCanvas({
     updateSource(map, "jp-routes", routesToFeatureCollection(model.routes, model.points, activeId));
     const prefectureSourceSignature = getPrefectureSourceSignature(model.regions, activeId);
     if (prefectureSourceSignature !== prefectureSourceSignatureRef.current) {
+      const prefectureSources = buildPrefectureMapSources(model.regions, activeId);
       const prefectureSource = map.getSource("jp-prefectures");
       if (prefectureSource && "setData" in prefectureSource) {
-        prefectureSource.setData(prefectureRegionsToFeatureCollection(model.regions, activeId));
+        prefectureSource.setData(prefectureSources.prefectures);
         prefectureSourceSignatureRef.current = prefectureSourceSignature;
       }
+      updateSource(map, "jp-prefecture-labels", prefectureSources.labels.labelPoints);
+      updateSource(map, "jp-prefecture-selected-labels", prefectureSources.labels.selectedLabelPoints);
+      updateSource(map, "jp-prefecture-leaders", prefectureSources.labels.leaderLines);
+      setPrefectureGeometryUnavailable(prefectureSources.unavailable);
     }
-    const prefectureLabels = buildPrefectureLabelSources(model.regions, activeId);
-    updateSource(map, "jp-prefecture-labels", prefectureLabels.labelPoints);
-    updateSource(map, "jp-prefecture-selected-labels", prefectureLabels.selectedLabelPoints);
-    updateSource(map, "jp-prefecture-leaders", prefectureLabels.leaderLines);
     updateSource(map, "jp-regions", representativeRadiusRegionsToFeatureCollection(model.regions, activeId));
     applyModeVisibility(map, mapMode, isXlDesktopViewport());
   }, [activeId, mapMode, model, statusPalette, themePalette]);
@@ -1050,7 +1057,26 @@ export function JapanOperationsMapCanvas({
     });
   }, [command]);
 
-  return <div ref={containerRef} data-testid="jp-operations-map-canvas" className="absolute inset-0" />;
+  return (
+    <>
+      <div ref={containerRef} data-testid="jp-operations-map-canvas" className="absolute inset-0" />
+      {prefectureGeometryUnavailable ? (
+        <div
+          aria-label="都道府県の地図形状の状態"
+          className="pointer-events-none absolute left-3 top-3 z-20 max-w-sm rounded-lg border px-3 py-2 text-xs leading-5 shadow-lg"
+          data-testid="prefecture-map-unavailable"
+          role="status"
+          style={{
+            background: "color-mix(in srgb, var(--ops-surface-panel, #121923) 94%, #0c1017 6%)",
+            borderColor: "var(--ops-border-strong, #3a4250)",
+            color: "var(--ops-text-primary, #e2e8f0)"
+          }}
+        >
+          都道府県の地図形状を表示できません。地点・経路とその他の操作は利用できます。
+        </div>
+      ) : null}
+    </>
+  );
 }
 
 function applyModeVisibility(map: any, mapMode: OperationMapMode, showPrefectureLabels: boolean) {
@@ -1959,6 +1985,34 @@ function buildPrefectureLabelSources(
   };
 }
 
+function buildPrefectureMapSources(regions: JapanMapRegion[], activeId: string) {
+  const hasPrefectureBoundaries = regions.some(
+    (region) => region.geometryKind === "prefecture-boundary"
+  );
+
+  if (!hasPrefectureBoundaries) {
+    return {
+      labels: buildPrefectureLabelSources([], activeId),
+      prefectures: EMPTY_FEATURE_COLLECTION as unknown as GeoJSONSourceSpecification["data"],
+      unavailable: false
+    };
+  }
+
+  try {
+    return {
+      labels: buildPrefectureLabelSources(regions, activeId),
+      prefectures: prefectureRegionsToFeatureCollection(regions, activeId),
+      unavailable: false
+    };
+  } catch {
+    return {
+      labels: buildPrefectureLabelSources([], activeId),
+      prefectures: EMPTY_FEATURE_COLLECTION as unknown as GeoJSONSourceSpecification["data"],
+      unavailable: true
+    };
+  }
+}
+
 function prefectureRegionsToFeatureCollection(
   regions: JapanMapRegion[],
   activeId: string
@@ -1968,10 +2022,7 @@ function prefectureRegionsToFeatureCollection(
   );
 
   if (prefectureRegions.length === 0) {
-    return {
-      type: "FeatureCollection" as const,
-      features: []
-    };
+    return EMPTY_FEATURE_COLLECTION as unknown as GeoJSONSourceSpecification["data"];
   }
 
   // MapLibre consumes source data without mutation, but its public type requires mutable GeoJSON arrays.
