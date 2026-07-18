@@ -27,7 +27,7 @@ export function ActionBar({
   return (
     <header
       data-testid="layout-action-bar"
-      className="relative hidden items-center justify-between gap-4 border-b px-5 py-3 lg:flex"
+      className="relative hidden items-center justify-between gap-4 border-b px-5 py-3 xl:flex"
       style={{
         borderColor: themePalette.borderSubtle,
         background: `linear-gradient(180deg, ${themePalette.surfacePanelElevated} 0%, ${themePalette.surfacePanel} 100%)`,

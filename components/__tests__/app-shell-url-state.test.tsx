@@ -257,6 +257,7 @@ describe("AppShell url sync", () => {
     );
 
     const shell = screen.getByRole("main");
+    const actionBar = screen.getByTestId("layout-action-bar");
     const desktopWorkspace = screen.getByTestId("layout-desktop-workspace");
     const workspaceScroll = screen.getByTestId("layout-workspace-scroll");
     const stackedWorkspace = screen.getByTestId("layout-stacked-workspace");
@@ -264,6 +265,9 @@ describe("AppShell url sync", () => {
     expect(shell.className).toContain("xl:grid");
     expect(shell.className).toContain("xl:grid-rows-[56px,auto,minmax(0,1fr)]");
     expect(shell.className).not.toContain("lg:grid");
+    expect(actionBar.className).toContain("hidden");
+    expect(actionBar.className).toContain("xl:flex");
+    expect(actionBar.className).not.toContain("lg:flex");
     expect(workspaceScroll.className).toContain("xl:overflow-hidden");
     expect(workspaceScroll.className).not.toContain("lg:overflow-hidden");
     expect(desktopWorkspace.className).toContain("hidden");
@@ -272,7 +276,7 @@ describe("AppShell url sync", () => {
     expect(stackedWorkspace.className).toContain("xl:hidden");
     expect(stackedWorkspace.className).not.toContain("lg:hidden");
     expect(screen.getByRole("banner")).toBeTruthy();
-    expect(screen.getByTestId("layout-action-bar")).toBeTruthy();
+    expect(actionBar).toBeTruthy();
     expect(screen.getByRole("status", { name: "出典状態" })).toBeTruthy();
     expect(screen.getByTestId("layout-navigation-rail")).toBeTruthy();
     expect(screen.getByTestId("layout-command-pane")).toBeTruthy();
