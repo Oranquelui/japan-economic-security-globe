@@ -302,10 +302,12 @@ describe("map inbox structure", () => {
     expect(text.indexOf("JAPAN DOMESTIC LOGISTICS WATCH")).toBeLessThan(text.indexOf("近接監視"));
   });
 
-  test("renders a truthful logistics scenario board before the live lane list without selecting a fallback", () => {
+  test.each(["", "prefecture:niigata"])(
+    "renders a neutral logistics scenario board without selecting a fallback for activeId %j",
+    (activeId) => {
     render(
       <MapInboxPanel
-        activeId="prefecture:niigata"
+        activeId={activeId}
         liveLogistics={liveLogistics as never}
         onQueryChange={vi.fn()}
         onSelect={vi.fn()}
@@ -326,17 +328,65 @@ describe("map inbox structure", () => {
     expect(text).toContain("国内物流の代表シナリオ");
     expect(scenarioText).toContain("固定デモ");
     expect(scenarioText).toContain("現在情報ではありません");
+    expect(scenarioText).toContain("経路または道路イベントを選択してください");
     expect(scenarioText).not.toMatch(/今日|監視中|次回更新|\d+分前/);
-    expect(text).toContain("首都圏の小売・部品・港湾後背地配送");
-    expect(text).toContain("詰まりの場所");
-    expect(text).toContain("代替余力");
-    expect(text).toContain("根拠ソース");
+    expect(within(scenarioBoard).queryByText("陸路: 横浜港・京浜/袖ケ浦 → 首都圏配送")).toBeNull();
+    expect(within(scenarioBoard).queryByText("詰まりの場所")).toBeNull();
+    expect(within(scenarioBoard).queryByText("代替余力")).toBeNull();
+    expect(within(scenarioBoard).queryByText("根拠ソース")).toBeNull();
     expect(text.indexOf("JAPAN LOGISTICS SCENARIO BOARD")).toBeLessThan(
       text.indexOf("JAPAN DOMESTIC LOGISTICS WATCH")
     );
     expect(within(scenarioBoard).getAllByRole("button").filter(
       (button) => button.getAttribute("aria-pressed") === "true"
     )).toHaveLength(0);
+    }
+  );
+
+  test("renders route-specific impact detail only for an exact eligible domestic selection", () => {
+    render(
+      <MapInboxPanel
+        activeId="live-logistics:road-keihin-tokyo"
+        liveLogistics={liveLogistics as never}
+        onQueryChange={vi.fn()}
+        onSelect={vi.fn()}
+        query=""
+        rows={[]}
+        themeId="logistics"
+        themeLabel="物流"
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    const scenarioBoard = screen.getByRole("region", { name: "国内物流の代表シナリオ" });
+    expect(within(scenarioBoard).getByText("陸路: 横浜港・京浜/袖ケ浦 → 首都圏配送")).toBeTruthy();
+    expect(within(scenarioBoard).getByText("詰まりの場所")).toBeTruthy();
+    expect(within(scenarioBoard).getByText("代替余力")).toBeTruthy();
+    expect(within(scenarioBoard).getByText("根拠ソース")).toBeTruthy();
+    expect(within(scenarioBoard).getByRole("button", {
+      name: /代表シナリオ 陸路: 横浜港・京浜\/袖ケ浦 → 首都圏配送/
+    }).getAttribute("aria-pressed")).toBe("true");
+  });
+
+  test("never promotes an Energy or AIS item to the domestic scenario primary card", () => {
+    render(
+      <MapInboxPanel
+        activeId="live-logistics:tanker-qatar-tokyo-bay"
+        liveLogistics={liveLogistics as never}
+        onQueryChange={vi.fn()}
+        onSelect={vi.fn()}
+        query=""
+        rows={[]}
+        themeId="logistics"
+        themeLabel="物流"
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    const scenarioBoard = screen.getByRole("region", { name: "国内物流の代表シナリオ" });
+    expect(scenarioBoard.textContent).toContain("経路または道路イベントを選択してください");
+    expect(within(scenarioBoard).queryByText("Tanker corridor: Hormuz → Malacca → Tokyo Bay")).toBeNull();
+    expect(within(scenarioBoard).queryByText("詰まりの場所")).toBeNull();
   });
 
   test("forwards road operations into the representative route overview before the lane list", () => {

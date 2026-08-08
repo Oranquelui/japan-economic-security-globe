@@ -23,10 +23,9 @@ export function LogisticsImpactBoard({
   themePalette
 }: LogisticsImpactBoardProps) {
   const primaryItem = resolvePrimaryImpactItem(liveLogistics.items, activeId);
-  const affectedRegions = dedupeStrings(liveLogistics.items.flatMap((item) => item.affectedRegions ?? [])).slice(0, 4);
+  const affectedRegions = dedupeStrings(primaryItem?.affectedRegions ?? []).slice(0, 4);
   const portHinterlandItems = liveLogistics.items
-    .filter((item) => item.operationClass !== "energy_maritime_support")
-    .filter((item) => !isEnergySupportItem(item))
+    .filter(isEligibleDomesticImpactItem)
     .slice(0, 4);
 
   if (roadOperations) {
@@ -41,10 +40,6 @@ export function LogisticsImpactBoard({
         />
       </div>
     );
-  }
-
-  if (!primaryItem) {
-    return null;
   }
 
   return (
@@ -72,50 +67,62 @@ export function LogisticsImpactBoard({
           </p>
         </div>
 
-        <button
-          type="button"
-          aria-label={`代表シナリオ ${primaryItem.title} 固定デモ 現在情報ではありません`}
-          aria-pressed={primaryItem.id === activeId}
-          onClick={() => onSelect(primaryItem.id)}
-          className="w-full border-l-4 py-3 pl-3 pr-2 text-left transition hover:bg-white/[0.04]"
-          style={{
-            borderColor: themePalette.accent,
-            background: "rgba(255,255,255,0.035)"
-          }}
-        >
-          <div className="flex flex-wrap items-center gap-2">
-            <BoardChip themePalette={themePalette}>固定デモ</BoardChip>
-            <BoardChip themePalette={themePalette}>更新なし</BoardChip>
-            <BoardChip themePalette={themePalette}>{formatRegions(primaryItem)}</BoardChip>
-          </div>
-          <div className="mt-2 text-base font-semibold leading-6 text-white [overflow-wrap:anywhere]">
-            {formatImpactScope(primaryItem)}
-          </div>
-          <div className="mt-1 text-[0.72rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
-            {primaryItem.title}
-          </div>
-        </button>
+        {primaryItem ? (
+          <>
+            <button
+              type="button"
+              aria-label={`代表シナリオ ${primaryItem.title} 固定デモ 現在情報ではありません`}
+              aria-pressed="true"
+              onClick={() => onSelect(primaryItem.id)}
+              className="w-full border-l-4 py-3 pl-3 pr-2 text-left transition hover:bg-white/[0.04]"
+              style={{
+                borderColor: themePalette.accent,
+                background: "rgba(255,255,255,0.035)"
+              }}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <BoardChip themePalette={themePalette}>固定デモ</BoardChip>
+                <BoardChip themePalette={themePalette}>更新なし</BoardChip>
+                <BoardChip themePalette={themePalette}>{formatRegions(primaryItem)}</BoardChip>
+              </div>
+              <div className="mt-2 text-base font-semibold leading-6 text-white [overflow-wrap:anywhere]">
+                {formatImpactScope(primaryItem)}
+              </div>
+              <div className="mt-1 text-[0.72rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
+                {primaryItem.title}
+              </div>
+            </button>
 
-        <div className="grid grid-cols-1 gap-2">
-          <BoardMetric label="詰まりの場所" themePalette={themePalette}>
-            {primaryItem.corridorLabel}
-          </BoardMetric>
-          <BoardMetric label="代替余力" themePalette={themePalette}>
-            {primaryItem.substitutionCapacity ?? "鉄道貨物・内航・陸路の代替余力を確認"}
-          </BoardMetric>
-          <BoardMetric label="根拠ソース" themePalette={themePalette}>
-            {primaryItem.sourceLabel}
-          </BoardMetric>
-        </div>
+            <div className="grid grid-cols-1 gap-2">
+              <BoardMetric label="詰まりの場所" themePalette={themePalette}>
+                {primaryItem.corridorLabel}
+              </BoardMetric>
+              <BoardMetric label="代替余力" themePalette={themePalette}>
+                {primaryItem.substitutionCapacity ?? "鉄道貨物・内航・陸路の代替余力を確認"}
+              </BoardMetric>
+              <BoardMetric label="根拠ソース" themePalette={themePalette}>
+                {primaryItem.sourceLabel}
+              </BoardMetric>
+            </div>
 
-        <div className="flex flex-wrap gap-2">
-          {affectedRegions.map((region) => (
-            <BoardChip key={region} themePalette={themePalette}>
-              {region}
-            </BoardChip>
-          ))}
-          <BoardChip themePalette={themePalette}>{formatEvidenceClass(primaryItem.evidenceClass)}</BoardChip>
-        </div>
+            <div className="flex flex-wrap gap-2">
+              {affectedRegions.map((region) => (
+                <BoardChip key={region} themePalette={themePalette}>
+                  {region}
+                </BoardChip>
+              ))}
+              <BoardChip themePalette={themePalette}>{formatEvidenceClass(primaryItem.evidenceClass)}</BoardChip>
+            </div>
+          </>
+        ) : (
+          <div
+            role="status"
+            className="rounded border border-dashed px-3 py-4 text-center text-[0.72rem] leading-5"
+            style={{ borderColor: themePalette.borderStrong, color: themePalette.textMuted }}
+          >
+            経路または道路イベントを選択してください
+          </div>
+        )}
 
         <div className="border-t pt-3" style={{ borderColor: themePalette.borderSubtle }}>
           <div className="mb-2 font-mono text-[0.56rem] uppercase tracking-[0.24em]" style={{ color: themePalette.textMuted }}>
@@ -146,11 +153,18 @@ export function LogisticsImpactBoard({
 }
 
 function resolvePrimaryImpactItem(items: LiveLogisticsItemViewModel[], activeId: string) {
-  return items.find((item) => item.id === activeId)
-    ?? items.find((item) => item.operationClass === "port_hinterland_highway")
-    ?? items.find((item) => item.laneId === "road")
-    ?? items[0]
-    ?? null;
+  if (!activeId) return null;
+  const exactItem = items.find((item) => item.id === activeId);
+  return exactItem && isEligibleDomesticImpactItem(exactItem) ? exactItem : null;
+}
+
+function isEligibleDomesticImpactItem(item: LiveLogisticsItemViewModel) {
+  if (item.operationClass === "energy_maritime_support" || isEnergySupportItem(item)) return false;
+  if (item.operationClass === "maritime_general_cargo") return item.laneId === "maritime";
+  return item.laneId === "road"
+    || item.laneId === "rail"
+    || item.laneId === "coastal"
+    || item.laneId === "air";
 }
 
 function BoardMetric({
