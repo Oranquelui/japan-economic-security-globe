@@ -222,6 +222,7 @@ export function AppShell({
     preliminaryLiveLogistics,
     roadSelectionActive ? null : validSelectedId
   );
+  const mapSelectionId = themeId === "logistics" ? explicitSelectionId : activeId;
   const rankingExplanation = inboxDecision
     ? buildSelectedRankingExplanation(activeId, rankingSignals, inboxDecision, rankingNowRef.current)
     : null;
@@ -267,7 +268,7 @@ export function AppShell({
   const legacyMapModel = buildJapanMapCanvasModel(
     graph,
     view,
-    explicitSelectionId,
+    mapSelectionId,
     null,
     liveLogistics,
     roadOperations
@@ -275,7 +276,7 @@ export function AppShell({
   const semanticDesktopMapModel = buildJapanMapCanvasModel(
     graph,
     view,
-    explicitSelectionId,
+    mapSelectionId,
     activeLayer,
     liveLogistics,
     roadOperations
@@ -582,7 +583,7 @@ export function AppShell({
         <div data-testid="layout-desktop-workspace" className="relative hidden h-full min-h-0 xl:block">
           <section data-testid="layout-map-section" className="absolute inset-0 min-h-0">
             <JapanMainMap
-              activeId={explicitSelectionId}
+              activeId={mapSelectionId}
               focusTargetId={focusTargetId}
               mapDisclosure={mapDisclosure}
               mapMode={desktopMapMode}
@@ -722,7 +723,7 @@ export function AppShell({
           ) : null}
           <section className="h-[50vh] min-h-[280px]">
             <JapanMainMap
-              activeId={explicitSelectionId}
+              activeId={mapSelectionId}
               detailPopup={mapDetailPopup}
               focusTargetId={focusTargetId}
               mapDisclosure={mapDisclosure}
@@ -788,15 +789,30 @@ export function AppShell({
             watchOverlays={watchOverlays}
           />
           <section data-testid="layout-evidence-drawer-mobile" className="min-h-[24rem] px-0">
-            {isEvidenceOpen && roadSelectionActive && roadOperations ? (
-              <RoadConditionInspector
-                graph={graph}
-                idPrefix="road-condition-stacked"
-                onClose={handleCloseInspector}
-                roadOperations={roadOperations}
-                selectedId={explicitSelectionId}
-                themePalette={themePalette}
-              />
+            {roadSelectionActive && roadOperations ? (
+              isEvidenceOpen ? (
+                <RoadConditionInspector
+                  graph={graph}
+                  idPrefix="road-condition-stacked"
+                  onClose={handleCloseInspector}
+                  roadOperations={roadOperations}
+                  selectedId={explicitSelectionId}
+                  themePalette={themePalette}
+                />
+              ) : (
+                <div
+                  role="status"
+                  data-testid="road-condition-inspector-closed"
+                  className="border-y px-4 py-5 text-xs leading-5"
+                  style={{
+                    borderColor: themePalette.borderSubtle,
+                    background: themePalette.surfacePanel,
+                    color: themePalette.textMuted
+                  }}
+                >
+                  道路状況の詳細は閉じています。経路または道路状態を選択すると再表示します。
+                </div>
+              )
             ) : (
               <EvidencePanel
                 collapsed={false}

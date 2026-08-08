@@ -95,6 +95,7 @@ vi.mock("../JapanMainMap", () => ({
       regions?: Array<{ geometryKind?: string }>;
       logisticsImpactRegions?: Array<{ geometryKind?: string }>;
       roadSegments?: unknown[];
+      globalRoutes?: Array<{ id: string }>;
     };
     onMapModeChange?: (mode: OperationMapMode) => void;
     onOpenEvidence?: () => void;
@@ -113,6 +114,7 @@ vi.mock("../JapanMainMap", () => ({
       data-points={(model?.points?.length ?? 0) + (model?.globalPoints?.length ?? 0) + (model?.livePoints?.length ?? 0) + (model?.liveVessels?.length ?? 0)}
       data-regions={(model?.regions?.length ?? 0) + (model?.logisticsImpactRegions?.length ?? 0)}
       data-road-segments={model?.roadSegments?.length ?? 0}
+      data-global-route-ids={model?.globalRoutes?.map((route) => route.id).join(",") ?? ""}
       data-region-geometry-kinds={[...(model?.regions ?? []), ...(model?.logisticsImpactRegions ?? [])]
         .map((region) => region.geometryKind ?? "unknown")
         .join(",")}
@@ -433,8 +435,8 @@ describe("AppShell url sync", () => {
     expect(stackedMap.getAttribute("data-mode")).toBe("choropleth");
     expect(stackedMap.getAttribute("data-regions")).toBe("47");
     expect(stackedMap.getAttribute("data-region-geometry-kinds")).not.toContain("representative-radius");
-    // Internal detail fallbacks must not become an implicit map selection.
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("");
+    // Non-logistics maps retain the established fallback selection.
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/^(observation:|flow:|prefecture:|product:)/);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
   });
 
@@ -706,7 +708,7 @@ describe("AppShell url sync", () => {
     );
 
     expect((within(screen.getByTestId("layout-desktop-workspace")).getByRole("combobox", { name: "テーマ" }) as HTMLSelectElement).value).toBe("rice");
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/rice|observation:rice/);
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toMatch(/rice|observation:rice|^$/);
     expect(screen.queryByTestId("context-inspector")).toBeNull();
   });
@@ -873,6 +875,26 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
   });
 
+  test("preserves the Energy fallback in both the map surface and route-scoped map model", () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "energy",
+          selectedId: null,
+          layerId: "energy-route",
+          mapModeOverride: "route",
+          workspaceView: "map"
+        }}
+      />
+    );
+
+    const desktopMap = within(screen.getByTestId("layout-desktop-workspace")).getByTestId("map");
+    expect(desktopMap.getAttribute("data-active")).toMatch(/^flow:/);
+    expect(desktopMap.getAttribute("data-global-route-ids")).toMatch(/^flow:/);
+  });
+
   test("wires the validated road model only into logistics and keeps its default selection explicit", () => {
     const roadOperationsDataset = loadSeedRoadOperations();
     const { rerender } = render(
@@ -1003,7 +1025,7 @@ describe("AppShell url sync", () => {
       />
     );
     await waitFor(() => expect(screen.queryByTestId("road-condition-inspector")).toBeNull());
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/^flow:/);
   });
 
   test("rejects a validated road route id under a non-logistics theme", async () => {
@@ -1023,7 +1045,7 @@ describe("AppShell url sync", () => {
       />
     );
     await waitFor(() => expect(screen.queryByTestId("road-condition-inspector")).toBeNull());
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/^flow:/);
     await waitFor(() => expect(replaceMock).toHaveBeenLastCalledWith("/?theme=energy", { scroll: false }));
   });
 
@@ -1052,6 +1074,37 @@ describe("AppShell url sync", () => {
       );
     });
     expect(within(screen.getByTestId("layout-desktop-workspace")).getByTestId("road-condition-inspector")).toBeTruthy();
+  });
+
+  test("never falls through to legacy evidence after closing the stacked road inspector", async () => {
+    const user = userEvent.setup();
+    const eventId = "road-condition:demo-daikoku-ukishima-congestion";
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "logistics",
+          selectedId: eventId,
+          layerId: "logistics-domestic",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+        liveLogisticsEvents={loadSeedLiveLogistics()}
+        roadOperationsDataset={loadSeedRoadOperations()}
+      />
+    );
+
+    const stacked = screen.getByTestId("layout-stacked-workspace");
+    const stackedEvidence = within(stacked).getByTestId("layout-evidence-drawer-mobile");
+    await user.click(within(stackedEvidence).getByRole("button", { name: "道路状況の詳細を閉じる" }));
+
+    await waitFor(() => {
+      expect(within(stackedEvidence).queryByTestId("road-condition-inspector")).toBeNull();
+    });
+    expect(within(stackedEvidence).queryByTestId("evidence")).toBeNull();
+    expect(within(stackedEvidence).getByTestId("road-condition-inspector-closed")).toBeTruthy();
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe(eventId);
   });
 
   test("keeps an individual live tanker selection and maps it to a safe inspector detail", () => {
