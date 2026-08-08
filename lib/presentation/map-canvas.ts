@@ -141,6 +141,7 @@ export type ForeignWindowEntity = {
 };
 
 export type JapanMapCanvasModel = {
+  liveRoutePresentation?: "animated-tracking" | "static-logistics-modes";
   points: JapanMapPoint[];
   routes: JapanMapRoute[];
   regions: JapanMapRegion[];
@@ -291,6 +292,7 @@ function buildThemeWideMapCanvasModel(
   const liveVessels = buildLiveVessels(liveLogistics);
 
   return {
+    liveRoutePresentation: view.id === "logistics" ? "static-logistics-modes" : "animated-tracking",
     points: visiblePoints,
     routes,
     regions,
@@ -550,6 +552,7 @@ function buildLiveLogisticsMapCanvasModel(
   );
   return {
     ...emptyMapCanvasModel(),
+    liveRoutePresentation: view.id === "logistics" ? "static-logistics-modes" : "animated-tracking",
     livePoints: buildLivePoints(liveRoutes, graph),
     liveRoutes,
     roadSegments,

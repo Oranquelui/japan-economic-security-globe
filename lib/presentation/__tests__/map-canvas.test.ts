@@ -150,6 +150,7 @@ describe("japan map canvas model", () => {
     );
     expect(model.foreignWindow?.entities.map((entity) => entity.id)).toContain("country:qatar");
     expect(model.routes).toHaveLength(0);
+    expect(model.liveRoutePresentation).toBe("animated-tracking");
   });
 
   test("expands rice domestic points beyond the original two using prefectural production anchors", () => {
@@ -320,6 +321,7 @@ describe("japan map canvas model", () => {
     const roadOperationalOverlays = model.roadOperationalOverlays ?? [];
     const roadJunctions = model.roadJunctions ?? [];
     expect(roadSegments).toHaveLength(roadOperations.segments.length);
+    expect(model.liveRoutePresentation).toBe("static-logistics-modes");
     expect(roadSegments[0]).toMatchObject({
       id: selectedSegment.id,
       routeId: selectedSegment.routeId,

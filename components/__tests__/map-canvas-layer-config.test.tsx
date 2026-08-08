@@ -216,6 +216,7 @@ function detailedRoadModel(activeId = ""): JapanMapCanvasModel {
 
   return {
     ...model,
+    liveRoutePresentation: "static-logistics-modes",
     livePoints: [],
     liveRoutes: [],
     roadSegments: [
@@ -1105,7 +1106,7 @@ describe("map canvas layer config", () => {
     expect(globalRoutes.features[0].properties.selected).toBe(true);
   });
 
-  test("renders four logistics modes with independent patterns and Japanese labels without scanner copy", async () => {
+  test("renders four logistics modes with independent patterns and Japanese labels without visible scanner copy", async () => {
     render(
       <JapanOperationsMapCanvas
         activeId="flow:saudi-oil-japan"
@@ -1114,6 +1115,7 @@ describe("map canvas layer config", () => {
         model={
           {
             ...model,
+            liveRoutePresentation: "static-logistics-modes",
             livePoints: [
               { id: "point:a", kind: "Port", label: "起点", lat: 35.44, lon: 139.67, tone: "critical" },
               { id: "point:b", kind: "Region", label: "終点", lat: 35.68, lon: 139.82, tone: "watch" }
@@ -1199,7 +1201,10 @@ describe("map canvas layer config", () => {
       "≈ 内航",
       "✈ 航空"
     ]);
-    expect(JSON.stringify(addedLayers)).not.toContain("SCAN");
+    expect(getLastLayoutVisibility("live-logistics-route-glow")).toBe("none");
+    expect(getLastLayoutVisibility("live-logistics-route-pulse")).toBe("none");
+    expect(getLastLayoutVisibility("live-logistics-route-label")).toBe("none");
+    expect(getLastLayoutVisibility("live-logistics-road-line")).toBe("visible");
     expect(liveRoutes.features.map((feature) => feature.properties)).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "live-logistics:road-test", laneId: "road", modeLabel: "道路" }),
       expect.objectContaining({ id: "live-logistics:rail-test", laneId: "rail", modeLabel: "鉄道" }),
@@ -1207,6 +1212,55 @@ describe("map canvas layer config", () => {
       expect.objectContaining({ id: "live-logistics:air-test", laneId: "air", modeLabel: "航空" })
     ]));
     expect(liveRoutes.features.every((feature) => feature.properties.selected === false)).toBe(true);
+  });
+
+  test("preserves the animated tracking treatment for Energy tanker routes", async () => {
+    const animationSpy = vi.spyOn(window, "requestAnimationFrame");
+    render(
+      <JapanOperationsMapCanvas
+        activeId="live-logistics:tanker-saudi-tokyo-bay"
+        focusTargetId={null}
+        mapMode="route"
+        model={{
+          ...model,
+          liveRoutePresentation: "animated-tracking",
+          livePoints: [
+            { id: "country:saudi-arabia", kind: "Country", label: "サウジアラビア", lat: 23.88, lon: 45.07, tone: "watch" },
+            { id: "port:yokohama", kind: "Port", label: "横浜港", lat: 35.44, lon: 139.67, tone: "critical" }
+          ],
+          liveRoutes: [
+            {
+              id: "live-logistics:tanker-saudi-tokyo-bay",
+              label: "タンカー航路",
+              laneId: "maritime",
+              modeLabel: "海上",
+              pointIds: ["country:saudi-arabia", "port:yokohama"],
+              relatedIds: ["flow:saudi-oil-japan"],
+              selectionId: "live-logistics:tanker-saudi-tokyo-bay",
+              selected: true
+            }
+          ]
+        }}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("energy")}
+      />
+    );
+
+    await waitFor(() => expect(addedSources.has("live-logistics-routes")).toBe(true));
+    expect(getAddedLayer("live-logistics-route-glow")).toMatchObject({
+      type: "line",
+      source: "live-logistics-routes"
+    });
+    expect(getAddedLayer("live-logistics-route-pulse")).toMatchObject({
+      type: "line",
+      source: "live-logistics-routes"
+    });
+    expect((getAddedLayer("live-logistics-route-label") as any).layout["text-field"]).toBe("SCAN");
+    expect(getLastLayoutVisibility("live-logistics-route-label")).toBe("visible");
+    expect(getLastLayoutVisibility("live-logistics-maritime-support-line")).toBe("none");
+    expect(animationSpy).toHaveBeenCalled();
+    animationSpy.mockRestore();
   });
 
   test("renders detailed road bases, operational semantics, and junctions as separate interactive sources", async () => {
