@@ -7,6 +7,7 @@ import { loadSeedGraph, loadSeedRoadOperations } from "../../lib/data/seed-loade
 import { getThemePalette } from "../../lib/presentation/palette";
 import { buildRoadOperationsView } from "../../lib/presentation/road-operations";
 import type { RoadOperationsViewModel } from "../../types/road-operations";
+import type { SemanticGraph, SourceDocument } from "../../types/semantic";
 import { RoadConditionInspector } from "../RoadConditionInspector";
 
 afterEach(cleanup);
@@ -24,6 +25,11 @@ function buildInput(selectedId = "live-logistics:road-keihin-tokyo") {
     selectedId,
     themePalette: getThemePalette("logistics")
   };
+}
+
+function fieldValue(inspector: HTMLElement, label: string) {
+  const term = within(inspector).getByText(`${label}:`);
+  return term.nextElementSibling?.textContent?.trim() ?? "";
 }
 
 describe("RoadConditionInspector", () => {
@@ -44,7 +50,7 @@ describe("RoadConditionInspector", () => {
     expect(inspector.textContent).toContain("高速湾岸線 B");
     expect(inspector.textContent).toContain("横浜港・本牧ふ頭 → 本牧JCT");
     expect(inspector.textContent).toContain("東行き");
-    expect(inspector.textContent).toContain("JARTIC / 利用不可");
+    expect(fieldValue(inspector, "提供元")).toBe("公式道路交通フィード未接続 / 利用不可");
     expect(inspector.textContent).toContain("公式道路交通フィード未接続");
     expect(inspector.textContent).toContain("© OpenStreetMap contributors");
     expect(inspector.textContent).toContain("一般化形状");
@@ -71,6 +77,135 @@ describe("RoadConditionInspector", () => {
     expect(text).not.toContain("速度");
     expect(text).not.toContain("所要時間");
     expect(text).not.toMatch(/今日|監視中|次回更新|\d+分前/);
+  });
+
+  test("uses the actual available provider and removes demo suffixes for authorized current data", () => {
+    const input = buildInput("road-condition:demo-daikoku-ukishima-congestion");
+    const condition = {
+      ...input.roadOperations.conditions[0],
+      dataPosture: "authorized-provider" as const,
+      freshness: "current" as const,
+      displayLifecycleLabel: null,
+      disclosureLabel: "提供元の現在データ",
+      sourceIds: ["source:jartic-road-provider-service"]
+    };
+    const roadOperations: RoadOperationsViewModel = {
+      ...input.roadOperations,
+      conditions: [condition],
+      provider: {
+        ...input.roadOperations.provider,
+        id: "provider:metro-road-api",
+        label: "首都圏道路運用API",
+        state: "available",
+        lastSuccessfulRetrievalAt: "2026-08-08T11:59:00+09:00"
+      }
+    };
+
+    render(<RoadConditionInspector {...input} roadOperations={roadOperations} />);
+    const inspector = screen.getByTestId("road-condition-inspector");
+    const text = inspector.textContent ?? "";
+    expect(within(inspector).getByRole("heading", { name: /渋滞 —/ })).toBeTruthy();
+    expect(fieldValue(inspector, "区分")).toBe("渋滞");
+    expect(fieldValue(inspector, "提供元")).toBe("首都圏道路運用API / 利用可能");
+    expect(fieldValue(inspector, "最終成功取得")).toBe("2026-08-08T11:59:00+09:00");
+    expect(text).not.toContain("渋滞例");
+    expect(text).not.toContain("固定デモ");
+    expect(text).not.toContain("現在情報ではありません");
+  });
+
+  test("shows only validated absolute timestamps and rejects relative or malformed values", () => {
+    const input = buildInput("road-condition:demo-daikoku-ukishima-congestion");
+    const condition = {
+      ...input.roadOperations.conditions[0],
+      startsAt: "今日 09:00",
+      endsAt: "2026-99-99T99:99:99+09:00",
+      providerObservedAt: "3分前",
+      retrievedAt: "javascript:alert(1)"
+    };
+    const roadOperations: RoadOperationsViewModel = {
+      ...input.roadOperations,
+      conditions: [condition],
+      provider: {
+        ...input.roadOperations.provider,
+        lastSuccessfulRetrievalAt: "昨日"
+      }
+    };
+
+    render(<RoadConditionInspector {...input} roadOperations={roadOperations} />);
+    const inspector = screen.getByTestId("road-condition-inspector");
+    expect(fieldValue(inspector, "開始")).toBe("データなし");
+    expect(fieldValue(inspector, "終了")).toBe("データなし");
+    expect(fieldValue(inspector, "提供元観測時刻")).toBe("データなし");
+    expect(fieldValue(inspector, "取得時刻")).toBe("データなし");
+    expect(fieldValue(inspector, "最終成功取得")).toBe("データなし");
+    expect(inspector.textContent).not.toMatch(/今日|3分前|javascript:|2026-99-99|昨日/);
+  });
+
+  test("links only safe web and root-relative source URLs", () => {
+    const input = buildInput("road-condition:demo-daikoku-ukishima-congestion");
+    const unsafeSources: SourceDocument[] = [
+      { id: "source:empty", label: "空URL", url: "", publisher: "test", accessed: "2026-08-08" },
+      { id: "source:backslash", label: "バックスラッシュURL", url: "/safe\\evil", publisher: "test", accessed: "2026-08-08" },
+      { id: "source:control", label: "制御文字URL", url: "https://safe.test/\nattack", publisher: "test", accessed: "2026-08-08" },
+      { id: "source:http", label: "HTTP出典", url: "http://safe.test/source", publisher: "test", accessed: "2026-08-08" }
+    ];
+    const graph: SemanticGraph = {
+      ...input.graph,
+      sources: [
+        ...input.graph.sources.map((source) => {
+          if (source.id === "source:shutoko-bayshore-route") return { ...source, url: "javascript:alert(1)" };
+          if (source.id === "source:shutoko-jct-guide") return { ...source, url: "//evil.test/path" };
+          if (source.id === "source:jartic-road-provider-service") return { ...source, url: "data:text/html,unsafe" };
+          if (source.id === "source:openstreetmap-road-geometry") return { ...source, url: "/data/osm.geojson" };
+          return source;
+        }),
+        ...unsafeSources
+      ]
+    };
+    const condition = {
+      ...input.roadOperations.conditions[0],
+      sourceIds: [
+        ...input.roadOperations.conditions[0].sourceIds,
+        ...unsafeSources.map((source) => source.id)
+      ]
+    };
+
+    render(
+      <RoadConditionInspector
+        {...input}
+        graph={graph}
+        roadOperations={{ ...input.roadOperations, conditions: [condition] }}
+      />
+    );
+    const inspector = screen.getByTestId("road-condition-inspector");
+    expect(within(inspector).getByRole("link", { name: /OpenStreetMap 道路形状/ }).getAttribute("href")).toBe("/data/osm.geojson");
+    expect(within(inspector).getByRole("link", { name: "HTTP出典" }).getAttribute("href")).toBe("http://safe.test/source");
+    for (const label of [
+      "首都高 高速湾岸線・首都高ナビマップ",
+      "首都高 JCT・複雑なルート案内",
+      "JARTIC 各種情報の提供（オープンデータ）",
+      "空URL",
+      "バックスラッシュURL",
+      "制御文字URL"
+    ]) {
+      expect(within(inspector).getByText(label).closest("a")).toBeNull();
+    }
+    expect(Array.from(within(inspector).getAllByRole("link")).every((link) => !/^(?:javascript:|data:|\/\/)/.test(link.getAttribute("href") ?? ""))).toBe(true);
+  });
+
+  test("keeps definition lists and source lists structurally valid", () => {
+    render(<RoadConditionInspector {...buildInput("road-condition:demo-daikoku-ukishima-congestion")} />);
+    const inspector = screen.getByTestId("road-condition-inspector");
+    const sourceHeading = within(inspector).getByRole("heading", { name: "出典・利用条件" });
+    const sourceSection = sourceHeading.closest("section");
+    expect(sourceSection?.querySelector("dl")).toBeNull();
+    expect(sourceSection?.querySelector("ul")).toBeTruthy();
+    expect(sourceSection?.querySelector("p")).toBeTruthy();
+    expect(inspector.querySelectorAll("dl > ul, dl > p")).toHaveLength(0);
+    for (const list of Array.from(inspector.querySelectorAll("dl"))) {
+      expect(list.querySelectorAll(":scope > div > dt").length).toBeGreaterThan(0);
+      expect(list.querySelectorAll(":scope > div > dt").length).toBe(list.querySelectorAll(":scope > div > dd").length);
+    }
   });
 
   test("shows planned and ended lifecycle plus stale labels truthfully", () => {

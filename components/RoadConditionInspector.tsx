@@ -1,6 +1,9 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import type { ThemePalette } from "../lib/presentation/palette";
+import { isAbsoluteRoadTimestamp } from "../lib/road-operations/provider-adapter";
 import type {
   RoadConditionFreshness,
   RoadConditionViewModel,
@@ -47,6 +50,13 @@ export function RoadConditionInspector({
     ...roadOperations.provider.sourceIds
   ]);
   const sources = graph.sources.filter((source) => sourceIds.has(source.id));
+  const routeSegmentIds = new Set(segments.map((segment) => segment.id));
+  const routeEvidence = [...roadOperations.conditions, ...roadOperations.restrictions]
+    .filter((record) => routeSegmentIds.has(record.segmentId));
+  const presentationPosture = event?.dataPosture
+    ?? (routeEvidence.length > 0 && routeEvidence.every((record) => record.dataPosture === "fixed-demo")
+      ? "fixed-demo"
+      : roadOperations.provider.dataPosture);
   const headingId = `${idPrefix}-heading`;
   const descriptionId = `${idPrefix}-description`;
 
@@ -80,50 +90,59 @@ export function RoadConditionInspector({
 
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 text-xs leading-5">
         <p id={descriptionId} className="rounded border px-3 py-2" style={{ borderColor: themePalette.borderStrong, color: themePalette.textPrimary }}>
-          固定デモ / 現在情報ではありません。公式道路交通フィード未接続のため、現在の渋滞・規制判断には使用できません。
+          {buildPresentationDisclosure(presentationPosture, roadOperations)}
         </p>
 
         <InspectorGroup title="経路・区間" themePalette={themePalette}>
-          <InspectorRow label="代表経路" value={route.label} />
-          <InspectorRow label="道路" value={formatRoadNames(segments)} />
-          <InspectorRow label="方向" value={event?.direction ?? route.direction} />
-          <InspectorRow
-            label="経路関係"
-            value={eventSegment
-              ? `${route.label} / ${eventSegment.label}`
-              : `${route.label} / ${segments.map((segment) => segment.label).join(" / ")}`}
-          />
-          {event ? (
+          <dl className="space-y-1.5">
+            <InspectorRow label="代表経路" value={route.label} />
+            <InspectorRow label="道路" value={formatRoadNames(segments)} />
+            <InspectorRow label="方向" value={event?.direction ?? route.direction} />
             <InspectorRow
-              label="影響範囲"
-              value={event.affectedRange
-                ? `${event.affectedRange.fromLabel} → ${event.affectedRange.toLabel}`
-                : eventSegment?.label ?? "データなし"}
+              label="経路関係"
+              value={eventSegment
+                ? `${route.label} / ${eventSegment.label}`
+                : `${route.label} / ${segments.map((segment) => segment.label).join(" / ")}`}
             />
-          ) : null}
+            {event ? (
+              <InspectorRow
+                label="影響範囲"
+                value={event.affectedRange
+                  ? `${event.affectedRange.fromLabel} → ${event.affectedRange.toLabel}`
+                  : eventSegment?.label ?? "データなし"}
+              />
+            ) : null}
+          </dl>
         </InspectorGroup>
 
         {event ? (
           <InspectorGroup title="道路状態" themePalette={themePalette}>
-            <InspectorRow label="区分" value={eventCategoryLabel(event)} />
-            <InspectorRow label="状態" value={eventStateLabel(event)} />
-            <InspectorRow label="鮮度" value={freshnessLabel(event.freshness)} />
-            <InspectorRow label="開始" value={event.startsAt ?? "データなし"} />
-            <InspectorRow label="終了" value={event.endsAt ?? "データなし"} />
-            <InspectorRow label="提供元観測時刻" value={event.providerObservedAt} />
-            <InspectorRow label="取得時刻" value={event.retrievedAt} />
-            <QuantitativeRows event={event} />
+            <dl className="space-y-1.5">
+              <InspectorRow label="区分" value={eventCategoryLabel(event)} />
+              <InspectorRow label="状態" value={eventStateLabel(event)} />
+              <InspectorRow label="鮮度" value={freshnessLabel(event.freshness)} />
+              <InspectorRow label="開始" value={formatAbsoluteTimestamp(event.startsAt)} />
+              <InspectorRow label="終了" value={formatAbsoluteTimestamp(event.endsAt)} />
+              <InspectorRow label="提供元観測時刻" value={formatAbsoluteTimestamp(event.providerObservedAt)} />
+              <InspectorRow label="取得時刻" value={formatAbsoluteTimestamp(event.retrievedAt)} />
+              <QuantitativeRows event={event} />
+            </dl>
           </InspectorGroup>
         ) : null}
 
         <InspectorGroup title="提供状態" themePalette={themePalette}>
-          <InspectorRow
-            label="提供元"
-            value={`${roadOperations.provider.dataPosture === "authorized-provider" ? "JARTIC" : roadOperations.provider.label} / ${roadOperations.provider.state === "available" ? "利用可能" : "利用不可"}`}
-          />
-          <InspectorRow label="最終成功取得" value={roadOperations.provider.lastSuccessfulRetrievalAt ?? "データなし"} />
-          <InspectorRow label="到着見込み" value="データなし" />
-          <InspectorRow label="物流影響" value="データなし" />
+          <dl className="space-y-1.5">
+            <InspectorRow
+              label="提供元"
+              value={`${roadOperations.provider.label} / ${roadOperations.provider.state === "available" ? "利用可能" : "利用不可"}`}
+            />
+            <InspectorRow
+              label="最終成功取得"
+              value={formatAbsoluteTimestamp(roadOperations.provider.lastSuccessfulRetrievalAt)}
+            />
+            <InspectorRow label="到着見込み" value="データなし" />
+            <InspectorRow label="物流影響" value="データなし" />
+          </dl>
         </InspectorGroup>
 
         <InspectorGroup title="出典・利用条件" themePalette={themePalette}>
@@ -134,7 +153,7 @@ export function RoadConditionInspector({
             {route.attribution} / 道路形状は表示用の一般化形状です。法的な道路境界、ナビゲーション精度、ライブ交通を保証しません。
           </p>
           {event ? (
-            <p className="mt-2" style={{ color: themePalette.textMuted }}>{event.disclosureLabel}</p>
+            <p className="mt-2" style={{ color: themePalette.textMuted }}>{buildEventDisclosure(event)}</p>
           ) : null}
         </InspectorGroup>
       </div>
@@ -178,16 +197,17 @@ function getRouteSegments(roadOperations: RoadOperationsViewModel, route: RoadRo
 }
 
 function eventCategoryLabel(event: RoadEvent) {
+  const suffix = event.dataPosture === "fixed-demo" ? "例" : "";
   if (event.recordType === "condition") {
-    return { normal: "平常例", slow: "低速例", congestion: "渋滞例" }[event.condition];
+    return `${{ normal: "平常", slow: "低速", congestion: "渋滞" }[event.condition]}${suffix}`;
   }
-  return {
-    accident: "事故例",
-    construction: "工事例",
-    "lane-restriction": "車線規制例",
-    closure: "通行止例",
-    other: "規制例"
-  }[event.restrictionKind];
+  return `${{
+    accident: "事故",
+    construction: "工事",
+    "lane-restriction": "車線規制",
+    closure: "通行止",
+    other: "規制"
+  }[event.restrictionKind]}${suffix}`;
 }
 
 function eventStateLabel(event: RoadEvent) {
@@ -211,6 +231,29 @@ function formatRoadNames(segments: RoadSegmentViewModel[]) {
   return [...new Set(segments.map((segment) => `${segment.roadName} ${segment.routeNumber}`))].join(" / ");
 }
 
+function formatAbsoluteTimestamp(value: string | undefined) {
+  return isAbsoluteRoadTimestamp(value) ? value : "データなし";
+}
+
+function buildPresentationDisclosure(
+  posture: "authorized-provider" | "fixed-demo",
+  roadOperations: RoadOperationsViewModel
+) {
+  const providerState = `${roadOperations.provider.label} / ${roadOperations.provider.state === "available" ? "利用可能" : "利用不可"}`;
+  if (posture === "fixed-demo") {
+    return `固定デモ / 現在情報ではありません。${providerState}。現在の渋滞・規制判断には使用できません。`;
+  }
+  return roadOperations.provider.state === "available"
+    ? `${providerState}。提供元の観測時刻と出典を確認してください。`
+    : `${providerState}。現在の道路交通情報は提供されていません。`;
+}
+
+function buildEventDisclosure(event: RoadEvent) {
+  return event.dataPosture === "fixed-demo"
+    ? "固定デモ / 現在情報ではありません"
+    : "認可済み提供元データ / 提供元の観測時刻と出典を確認してください";
+}
+
 function QuantitativeRows({ event }: { event: RoadEvent }) {
   if (event.recordType !== "condition") return null;
   return (
@@ -228,11 +271,11 @@ function QuantitativeRow({ field, label }: { field?: RoadQuantitativeField; labe
   return <InspectorRow label={label} value={`${field.value} ${field.unit}`} />;
 }
 
-function InspectorGroup({ children, themePalette, title }: { children: React.ReactNode; themePalette: ThemePalette; title: string }) {
+function InspectorGroup({ children, themePalette, title }: { children: ReactNode; themePalette: ThemePalette; title: string }) {
   return (
     <section className="border-t pt-3" style={{ borderColor: themePalette.borderSubtle }}>
       <h3 className="mb-2 font-mono text-[0.62rem] tracking-[0.15em]" style={{ color: themePalette.accentText }}>{title}</h3>
-      <dl className="space-y-1.5">{children}</dl>
+      {children}
     </section>
   );
 }
@@ -247,12 +290,28 @@ function InspectorRow({ label, value }: { label: string; value: string }) {
 }
 
 function SourceLink({ source, themePalette }: { source: SourceDocument; themePalette: ThemePalette }) {
+  const safeHref = resolveSafeSourceHref(source.url);
   return (
     <li>
-      <a href={source.url} target="_blank" rel="noreferrer" className="underline underline-offset-2" style={{ color: themePalette.accentText }}>
-        {source.label}
-      </a>
+      {safeHref ? (
+        <a href={safeHref} target="_blank" rel="noreferrer" className="underline underline-offset-2" style={{ color: themePalette.accentText }}>
+          {source.label}
+        </a>
+      ) : (
+        <span style={{ color: themePalette.accentText }}>{source.label}</span>
+      )}
       {source.description ? <p className="mt-0.5" style={{ color: themePalette.textMuted }}>{source.description}</p> : null}
     </li>
   );
+}
+
+function resolveSafeSourceHref(value: string) {
+  if (!value || value !== value.trim() || /[\u0000-\u001f\u007f\\]/.test(value)) return null;
+  if (value.startsWith("/")) return value.startsWith("//") ? null : value;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? value : null;
+  } catch {
+    return null;
+  }
 }
