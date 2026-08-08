@@ -421,6 +421,38 @@ describe("active layer summary", () => {
     expect(summary.coverage.value).toBe("4代表経路 / 3輸送モード");
   });
 
+  test("does not count a road route when actual segment ids duplicate one expected id and omit another", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const roadOperations = buildRoadOperationsView(
+      loadSeedRoadOperations(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const duplicateSegmentId = roadOperations.segments[0].id;
+    const missingSegmentId = roadOperations.segments[1].id;
+    roadOperations.segments[1].id = duplicateSegmentId;
+    const workspace = buildWorkspacePresentation(graph, view, live);
+    const layer = getLayerDefinition("logistics", "logistics-domestic", workspace)!;
+
+    const summary = buildActiveLayerSummary(
+      graph,
+      view,
+      layer,
+      workspace.scope,
+      live,
+      roadOperations
+    );
+
+    expect(roadOperations.routes[0].segmentIds).toContain(missingSegmentId);
+    expect(summary.coverage.value).toBe("4代表経路 / 3輸送モード");
+  });
+
   test("leaves non-logistics summaries unchanged when road operations are supplied", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "rice");

@@ -493,12 +493,14 @@ function getCompleteDetailedRoadRouteIds(
   return new Set(roadOperations.routes.flatMap((route) => {
     const expectedSegmentIds = new Set(route.segmentIds);
     const routeSegments = roadOperations.segments.filter((segment) => segment.routeId === route.id);
+    const actualSegmentIds = new Set(routeSegments.map((segment) => segment.id));
     const isComplete = (
       route.segmentIds.length > 0 &&
       expectedSegmentIds.size === route.segmentIds.length &&
-      routeSegments.length === expectedSegmentIds.size &&
+      actualSegmentIds.size === routeSegments.length &&
+      actualSegmentIds.size === expectedSegmentIds.size &&
+      [...expectedSegmentIds].every((segmentId) => actualSegmentIds.has(segmentId)) &&
       routeSegments.every((segment) => (
-        expectedSegmentIds.has(segment.id) &&
         segment.coordinates.length >= 2 &&
         segment.coordinates.every(
           (coordinate) => coordinate.length === 2 && coordinate.every(Number.isFinite)

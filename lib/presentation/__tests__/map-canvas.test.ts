@@ -403,6 +403,32 @@ describe("japan map canvas model", () => {
     );
   });
 
+  test("keeps the endpoint chord when actual segment ids duplicate one expected id and omit another", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const roadOperations = buildRoadOperationsView(
+      loadSeedRoadOperations(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const duplicateSegmentId = roadOperations.segments[0].id;
+    const missingSegmentId = roadOperations.segments[1].id;
+    roadOperations.segments[1].id = duplicateSegmentId;
+
+    const model = buildJapanMapCanvasModel(graph, view, "", null, live, roadOperations);
+
+    expect(roadOperations.routes[0].segmentIds).toContain(missingSegmentId);
+    expect(model.roadSegments?.map((segment) => segment.id)).not.toContain(missingSegmentId);
+    expect(model.liveRoutes?.map((route) => route.id)).toContain(
+      "live-logistics:road-keihin-tokyo"
+    );
+  });
+
   test("keeps supported logistics routes with lane metadata and leaves an empty active id unselected", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "logistics");
