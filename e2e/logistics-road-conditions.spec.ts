@@ -10,6 +10,7 @@ const ROAD_ROUTE_ID = "live-logistics:road-keihin-tokyo";
 const CONGESTION_ID = "road-condition:demo-daikoku-ukishima-congestion";
 const CONSTRUCTION_ID = "road-restriction:demo-ukishima-oi-construction";
 const PLANNED_ID = "road-restriction:demo-oi-tatsumi-lane";
+const ENDED_CLOSURE_ID = "road-restriction:acceptance-ended-closure";
 const ANCHOR_LABELS = [
   "横浜港・本牧ふ頭",
   "本牧JCT",
@@ -65,6 +66,7 @@ type LogisticsDiagnostics = {
     routeId: string;
     selected: boolean;
     selectionId: string;
+    screenCoordinates: Array<[number, number]>;
   }>;
   tilesLoaded: boolean;
 };
@@ -139,6 +141,13 @@ test.describe("logistics road conditions acceptance", () => {
     const coastalLayer = layer(diagnostics, "live-logistics-coastal-line");
     const airLayer = layer(diagnostics, "live-logistics-air-line");
     const maritimeLayer = layer(diagnostics, "live-logistics-maritime-support-line");
+    for (const legacyLayerId of [
+      "live-logistics-route-glow",
+      "live-logistics-route-pulse",
+      "live-logistics-route-label"
+    ]) {
+      expect(layer(diagnostics, legacyLayerId).layout?.visibility, legacyLayerId).toBe("none");
+    }
     expect(roadLayer.filter).toEqual(["==", ["get", "laneId"], "road"]);
     expect(roadLayer.paint?.["line-dasharray"]).toBeUndefined();
     expect(railLayer.paint?.["line-dasharray"]).toEqual([1.5, 1]);
@@ -156,6 +165,7 @@ test.describe("logistics road conditions acceptance", () => {
     ] as const;
     for (const [mode, symbol, modeLabel] of expectedModeLabels) {
       const labelLayer = layer(diagnostics, `live-logistics-${mode}-label`);
+      expect(labelLayer.layout?.visibility, `${mode} label visibility`).toBe("visible");
       expect(JSON.stringify(labelLayer.layout?.["text-field"])).toContain(symbol);
       expect(JSON.stringify(labelLayer.layout?.["text-field"])).toContain("modeLabel");
       expect(
@@ -200,52 +210,75 @@ test.describe("logistics road conditions acceptance", () => {
       lifecycle: "planned",
       visualKind: "lane-restriction"
     });
+    expect(operations.get(ENDED_CLOSURE_ID)).toMatchObject({
+      dataPosture: "fixed-demo",
+      freshness: "stale",
+      lifecycle: "ended",
+      selectionId: ENDED_CLOSURE_ID,
+      stateLabel: expect.stringMatching(/通行止例.*終了.*期限切れ/),
+      visualKind: "closure"
+    });
     expect(diagnostics.roadOperations.some((operation) => operation.freshness === "unavailable" && operation.visualKind === "unknown"))
       .toBe(true);
     expect(network.unexpected).toEqual([]);
   });
 
-  test("opens route and event inspectors with exact URL selection and route-wide focus", async ({ page }, testInfo) => {
-    const network = await installLocalNetworkGuard(page);
-    await openLogistics(page, VIEWPORTS[1]);
-    const overview = page.locator('[data-testid="logistics-route-overview"]:visible');
+  for (const viewport of VIEWPORTS) {
+    test(`opens route and event inspectors with unobscured route focus at ${viewport.width}x${viewport.height}`, async ({ page }, testInfo) => {
+      test.setTimeout(45_000);
+      const network = await installLocalNetworkGuard(page);
+      await openLogistics(page, viewport);
+      const overview = page.locator('[data-testid="logistics-route-overview"]:visible');
 
-    const roadRoute = overview.getByRole("button", { name: /道路 代表経路/ }).first();
-    await roadRoute.click();
-    await expectSelected(page, ROAD_ROUTE_ID);
-    const inspector = page.locator('[data-testid="road-condition-inspector"]:visible');
-    await expect(inspector).toHaveCount(1);
-    await expect(inspector).toContainText("横浜港・本牧ふ頭 → 東京湾岸配送圏");
-    await expect(inspector).toContainText("高速湾岸線 B");
-    await expect(inspector).toContainText("東行き");
-    await expect(inspector).toContainText("公式道路交通フィード未接続 / 利用不可");
-    await expect(inspector).toContainText("© OpenStreetMap contributors");
-    await expect(inspector).toContainText("固定デモ");
-    await expect(inspector).toContainText("現在情報ではありません");
-    await expect(inspector).toContainText("到着見込み:  データなし");
-    await expect(inspector).toContainText("物流影響:  データなし");
-    await expect(page.locator('[aria-label="選択中の詳細と根拠"]:visible')).toHaveCount(0);
+      const roadRoute = overview.getByRole("button", { name: /道路 代表経路/ }).first();
+      await roadRoute.click();
+      await expectSelected(page, ROAD_ROUTE_ID);
+      const inspector = page.locator('[data-testid="road-condition-inspector"]:visible');
+      await expect(inspector).toHaveCount(1);
+      await expect(inspector).toContainText("横浜港・本牧ふ頭 → 東京湾岸配送圏");
+      await expect(inspector).toContainText("高速湾岸線 B");
+      await expect(inspector).toContainText("東行き");
+      await expect(inspector).toContainText("公式道路交通フィード未接続 / 利用不可");
+      await expect(inspector).toContainText("© OpenStreetMap contributors");
+      await expect(inspector).toContainText("固定デモ");
+      await expect(inspector).toContainText("現在情報ではありません");
+      await expect(inspector).toContainText("到着見込み:  データなし");
+      await expect(inspector).toContainText("物流影響:  データなし");
+      await expect(page.locator('[aria-label="選択中の詳細と根拠"]:visible')).toHaveCount(0);
 
-    await expect.poll(async () => (await readLogisticsDiagnostics(page)).camera.allDetailedRoadCoordinatesInBounds).toBe(true);
-    await expect.poll(async () => (await readLogisticsDiagnostics(page)).roadSegments.every((segment) => segment.selected)).toBe(true);
+      await expect.poll(async () => (await readLogisticsDiagnostics(page)).roadSegments.every((segment) => segment.selected)).toBe(true);
+      await assertSelectedRoadCoordinatesInsideUnobscuredMap(page);
+      await page.screenshot({
+        fullPage: false,
+        path: testInfo.outputPath(`logistics-selected-road-route-${viewport.width}x${viewport.height}.png`)
+      });
 
-    await inspector.getByRole("button", { name: "道路状況の詳細を閉じる" }).click();
-    await expect(inspector).toHaveCount(0);
-    await expectSelected(page, ROAD_ROUTE_ID);
-    await roadRoute.click();
-    await expect(inspector).toHaveCount(1);
+      await inspector.getByRole("button", { name: "道路状況の詳細を閉じる" }).click();
+      await expect(inspector).toHaveCount(0);
+      await expectSelected(page, ROAD_ROUTE_ID);
+      await roadRoute.click();
+      await expect(inspector).toHaveCount(1);
 
-    await assertEventSelection(page, overview, /道路 渋滞例/, CONGESTION_ID, ["渋滞例", "期限切れ", "2026-06-03T09:00:00+09:00"]);
-    await assertEventSelection(page, overview, /道路 工事例/, CONSTRUCTION_ID, ["工事例", "期限切れ", "2026-06-03T09:00:00+09:00"]);
-    await assertEventSelection(page, overview, /道路 車線規制例/, PLANNED_ID, ["車線規制例", "予定", "期限切れ", "2026-06-03T09:00:00+09:00"]);
+      await assertEventSelection(page, overview, /道路 渋滞例/, CONGESTION_ID, ["渋滞例", "期限切れ", "2026-06-03T09:00:00+09:00"]);
+      await assertEventSelection(page, overview, /道路 工事例/, CONSTRUCTION_ID, ["工事例", "期限切れ", "2026-06-03T09:00:00+09:00"]);
+      await assertEventSelection(page, overview, /道路 車線規制例/, PLANNED_ID, ["車線規制例", "予定", "期限切れ", "2026-06-03T09:00:00+09:00"]);
+      await assertEventSelection(page, overview, /道路 通行止例/, ENDED_CLOSURE_ID, [
+        "通行止例",
+        "終了",
+        "期限切れ",
+        "2026-06-03T07:00:00+09:00",
+        "2026-06-03T08:00:00+09:00"
+      ]);
 
-    await assertPermanentLayout(page, VIEWPORTS[1]);
-    await page.screenshot({
-      fullPage: false,
-      path: testInfo.outputPath("logistics-planned-road-inspector-1680x900.png")
+      await assertSelectedRoadCoordinatesInsideUnobscuredMap(page);
+      await assertPermanentLayout(page, viewport);
+      await page.screenshot({
+        fullPage: false,
+        path: testInfo.outputPath(`logistics-ended-closure-${viewport.width}x${viewport.height}.png`)
+      });
+      expect(network.unexpected).toEqual([]);
     });
-    expect(network.unexpected).toEqual([]);
-  });
+  }
 
   test("keeps the Niigata default free from logistics road UI", async ({ page }) => {
     const network = await installLocalNetworkGuard(page);
@@ -339,6 +372,38 @@ async function assertPermanentLayout(page: Page, viewport: Readonly<{ height: nu
   if (inspector) {
     expect(zoomControl.x + zoomControl.width).toBeLessThanOrEqual(inspector.x - 24);
     expect(attribution.x + attribution.width).toBeLessThanOrEqual(inspector.x - 24);
+  }
+}
+
+async function assertSelectedRoadCoordinatesInsideUnobscuredMap(page: Page) {
+  const map = await requiredBox(page.locator('[data-testid="layout-map-section"]:visible'));
+  const commandPane = await requiredBox(page.locator('[data-testid="layout-command-pane"]:visible'));
+  const inspector = await requiredBox(page.locator('[data-testid="layout-context-inspector"]:visible'));
+  const safeBounds = {
+    bottom: map.y + map.height - 24,
+    left: commandPane.x + commandPane.width + 24,
+    right: inspector.x - 24,
+    top: map.y + 24
+  };
+  const readProjectedCoordinates = async () => (
+    (await readLogisticsDiagnostics(page)).roadSegments.flatMap((segment) => segment.screenCoordinates)
+  );
+
+  await expect.poll(async () => {
+    const coordinates = await readProjectedCoordinates();
+    return coordinates.length > 0 && coordinates.every(([x, y]) => (
+      map.x + x >= safeBounds.left
+      && map.x + x <= safeBounds.right
+      && map.y + y >= safeBounds.top
+      && map.y + y <= safeBounds.bottom
+    ));
+  }).toBe(true);
+
+  for (const [index, [x, y]] of (await readProjectedCoordinates()).entries()) {
+    expect(map.x + x, `selected road coordinate ${index} x`).toBeGreaterThanOrEqual(safeBounds.left);
+    expect(map.x + x, `selected road coordinate ${index} x`).toBeLessThanOrEqual(safeBounds.right);
+    expect(map.y + y, `selected road coordinate ${index} y`).toBeGreaterThanOrEqual(safeBounds.top);
+    expect(map.y + y, `selected road coordinate ${index} y`).toBeLessThanOrEqual(safeBounds.bottom);
   }
 }
 

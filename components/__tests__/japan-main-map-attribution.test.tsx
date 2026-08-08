@@ -7,7 +7,9 @@ import { JapanMainMap } from "../JapanMainMap";
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
 
 vi.mock("../JapanOperationsMapCanvas", () => ({
-  JapanOperationsMapCanvas: () => <div data-testid="map-canvas" />
+  JapanOperationsMapCanvas: ({ fitInsets }: { fitInsets?: Record<string, number> }) => (
+    <div data-fit-insets={JSON.stringify(fitInsets ?? null)} data-testid="map-canvas" />
+  )
 }));
 
 describe("JapanMainMap attribution safe area", () => {
@@ -34,5 +36,11 @@ describe("JapanMainMap attribution safe area", () => {
     const mapSection = screen.getByTestId("map-canvas").parentElement as HTMLElement;
     expect(mapSection.style.getPropertyValue("--map-overlay-left")).toBe("336px");
     expect(mapSection.style.getPropertyValue("--map-overlay-bottom")).toBe("24px");
+    expect(screen.getByTestId("map-canvas").getAttribute("data-fit-insets")).toBe(JSON.stringify({
+      bottom: 24,
+      left: 336,
+      right: 376,
+      top: 16
+    }));
   });
 });

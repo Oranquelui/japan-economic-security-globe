@@ -35,6 +35,12 @@ interface JapanOperationsMapCanvasProps {
     nonce: number;
     type: "recenter" | "zoomIn" | "zoomOut";
   };
+  fitInsets?: Readonly<{
+    bottom: number;
+    left: number;
+    right: number;
+    top: number;
+  }>;
   focusTargetId: string | null;
   mapMode: OperationMapMode;
   model: JapanMapCanvasModel;
@@ -172,6 +178,7 @@ const ROAD_OPERATION_LINE_STYLES = [
 export function JapanOperationsMapCanvas({
   activeId,
   command,
+  fitInsets,
   focusTargetId,
   mapMode,
   model,
@@ -1216,7 +1223,7 @@ export function JapanOperationsMapCanvas({
         }
 
         if (focusTargetId) {
-          focusMapOnSelection(map, model, focusTargetId, mapMode, zoomRef.current);
+          focusMapOnSelection(map, model, focusTargetId, mapMode, zoomRef.current, fitInsets);
         }
       });
     }
@@ -1430,8 +1437,16 @@ export function JapanOperationsMapCanvas({
       return;
     }
 
-    focusMapOnSelection(map, model, focusTargetId, mapMode, zoomRef.current);
-  }, [focusTargetId, mapMode, model]);
+    focusMapOnSelection(map, model, focusTargetId, mapMode, zoomRef.current, fitInsets);
+  }, [
+    fitInsets?.bottom,
+    fitInsets?.left,
+    fitInsets?.right,
+    fitInsets?.top,
+    focusTargetId,
+    mapMode,
+    model
+  ]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1757,7 +1772,18 @@ function buildLogisticsMapDiagnostics(map: any): LogisticsMapDiagnosticsSnapshot
   const style = typeof map.getStyle === "function" ? map.getStyle() : null;
   const sources = style?.sources && typeof style.sources === "object" ? style.sources : {};
   const logisticsRoutes = readGeoJsonDiagnosticFeatures(sources["live-logistics-routes"]);
-  const roadSegments = readGeoJsonDiagnosticFeatures(sources["logistics-road-segments"]);
+  const roadSegments = readGeoJsonDiagnosticFeatures(sources["logistics-road-segments"]).map((segment) => {
+    const coordinates = segment.coordinates;
+    if (!Array.isArray(coordinates) || typeof map.project !== "function") return segment;
+    return {
+      ...segment,
+      screenCoordinates: coordinates.flatMap((coordinate) => {
+        if (!Array.isArray(coordinate) || coordinate.length < 2) return [];
+        const point = map.project([coordinate[0], coordinate[1]]);
+        return [[point.x, point.y]];
+      })
+    };
+  });
   const roadOperations = readGeoJsonDiagnosticFeatures(sources["logistics-road-operations"]);
   const junctions = readGeoJsonDiagnosticFeatures(sources["logistics-road-junctions"]).map((junction) => {
     const coordinates = junction.coordinates;
@@ -2810,7 +2836,11 @@ function updateSource(map: any, sourceId: string, data: unknown) {
   }
 }
 
-function getResponsiveFitPadding(map: any, prefersGlobal: boolean) {
+function getResponsiveFitPadding(
+  map: any,
+  prefersGlobal: boolean,
+  fitInsets?: Readonly<{ bottom: number; left: number; right: number; top: number }>
+) {
   const canvas = typeof map.getCanvas === "function" ? map.getCanvas() : null;
   const width = getCanvasDimension(canvas?.clientWidth, canvas?.width, 1024);
   const height = getCanvasDimension(canvas?.clientHeight, canvas?.height, 720);
@@ -2818,11 +2848,16 @@ function getResponsiveFitPadding(map: any, prefersGlobal: boolean) {
   const top = Math.min(180, Math.max(44, Math.floor(height * 0.16)));
   const bottom = Math.min(prefersGlobal ? 200 : 260, Math.max(56, Math.floor(height * 0.2)));
 
+  if (!fitInsets) {
+    return { top, right: horizontal, bottom, left: horizontal };
+  }
+
+  const withSafety = (value: number) => (Number.isFinite(value) ? Math.max(0, value) : 0) + 24;
   return {
-    top,
-    right: horizontal,
-    bottom,
-    left: horizontal
+    top: Math.max(top, withSafety(fitInsets.top)),
+    right: Math.max(horizontal, withSafety(fitInsets.right)),
+    bottom: Math.max(bottom, withSafety(fitInsets.bottom)),
+    left: Math.max(horizontal, withSafety(fitInsets.left))
   };
 }
 
@@ -2841,7 +2876,8 @@ function focusMapOnSelection(
   model: JapanMapCanvasModel,
   activeId: string,
   mapMode: OperationMapMode,
-  currentZoom: number
+  currentZoom: number,
+  fitInsets?: Readonly<{ bottom: number; left: number; right: number; top: number }>
 ) {
   const activeRoute = model.routes.find((route) => routeMatchesSelection(route, activeId));
   const activePoint = model.points.find((point) => point.id === activeId);
@@ -2929,7 +2965,11 @@ function focusMapOnSelection(
   );
 
   map.fitBounds(bounds, {
-    padding: getResponsiveFitPadding(map, prefersGlobal),
+    padding: getResponsiveFitPadding(
+      map,
+      prefersGlobal,
+      activeDetailedRoadRouteId ? fitInsets : undefined
+    ),
     maxZoom: prefersGlobal ? 4.4 : mapMode === "route" ? 8.4 : 7.6,
     duration: 700
   });

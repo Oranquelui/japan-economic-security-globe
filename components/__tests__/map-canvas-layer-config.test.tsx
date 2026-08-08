@@ -723,6 +723,11 @@ describe("map canvas layer config", () => {
         routeId: "live-logistics:road-keihin-tokyo",
         selectionId: "live-logistics:road-keihin-tokyo"
       });
+      expect(diagnostics.roadSegments[0].screenCoordinates).toHaveLength(3);
+      expect(diagnostics.roadSegments[0].screenCoordinates[0]).toEqual([
+        expect.any(Number),
+        expect.any(Number)
+      ]);
       expect(diagnostics.roadOperations.some((operation: any) => (
         operation.visualKind === "unknown" && operation.freshness === "unavailable"
       ))).toBe(true);
@@ -1624,6 +1629,7 @@ describe("map canvas layer config", () => {
     render(
       <JapanOperationsMapCanvas
         activeId="road-restriction:construction"
+        fitInsets={{ bottom: 16, left: 336, right: 376, top: 16 }}
         focusTargetId="road-restriction:construction"
         mapMode="route"
         model={detailedRoadModel("road-restriction:construction")}
@@ -1637,6 +1643,14 @@ describe("map canvas layer config", () => {
       [139.665, 35.417],
       [139.868, 35.665]
     ]);
+    expect(lastMap?.fitBounds.mock.calls.at(-1)?.[1]).toMatchObject({
+      padding: {
+        bottom: 144,
+        left: 360,
+        right: 400,
+        top: 115
+      }
+    });
   });
 
   test("does not start route scan animation for a detailed logistics road model", async () => {

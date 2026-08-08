@@ -86,6 +86,7 @@ export function JapanMainMap({
       <JapanOperationsMapCanvas
         activeId={activeId}
         command={command}
+        fitInsets={overlayInsets}
         focusTargetId={focusTargetId}
         mapMode={mapMode}
         model={model}
