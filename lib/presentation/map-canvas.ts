@@ -1,5 +1,15 @@
 import type { LayerDefinition, ThemeView } from "../../types/presentation";
-import type { LiveLogisticsViewModel } from "../../types/logistics";
+import type {
+  LiveLogisticsLaneId,
+  LiveLogisticsMapRoute,
+  LiveLogisticsViewModel
+} from "../../types/logistics";
+import type {
+  RoadConditionKind,
+  RoadCoordinate,
+  RoadDirection,
+  RoadOperationsViewModel
+} from "../../types/road-operations";
 import type { DependencyFlow, Observation, SemanticEntity, SemanticGraph } from "../../types/semantic";
 import { prefectureBoundaryByEntityId } from "../geo/prefecture-boundaries";
 import { localizeAnyLabel } from "./japanese";
@@ -21,6 +31,44 @@ export type JapanMapRoute = {
   label: string;
   pointIds: string[];
   relatedIds: string[];
+  laneId?: LiveLogisticsLaneId;
+  modeLabel?: LiveLogisticsMapRoute["modeLabel"];
+  selectionId?: string;
+  selected?: boolean;
+};
+
+export type JapanMapLogisticsRoute = JapanMapRoute & {
+  laneId: LiveLogisticsLaneId;
+  modeLabel: LiveLogisticsMapRoute["modeLabel"];
+  selectionId: string;
+  selected: boolean;
+};
+
+export type JapanMapRoadSegment = {
+  id: string;
+  routeId: string;
+  routeLabel: string;
+  label: string;
+  roadName: string;
+  routeNumber: string;
+  direction: RoadDirection;
+  coordinates: RoadCoordinate[];
+  condition: RoadConditionKind | "unknown";
+  conditionIds: string[];
+  restrictionIds: string[];
+  sourceIds: string[];
+  selectionId: string;
+  selected: boolean;
+};
+
+export type JapanMapRoadJunction = {
+  id: string;
+  routeId: string;
+  label: string;
+  coordinates: RoadCoordinate;
+  sourceIds: string[];
+  selectionId: string;
+  selected: boolean;
 };
 
 type JapanMapRegionCommon = {
@@ -75,6 +123,8 @@ export type JapanMapCanvasModel = {
   livePoints?: JapanMapPoint[];
   liveRoutes?: JapanMapRoute[];
   liveVessels?: JapanMapPoint[];
+  roadSegments?: JapanMapRoadSegment[];
+  roadJunctions?: JapanMapRoadJunction[];
   logisticsImpactRegions?: JapanMapRegion[];
   logisticsImpactRoutes?: JapanMapRoute[];
   logisticsImpactCorridors?: JapanMapCorridor[];
@@ -89,10 +139,11 @@ export function buildJapanMapCanvasModel(
   view: ThemeView,
   activeId: string,
   layer: LayerDefinition | null,
-  liveLogistics?: LiveLogisticsViewModel | null
+  liveLogistics?: LiveLogisticsViewModel | null,
+  roadOperations?: RoadOperationsViewModel | null
 ): JapanMapCanvasModel {
   if (layer?.content.kind === "theme-composite" || layer === null) {
-    return buildThemeWideMapCanvasModel(graph, view, activeId, liveLogistics);
+    return buildThemeWideMapCanvasModel(graph, view, activeId, liveLogistics, roadOperations);
   }
 
   switch (layer.content.kind) {
@@ -105,7 +156,14 @@ export function buildJapanMapCanvasModel(
     case "entities":
       return buildEntityMapCanvasModel(view, layer);
     case "live-logistics":
-      return buildLiveLogisticsMapCanvasModel(graph, view, layer, liveLogistics);
+      return buildLiveLogisticsMapCanvasModel(
+        graph,
+        view,
+        activeId,
+        layer,
+        liveLogistics,
+        roadOperations
+      );
   }
 }
 
@@ -113,7 +171,8 @@ function buildThemeWideMapCanvasModel(
   graph: SemanticGraph,
   view: ThemeView,
   activeId: string,
-  liveLogistics?: LiveLogisticsViewModel | null
+  liveLogistics?: LiveLogisticsViewModel | null,
+  roadOperations?: RoadOperationsViewModel | null
 ): JapanMapCanvasModel {
   const japanEntity = graph.entities.find((entity) => entity.id === "country:japan");
   const routeScopedFlows = getRouteScopedFlows(graph, view, activeId);
@@ -189,7 +248,18 @@ function buildThemeWideMapCanvasModel(
 
   const globalPoints = buildGlobalPoints(routeScopedFlows, graph, japanEntity);
   const globalRoutes = buildGlobalRoutes(routeScopedFlows, graph, globalPoints, japanEntity);
-  const liveRoutes = buildLiveRoutes(liveLogistics, graph, view.id);
+  const { roadSegments, roadJunctions, detailedRouteIds } = buildDetailedRoadModel(
+    view.id,
+    roadOperations,
+    activeId
+  );
+  const liveRoutes = buildLiveRoutes(
+    liveLogistics,
+    graph,
+    view.id,
+    activeId,
+    detailedRouteIds
+  );
   const livePoints = buildLivePoints(liveRoutes, graph);
   const liveVessels = buildLiveVessels(liveLogistics);
 
@@ -202,6 +272,8 @@ function buildThemeWideMapCanvasModel(
     livePoints,
     liveRoutes,
     liveVessels,
+    roadSegments,
+    roadJunctions,
     foreignWindow: buildForeignWindow(graph, routeScopedFlows, activeId)
   };
 }
@@ -416,8 +488,10 @@ function buildEntityMapCanvasModel(
 function buildLiveLogisticsMapCanvasModel(
   graph: SemanticGraph,
   view: ThemeView,
+  activeId: string,
   layer: LayerDefinition,
-  liveLogistics?: LiveLogisticsViewModel | null
+  liveLogistics?: LiveLogisticsViewModel | null,
+  roadOperations?: RoadOperationsViewModel | null
 ): JapanMapCanvasModel {
   if (layer.content.kind !== "live-logistics" || !liveLogistics) {
     return emptyMapCanvasModel();
@@ -434,11 +508,24 @@ function buildLiveLogisticsMapCanvasModel(
     return emptyMapCanvasModel();
   }
 
-  const liveRoutes = buildLiveRoutes(liveLogistics, graph, view.id);
+  const { roadSegments, roadJunctions, detailedRouteIds } = buildDetailedRoadModel(
+    view.id,
+    roadOperations,
+    activeId
+  );
+  const liveRoutes = buildLiveRoutes(
+    liveLogistics,
+    graph,
+    view.id,
+    activeId,
+    detailedRouteIds
+  );
   return {
     ...emptyMapCanvasModel(),
     livePoints: buildLivePoints(liveRoutes, graph),
-    liveRoutes
+    liveRoutes,
+    roadSegments,
+    roadJunctions
   };
 }
 
@@ -452,6 +539,8 @@ function emptyMapCanvasModel(): JapanMapCanvasModel {
     livePoints: [],
     liveRoutes: [],
     liveVessels: [],
+    roadSegments: [],
+    roadJunctions: [],
     logisticsImpactRegions: [],
     logisticsImpactRoutes: [],
     logisticsImpactCorridors: []
@@ -565,13 +654,18 @@ function buildGlobalRoutes(
 function buildLiveRoutes(
   liveLogistics: LiveLogisticsViewModel | null | undefined,
   graph: SemanticGraph,
-  themeId: ThemeView["id"]
-): JapanMapRoute[] {
+  themeId: ThemeView["id"],
+  activeId: string,
+  detailedRouteIds: ReadonlySet<string>
+): JapanMapLogisticsRoute[] {
   if (!liveLogistics) {
     return [];
   }
 
   return liveLogistics.mapRoutes
+    .filter((route) => !(
+      route.id === "live-logistics:road-keihin-tokyo" && detailedRouteIds.has(route.id)
+    ))
     .map((route) => {
       const pointIds = route.pointIds
         .map((pointId) => graph.entities.find((entity) => entity.id === pointId))
@@ -587,10 +681,73 @@ function buildLiveRoutes(
         id: route.id,
         label: route.label,
         pointIds,
-        relatedIds: route.relatedIds
+        relatedIds: route.relatedIds,
+        laneId: route.laneId,
+        modeLabel: route.modeLabel,
+        selectionId: route.id,
+        selected: isActiveSelection(activeId, [route.id, ...route.relatedIds, ...pointIds])
       };
     })
-    .filter((route): route is JapanMapRoute => route !== null);
+    .filter((route): route is JapanMapLogisticsRoute => route !== null);
+}
+
+function buildDetailedRoadModel(
+  themeId: ThemeView["id"],
+  roadOperations: RoadOperationsViewModel | null | undefined,
+  activeId: string
+): {
+  roadSegments: JapanMapRoadSegment[];
+  roadJunctions: JapanMapRoadJunction[];
+  detailedRouteIds: Set<string>;
+} {
+  if (themeId !== "logistics" || !roadOperations) {
+    return { roadSegments: [], roadJunctions: [], detailedRouteIds: new Set() };
+  }
+
+  const routeById = new Map(roadOperations.routes.map((route) => [route.id, route]));
+  const roadSegments = roadOperations.segments.flatMap((segment): JapanMapRoadSegment[] => {
+    const route = routeById.get(segment.routeId);
+    if (!route) return [];
+    return [{
+      id: segment.id,
+      routeId: segment.routeId,
+      routeLabel: route.label,
+      label: segment.label,
+      roadName: segment.roadName,
+      routeNumber: segment.routeNumber,
+      direction: segment.direction,
+      coordinates: segment.coordinates,
+      condition: segment.condition,
+      conditionIds: segment.conditionIds,
+      restrictionIds: segment.restrictionIds,
+      sourceIds: segment.sourceIds,
+      selectionId: segment.id,
+      selected: isActiveSelection(activeId, [
+        segment.id,
+        segment.routeId,
+        ...segment.conditionIds,
+        ...segment.restrictionIds
+      ])
+    }];
+  });
+  const detailedRouteIds = new Set(roadSegments.map((segment) => segment.routeId));
+  const roadJunctions = roadOperations.junctions
+    .filter((junction) => detailedRouteIds.has(junction.routeId))
+    .map((junction): JapanMapRoadJunction => ({
+      id: junction.id,
+      routeId: junction.routeId,
+      label: junction.label,
+      coordinates: junction.coordinates,
+      sourceIds: junction.sourceIds,
+      selectionId: junction.id,
+      selected: isActiveSelection(activeId, [junction.id, junction.routeId])
+    }));
+
+  return { roadSegments, roadJunctions, detailedRouteIds };
+}
+
+function isActiveSelection(activeId: string, relatedIds: readonly string[]): boolean {
+  return activeId.trim().length > 0 && relatedIds.includes(activeId);
 }
 
 function isLiveRoutePointVisibleForTheme(entity: SemanticEntity, themeId: ThemeView["id"]) {

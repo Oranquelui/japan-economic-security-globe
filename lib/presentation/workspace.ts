@@ -12,6 +12,7 @@ import type {
   WorkspacePresentation
 } from "../../types/presentation";
 import type { LiveLogisticsViewModel } from "../../types/logistics";
+import type { RoadOperationsViewModel } from "../../types/road-operations";
 import type { SemanticGraph, ThemeId } from "../../types/semantic";
 import { NATURAL_EARTH_PREFECTURE_SOURCE_ID } from "../geo/prefecture-source";
 import { localizeAnyLabel } from "./japanese";
@@ -410,10 +411,14 @@ export function buildActiveLayerSummary(
   view: ThemeView,
   layer: LayerDefinition,
   scope: ScopeSummary,
-  liveLogistics: LiveLogisticsViewModel | null = null
+  liveLogistics: LiveLogisticsViewModel | null = null,
+  roadOperations: RoadOperationsViewModel | null = null
 ): ActiveLayerSummary {
-  // Live logistics is accepted for the presentation contract, but it is never a numeric source.
-  void liveLogistics;
+  const logisticsSummary = buildDomesticLogisticsLayerSummary(
+    layer,
+    liveLogistics,
+    roadOperations
+  );
 
   const sources = layer.sourceIds.flatMap((sourceId) => {
     const source = view.sources.find((candidate) => candidate.id === sourceId)
@@ -425,8 +430,8 @@ export function buildActiveLayerSummary(
 
   return {
     title: layer.label,
-    description: layer.description,
-    coverage: buildActiveLayerCoverage(view, layer, scope),
+    description: logisticsSummary?.description ?? layer.description,
+    coverage: logisticsSummary?.coverage ?? buildActiveLayerCoverage(view, layer, scope),
     periodLabel: layer.periodLabel,
     primaryMetric: buildActiveLayerPrimaryMetric(graph, view, layer),
     missingDataLabel:
@@ -442,6 +447,45 @@ export function buildActiveLayerSummary(
       : layer.id === "logistics-domestic"
         ? "固定デモデータ"
         : "出典情報なし"
+  };
+}
+
+function buildDomesticLogisticsLayerSummary(
+  layer: LayerDefinition,
+  liveLogistics: LiveLogisticsViewModel | null,
+  roadOperations: RoadOperationsViewModel | null
+): Pick<ActiveLayerSummary, "description" | "coverage"> | null {
+  if (layer.id !== "logistics-domestic" || !liveLogistics) return null;
+
+  const domesticLaneIds = new Set(["road", "rail", "coastal", "air"]);
+  const validatedDetailedRoadRouteIds = new Set(
+    roadOperations?.segments
+      .filter((segment) => roadOperations.routes.some((route) => route.id === segment.routeId))
+      .map((segment) => segment.routeId) ?? []
+  );
+  const representativeRoutes = liveLogistics.mapRoutes.filter((route) => (
+    domesticLaneIds.has(route.laneId) &&
+    (route.laneId !== "road" || !roadOperations || validatedDetailedRoadRouteIds.has(route.id))
+  ));
+  const modeCount = new Set(representativeRoutes.map((route) => route.laneId)).size;
+  const representativeIds = new Set(representativeRoutes.map((route) => route.id));
+  const regions = unique(liveLogistics.items
+    .filter((item) => representativeIds.has(item.id))
+    .flatMap((item) => item.affectedRegions ?? []));
+  const supportCount = liveLogistics.items.filter((item) => (
+    item.laneId === "maritime" && item.operationClass === "maritime_general_cargo"
+  )).length;
+
+  return {
+    coverage: {
+      label: "対象範囲",
+      value: `${representativeRoutes.length}代表経路 / ${modeCount}輸送モード`
+    },
+    description: [
+      `固定デモデータの国内物流を${representativeRoutes.length}代表経路で表示`,
+      regions.length > 0 ? `対象地域 ${regions.join("・")}` : null,
+      `港湾前後 ${supportCount}補助`
+    ].filter((part): part is string => Boolean(part)).join("。")
   };
 }
 

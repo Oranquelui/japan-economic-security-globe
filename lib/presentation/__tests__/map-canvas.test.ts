@@ -2,8 +2,13 @@ import { describe, expect, test } from "vitest";
 
 import type { LiveLogisticsViewModel } from "../../../types/logistics";
 import { THEME_IDS } from "../../../types/semantic";
-import { loadSeedGraph, loadSeedLiveLogistics } from "../../data/seed-loader";
+import {
+  loadSeedGraph,
+  loadSeedLiveLogistics,
+  loadSeedRoadOperations
+} from "../../data/seed-loader";
 import { buildLiveLogisticsView } from "../live-logistics";
+import { buildRoadOperationsView } from "../road-operations";
 import { getThemeView } from "../../semantic/selectors";
 import { buildJapanMapCanvasModel } from "../map-canvas";
 import type { JapanMapRegion } from "../map-canvas";
@@ -233,6 +238,119 @@ describe("japan map canvas model", () => {
     expect(impactRegions).toEqual([]);
     expect(impactRoutes).toEqual([]);
     expect(impactCorridors).toEqual([]);
+  });
+
+  test("uses validated detailed road geometry instead of only the matching endpoint chord", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const roadOperations = buildRoadOperationsView(
+      loadSeedRoadOperations(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const selectedSegment = roadOperations.segments[0];
+    const route = roadOperations.routes.find((candidate) => candidate.id === selectedSegment.routeId)!;
+
+    const model = buildJapanMapCanvasModel(
+      graph,
+      view,
+      selectedSegment.id,
+      null,
+      live,
+      roadOperations
+    );
+
+    const roadSegments = model.roadSegments ?? [];
+    const roadJunctions = model.roadJunctions ?? [];
+    expect(roadSegments).toHaveLength(roadOperations.segments.length);
+    expect(roadSegments[0]).toMatchObject({
+      id: selectedSegment.id,
+      routeId: selectedSegment.routeId,
+      routeLabel: route.label,
+      label: selectedSegment.label,
+      roadName: selectedSegment.roadName,
+      routeNumber: selectedSegment.routeNumber,
+      direction: selectedSegment.direction,
+      conditionIds: selectedSegment.conditionIds,
+      restrictionIds: selectedSegment.restrictionIds,
+      selectionId: selectedSegment.id,
+      selected: true
+    });
+    expect(roadSegments[0].coordinates).toEqual(selectedSegment.coordinates);
+    expect(roadSegments[0].coordinates.length).toBeGreaterThan(2);
+    expect(roadJunctions[0]).toMatchObject({
+      id: roadOperations.junctions[0].id,
+      routeId: roadOperations.junctions[0].routeId,
+      sourceIds: roadOperations.junctions[0].sourceIds,
+      selectionId: roadOperations.junctions[0].id,
+      selected: false
+    });
+    expect(roadJunctions[0].coordinates).toEqual(roadOperations.junctions[0].coordinates);
+    expect(model.liveRoutes?.map((candidate) => candidate.id)).not.toContain(
+      "live-logistics:road-keihin-tokyo"
+    );
+  });
+
+  test("keeps supported logistics routes with lane metadata and leaves an empty active id unselected", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const roadOperations = buildRoadOperationsView(
+      loadSeedRoadOperations(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+
+    const model = buildJapanMapCanvasModel(graph, view, "", null, live, roadOperations);
+
+    expect(model.liveRoutes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "live-logistics:rail-tokyo-aichi-osaka",
+        laneId: "rail",
+        modeLabel: "鉄道",
+        selectionId: "live-logistics:rail-tokyo-aichi-osaka",
+        selected: false
+      }),
+      expect.objectContaining({
+        id: "live-logistics:coastal-tokyo-bay-hanshin",
+        laneId: "coastal",
+        modeLabel: "内航",
+        selected: false
+      }),
+      expect.objectContaining({
+        id: "live-logistics:air-tokyo-fukuoka",
+        laneId: "air",
+        modeLabel: "航空",
+        selected: false
+      }),
+      expect.objectContaining({
+        id: "live-logistics:airport-haneda-narita-ops",
+        laneId: "air",
+        modeLabel: "航空",
+        selected: false
+      }),
+      expect.objectContaining({
+        id: "live-logistics:container-asia-yokohama",
+        laneId: "maritime",
+        modeLabel: "海上",
+        selected: false
+      })
+    ]));
+    expect(model.liveRoutes?.map((candidate) => candidate.id)).not.toContain(
+      "live-logistics:road-keihin-tokyo"
+    );
+    expect(model.roadSegments?.every((segment) => segment.selected === false)).toBe(true);
+    expect(model.roadJunctions?.every((junction) => junction.selected === false)).toBe(true);
+    expect(model.liveRoutes?.every((route) => route.selected === false)).toBe(true);
   });
 
   test("does not fabricate a semantic logistics impact model without typed impact metrics", () => {

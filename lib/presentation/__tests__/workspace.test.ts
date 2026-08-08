@@ -1,10 +1,15 @@
 import { describe, expect, test } from "vitest";
 
 import { THEME_IDS } from "../../../types/semantic";
-import { loadSeedGraph, loadSeedLiveLogistics } from "../../data/seed-loader";
+import {
+  loadSeedGraph,
+  loadSeedLiveLogistics,
+  loadSeedRoadOperations
+} from "../../data/seed-loader";
 import { getDetailView } from "../../semantic/detail";
 import { getThemeView } from "../../semantic/selectors";
 import { buildLiveLogisticsView } from "../live-logistics";
+import { buildRoadOperationsView } from "../road-operations";
 import {
   buildActiveLayerSummary,
   buildMetricSeries,
@@ -350,6 +355,58 @@ describe("active layer summary", () => {
 
     expect(layer.available).toBe(false);
     expect(summary.missingDataLabel).toBe("データなし");
+  });
+
+  test("summarizes domestic logistics as five representative routes across four modes", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const roadOperations = buildRoadOperationsView(
+      loadSeedRoadOperations(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const workspace = buildWorkspacePresentation(graph, view, live);
+    const layer = getLayerDefinition("logistics", "logistics-domestic", workspace)!;
+
+    const summary = buildActiveLayerSummary(
+      graph,
+      view,
+      layer,
+      workspace.scope,
+      live,
+      roadOperations
+    );
+
+    expect(summary.coverage.value).toBe("5代表経路 / 4輸送モード");
+    expect(summary.description).toContain("港湾前後 1補助");
+    expect(summary.description).toContain("首都圏・中京圏・関西圏・九州北部");
+    expect(summary.description.match(/首都圏/g)).toHaveLength(1);
+    expect(summary.description).not.toMatch(/5輸送モード|海上を含む5/);
+  });
+
+  test("leaves non-logistics summaries unchanged when road operations are supplied", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = getLayerDefinition("rice", "rice-harvest", workspace)!;
+    const roadOperations = buildRoadOperationsView(
+      loadSeedRoadOperations(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+
+    expect(buildActiveLayerSummary(
+      graph,
+      view,
+      layer,
+      workspace.scope,
+      null,
+      roadOperations
+    )).toEqual(buildActiveLayerSummary(graph, view, layer, workspace.scope));
   });
 
   test("resolves active sources in registry order and labels fixed demo data", () => {
