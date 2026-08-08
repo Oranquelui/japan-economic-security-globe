@@ -1,0 +1,113 @@
+{
+  "type": "FeatureCollection",
+  "name": "logistics-road-geometry-osm-extract-2026-08-08",
+  "artifactVersion": "osm-extract-2026-08-08",
+  "processingDate": "2026-08-08",
+  "sourceUrl": "https://www.openstreetmap.org/export#map=10/35.5200/139.8000",
+  "license": "ODbL-1.0",
+  "attribution": "© OpenStreetMap contributors",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "road-segment:honmoku-futo-honmoku-jct-east",
+      "properties": {
+        "routeId": "live-logistics:road-keihin-tokyo",
+        "label": "横浜港・本牧ふ頭 → 本牧JCT",
+        "roadName": "高速湾岸線",
+        "routeNumber": "B",
+        "direction": "東行き",
+        "fromAnchorId": "road-junction:honmoku-futo",
+        "toAnchorId": "road-junction:honmoku-jct"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[139.678, 35.437], [139.672, 35.428], [139.665, 35.417]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "road-segment:honmoku-daikoku-east",
+      "properties": {
+        "routeId": "live-logistics:road-keihin-tokyo",
+        "label": "本牧JCT → 大黒JCT",
+        "roadName": "高速湾岸線",
+        "routeNumber": "B",
+        "direction": "東行き",
+        "fromAnchorId": "road-junction:honmoku-jct",
+        "toAnchorId": "road-junction:daikoku-jct"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[139.665, 35.417], [139.681, 35.438], [139.684, 35.493]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "road-segment:daikoku-ukishima-east",
+      "properties": {
+        "routeId": "live-logistics:road-keihin-tokyo",
+        "label": "大黒JCT → 川崎浮島JCT",
+        "roadName": "高速湾岸線",
+        "routeNumber": "B",
+        "direction": "東行き",
+        "fromAnchorId": "road-junction:daikoku-jct",
+        "toAnchorId": "road-junction:kawasaki-ukishima-jct"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[139.684, 35.493], [139.728, 35.502], [139.754, 35.511], [139.787, 35.52]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "road-segment:ukishima-oi-east",
+      "properties": {
+        "routeId": "live-logistics:road-keihin-tokyo",
+        "label": "川崎浮島JCT → 大井JCT",
+        "roadName": "高速湾岸線",
+        "routeNumber": "B",
+        "direction": "東行き",
+        "fromAnchorId": "road-junction:kawasaki-ukishima-jct",
+        "toAnchorId": "road-junction:oi-jct"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[139.787, 35.52], [139.785, 35.549], [139.771, 35.574], [139.76, 35.594]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "road-segment:oi-tatsumi-east",
+      "properties": {
+        "routeId": "live-logistics:road-keihin-tokyo",
+        "label": "大井JCT → 辰巳JCT",
+        "roadName": "高速湾岸線",
+        "routeNumber": "B",
+        "direction": "東行き",
+        "fromAnchorId": "road-junction:oi-jct",
+        "toAnchorId": "road-junction:tatsumi-jct"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[139.76, 35.594], [139.777, 35.614], [139.797, 35.631], [139.814, 35.648]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "road-segment:tatsumi-distribution-east",
+      "properties": {
+        "routeId": "live-logistics:road-keihin-tokyo",
+        "label": "辰巳JCT → 東京湾岸配送圏",
+        "roadName": "高速湾岸線",
+        "routeNumber": "B",
+        "direction": "東行き",
+        "fromAnchorId": "road-junction:tatsumi-jct",
+        "toAnchorId": "road-junction:tokyo-bay-distribution"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[139.814, 35.648], [139.838, 35.656], [139.868, 35.665]]
+      }
+    }
+  ]
+}

@@ -480,6 +480,8 @@
       "sourceVersion": "OpenStreetMap extract 2026-08-08",
       "artifactVersion": "osm-extract-2026-08-08",
       "processingDate": "2026-08-08",
+      "immutableArchiveUrl": "/data/logistics-road-geometry-osm-extract-2026-08-08.geojson",
+      "immutableArchiveSha256": "fcb0f53770a9f136f32572a5cedfc6fbf0ef5431887918160533ad4c25063904",
       "processingStatement": "OpenStreetMap由来の道路形状を表示用に抽出・一般化し、経緯度の有限な静的線形として保存",
       "limitationStatement": "ライブ交通、法的な道路境界、ナビゲーション精度を保証しない一般化形状。ランタイムのタイルまたはルーティング取得は行わない。"
     }
