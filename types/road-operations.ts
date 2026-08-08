@@ -102,6 +102,7 @@ export interface RoadRejectedRecord {
 export interface RoadIngestDiagnostics {
   unmatchedSegmentIds: string[];
   rejectedRecords: RoadRejectedRecord[];
+  rejectedSegmentIds?: string[];
 }
 
 export interface RoadProviderState {
@@ -166,4 +167,49 @@ export interface RoadOperationsDataset {
   provider?: RoadProviderState;
   ingestDiagnostics?: RoadIngestDiagnostics;
   evidenceManifest: RoadRouteEvidenceManifest;
+}
+
+export interface RoadSegmentViewModel extends RoadSegment {
+  condition: RoadConditionKind | "unknown";
+  conditionIds: string[];
+  restrictionIds: string[];
+}
+
+export interface RoadConditionViewModel extends RoadConditionObservation {
+  freshness: RoadConditionFreshness;
+  displayLifecycleLabel: string | null;
+}
+
+export interface RoadRestrictionViewModel extends RoadRestrictionEvent {
+  freshness: RoadConditionFreshness;
+  displayLifecycleLabel: string;
+}
+
+export interface RouteImpactSummary {
+  routeId: string;
+  affectedSegmentIds: string[];
+  conditionIds: string[];
+  restrictionIds: string[];
+  sourceIds: string[];
+  citations: Array<{ recordId: string; sourceIds: string[] }>;
+}
+
+export interface RoadOperationsViewModel {
+  routes: RoadRoute[];
+  segments: RoadSegmentViewModel[];
+  junctions: RoadJunction[];
+  conditions: RoadConditionViewModel[];
+  restrictions: RoadRestrictionViewModel[];
+  provider: RoadProviderState;
+  diagnostics: RoadIngestDiagnostics & { rejectedSegmentIds: string[] };
+  currentSummary: {
+    conditionIds: string[];
+    restrictionIds: string[];
+    routeImpacts: RouteImpactSummary[];
+  };
+  counts: {
+    routeCount: number;
+    modeCount: number;
+    segmentCount: number;
+  };
 }

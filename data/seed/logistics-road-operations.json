@@ -17,7 +17,14 @@
         "road-junction:tatsumi-jct",
         "road-junction:tokyo-bay-distribution"
       ],
-      "segmentIds": [],
+      "segmentIds": [
+        "road-segment:honmoku-futo-honmoku-jct-east",
+        "road-segment:honmoku-daikoku-east",
+        "road-segment:daikoku-ukishima-east",
+        "road-segment:ukishima-oi-east",
+        "road-segment:oi-tatsumi-east",
+        "road-segment:tatsumi-distribution-east"
+      ],
       "topologySourceIds": [
         "source:shutoko-bayshore-route",
         "source:shutoko-jct-guide"
@@ -30,5 +37,135 @@
       "attribution": "© OpenStreetMap contributors",
       "redistributionPermitted": true
     }
-  ]
+  ],
+  "segments": [
+    {
+      "id": "road-segment:honmoku-futo-honmoku-jct-east",
+      "routeId": "live-logistics:road-keihin-tokyo",
+      "label": "横浜港・本牧ふ頭 → 本牧JCT",
+      "fromAnchorId": "road-junction:honmoku-futo",
+      "toAnchorId": "road-junction:honmoku-jct",
+      "direction": "東行き",
+      "coordinates": [[139.678, 35.437], [139.672, 35.428], [139.665, 35.417]],
+      "sourceIds": ["source:openstreetmap-road-geometry"]
+    },
+    {
+      "id": "road-segment:honmoku-daikoku-east",
+      "routeId": "live-logistics:road-keihin-tokyo",
+      "label": "本牧JCT → 大黒JCT",
+      "fromAnchorId": "road-junction:honmoku-jct",
+      "toAnchorId": "road-junction:daikoku-jct",
+      "direction": "東行き",
+      "coordinates": [[139.665, 35.417], [139.681, 35.438], [139.684, 35.493]],
+      "sourceIds": ["source:openstreetmap-road-geometry"]
+    },
+    {
+      "id": "road-segment:daikoku-ukishima-east",
+      "routeId": "live-logistics:road-keihin-tokyo",
+      "label": "大黒JCT → 川崎浮島JCT",
+      "fromAnchorId": "road-junction:daikoku-jct",
+      "toAnchorId": "road-junction:kawasaki-ukishima-jct",
+      "direction": "東行き",
+      "coordinates": [[139.684, 35.493], [139.728, 35.502], [139.754, 35.511], [139.787, 35.52]],
+      "sourceIds": ["source:openstreetmap-road-geometry"]
+    },
+    {
+      "id": "road-segment:ukishima-oi-east",
+      "routeId": "live-logistics:road-keihin-tokyo",
+      "label": "川崎浮島JCT → 大井JCT",
+      "fromAnchorId": "road-junction:kawasaki-ukishima-jct",
+      "toAnchorId": "road-junction:oi-jct",
+      "direction": "東行き",
+      "coordinates": [[139.787, 35.52], [139.785, 35.549], [139.771, 35.574], [139.76, 35.594]],
+      "sourceIds": ["source:openstreetmap-road-geometry"]
+    },
+    {
+      "id": "road-segment:oi-tatsumi-east",
+      "routeId": "live-logistics:road-keihin-tokyo",
+      "label": "大井JCT → 辰巳JCT",
+      "fromAnchorId": "road-junction:oi-jct",
+      "toAnchorId": "road-junction:tatsumi-jct",
+      "direction": "東行き",
+      "coordinates": [[139.76, 35.594], [139.777, 35.614], [139.797, 35.631], [139.814, 35.648]],
+      "sourceIds": ["source:openstreetmap-road-geometry"]
+    },
+    {
+      "id": "road-segment:tatsumi-distribution-east",
+      "routeId": "live-logistics:road-keihin-tokyo",
+      "label": "辰巳JCT → 東京湾岸配送圏",
+      "fromAnchorId": "road-junction:tatsumi-jct",
+      "toAnchorId": "road-junction:tokyo-bay-distribution",
+      "direction": "東行き",
+      "coordinates": [[139.814, 35.648], [139.838, 35.656], [139.868, 35.665]],
+      "sourceIds": ["source:openstreetmap-road-geometry"]
+    }
+  ],
+  "junctions": [
+    { "id": "road-junction:honmoku-futo", "routeId": "live-logistics:road-keihin-tokyo", "label": "横浜港・本牧ふ頭", "coordinates": [139.678, 35.437], "sourceIds": ["source:openstreetmap-road-geometry", "source:shutoko-bayshore-route"] },
+    { "id": "road-junction:honmoku-jct", "routeId": "live-logistics:road-keihin-tokyo", "label": "本牧JCT", "coordinates": [139.665, 35.417], "sourceIds": ["source:openstreetmap-road-geometry", "source:shutoko-jct-guide"] },
+    { "id": "road-junction:daikoku-jct", "routeId": "live-logistics:road-keihin-tokyo", "label": "大黒JCT", "coordinates": [139.684, 35.493], "sourceIds": ["source:openstreetmap-road-geometry", "source:shutoko-jct-guide"] },
+    { "id": "road-junction:kawasaki-ukishima-jct", "routeId": "live-logistics:road-keihin-tokyo", "label": "川崎浮島JCT", "coordinates": [139.787, 35.52], "sourceIds": ["source:openstreetmap-road-geometry", "source:shutoko-jct-guide"] },
+    { "id": "road-junction:oi-jct", "routeId": "live-logistics:road-keihin-tokyo", "label": "大井JCT", "coordinates": [139.76, 35.594], "sourceIds": ["source:openstreetmap-road-geometry", "source:shutoko-jct-guide"] },
+    { "id": "road-junction:tatsumi-jct", "routeId": "live-logistics:road-keihin-tokyo", "label": "辰巳JCT", "coordinates": [139.814, 35.648], "sourceIds": ["source:openstreetmap-road-geometry", "source:shutoko-jct-guide"] },
+    { "id": "road-junction:tokyo-bay-distribution", "routeId": "live-logistics:road-keihin-tokyo", "label": "東京湾岸配送圏", "coordinates": [139.868, 35.665], "sourceIds": ["source:openstreetmap-road-geometry", "source:shutoko-bayshore-route"] }
+  ],
+  "conditionObservations": [
+    {
+      "id": "road-condition:demo-daikoku-ukishima-congestion",
+      "recordType": "condition",
+      "segmentId": "road-segment:daikoku-ukishima-east",
+      "direction": "東行き",
+      "condition": "congestion",
+      "dataPosture": "fixed-demo",
+      "providerObservedAt": "2026-06-03T09:00:00+09:00",
+      "retrievedAt": "2026-06-03T09:05:00+09:00",
+      "sourceIds": ["source:logistics-road-demo-fixture"],
+      "disclosureLabel": "固定デモ / 現在情報ではありません",
+      "affectedRange": { "fromLabel": "大黒JCT東側", "toLabel": "東扇島付近", "startRatio": 0.18, "endRatio": 0.72 },
+      "congestionLength": { "value": 3.2, "unit": "km", "observedAt": "2026-06-03T09:00:00+09:00" },
+      "delay": { "value": 14, "unit": "min", "observedAt": "2026-06-03T09:00:00+09:00" }
+    }
+  ],
+  "restrictionEvents": [
+    {
+      "id": "road-restriction:demo-ukishima-oi-construction",
+      "recordType": "restriction",
+      "segmentId": "road-segment:ukishima-oi-east",
+      "direction": "東行き",
+      "restrictionKind": "construction",
+      "lifecycle": "current",
+      "dataPosture": "fixed-demo",
+      "providerObservedAt": "2026-06-03T09:00:00+09:00",
+      "retrievedAt": "2026-06-03T09:05:00+09:00",
+      "sourceIds": ["source:logistics-road-demo-fixture"],
+      "disclosureLabel": "固定デモ / 現在情報ではありません",
+      "affectedRange": { "fromLabel": "羽田空港北側", "toLabel": "大井JCT手前", "startRatio": 0.3, "endRatio": 0.68 }
+    },
+    {
+      "id": "road-restriction:demo-oi-tatsumi-lane",
+      "recordType": "restriction",
+      "segmentId": "road-segment:oi-tatsumi-east",
+      "direction": "東行き",
+      "restrictionKind": "lane-restriction",
+      "lifecycle": "planned",
+      "dataPosture": "fixed-demo",
+      "providerObservedAt": "2026-06-03T09:00:00+09:00",
+      "retrievedAt": "2026-06-03T09:05:00+09:00",
+      "sourceIds": ["source:logistics-road-demo-fixture"],
+      "disclosureLabel": "固定デモ / 現在情報ではありません",
+      "affectedRange": { "fromLabel": "有明付近", "toLabel": "辰巳JCT手前", "startRatio": 0.42, "endRatio": 0.82 }
+    }
+  ],
+  "provider": {
+    "id": "provider:jartic-road",
+    "label": "JARTIC",
+    "state": "unavailable",
+    "dataPosture": "authorized-provider",
+    "sourceIds": ["source:jartic-road-provider-service"],
+    "lastSuccessfulRetrievalAt": "2026-06-03T09:05:00+09:00"
+  },
+  "ingestDiagnostics": {
+    "unmatchedSegmentIds": [],
+    "rejectedRecords": []
+  }
 }

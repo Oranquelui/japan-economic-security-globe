@@ -81,7 +81,7 @@ export function loadRoadRouteEvidenceManifest(): RoadRouteEvidenceManifest {
 
 export function loadSeedRoadOperations(): RoadOperationsDataset {
   return {
-    ...(roadOperations as Omit<RoadOperationsDataset, "evidenceManifest">),
+    ...(roadOperations as unknown as Omit<RoadOperationsDataset, "evidenceManifest">),
     evidenceManifest: loadRoadRouteEvidenceManifest()
   };
 }
