@@ -206,9 +206,14 @@ describe("ActiveLayerSummaryPanel", () => {
 
       renderPanel(graph, "rice", "rice-harvest");
 
-      expect(screen.getByText("確認時点不明")).toBeTruthy();
-      expect(screen.getByText("確認日不明")).toBeTruthy();
-      expect(screen.queryByText(/NaN|日前確認|確認日 22分前/)).toBeNull();
+      const sourceItem = screen
+        .getAllByTestId("active-layer-source")
+        .find((item) => within(item).queryByText(source.label));
+
+      expect(sourceItem).toBeTruthy();
+      expect(within(sourceItem!).getByText("確認時点不明")).toBeTruthy();
+      expect(within(sourceItem!).getByText("確認日不明")).toBeTruthy();
+      expect(within(sourceItem!).queryByText(/NaN|日前確認|確認日 22分前/)).toBeNull();
     }
   );
 
