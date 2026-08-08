@@ -1,6 +1,7 @@
 {
   "routeId": "live-logistics:road-keihin-tokyo",
   "routeVersion": "2026-08-08.1",
+  "topologySourceIds": ["source:shutoko-bayshore-route", "source:shutoko-jct-guide"],
   "directionClaim": {
     "direction": "東行き",
     "sourceUrl": "https://www.shutoko.jp/use/network/map/route-b/honmakifutou",

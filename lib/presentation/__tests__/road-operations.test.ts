@@ -16,11 +16,20 @@ function segment(overrides: Partial<RoadSegment> = {}): RoadSegment {
     id: "road-segment:honmoku-daikoku-east",
     routeId: "live-logistics:road-keihin-tokyo",
     label: "本牧JCT → 大黒JCT",
+    roadName: "高速湾岸線",
+    routeNumber: "B",
     fromAnchorId: "road-junction:honmoku-jct",
     toAnchorId: "road-junction:daikoku-jct",
     direction: "東行き",
     coordinates: [[139.666, 35.417], [139.691, 35.462]],
     sourceIds: ["source:openstreetmap-road-geometry"],
+    geometrySourceId: "source:openstreetmap-road-geometry",
+    geometryVersion: "2026-06-03-demo-v1",
+    geometryExtractedAt: "2026-06-03",
+    geometrySourceUrl: "https://www.openstreetmap.org/copyright",
+    geometryLicense: "ODbL-1.0",
+    attribution: "© OpenStreetMap contributors",
+    redistributionPermitted: true,
     ...overrides
   };
 }
@@ -39,7 +48,19 @@ function dataset(overrides: Partial<RoadOperationsDataset> = {}): RoadOperations
       label: "JARTIC",
       state: "available",
       dataPosture: "authorized-provider",
-      sourceIds: ["source:jartic-road-provider-service"]
+      sourceIds: ["source:jartic-road-provider-service"],
+      policy: {
+        providerId: "provider:jartic-road",
+        termsUrl: "https://example.test/terms",
+        accessMethod: "licensed-feed",
+        coverageLabel: "test corridor",
+        refreshIntervalSeconds: 300,
+        currentMaxAgeSeconds: 600,
+        freshnessLimitSeconds: 1800,
+        attribution: "Test provider",
+        cachingPermitted: true,
+        redistributionPermitted: true
+      }
     },
     ingestDiagnostics: { unmatchedSegmentIds: [], rejectedRecords: [] },
     ...overrides
@@ -152,17 +173,18 @@ describe("road operations presentation", () => {
     expect(view.diagnostics.unmatchedSegmentIds).toContain("segment:not-present");
   });
 
-  test("derives every freshness state independently and summarizes only current observations", () => {
+  test("derives freshness from observation and retrieval times rather than caller freshness", () => {
     const input = dataset({
       conditionObservations: [
-        condition({ id: "condition:current", retrievedAt: "2026-08-08T08:55:00+09:00" }),
-        condition({ id: "condition:delayed", retrievedAt: "2026-08-08T08:40:00+09:00" }),
+        condition({ id: "condition:current", providerObservedAt: "2026-08-08T08:55:00+09:00", retrievedAt: "2026-08-08T08:58:00+09:00", freshness: "stale" }),
+        condition({ id: "condition:delayed", providerObservedAt: "2026-08-08T08:40:00+09:00", retrievedAt: "2026-08-08T08:42:00+09:00", freshness: "current" }),
         condition({
           id: "condition:stale",
-          retrievedAt: "2026-08-08T07:00:00+09:00",
+          providerObservedAt: "2026-08-08T07:00:00+09:00",
+          retrievedAt: "2026-08-08T07:02:00+09:00",
           dataPosture: "fixed-demo"
         }),
-        condition({ id: "condition:unavailable", freshness: "unavailable" }),
+        condition({ id: "condition:caller-unavailable", freshness: "unavailable" }),
         condition({ id: "condition:unknown", retrievedAt: "not-a-time" })
       ]
     });
@@ -170,10 +192,10 @@ describe("road operations presentation", () => {
     const view = buildRoadOperationsView(input, NOW)!;
 
     expect(view.conditions.map((item) => item.freshness)).toEqual([
-      "current", "delayed", "stale", "unavailable", "unknown"
+      "current", "delayed", "stale", "current", "unknown"
     ]);
     expect(view.conditions[2].dataPosture).toBe("fixed-demo");
-    expect(view.currentSummary.conditionIds).toEqual(["condition:current"]);
+    expect(view.currentSummary.conditionIds).toEqual(["condition:current", "condition:caller-unavailable"]);
   });
 
   test("keeps restriction kind, lifecycle, freshness, and partial affected range independent", () => {
@@ -193,6 +215,7 @@ describe("road operations presentation", () => {
         restriction({
           id: "restriction:closure",
           restrictionKind: "closure",
+          providerObservedAt: "2026-08-08T07:00:00+09:00",
           retrievedAt: "2026-08-08T07:00:00+09:00",
           affectedRange: {
             fromLabel: "本牧JCT",
@@ -253,6 +276,30 @@ describe("road operations presentation", () => {
     expect(view.currentSummary.restrictionIds).toEqual([]);
   });
 
+  test("categorically excludes fixed-demo records from current summaries even with current timestamps", () => {
+    const input = dataset({
+      conditionObservations: [condition({
+        id: "condition:demo-current-time",
+        dataPosture: "fixed-demo",
+        freshness: "current",
+        providerObservedAt: "2026-08-08T08:55:00+09:00",
+        retrievedAt: "2026-08-08T08:58:00+09:00"
+      })],
+      restrictionEvents: [restriction({
+        id: "restriction:demo-current-time",
+        dataPosture: "fixed-demo",
+        freshness: "current",
+        providerObservedAt: "2026-08-08T08:55:00+09:00",
+        retrievedAt: "2026-08-08T08:58:00+09:00"
+      })]
+    });
+
+    const view = buildRoadOperationsView(input, NOW)!;
+    expect(view.conditions[0].freshness).toBe("current");
+    expect(view.currentSummary.conditionIds).toEqual([]);
+    expect(view.currentSummary.restrictionIds).toEqual([]);
+  });
+
   test("omits quantities unless value, unit, and observation timestamp are all present", () => {
     const malformed = condition({
       speed: { value: 35, unit: "km/h", observedAt: "2026-08-08T08:55:00+09:00" }
@@ -275,6 +322,23 @@ describe("road operations presentation", () => {
     expect(view.conditions[0].travelTime).toBeUndefined();
   });
 
+  test("omits non-finite, empty or unsupported-unit, and non-absolute quantities", () => {
+    const malformed = condition({
+      speed: { value: Number.NaN, unit: "km/h", observedAt: "2026-08-08T08:55:00+09:00" },
+      congestionLength: { value: Number.POSITIVE_INFINITY, unit: "km", observedAt: "2026-08-08T08:55:00+09:00" },
+      delay: { value: 8, unit: "", observedAt: "2026-08-08T08:55:00+09:00" },
+      travelTime: { value: 12, unit: "mph", observedAt: "2026-08-08T08:55:00" }
+    });
+
+    const view = buildRoadOperationsView(dataset({ conditionObservations: [malformed] }), NOW)!;
+    expect(view.conditions[0]).toMatchObject({
+      speed: undefined,
+      congestionLength: undefined,
+      delay: undefined,
+      travelTime: undefined
+    });
+  });
+
   test("retains the last successful retrieval when the provider becomes unavailable", () => {
     const input = dataset({
       provider: {
@@ -283,7 +347,8 @@ describe("road operations presentation", () => {
         state: "unavailable",
         dataPosture: "authorized-provider",
         sourceIds: ["source:jartic-road-provider-service"],
-        lastSuccessfulRetrievalAt: "2026-08-08T08:40:00+09:00"
+        lastSuccessfulRetrievalAt: "2026-08-08T08:40:00+09:00",
+        policy: dataset().provider?.policy
       },
       conditionObservations: [condition()]
     });
@@ -297,6 +362,7 @@ describe("road operations presentation", () => {
     });
     expect(view.segments[0].condition).toBe("unknown");
     expect(view.conditions[0].id).toBe("road-condition:test");
+    expect(view.conditions[0].freshness).toBe("unavailable");
     expect(view.currentSummary.conditionIds).toEqual([]);
   });
 
@@ -341,6 +407,16 @@ describe("road operations presentation", () => {
       item.coordinates.length >= 2 && item.coordinates.flat().every(Number.isFinite)
     ))).toBe(true);
     expect(seed.junctions?.map((item) => item.id)).toEqual(expectedAnchors);
+    expect(seed.provider?.lastSuccessfulRetrievalAt).toBeUndefined();
+    expect(seed.provider?.policy).toMatchObject({
+      providerId: "provider:jartic-road",
+      termsUrl: expect.stringMatching(/^https:\/\//),
+      accessMethod: "licensed-feed",
+      refreshIntervalSeconds: expect.any(Number),
+      currentMaxAgeSeconds: expect.any(Number),
+      freshnessLimitSeconds: expect.any(Number),
+      attribution: expect.any(String)
+    });
     expect(view.conditions).toHaveLength(1);
     expect(view.conditions[0]).toMatchObject({
       condition: "congestion",

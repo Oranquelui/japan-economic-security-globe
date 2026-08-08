@@ -6,9 +6,13 @@ import type {
   RoadSegment,
   RoadConditionViewModel,
   RoadRestrictionViewModel,
-  RoadQuantitativeField,
+  RoadProviderPolicy,
   RouteImpactSummary
 } from "../../types/road-operations";
+import {
+  isAbsoluteRoadTimestamp,
+  normalizeRoadQuantitativeField
+} from "../road-operations/provider-adapter";
 
 function hasFiniteLineGeometry(segment: RoadSegment): boolean {
   return segment.coordinates.length >= 2 && segment.coordinates.every(
@@ -16,20 +20,23 @@ function hasFiniteLineGeometry(segment: RoadSegment): boolean {
   );
 }
 
-export function deriveRoadConditionFreshness(retrievedAt: string, now: Date): RoadConditionFreshness {
+export function deriveRoadConditionFreshness(
+  providerObservedAt: string,
+  retrievedAt: string,
+  now: Date,
+  policy: RoadProviderPolicy | undefined
+): RoadConditionFreshness {
+  if (!policy || !isAbsoluteRoadTimestamp(providerObservedAt) || !isAbsoluteRoadTimestamp(retrievedAt)) {
+    return "unknown";
+  }
+  const observedMs = Date.parse(providerObservedAt);
   const retrievedMs = Date.parse(retrievedAt);
   const nowMs = now.getTime();
-  if (!Number.isFinite(retrievedMs) || !Number.isFinite(nowMs) || retrievedMs > nowMs) return "unknown";
-  const ageMinutes = (nowMs - retrievedMs) / 60_000;
-  if (ageMinutes <= 10) return "current";
-  if (ageMinutes <= 30) return "delayed";
+  if (!Number.isFinite(nowMs) || observedMs > retrievedMs || retrievedMs > nowMs) return "unknown";
+  const ageSeconds = (nowMs - observedMs) / 1_000;
+  if (ageSeconds <= policy.currentMaxAgeSeconds) return "current";
+  if (ageSeconds <= policy.freshnessLimitSeconds) return "delayed";
   return "stale";
-}
-
-function normalizeQuantity(field: RoadQuantitativeField | undefined): RoadQuantitativeField | undefined {
-  return typeof field?.value === "number" && typeof field.unit === "string" && typeof field.observedAt === "string"
-    ? { value: field.value, unit: field.unit, observedAt: field.observedAt }
-    : undefined;
 }
 
 export function buildRoadOperationsView(
@@ -43,6 +50,16 @@ export function buildRoadOperationsView(
   const segmentById = new Map(validSegments.map((segment) => [segment.id, segment]));
   const unmatchedSegmentIds = [...(dataset.ingestDiagnostics?.unmatchedSegmentIds ?? [])];
   const rejectedRecords = [...(dataset.ingestDiagnostics?.rejectedRecords ?? [])];
+  const deriveFreshness = (item: { dataPosture: string; providerObservedAt: string; retrievedAt: string }) => (
+    item.dataPosture === "authorized-provider" && dataset.provider?.state === "unavailable"
+      ? "unavailable" as const
+      : deriveRoadConditionFreshness(
+          item.providerObservedAt,
+          item.retrievedAt,
+          now,
+          dataset.provider?.policy
+        )
+  );
   for (const item of [
     ...(dataset.conditionObservations ?? []),
     ...(dataset.restrictionEvents ?? [])
@@ -60,14 +77,14 @@ export function buildRoadOperationsView(
     })
     .map((item) => ({
       ...item,
-      freshness: item.freshness ?? deriveRoadConditionFreshness(item.retrievedAt, now),
+      freshness: deriveFreshness(item),
       displayLifecycleLabel: item.dataPosture === "fixed-demo"
         ? "デモシナリオ内で発生中"
         : null,
-      speed: normalizeQuantity(item.speed),
-      congestionLength: normalizeQuantity(item.congestionLength),
-      delay: normalizeQuantity(item.delay),
-      travelTime: normalizeQuantity(item.travelTime)
+      speed: normalizeRoadQuantitativeField(item.speed),
+      congestionLength: normalizeRoadQuantitativeField(item.congestionLength),
+      delay: normalizeRoadQuantitativeField(item.delay),
+      travelTime: normalizeRoadQuantitativeField(item.travelTime)
     }));
   const restrictions: RoadRestrictionViewModel[] = (dataset.restrictionEvents ?? [])
     .filter((item) => {
@@ -76,7 +93,7 @@ export function buildRoadOperationsView(
     })
     .map((item) => ({
       ...item,
-      freshness: item.freshness ?? deriveRoadConditionFreshness(item.retrievedAt, now),
+      freshness: deriveFreshness(item),
       displayLifecycleLabel: item.dataPosture === "fixed-demo"
         ? item.lifecycle === "current"
           ? "デモシナリオ内で発生中"
@@ -117,10 +134,12 @@ export function buildRoadOperationsView(
         sourceIds: []
       };
   const currentConditions = provider.state === "available"
-    ? conditions.filter((item) => item.freshness === "current")
+    ? conditions.filter((item) => item.freshness === "current" && item.dataPosture !== "fixed-demo")
     : [];
   const currentRestrictions = provider.state === "available"
-    ? restrictions.filter((item) => item.freshness === "current" && item.lifecycle === "current")
+    ? restrictions.filter((item) => (
+        item.freshness === "current" && item.lifecycle === "current" && item.dataPosture !== "fixed-demo"
+      ))
     : [];
   const routeImpacts: RouteImpactSummary[] = dataset.routes.flatMap((route) => {
     const routeSegmentIds = new Set(validSegments.filter((item) => item.routeId === route.id).map((item) => item.id));

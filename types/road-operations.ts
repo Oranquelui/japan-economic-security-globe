@@ -1,4 +1,25 @@
-export type RoadDirection = "東行き" | "西行き";
+export type RoadDirection =
+  | "東行き"
+  | "西行き"
+  | "北行き"
+  | "南行き"
+  | "上り"
+  | "下り"
+  | "内回り"
+  | "外回り"
+  | "eastbound"
+  | "westbound"
+  | "northbound"
+  | "southbound"
+  | "inbound"
+  | "outbound"
+  | "clockwise"
+  | "counterclockwise"
+  | "destination-bound"
+  | "general"
+  | `destination:${string}`
+  | `provider:${string}`
+  | `${string}方面`;
 export type RoadDataPosture = "authorized-provider" | "fixed-demo";
 export type RoadConditionFreshness = "current" | "delayed" | "stale" | "unavailable" | "unknown";
 export type RoadEventLifecycle = "current" | "planned" | "ended";
@@ -37,6 +58,8 @@ interface RoadOperationalRecordBase {
   sourceIds: string[];
   disclosureLabel: string;
   affectedRange?: RoadAffectedRange;
+  startsAt?: string;
+  endsAt?: string;
 }
 
 export interface RoadConditionObservation extends RoadOperationalRecordBase {
@@ -60,11 +83,21 @@ export interface RoadSegment {
   id: string;
   routeId: string;
   label: string;
+  roadName: string;
+  routeNumber: string;
+  kilometerPostRange?: { startKm: number; endKm: number };
   fromAnchorId: string;
   toAnchorId: string;
   direction: RoadDirection;
   coordinates: RoadCoordinate[];
   sourceIds: string[];
+  geometrySourceId: string;
+  geometryVersion: string;
+  geometryExtractedAt: string;
+  geometrySourceUrl: string;
+  geometryLicense: "ODbL-1.0";
+  attribution: "© OpenStreetMap contributors";
+  redistributionPermitted: boolean;
 }
 
 export interface RoadJunction {
@@ -77,6 +110,13 @@ export interface RoadJunction {
 
 export interface RoadProviderPolicy {
   providerId: string;
+  termsUrl: string;
+  accessMethod: "api" | "download" | "licensed-feed";
+  coverageLabel: string;
+  refreshIntervalSeconds: number;
+  currentMaxAgeSeconds: number;
+  freshnessLimitSeconds: number;
+  attribution: string;
   cachingPermitted: boolean;
   redistributionPermitted: boolean;
   cacheTtlSeconds?: number;
@@ -92,6 +132,7 @@ export interface ProviderSnapshot {
   readonly records: readonly RoadOperationalRecord[];
   readonly cachingPermitted: boolean;
   readonly redistributionPermitted: boolean;
+  readonly policy: Readonly<RoadProviderPolicy>;
 }
 
 export interface RoadRejectedRecord {
@@ -112,6 +153,7 @@ export interface RoadProviderState {
   dataPosture: RoadDataPosture;
   sourceIds: string[];
   lastSuccessfulRetrievalAt?: string;
+  policy?: RoadProviderPolicy;
   snapshot?: ProviderSnapshot;
 }
 
@@ -144,6 +186,7 @@ export interface RoadRouteAnchorClaim {
 export interface RoadRouteEvidenceManifest {
   routeId: string;
   routeVersion: string;
+  topologySourceIds: string[];
   directionClaim: {
     direction: RoadDirection;
     sourceUrl: string;
@@ -166,7 +209,7 @@ export interface RoadOperationsDataset {
   restrictionEvents?: RoadRestrictionEvent[];
   provider?: RoadProviderState;
   ingestDiagnostics?: RoadIngestDiagnostics;
-  evidenceManifest: RoadRouteEvidenceManifest;
+  evidenceManifests: RoadRouteEvidenceManifest[];
 }
 
 export interface RoadSegmentViewModel extends RoadSegment {

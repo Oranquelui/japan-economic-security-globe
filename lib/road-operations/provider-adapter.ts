@@ -3,6 +3,7 @@ import type {
   RoadConditionKind,
   RoadDataPosture,
   RoadDirection,
+  RoadAffectedRange,
   RoadIngestDiagnostics,
   RoadOperationalRecord,
   RoadProviderPolicy,
@@ -19,6 +20,9 @@ export interface RoadProviderRawRecord {
   restrictionKind?: RoadRestrictionKind;
   lifecycle?: "current" | "planned" | "ended";
   observedAt?: string;
+  startsAt?: string;
+  endsAt?: string;
+  affectedRange?: RoadAffectedRange;
   sourceIds: string[];
   dataPosture?: RoadDataPosture;
   disclosureLabel?: string;
@@ -60,10 +64,29 @@ export interface RoadProviderNormalizationResult {
   diagnostics: RoadIngestDiagnostics;
 }
 
-function normalizeQuantitativeField(
+const SUPPORTED_ROAD_UNITS = new Set(["km/h", "km", "m", "min", "s", "h", "vehicles/h", "台/時"]);
+const ABSOLUTE_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-](\d{2}):(\d{2}))$/;
+
+export function isAbsoluteRoadTimestamp(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  const match = ABSOLUTE_TIMESTAMP.exec(value);
+  if (!match || !Number.isFinite(Date.parse(value))) return false;
+  const [year, month, day, hour, minute, second] = match.slice(1, 7).map(Number);
+  const offsetHour = match[7] ? Number(match[7]) : 0;
+  const offsetMinute = match[8] ? Number(match[8]) : 0;
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return month >= 1 && month <= 12 && day >= 1 && day <= daysInMonth &&
+    hour <= 23 && minute <= 59 && second <= 59 && offsetHour <= 23 && offsetMinute <= 59;
+}
+
+export function normalizeRoadQuantitativeField(
   field: Partial<RoadQuantitativeField> | undefined
 ): RoadQuantitativeField | undefined {
-  return typeof field?.value === "number" && typeof field.unit === "string" && typeof field.observedAt === "string"
+  return typeof field?.value === "number" && Number.isFinite(field.value) &&
+    typeof field?.unit === "string" &&
+    field.unit.trim() === field.unit &&
+    SUPPORTED_ROAD_UNITS.has(field.unit) &&
+    isAbsoluteRoadTimestamp(field.observedAt)
     ? { value: field.value, unit: field.unit, observedAt: field.observedAt }
     : undefined;
 }
@@ -82,10 +105,13 @@ const defaultAdapter: RoadProviderAdapter<RoadProviderRawRecord> = {
       retrievedAt: context.retrievedAt,
       sourceIds: record.sourceIds,
       disclosureLabel: record.disclosureLabel ?? "認可済みproviderデータ",
-      speed: normalizeQuantitativeField(record.speed),
-      congestionLength: normalizeQuantitativeField(record.congestionLength),
-      delay: normalizeQuantitativeField(record.delay),
-      travelTime: normalizeQuantitativeField(record.travelTime)
+      affectedRange: record.affectedRange,
+      startsAt: record.startsAt,
+      endsAt: record.endsAt,
+      speed: normalizeRoadQuantitativeField(record.speed),
+      congestionLength: normalizeRoadQuantitativeField(record.congestionLength),
+      delay: normalizeRoadQuantitativeField(record.delay),
+      travelTime: normalizeRoadQuantitativeField(record.travelTime)
     };
 
     if (record.recordType === "condition" && record.condition) {
@@ -114,6 +140,34 @@ export function normalizeRoadProviderSnapshot<TRawRecord extends RoadProviderRaw
   segmentIndex: RoadProviderSegmentIndex,
   adapter: RoadProviderAdapter<TRawRecord> = defaultAdapter as RoadProviderAdapter<TRawRecord>
 ): RoadProviderNormalizationResult {
+  if (policy.providerId !== rawSnapshot.providerId) {
+    throw new Error("Provider policy providerId must match raw snapshot providerId");
+  }
+  if (
+    !isAbsoluteRoadTimestamp(rawSnapshot.providerObservedAt) ||
+    !isAbsoluteRoadTimestamp(rawSnapshot.retrievedAt)
+  ) {
+    throw new Error(`Provider ${policy.providerId} snapshot times must be absolute timestamps`);
+  }
+  if (
+    typeof policy.termsUrl !== "string" || !policy.termsUrl.startsWith("https://")
+  ) {
+    throw new Error(`Provider ${policy.providerId} terms URL is required`);
+  }
+  if (!["api", "download", "licensed-feed"].includes(policy.accessMethod)) {
+    throw new Error(`Provider ${policy.providerId} access method is required`);
+  }
+  if (!policy.coverageLabel.trim() || !policy.attribution.trim()) {
+    throw new Error(`Provider ${policy.providerId} coverage and attribution are required`);
+  }
+  if (
+    !Number.isFinite(policy.refreshIntervalSeconds) || policy.refreshIntervalSeconds <= 0 ||
+    !Number.isFinite(policy.currentMaxAgeSeconds) || policy.currentMaxAgeSeconds < 0 ||
+    !Number.isFinite(policy.freshnessLimitSeconds) ||
+    policy.freshnessLimitSeconds < policy.currentMaxAgeSeconds
+  ) {
+    throw new Error(`Provider ${policy.providerId} refresh and freshness limits are invalid`);
+  }
   if (!policy.cachingPermitted) {
     throw new Error(`Provider ${policy.providerId} policy blocks caching`);
   }
@@ -137,6 +191,13 @@ export function normalizeRoadProviderSnapshot<TRawRecord extends RoadProviderRaw
       rejectedRecords.push({ providerRecordId: rawRecord.id, reason: "direction is required" });
       continue;
     }
+    if (typeof match !== "string" && match.direction && match.direction !== rawRecord.direction) {
+      rejectedRecords.push({
+        providerRecordId: rawRecord.id,
+        reason: "direction does not match segment carriageway"
+      });
+      continue;
+    }
     const normalized = adapter.normalize(rawRecord, {
       segmentId,
       providerObservedAt: rawSnapshot.providerObservedAt,
@@ -152,6 +213,7 @@ export function normalizeRoadProviderSnapshot<TRawRecord extends RoadProviderRaw
   const hasIssues = unmatchedSegmentIds.length > 0 || rejectedRecords.length > 0;
   const ingestOutcome = hasIssues ? (records.length > 0 ? "partial" : "rejected") : "complete";
   const frozenRecords = Object.freeze(records.slice());
+  const frozenPolicy = Object.freeze({ ...policy });
   const snapshot = Object.freeze({
     providerId: rawSnapshot.providerId,
     providerObservedAt: rawSnapshot.providerObservedAt,
@@ -161,7 +223,8 @@ export function normalizeRoadProviderSnapshot<TRawRecord extends RoadProviderRaw
     ingestOutcome,
     records: frozenRecords,
     cachingPermitted: policy.cachingPermitted,
-    redistributionPermitted: policy.redistributionPermitted
+    redistributionPermitted: policy.redistributionPermitted,
+    policy: frozenPolicy
   }) satisfies ProviderSnapshot;
 
   return {

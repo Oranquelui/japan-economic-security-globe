@@ -7,6 +7,7 @@ import roadRouteEvidenceManifest from "../../data/seed/evidence/logistics-road-r
 import sources from "../../data/seed/sources.json";
 import type { LiveLogisticsEvent } from "../../types/logistics";
 import type { RoadOperationsDataset, RoadRouteEvidenceManifest } from "../../types/road-operations";
+import { validateRoadRouteSources } from "../road-operations/source-gate";
 import type {
   DependencyFlow,
   GraphEdge,
@@ -79,11 +80,24 @@ export function loadRoadRouteEvidenceManifest(): RoadRouteEvidenceManifest {
   return roadRouteEvidenceManifest as RoadRouteEvidenceManifest;
 }
 
+export function loadRoadRouteEvidenceManifests(): RoadRouteEvidenceManifest[] {
+  return [loadRoadRouteEvidenceManifest()];
+}
+
+export function enforceRoadOperationsSourceGate(dataset: RoadOperationsDataset): RoadOperationsDataset {
+  const gate = validateRoadRouteSources(dataset);
+  if (!gate.ok) {
+    throw new Error(`Road operations seed failed source gate: ${gate.errors.join("; ")}`);
+  }
+  return dataset;
+}
+
 export function loadSeedRoadOperations(): RoadOperationsDataset {
-  return {
-    ...(roadOperations as unknown as Omit<RoadOperationsDataset, "evidenceManifest">),
-    evidenceManifest: loadRoadRouteEvidenceManifest()
+  const dataset = {
+    ...(roadOperations as unknown as Omit<RoadOperationsDataset, "evidenceManifests">),
+    evidenceManifests: loadRoadRouteEvidenceManifests()
   };
+  return enforceRoadOperationsSourceGate(dataset);
 }
 
 export { loadRankingSignals as loadSeedRankingSignals } from "../ranking/ranking-loader";
