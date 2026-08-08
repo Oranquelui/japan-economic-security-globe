@@ -4,10 +4,13 @@ import type { ReactNode } from "react";
 
 import type { ThemePalette } from "../lib/presentation/palette";
 import type { LiveLogisticsItemViewModel, LiveLogisticsViewModel } from "../types/logistics";
+import type { RoadOperationsViewModel } from "../types/road-operations";
+import { LogisticsRouteOverviewPanel } from "./LogisticsRouteOverviewPanel";
 
 interface LogisticsImpactBoardProps {
   activeId: string;
   liveLogistics: LiveLogisticsViewModel;
+  roadOperations?: RoadOperationsViewModel | null;
   onSelect: (id: string) => void;
   themePalette: ThemePalette;
 }
@@ -15,6 +18,7 @@ interface LogisticsImpactBoardProps {
 export function LogisticsImpactBoard({
   activeId,
   liveLogistics,
+  roadOperations = null,
   onSelect,
   themePalette
 }: LogisticsImpactBoardProps) {
@@ -25,6 +29,20 @@ export function LogisticsImpactBoard({
     .filter((item) => !isEnergySupportItem(item))
     .slice(0, 4);
 
+  if (roadOperations) {
+    return (
+      <div className="border-b px-3 py-3" style={{ borderColor: themePalette.borderSubtle }}>
+        <LogisticsRouteOverviewPanel
+          activeId={activeId}
+          liveLogistics={liveLogistics}
+          roadOperations={roadOperations}
+          onSelect={onSelect}
+          themePalette={themePalette}
+        />
+      </div>
+    );
+  }
+
   if (!primaryItem) {
     return null;
   }
@@ -32,6 +50,8 @@ export function LogisticsImpactBoard({
   return (
     <section
       data-testid="logistics-impact-board"
+      role="region"
+      aria-label="国内物流の代表シナリオ"
       className="border-b px-4 py-4"
       style={{
         borderColor: themePalette.borderSubtle,
@@ -40,20 +60,22 @@ export function LogisticsImpactBoard({
       }}
     >
       <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em]" style={{ color: themePalette.accentText }}>
-        JAPAN LOGISTICS IMPACT BOARD
+        JAPAN LOGISTICS SCENARIO BOARD
       </div>
       <div className="mt-2 grid gap-3">
         <div>
           <h2 className="text-lg font-semibold leading-6 text-white [overflow-wrap:anywhere]">
-            今日の国内物流インパクト
+            国内物流の代表シナリオ
           </h2>
           <p className="mt-1 text-[0.72rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
-            港湾後続から高速道路・鉄道貨物・内航へ波及する経済影響を、Energy系海上輸送と分けて判断する。
+            固定デモの代表経路を、Energy系海上輸送と分けて確認する。現在情報ではありません。
           </p>
         </div>
 
         <button
           type="button"
+          aria-label={`代表シナリオ ${primaryItem.title} 固定デモ 現在情報ではありません`}
+          aria-pressed={primaryItem.id === activeId}
           onClick={() => onSelect(primaryItem.id)}
           className="w-full border-l-4 py-3 pl-3 pr-2 text-left transition hover:bg-white/[0.04]"
           style={{
@@ -62,8 +84,8 @@ export function LogisticsImpactBoard({
           }}
         >
           <div className="flex flex-wrap items-center gap-2">
-            <BoardChip themePalette={themePalette}>{primaryItem.sourceFreshness ?? primaryItem.lastSeenLabel}</BoardChip>
-            <BoardChip themePalette={themePalette}>{primaryItem.statusLabel}</BoardChip>
+            <BoardChip themePalette={themePalette}>固定デモ</BoardChip>
+            <BoardChip themePalette={themePalette}>更新なし</BoardChip>
             <BoardChip themePalette={themePalette}>{formatRegions(primaryItem)}</BoardChip>
           </div>
           <div className="mt-2 text-base font-semibold leading-6 text-white [overflow-wrap:anywhere]">
@@ -104,6 +126,8 @@ export function LogisticsImpactBoard({
               <button
                 key={item.id}
                 type="button"
+                aria-label={`${formatOperationClass(item.operationClass)} 代表シナリオ ${formatImpactScope(item)} 固定デモ 現在情報ではありません`}
+                aria-pressed={item.id === activeId}
                 onClick={() => onSelect(item.id)}
                 className="grid w-full grid-cols-[4.25rem,1fr] gap-2 px-0 py-1.5 text-left text-[0.72rem] leading-5 transition hover:text-white"
                 style={{ color: item.id === activeId ? themePalette.textPrimary : themePalette.textMuted }}

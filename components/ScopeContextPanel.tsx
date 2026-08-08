@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import type { ThemePalette } from "../lib/presentation/palette";
 import { getThemeLabel } from "../lib/presentation/japanese";
 import type {
@@ -15,6 +17,7 @@ interface ScopeContextPanelProps {
   activeLayerId: SemanticLayerId;
   activeSummary: ActiveLayerSummary;
   comparisonAvailable: boolean;
+  logisticsRouteOverview?: ReactNode;
   onLayerChange: (id: SemanticLayerId) => void;
   onOpenComparison: () => void;
   onOpenSignals: () => void;
@@ -29,6 +32,7 @@ export function ScopeContextPanel({
   activeLayerId,
   activeSummary,
   comparisonAvailable,
+  logisticsRouteOverview,
   onLayerChange,
   onOpenComparison,
   onOpenSignals,
@@ -75,6 +79,12 @@ export function ScopeContextPanel({
           ))}
         </select>
       </label>
+
+      {logisticsRouteOverview ? (
+        <div data-testid="scope-logistics-route-overview" className="mt-3">
+          {logisticsRouteOverview}
+        </div>
+      ) : null}
 
       {activeLayer ? (
         <div className="mt-3">
