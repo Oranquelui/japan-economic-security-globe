@@ -180,6 +180,129 @@ const model: JapanMapCanvasModel = {
   ]
 };
 
+function detailedRoadModel(activeId = ""): JapanMapCanvasModel {
+  const routeId = "live-logistics:road-keihin-tokyo";
+  const coordinates: Array<[number, number]> = [
+    [139.665, 35.417],
+    [139.684, 35.493],
+    [139.787, 35.52]
+  ];
+  const overlay = (
+    id: string,
+    visualKind: string,
+    stateLabel: string,
+    options: Partial<Record<string, string>> = {}
+  ) => ({
+    id,
+    segmentId: "road-segment:test-a",
+    routeId,
+    label: stateLabel,
+    roadName: "高速湾岸線",
+    routeNumber: "B",
+    direction: "東行き" as const,
+    coordinates,
+    selectionId: id.endsWith(":unknown") ? routeId : id,
+    selected: activeId === id,
+    recordType: visualKind === "unknown" ? "unknown" : options.recordType ?? "restriction",
+    visualKind,
+    condition: options.condition ?? null,
+    restrictionKind: options.restrictionKind ?? null,
+    lifecycle: options.lifecycle ?? "current",
+    freshness: options.freshness ?? "current",
+    dataPosture: options.dataPosture ?? "authorized-provider",
+    stateLabel,
+    disclosureLabel: options.disclosureLabel ?? "公式道路交通データ"
+  });
+
+  return {
+    ...model,
+    livePoints: [],
+    liveRoutes: [],
+    roadSegments: [
+      {
+        id: "road-segment:test-a",
+        routeId,
+        routeLabel: "横浜港から東京湾岸配送圏",
+        label: "横浜港 → 川崎浮島JCT",
+        roadName: "高速湾岸線",
+        routeNumber: "B",
+        direction: "東行き",
+        coordinates,
+        condition: "unknown",
+        conditionIds: [],
+        restrictionIds: [],
+        sourceIds: ["source:osm"],
+        selectionId: routeId,
+        selected: activeId === routeId
+      },
+      {
+        id: "road-segment:test-b",
+        routeId,
+        routeLabel: "横浜港から東京湾岸配送圏",
+        label: "川崎浮島JCT → 東京湾岸配送圏",
+        roadName: "高速湾岸線",
+        routeNumber: "B",
+        direction: "東行き",
+        coordinates: [
+          [139.787, 35.52],
+          [139.868, 35.665]
+        ],
+        condition: "unknown",
+        conditionIds: [],
+        restrictionIds: [],
+        sourceIds: ["source:osm"],
+        selectionId: routeId,
+        selected: activeId === routeId
+      }
+    ],
+    roadOperationalOverlays: [
+      overlay("road-condition:normal", "normal", "平常", { recordType: "condition", condition: "normal" }),
+      overlay("road-condition:slow", "slow", "低速", { recordType: "condition", condition: "slow" }),
+      overlay("road-condition:congestion", "congestion", "渋滞", { recordType: "condition", condition: "congestion" }),
+      overlay("road-restriction:accident", "accident", "事故", { restrictionKind: "accident" }),
+      overlay("road-restriction:construction", "construction", "工事例・期限切れ", {
+        restrictionKind: "construction",
+        freshness: "stale",
+        dataPosture: "fixed-demo",
+        disclosureLabel: "固定デモ / 現在情報ではありません"
+      }),
+      overlay("road-restriction:lane", "lane-restriction", "予定 車線規制例・期限切れ", {
+        restrictionKind: "lane-restriction",
+        lifecycle: "planned",
+        freshness: "stale",
+        dataPosture: "fixed-demo",
+        disclosureLabel: "固定デモ / 現在情報ではありません"
+      }),
+      overlay("road-restriction:closure", "closure", "通行止", { restrictionKind: "closure" }),
+      overlay("road-restriction:ended", "accident", "事故・終了", {
+        restrictionKind: "accident",
+        lifecycle: "ended"
+      }),
+      overlay("road-segment:test-a:unknown", "unknown", "状況不明", {
+        freshness: "unavailable",
+        disclosureLabel: "公式道路交通フィード未接続"
+      })
+    ],
+    roadJunctions: [
+      ["honmoku-futo", "横浜港", 139.665, 35.417],
+      ["honmoku-jct", "本牧JCT", 139.681, 35.438],
+      ["daikoku-jct", "大黒JCT", 139.684, 35.493],
+      ["ukishima-jct", "川崎浮島JCT", 139.787, 35.52],
+      ["oi-jct", "大井JCT", 139.76, 35.594],
+      ["tatsumi-jct", "辰巳JCT", 139.814, 35.648],
+      ["distribution", "東京湾岸配送圏", 139.868, 35.665]
+    ].map(([id, label, lon, lat]) => ({
+      id: `road-junction:${id}`,
+      routeId,
+      label: String(label),
+      coordinates: [Number(lon), Number(lat)] as [number, number],
+      sourceIds: ["source:osm"],
+      selectionId: routeId,
+      selected: activeId === routeId
+    }))
+  } as JapanMapCanvasModel;
+}
+
 function prefectureMetricRegions(): JapanMapCanvasModel["regions"] {
   return prefectureBoundaryCollection.features.map((feature, index) => ({
     id: feature.properties.entityId,
@@ -982,7 +1105,7 @@ describe("map canvas layer config", () => {
     expect(globalRoutes.features[0].properties.selected).toBe(true);
   });
 
-  test("adds a dedicated live logistics route source and pulse layer", async () => {
+  test("renders four logistics modes with independent patterns and Japanese labels without scanner copy", async () => {
     render(
       <JapanOperationsMapCanvas
         activeId="flow:saudi-oil-japan"
@@ -992,15 +1115,49 @@ describe("map canvas layer config", () => {
           {
             ...model,
             livePoints: [
-              ...model.globalPoints,
-              { id: "port:yokohama", kind: "Port", label: "横浜港", lat: 35.44, lon: 139.67, tone: "critical" }
+              { id: "point:a", kind: "Port", label: "起点", lat: 35.44, lon: 139.67, tone: "critical" },
+              { id: "point:b", kind: "Region", label: "終点", lat: 35.68, lon: 139.82, tone: "watch" }
             ],
             liveRoutes: [
               {
-                id: "live-logistics:tanker-saudi-tokyo-bay",
-                label: "AIS tanker corridor",
-                pointIds: ["country:saudi-arabia", "chokepoint:hormuz", "country:japan", "port:yokohama"],
-                relatedIds: ["flow:saudi-oil-japan"]
+                id: "live-logistics:road-test",
+                label: "道路代表経路",
+                laneId: "road",
+                modeLabel: "道路",
+                pointIds: ["point:a", "point:b"],
+                relatedIds: [],
+                selectionId: "live-logistics:road-test",
+                selected: false
+              },
+              {
+                id: "live-logistics:rail-test",
+                label: "鉄道代表経路",
+                laneId: "rail",
+                modeLabel: "鉄道",
+                pointIds: ["point:a", "point:b"],
+                relatedIds: [],
+                selectionId: "live-logistics:rail-test",
+                selected: false
+              },
+              {
+                id: "live-logistics:coastal-test",
+                label: "内航代表経路",
+                laneId: "coastal",
+                modeLabel: "内航",
+                pointIds: ["point:a", "point:b"],
+                relatedIds: [],
+                selectionId: "live-logistics:coastal-test",
+                selected: false
+              },
+              {
+                id: "live-logistics:air-test",
+                label: "航空代表経路",
+                laneId: "air",
+                modeLabel: "航空",
+                pointIds: ["point:a", "point:b"],
+                relatedIds: [],
+                selectionId: "live-logistics:air-test",
+                selected: false
               }
             ]
           } as JapanMapCanvasModel
@@ -1015,25 +1172,275 @@ describe("map canvas layer config", () => {
       expect(addedSources.has("live-logistics-routes")).toBe(true);
     });
 
-    const pulseLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-pulse") as any;
-    const glowLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-glow") as any;
-    const labelLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-label") as any;
+    const modeLayers = ["road", "rail", "coastal", "air"].map((mode) => ({
+      line: getAddedLayer(`live-logistics-${mode}-line`) as any,
+      label: getAddedLayer(`live-logistics-${mode}-label`) as any,
+      mode
+    }));
     const liveRoutes = addedSources.get("live-logistics-routes") as {
-      features: Array<{ properties: { id: string; selected: boolean; selectionId: string } }>;
+      features: Array<{ properties: { id: string; laneId: string; modeLabel: string; selected: boolean; selectionId: string } }>;
     };
 
-    expect(pulseLayer).toBeTruthy();
-    expect(glowLayer).toBeTruthy();
-    expect(pulseLayer.source).toBe("live-logistics-routes");
-    expect(glowLayer.source).toBe("live-logistics-routes");
-    expect(pulseLayer.paint["line-color"]).toBe(getStatusPalette().monitoring);
-    expect(pulseLayer.paint["line-dasharray"]).toEqual([0.2, 1.2]);
-    expect(glowLayer.paint["line-blur"]).toBeTruthy();
-    expect(labelLayer).toBeTruthy();
-    expect(labelLayer.layout["text-field"]).toBe("SCAN");
-    expect(liveRoutes.features[0].properties.id).toBe("live-logistics:tanker-saudi-tokyo-bay");
-    expect(liveRoutes.features[0].properties.selectionId).toBe("live-logistics:tanker-saudi-tokyo-bay");
-    expect(liveRoutes.features[0].properties.selected).toBe(true);
+    expect(modeLayers.map(({ line }) => line.filter)).toEqual([
+      ["==", ["get", "laneId"], "road"],
+      ["==", ["get", "laneId"], "rail"],
+      ["==", ["get", "laneId"], "coastal"],
+      ["==", ["get", "laneId"], "air"]
+    ]);
+    expect(modeLayers.map(({ line }) => line.paint["line-dasharray"])).toEqual([
+      undefined,
+      [1.5, 1],
+      [0.25, 1.25],
+      [4, 2]
+    ]);
+    expect(modeLayers.map(({ label }) => label.layout["text-field"])).toEqual([
+      "◆ 道路",
+      "╫ 鉄道",
+      "≈ 内航",
+      "✈ 航空"
+    ]);
+    expect(JSON.stringify(addedLayers)).not.toContain("SCAN");
+    expect(liveRoutes.features.map((feature) => feature.properties)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "live-logistics:road-test", laneId: "road", modeLabel: "道路" }),
+      expect.objectContaining({ id: "live-logistics:rail-test", laneId: "rail", modeLabel: "鉄道" }),
+      expect.objectContaining({ id: "live-logistics:coastal-test", laneId: "coastal", modeLabel: "内航" }),
+      expect.objectContaining({ id: "live-logistics:air-test", laneId: "air", modeLabel: "航空" })
+    ]));
+    expect(liveRoutes.features.every((feature) => feature.properties.selected === false)).toBe(true);
+  });
+
+  test("renders detailed road bases, operational semantics, and junctions as separate interactive sources", async () => {
+    const onSelect = vi.fn();
+    render(
+      <JapanOperationsMapCanvas
+        activeId="road-restriction:construction"
+        focusTargetId={null}
+        mapMode="route"
+        model={detailedRoadModel("road-restriction:construction")}
+        onSelect={onSelect}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("logistics-road-segments")).toBe(true);
+      expect(addedSources.has("logistics-road-operations")).toBe(true);
+      expect(addedSources.has("logistics-road-junctions")).toBe(true);
+    });
+
+    expect(addedSourceConfigs.get("logistics-road-segments")).toMatchObject({
+      type: "geojson",
+      attribution: "© OpenStreetMap contributors"
+    });
+    const base = addedSources.get("logistics-road-segments") as {
+      features: Array<{ properties: Record<string, unknown> }>;
+    };
+    const operations = addedSources.get("logistics-road-operations") as {
+      features: Array<{ properties: Record<string, unknown> }>;
+    };
+    const junctions = addedSources.get("logistics-road-junctions") as {
+      features: Array<{ properties: Record<string, unknown> }>;
+    };
+    expect(base.features[0].properties).toMatchObject({
+      id: "road-segment:test-a",
+      routeId: "live-logistics:road-keihin-tokyo",
+      selectionId: "live-logistics:road-keihin-tokyo",
+      label: "横浜港 → 川崎浮島JCT",
+      roadName: "高速湾岸線",
+      routeNumber: "B",
+      direction: "東行き",
+      selected: false
+    });
+    expect(operations.features.find((feature) => feature.properties.id === "road-restriction:construction")?.properties).toMatchObject({
+      segmentId: "road-segment:test-a",
+      routeId: "live-logistics:road-keihin-tokyo",
+      selectionId: "road-restriction:construction",
+      recordType: "restriction",
+      restrictionKind: "construction",
+      lifecycle: "current",
+      freshness: "stale",
+      dataPosture: "fixed-demo",
+      stateLabel: "工事例・期限切れ",
+      disclosureLabel: "固定デモ / 現在情報ではありません",
+      selected: true
+    });
+    expect(operations.features.find((feature) => feature.properties.visualKind === "unknown")?.properties).toMatchObject({
+      selectionId: "live-logistics:road-keihin-tokyo",
+      freshness: "unavailable",
+      stateLabel: "状況不明"
+    });
+    expect(junctions.features.map((feature) => feature.properties.label)).toEqual([
+      "横浜港",
+      "本牧JCT",
+      "大黒JCT",
+      "川崎浮島JCT",
+      "大井JCT",
+      "辰巳JCT",
+      "東京湾岸配送圏"
+    ]);
+
+    expect(getAddedLayer("logistics-road-base-line")).toMatchObject({
+      type: "line",
+      source: "logistics-road-segments"
+    });
+    const expectedDashes: Record<string, unknown> = {
+      normal: undefined,
+      slow: [2, 1.5],
+      congestion: [0.75, 0.5],
+      accident: [2, 1],
+      construction: [1, 1],
+      "lane-restriction": [2.5, 1],
+      closure: [0.5, 0.5],
+      unknown: [0.25, 1.25]
+    };
+    for (const [visualKind, dash] of Object.entries(expectedDashes)) {
+      const layer = getAddedLayer(`logistics-road-operation-${visualKind}`) as any;
+      expect(layer.filter).toEqual(["==", ["get", "visualKind"], visualKind]);
+      expect(layer.paint["line-dasharray"]).toEqual(dash);
+      expect(layer.paint["line-opacity"]).toEqual([
+        "case",
+        ["==", ["get", "lifecycle"], "ended"],
+        0.28,
+        ["==", ["get", "freshness"], "stale"],
+        0.46,
+        0.9
+      ]);
+    }
+    expect(getAddedLayer("logistics-road-operation-planned-outline")).toMatchObject({
+      filter: ["==", ["get", "lifecycle"], "planned"]
+    });
+    expect((getAddedLayer("logistics-road-operation-symbol") as any).layout["text-field"]).toEqual([
+      "match",
+      ["get", "visualKind"],
+      "accident", "!",
+      "construction", "◆",
+      "lane-restriction", "|",
+      "closure", "×",
+      ""
+    ]);
+    expect((getAddedLayer("logistics-road-operation-label") as any).layout["text-field"]).toBe("{stateLabel}");
+    expect(getAddedLayer("logistics-road-junction-label")).toMatchObject({
+      type: "symbol",
+      source: "logistics-road-junctions"
+    });
+
+    for (const layerId of [
+      "logistics-road-base-line",
+      "logistics-road-operation-hit",
+      "logistics-road-operation-label",
+      "logistics-road-operation-symbol",
+      "logistics-road-junction-label"
+    ]) {
+      expect(getLayerHandler("click", layerId), layerId).toBeDefined();
+    }
+    getLayerHandler("click", "logistics-road-base-line")?.({
+      features: [{ properties: base.features[0].properties }],
+      point: { x: 300, y: 200 }
+    });
+    getLayerHandler("click", "logistics-road-operation-hit")?.({
+      features: [{ properties: operations.features[4].properties }],
+      point: { x: 700, y: 200 }
+    });
+    expect(onSelect).toHaveBeenNthCalledWith(1, "live-logistics:road-keihin-tokyo", {
+      placement: "right", x: 300, y: 200
+    });
+    expect(onSelect).toHaveBeenNthCalledWith(2, operations.features[4].properties.selectionId, {
+      placement: "left", x: 700, y: 200
+    });
+  });
+
+  test("updates detailed sources, toggles them with route visibility, and preserves explicit unselected state", async () => {
+    const { rerender } = render(
+      <JapanOperationsMapCanvas
+        activeId=""
+        focusTargetId={null}
+        mapMode="cluster"
+        model={detailedRoadModel()}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+    await waitFor(() => expect(addedSources.has("logistics-road-segments")).toBe(true));
+
+    const base = addedSources.get("logistics-road-segments") as {
+      features: Array<{ properties: { selected: boolean } }>;
+    };
+    const operations = addedSources.get("logistics-road-operations") as {
+      features: Array<{ properties: { selected: boolean } }>;
+    };
+    expect(base.features.every((feature) => feature.properties.selected === false)).toBe(true);
+    expect(operations.features.every((feature) => feature.properties.selected === false)).toBe(true);
+    for (const layerId of [
+      "logistics-road-base-line",
+      "logistics-road-operation-hit",
+      "logistics-road-operation-label",
+      "logistics-road-junction-label",
+      "live-logistics-road-line",
+      "live-logistics-rail-line",
+      "live-logistics-coastal-line",
+      "live-logistics-air-line"
+    ]) {
+      expect(getLastLayoutVisibility(layerId), layerId).toBe("none");
+    }
+
+    rerender(
+      <JapanOperationsMapCanvas
+        activeId="live-logistics:road-keihin-tokyo"
+        focusTargetId={null}
+        mapMode="route"
+        model={detailedRoadModel("live-logistics:road-keihin-tokyo")}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+    await waitFor(() => {
+      expect(sourceSetDataSpies.get("logistics-road-segments")).toHaveBeenCalled();
+      expect(getLastLayoutVisibility("logistics-road-base-line")).toBe("visible");
+    });
+    const updatedBase = addedSources.get("logistics-road-segments") as {
+      features: Array<{ properties: { selected: boolean } }>;
+    };
+    expect(updatedBase.features.every((feature) => feature.properties.selected === true)).toBe(true);
+  });
+
+  test("fits all segment coordinates for a selected detailed road route or event", async () => {
+    render(
+      <JapanOperationsMapCanvas
+        activeId="road-restriction:construction"
+        focusTargetId="road-restriction:construction"
+        mapMode="route"
+        model={detailedRoadModel("road-restriction:construction")}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+    await waitFor(() => expect(lastMap?.fitBounds).toHaveBeenCalled());
+    expect(lastMap?.fitBounds.mock.calls.at(-1)?.[0]).toEqual([
+      [139.665, 35.417],
+      [139.868, 35.665]
+    ]);
+  });
+
+  test("does not start route scan animation for a detailed logistics road model", async () => {
+    const animationSpy = vi.spyOn(window, "requestAnimationFrame");
+    render(
+      <JapanOperationsMapCanvas
+        activeId=""
+        focusTargetId={null}
+        mapMode="route"
+        model={detailedRoadModel()}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+    await waitFor(() => expect(addedSources.has("logistics-road-segments")).toBe(true));
+    expect(animationSpy).not.toHaveBeenCalled();
+    animationSpy.mockRestore();
   });
 
   test("renders logistics impact corridors as filled polygons instead of route-only dotted lines", async () => {
@@ -1095,7 +1502,7 @@ describe("map canvas layer config", () => {
     };
     const fillLayer = addedLayers.find((layer) => layer.id === "logistics-impact-corridor-fill") as any;
     const routeLine = addedLayers.find((layer) => layer.id === "logistics-impact-route-line") as any;
-    const livePulseLayer = addedLayers.find((layer) => layer.id === "live-logistics-route-pulse") as any;
+    const liveRoadLayer = addedLayers.find((layer) => layer.id === "live-logistics-road-line") as any;
 
     expect(corridorSource.features[0].geometry.type).toBe("Polygon");
     expect(corridorSource.features[0].properties.selected).toBe(true);
@@ -1107,7 +1514,7 @@ describe("map canvas layer config", () => {
     });
     expect(routeLine.paint["line-opacity"]).toBeLessThanOrEqual(0.2);
     expect(routeLine.paint["line-dasharray"]).toBeUndefined();
-    expect(livePulseLayer.paint["line-opacity"]).toEqual([
+    expect(liveRoadLayer.paint["line-opacity"]).toEqual([
       "interpolate",
       ["linear"],
       ["zoom"],

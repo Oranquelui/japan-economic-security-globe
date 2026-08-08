@@ -4,9 +4,13 @@ import type {
   LiveLogisticsViewModel
 } from "../../types/logistics";
 import type {
+  RoadConditionFreshness,
   RoadConditionKind,
   RoadCoordinate,
+  RoadDataPosture,
   RoadDirection,
+  RoadEventLifecycle,
+  RoadRestrictionKind,
   RoadOperationsViewModel
 } from "../../types/road-operations";
 import type { DependencyFlow, Observation, SemanticEntity, SemanticGraph } from "../../types/semantic";
@@ -52,6 +56,33 @@ export type JapanMapRoadSegment = {
   conditionIds: string[];
   restrictionIds: string[];
   sourceIds: string[];
+  selectionId: string;
+  selected: boolean;
+};
+
+export type JapanMapRoadOperationVisualKind =
+  | RoadConditionKind
+  | RoadRestrictionKind
+  | "unknown";
+
+export type JapanMapRoadOperationalOverlay = {
+  id: string;
+  segmentId: string;
+  routeId: string;
+  label: string;
+  roadName: string;
+  routeNumber: string;
+  direction: RoadDirection;
+  coordinates: RoadCoordinate[];
+  recordType: "condition" | "restriction" | "unknown";
+  visualKind: JapanMapRoadOperationVisualKind;
+  condition: RoadConditionKind | null;
+  restrictionKind: RoadRestrictionKind | null;
+  lifecycle: RoadEventLifecycle;
+  freshness: RoadConditionFreshness;
+  dataPosture: RoadDataPosture;
+  stateLabel: string;
+  disclosureLabel: string;
   selectionId: string;
   selected: boolean;
 };
@@ -119,6 +150,7 @@ export type JapanMapCanvasModel = {
   liveRoutes?: JapanMapLogisticsRoute[];
   liveVessels?: JapanMapPoint[];
   roadSegments?: JapanMapRoadSegment[];
+  roadOperationalOverlays?: JapanMapRoadOperationalOverlay[];
   roadJunctions?: JapanMapRoadJunction[];
   logisticsImpactRegions?: JapanMapRegion[];
   logisticsImpactRoutes?: JapanMapRoute[];
@@ -243,7 +275,7 @@ function buildThemeWideMapCanvasModel(
 
   const globalPoints = buildGlobalPoints(routeScopedFlows, graph, japanEntity);
   const globalRoutes = buildGlobalRoutes(routeScopedFlows, graph, globalPoints, japanEntity);
-  const { roadSegments, roadJunctions, detailedRouteIds } = buildDetailedRoadModel(
+  const { roadSegments, roadOperationalOverlays, roadJunctions, detailedRouteIds } = buildDetailedRoadModel(
     view.id,
     roadOperations,
     activeId
@@ -268,6 +300,7 @@ function buildThemeWideMapCanvasModel(
     liveRoutes,
     liveVessels,
     roadSegments,
+    roadOperationalOverlays,
     roadJunctions,
     foreignWindow: buildForeignWindow(graph, routeScopedFlows, activeId)
   };
@@ -503,7 +536,7 @@ function buildLiveLogisticsMapCanvasModel(
     return emptyMapCanvasModel();
   }
 
-  const { roadSegments, roadJunctions, detailedRouteIds } = buildDetailedRoadModel(
+  const { roadSegments, roadOperationalOverlays, roadJunctions, detailedRouteIds } = buildDetailedRoadModel(
     view.id,
     roadOperations,
     activeId
@@ -520,6 +553,7 @@ function buildLiveLogisticsMapCanvasModel(
     livePoints: buildLivePoints(liveRoutes, graph),
     liveRoutes,
     roadSegments,
+    roadOperationalOverlays,
     roadJunctions
   };
 }
@@ -535,6 +569,7 @@ function emptyMapCanvasModel(): JapanMapCanvasModel {
     liveRoutes: [],
     liveVessels: [],
     roadSegments: [],
+    roadOperationalOverlays: [],
     roadJunctions: [],
     logisticsImpactRegions: [],
     logisticsImpactRoutes: [],
@@ -690,18 +725,24 @@ function buildDetailedRoadModel(
   activeId: string
 ): {
   roadSegments: JapanMapRoadSegment[];
+  roadOperationalOverlays: JapanMapRoadOperationalOverlay[];
   roadJunctions: JapanMapRoadJunction[];
   detailedRouteIds: Set<string>;
 } {
   if (themeId !== "logistics" || !roadOperations) {
-    return { roadSegments: [], roadJunctions: [], detailedRouteIds: new Set() };
+    return {
+      roadSegments: [],
+      roadOperationalOverlays: [],
+      roadJunctions: [],
+      detailedRouteIds: new Set()
+    };
   }
 
   const detailedRouteIds = getCompleteDetailedRoadRouteIds(roadOperations);
   const routeById = new Map(roadOperations.routes.map((route) => [route.id, route]));
   const roadSegments = roadOperations.segments.flatMap((segment): JapanMapRoadSegment[] => {
     const route = routeById.get(segment.routeId);
-    if (!route) return [];
+    if (!route || !detailedRouteIds.has(segment.routeId)) return [];
     return [{
       id: segment.id,
       routeId: segment.routeId,
@@ -715,7 +756,7 @@ function buildDetailedRoadModel(
       conditionIds: segment.conditionIds,
       restrictionIds: segment.restrictionIds,
       sourceIds: segment.sourceIds,
-      selectionId: segment.id,
+      selectionId: segment.routeId,
       selected: isActiveSelection(activeId, [
         segment.id,
         segment.routeId,
@@ -723,6 +764,31 @@ function buildDetailedRoadModel(
         ...segment.restrictionIds
       ])
     }];
+  });
+  const segmentById = new Map(roadSegments.map((segment) => [segment.id, segment]));
+  const recordsBySegmentId = new Map<string, JapanMapRoadOperationalOverlay[]>();
+  for (const condition of roadOperations.conditions) {
+    const segment = segmentById.get(condition.segmentId);
+    if (!segment) continue;
+    const overlay = buildRoadOperationalOverlay(segment, condition, activeId);
+    recordsBySegmentId.set(condition.segmentId, [
+      ...(recordsBySegmentId.get(condition.segmentId) ?? []),
+      overlay
+    ]);
+  }
+  for (const restriction of roadOperations.restrictions) {
+    const segment = segmentById.get(restriction.segmentId);
+    if (!segment) continue;
+    const overlay = buildRoadOperationalOverlay(segment, restriction, activeId);
+    recordsBySegmentId.set(restriction.segmentId, [
+      ...(recordsBySegmentId.get(restriction.segmentId) ?? []),
+      overlay
+    ]);
+  }
+  const roadOperationalOverlays = roadSegments.flatMap((segment) => {
+    const overlays = recordsBySegmentId.get(segment.id) ?? [];
+    if (overlays.length > 0) return overlays;
+    return [buildUnknownRoadOperationalOverlay(segment, roadOperations, activeId)];
   });
   const representedRouteIds = new Set(roadSegments.map((segment) => segment.routeId));
   const roadJunctions = roadOperations.junctions
@@ -733,11 +799,97 @@ function buildDetailedRoadModel(
       label: junction.label,
       coordinates: junction.coordinates,
       sourceIds: junction.sourceIds,
-      selectionId: junction.id,
+      selectionId: junction.routeId,
       selected: isActiveSelection(activeId, [junction.id, junction.routeId])
     }));
 
-  return { roadSegments, roadJunctions, detailedRouteIds };
+  return { roadSegments, roadOperationalOverlays, roadJunctions, detailedRouteIds };
+}
+
+function buildRoadOperationalOverlay(
+  segment: JapanMapRoadSegment,
+  record: RoadOperationsViewModel["conditions"][number] | RoadOperationsViewModel["restrictions"][number],
+  activeId: string
+): JapanMapRoadOperationalOverlay {
+  const unavailable = record.freshness === "unavailable" || record.freshness === "unknown";
+  const isCondition = record.recordType === "condition";
+  const visualKind = unavailable
+    ? "unknown" as const
+    : isCondition
+      ? record.condition
+      : record.restrictionKind;
+  const lifecycle = isCondition ? "current" as const : record.lifecycle;
+  return {
+    id: record.id,
+    segmentId: segment.id,
+    routeId: segment.routeId,
+    label: `${segment.label} / ${formatRoadOperationStateLabel(record)}`,
+    roadName: segment.roadName,
+    routeNumber: segment.routeNumber,
+    direction: segment.direction,
+    coordinates: segment.coordinates,
+    recordType: record.recordType,
+    visualKind,
+    condition: isCondition ? record.condition : null,
+    restrictionKind: isCondition ? null : record.restrictionKind,
+    lifecycle,
+    freshness: record.freshness,
+    dataPosture: record.dataPosture,
+    stateLabel: unavailable ? "状況不明" : formatRoadOperationStateLabel(record),
+    disclosureLabel: record.disclosureLabel,
+    selectionId: record.id,
+    selected: isActiveSelection(activeId, [record.id])
+  };
+}
+
+function buildUnknownRoadOperationalOverlay(
+  segment: JapanMapRoadSegment,
+  roadOperations: RoadOperationsViewModel,
+  activeId: string
+): JapanMapRoadOperationalOverlay {
+  const freshness = roadOperations.provider.state === "unavailable" ? "unavailable" : "unknown";
+  return {
+    id: `${segment.id}:unknown`,
+    segmentId: segment.id,
+    routeId: segment.routeId,
+    label: `${segment.label} / 状況不明`,
+    roadName: segment.roadName,
+    routeNumber: segment.routeNumber,
+    direction: segment.direction,
+    coordinates: segment.coordinates,
+    recordType: "unknown",
+    visualKind: "unknown",
+    condition: null,
+    restrictionKind: null,
+    lifecycle: "current",
+    freshness,
+    dataPosture: roadOperations.provider.dataPosture,
+    stateLabel: "状況不明",
+    disclosureLabel: roadOperations.provider.label,
+    selectionId: segment.routeId,
+    selected: isActiveSelection(activeId, [segment.routeId])
+  };
+}
+
+function formatRoadOperationStateLabel(
+  record: RoadOperationsViewModel["conditions"][number] | RoadOperationsViewModel["restrictions"][number]
+): string {
+  const base = record.recordType === "condition"
+    ? ({ normal: "平常", slow: "低速", congestion: "渋滞" } as const)[record.condition]
+    : ({
+        accident: "事故",
+        construction: "工事",
+        "lane-restriction": "車線規制",
+        closure: "通行止",
+        other: "規制"
+      } as const)[record.restrictionKind];
+  const withPosture = record.dataPosture === "fixed-demo" ? `${base}例` : base;
+  const withLifecycle = record.recordType === "restriction" && record.lifecycle === "planned"
+    ? `予定 ${withPosture}`
+    : record.recordType === "restriction" && record.lifecycle === "ended"
+      ? `${withPosture}・終了`
+      : withPosture;
+  return record.freshness === "stale" ? `${withLifecycle}・期限切れ` : withLifecycle;
 }
 
 function getCompleteDetailedRoadRouteIds(

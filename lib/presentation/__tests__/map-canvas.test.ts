@@ -317,6 +317,7 @@ describe("japan map canvas model", () => {
     );
 
     const roadSegments = model.roadSegments ?? [];
+    const roadOperationalOverlays = model.roadOperationalOverlays ?? [];
     const roadJunctions = model.roadJunctions ?? [];
     expect(roadSegments).toHaveLength(roadOperations.segments.length);
     expect(roadSegments[0]).toMatchObject({
@@ -329,7 +330,7 @@ describe("japan map canvas model", () => {
       direction: selectedSegment.direction,
       conditionIds: selectedSegment.conditionIds,
       restrictionIds: selectedSegment.restrictionIds,
-      selectionId: selectedSegment.id,
+      selectionId: selectedSegment.routeId,
       selected: true
     });
     expect(roadSegments[0].coordinates).toEqual(selectedSegment.coordinates);
@@ -338,13 +339,52 @@ describe("japan map canvas model", () => {
       id: roadOperations.junctions[0].id,
       routeId: roadOperations.junctions[0].routeId,
       sourceIds: roadOperations.junctions[0].sourceIds,
-      selectionId: roadOperations.junctions[0].id,
+      selectionId: roadOperations.junctions[0].routeId,
       selected: false
     });
     expect(roadJunctions[0].coordinates).toEqual(roadOperations.junctions[0].coordinates);
     expect(model.liveRoutes?.map((candidate) => candidate.id)).not.toContain(
       "live-logistics:road-keihin-tokyo"
     );
+    expect(roadOperationalOverlays.map((overlay) => overlay.id)).toEqual(expect.arrayContaining([
+      "road-condition:demo-daikoku-ukishima-congestion",
+      "road-restriction:demo-ukishima-oi-construction",
+      "road-restriction:demo-oi-tatsumi-lane"
+    ]));
+    expect(roadOperationalOverlays.find((overlay) => (
+      overlay.id === "road-condition:demo-daikoku-ukishima-congestion"
+    ))).toMatchObject({
+      routeId: "live-logistics:road-keihin-tokyo",
+      segmentId: "road-segment:daikoku-ukishima-east",
+      selectionId: "road-condition:demo-daikoku-ukishima-congestion",
+      recordType: "condition",
+      visualKind: "congestion",
+      condition: "congestion",
+      lifecycle: "current",
+      freshness: "stale",
+      dataPosture: "fixed-demo",
+      stateLabel: "渋滞例・期限切れ",
+      disclosureLabel: "固定デモ / 現在情報ではありません",
+      selected: false
+    });
+    expect(roadOperationalOverlays.find((overlay) => (
+      overlay.id === "road-restriction:demo-oi-tatsumi-lane"
+    ))).toMatchObject({
+      selectionId: "road-restriction:demo-oi-tatsumi-lane",
+      recordType: "restriction",
+      visualKind: "lane-restriction",
+      restrictionKind: "lane-restriction",
+      lifecycle: "planned",
+      freshness: "stale",
+      stateLabel: "予定 車線規制例・期限切れ"
+    });
+    const unknownOverlays = roadOperationalOverlays.filter((overlay) => overlay.recordType === "unknown");
+    expect(unknownOverlays.length).toBeGreaterThan(0);
+    expect(unknownOverlays.every((overlay) => (
+      overlay.stateLabel === "状況不明" &&
+      overlay.selectionId === overlay.routeId &&
+      overlay.freshness === "unavailable"
+    ))).toBe(true);
   });
 
   test("suppresses a matching endpoint chord without depending on a hardcoded road route id", () => {
