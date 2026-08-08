@@ -548,6 +548,42 @@ describe("japan map canvas model", () => {
     expect(JSON.stringify(model)).not.toMatch(/影響指数|\"rawValue\":(?:92|76|68)|\"periodLabel\":\"現在\"/);
   });
 
+  test("keeps the logistics arrival layer on the static route presentation contract", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const workspace = buildWorkspacePresentation(graph, view, live);
+    const arrivalLayer = workspace.layers.find((layer) => layer.id === "logistics-arrival")!;
+
+    const model = buildJapanMapCanvasModel(graph, view, "", arrivalLayer, live);
+
+    expect(arrivalLayer.content).toEqual({ kind: "live-logistics", view: "arrival" });
+    expect(model.liveRoutePresentation).toBe("static-logistics-modes");
+  });
+
+  test("keeps the logistics impact layer on the static route presentation contract", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const workspace = buildWorkspacePresentation(graph, view, live);
+    const impactLayer = workspace.layers.find((layer) => layer.id === "logistics-impact")!;
+
+    const model = buildJapanMapCanvasModel(graph, view, "", impactLayer, live);
+
+    expect(impactLayer.content).toEqual({ kind: "live-logistics", view: "impact" });
+    expect(model.liveRoutePresentation).toBe("static-logistics-modes");
+  });
+
   test("renders airport operations as facility points without aircraft markers", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "logistics");

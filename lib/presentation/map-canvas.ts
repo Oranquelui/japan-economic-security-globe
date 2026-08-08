@@ -523,19 +523,24 @@ function buildLiveLogisticsMapCanvasModel(
   liveLogistics?: LiveLogisticsViewModel | null,
   roadOperations?: RoadOperationsViewModel | null
 ): JapanMapCanvasModel {
+  const liveRoutePresentation = view.id === "logistics"
+    ? "static-logistics-modes" as const
+    : "animated-tracking" as const;
+
   if (layer.content.kind !== "live-logistics" || !liveLogistics) {
-    return emptyMapCanvasModel();
+    return { ...emptyMapCanvasModel(), liveRoutePresentation };
   }
 
   if (layer.content.view === "arrival") {
     return {
       ...emptyMapCanvasModel(),
+      liveRoutePresentation,
       liveVessels: buildLiveVessels(liveLogistics)
     };
   }
 
   if (layer.content.view === "impact") {
-    return emptyMapCanvasModel();
+    return { ...emptyMapCanvasModel(), liveRoutePresentation };
   }
 
   const { roadSegments, roadOperationalOverlays, roadJunctions, detailedRouteIds } = buildDetailedRoadModel(
@@ -552,7 +557,7 @@ function buildLiveLogisticsMapCanvasModel(
   );
   return {
     ...emptyMapCanvasModel(),
-    liveRoutePresentation: view.id === "logistics" ? "static-logistics-modes" : "animated-tracking",
+    liveRoutePresentation,
     livePoints: buildLivePoints(liveRoutes, graph),
     liveRoutes,
     roadSegments,
