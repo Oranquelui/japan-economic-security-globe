@@ -176,6 +176,25 @@ describe("RoadConditionInspector", () => {
     expect(seedDisclosure.match(/現在情報ではありません/g)).toHaveLength(1);
   });
 
+  test("deduplicates only exact fixed-demo posture phrases and retains longer provider constraints", () => {
+    const input = buildInput("road-condition:demo-daikoku-ukishima-congestion");
+    const condition = {
+      ...input.roadOperations.conditions[0],
+      disclosureLabel:
+        "固定デモの二次配布は禁止 / 固定デモ / 現在情報ではありませんが履歴参照専用 / 現在情報ではありません / 監査ログを保存"
+    };
+
+    render(
+      <RoadConditionInspector
+        {...input}
+        roadOperations={{ ...input.roadOperations, conditions: [condition] }}
+      />
+    );
+    expect(screen.getByTestId("road-event-disclosure").textContent).toBe(
+      "固定デモ / 現在情報ではありません / 固定デモの二次配布は禁止 / 現在情報ではありませんが履歴参照専用 / 監査ログを保存"
+    );
+  });
+
   test("shows only validated absolute timestamps and rejects relative or malformed values", () => {
     const input = buildInput("road-condition:demo-daikoku-ukishima-congestion");
     const condition = {

@@ -267,9 +267,7 @@ function buildEventDisclosure(event: RoadEvent) {
     .split(/\s*\/\s*/)
     .map((part) => part.trim())
     .filter(Boolean);
-  const providerSpecificParts = actualParts.filter((part) => (
-    !required.some((requiredPart) => part.includes(requiredPart))
-  ));
+  const providerSpecificParts = actualParts.filter((part) => !required.includes(part));
   return [...required, ...providerSpecificParts].join(" / ");
 }
 
