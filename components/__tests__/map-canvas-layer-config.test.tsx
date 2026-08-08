@@ -1153,12 +1153,22 @@ describe("map canvas layer config", () => {
               },
               {
                 id: "live-logistics:air-test",
-                label: "航空代表経路",
+                label: "羽田 → 福岡",
                 laneId: "air",
                 modeLabel: "航空",
                 pointIds: ["point:a", "point:b"],
                 relatedIds: [],
                 selectionId: "live-logistics:air-test",
+                selected: false
+              },
+              {
+                id: "live-logistics:air-airport-ops",
+                label: "羽田・成田 空港運用",
+                laneId: "air",
+                modeLabel: "航空",
+                pointIds: ["point:a", "point:b"],
+                relatedIds: [],
+                selectionId: "live-logistics:air-airport-ops",
                 selected: false
               }
             ]
@@ -1180,7 +1190,7 @@ describe("map canvas layer config", () => {
       mode
     }));
     const liveRoutes = addedSources.get("live-logistics-routes") as {
-      features: Array<{ properties: { id: string; laneId: string; modeLabel: string; selected: boolean; selectionId: string } }>;
+      features: Array<{ properties: { id: string; label: string; laneId: string; modeLabel: string; selected: boolean; selectionId: string } }>;
     };
 
     expect(modeLayers.map(({ line }) => line.filter)).toEqual([
@@ -1196,10 +1206,10 @@ describe("map canvas layer config", () => {
       [4, 2]
     ]);
     expect(modeLayers.map(({ label }) => label.layout["text-field"])).toEqual([
-      "◆ 道路",
-      "╫ 鉄道",
-      "≈ 内航",
-      "✈ 航空"
+      ["concat", "◆ ", ["get", "modeLabel"], " / ", ["get", "label"]],
+      ["concat", "╫ ", ["get", "modeLabel"], " / ", ["get", "label"]],
+      ["concat", "≈ ", ["get", "modeLabel"], " / ", ["get", "label"]],
+      ["concat", "✈ ", ["get", "modeLabel"], " / ", ["get", "label"]]
     ]);
     expect(getLastLayoutVisibility("live-logistics-route-glow")).toBe("none");
     expect(getLastLayoutVisibility("live-logistics-route-pulse")).toBe("none");
@@ -1211,6 +1221,12 @@ describe("map canvas layer config", () => {
       expect.objectContaining({ id: "live-logistics:coastal-test", laneId: "coastal", modeLabel: "内航" }),
       expect.objectContaining({ id: "live-logistics:air-test", laneId: "air", modeLabel: "航空" })
     ]));
+    expect(liveRoutes.features
+      .filter((feature) => feature.properties.laneId === "air")
+      .map((feature) => feature.properties.label)).toEqual([
+      "羽田 → 福岡",
+      "羽田・成田 空港運用"
+    ]);
     expect(liveRoutes.features.every((feature) => feature.properties.selected === false)).toBe(true);
   });
 
@@ -1381,6 +1397,7 @@ describe("map canvas layer config", () => {
 
     for (const layerId of [
       "logistics-road-base-line",
+      "logistics-road-direction",
       "logistics-road-operation-hit",
       "logistics-road-operation-label",
       "logistics-road-operation-symbol",
@@ -1401,6 +1418,82 @@ describe("map canvas layer config", () => {
     });
     expect(onSelect).toHaveBeenNthCalledWith(2, operations.features[4].properties.selectionId, {
       placement: "left", x: 700, y: 200
+    });
+  });
+
+  test("renders eastbound and westbound road direction semantics from base segment data", async () => {
+    const onSelect = vi.fn();
+    const directionModel = detailedRoadModel();
+    const eastbound = directionModel.roadSegments![0];
+    directionModel.roadSegments = [
+      eastbound,
+      {
+        ...eastbound,
+        id: "road-segment:test-west",
+        routeId: "live-logistics:road-west-test",
+        routeLabel: "東京湾岸配送圏から横浜港",
+        label: "東京湾岸配送圏 → 横浜港",
+        direction: "西行き",
+        coordinates: [...eastbound.coordinates].reverse(),
+        conditionIds: [],
+        restrictionIds: [],
+        selectionId: "live-logistics:road-west-test",
+        selected: false
+      }
+    ];
+
+    render(
+      <JapanOperationsMapCanvas
+        activeId=""
+        focusTargetId={null}
+        mapMode="route"
+        model={directionModel}
+        onSelect={onSelect}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+    await waitFor(() => expect(addedSources.has("logistics-road-segments")).toBe(true));
+
+    const base = addedSources.get("logistics-road-segments") as {
+      features: Array<{ properties: Record<string, unknown> }>;
+    };
+    expect(base.features.map((feature) => feature.properties.direction)).toEqual(["東行き", "西行き"]);
+    expect(base.features.every((feature) => feature.properties.selected === false)).toBe(true);
+    const directionLayer = getAddedLayer("logistics-road-direction") as any;
+    expect(directionLayer).toMatchObject({
+      type: "symbol",
+      source: "logistics-road-segments"
+    });
+    expect(directionLayer.layout).toMatchObject({
+      "symbol-placement": "line",
+      "text-field": [
+        "concat",
+        ["get", "direction"],
+        " ",
+        [
+          "match",
+          ["get", "direction"],
+          "東行き", "→",
+          "西行き", "←",
+          "北行き", "↑",
+          "南行き", "↓",
+          "上り", "↗",
+          "下り", "↙",
+          "内回り", "↻",
+          "外回り", "↺",
+          "→"
+        ]
+      ]
+    });
+    expect(getLastLayoutVisibility("logistics-road-direction")).toBe("visible");
+    expect(getLayerHandler("click", "logistics-road-direction")).toBeDefined();
+    getLayerHandler("click", "logistics-road-direction")?.({
+      features: [{ properties: base.features[1].properties }],
+      point: { x: 300, y: 200 }
+    });
+    expect(onSelect).toHaveBeenCalledWith("live-logistics:road-west-test", {
+      placement: "right", x: 300, y: 200
     });
   });
 
@@ -1428,6 +1521,7 @@ describe("map canvas layer config", () => {
     expect(operations.features.every((feature) => feature.properties.selected === false)).toBe(true);
     for (const layerId of [
       "logistics-road-base-line",
+      "logistics-road-direction",
       "logistics-road-operation-hit",
       "logistics-road-operation-label",
       "logistics-road-junction-label",

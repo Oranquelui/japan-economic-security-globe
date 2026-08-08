@@ -88,6 +88,7 @@ const INTERACTIVE_SEMANTIC_LAYER_IDS = [
   "live-logistics-maritime-support-line",
   "live-logistics-maritime-support-label",
   "logistics-road-base-line",
+  "logistics-road-direction",
   "logistics-road-operation-hit",
   "logistics-road-operation-normal",
   "logistics-road-operation-slow",
@@ -115,7 +116,6 @@ const LOGISTICS_ROUTE_MODE_STYLES = [
   {
     id: "road",
     laneId: "road",
-    modeLabel: "道路",
     symbol: "◆",
     dash: null,
     color: (palette: StatusPalette) => palette.monitoring
@@ -123,7 +123,6 @@ const LOGISTICS_ROUTE_MODE_STYLES = [
   {
     id: "rail",
     laneId: "rail",
-    modeLabel: "鉄道",
     symbol: "╫",
     dash: [1.5, 1],
     color: (palette: StatusPalette) => palette.normal
@@ -131,7 +130,6 @@ const LOGISTICS_ROUTE_MODE_STYLES = [
   {
     id: "coastal",
     laneId: "coastal",
-    modeLabel: "内航",
     symbol: "≈",
     dash: [0.25, 1.25],
     color: (palette: StatusPalette) => palette.selected
@@ -139,7 +137,6 @@ const LOGISTICS_ROUTE_MODE_STYLES = [
   {
     id: "air",
     laneId: "air",
-    modeLabel: "航空",
     symbol: "✈",
     dash: [4, 2],
     color: (palette: StatusPalette) => palette.watch
@@ -147,7 +144,6 @@ const LOGISTICS_ROUTE_MODE_STYLES = [
   {
     id: "maritime-support",
     laneId: "maritime",
-    modeLabel: "海上補助",
     symbol: "≈",
     dash: [0.2, 1.7],
     color: (palette: StatusPalette) => palette.monitoring
@@ -581,7 +577,13 @@ export function JapanOperationsMapCanvas({
             filter: ["==", ["get", "laneId"], mode.laneId],
             layout: {
               "symbol-placement": "line",
-              "text-field": `${mode.symbol} ${mode.modeLabel}`,
+              "text-field": [
+                "concat",
+                `${mode.symbol} `,
+                ["get", "modeLabel"],
+                " / ",
+                ["get", "label"]
+              ],
               "text-size": 10,
               "symbol-spacing": 220,
               "text-keep-upright": true,
@@ -610,6 +612,48 @@ export function JapanOperationsMapCanvas({
             ],
             "line-width": ["case", ["boolean", ["get", "selected"], false], 7, 5],
             "line-opacity": 0.74
+          }
+        });
+
+        map.addLayer({
+          id: "logistics-road-direction",
+          type: "symbol",
+          source: "logistics-road-segments",
+          layout: {
+            "symbol-placement": "line",
+            "text-field": [
+              "concat",
+              ["get", "direction"],
+              " ",
+              [
+                "match",
+                ["get", "direction"],
+                "東行き", "→",
+                "西行き", "←",
+                "北行き", "↑",
+                "南行き", "↓",
+                "上り", "↗",
+                "下り", "↙",
+                "内回り", "↻",
+                "外回り", "↺",
+                "→"
+              ]
+            ],
+            "text-size": 10,
+            "symbol-spacing": 130,
+            "text-keep-upright": true,
+            "text-allow-overlap": false
+          },
+          paint: {
+            "text-color": [
+              "case",
+              ["boolean", ["get", "selected"], false],
+              statusPalette.selected,
+              themePalette.textMuted
+            ],
+            "text-halo-color": themePalette.surfaceCanvas,
+            "text-halo-width": 1.4,
+            "text-opacity": 0.92
           }
         });
 
@@ -1271,6 +1315,13 @@ export function JapanOperationsMapCanvas({
       statusPalette.selected,
       "rgba(128, 151, 169, 0.88)"
     ]);
+    map.setPaintProperty("logistics-road-direction", "text-color", [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      statusPalette.selected,
+      themePalette.textMuted
+    ]);
+    map.setPaintProperty("logistics-road-direction", "text-halo-color", themePalette.surfaceCanvas);
     for (const operationStyle of ROAD_OPERATION_LINE_STYLES) {
       map.setPaintProperty(
         `logistics-road-operation-${operationStyle.visualKind}`,
@@ -1474,6 +1525,7 @@ function applyModeVisibility(
     );
   }
   map.setLayoutProperty("logistics-road-base-line", "visibility", visibility(showRoutes && usesStaticLogisticsRoutes));
+  map.setLayoutProperty("logistics-road-direction", "visibility", visibility(showRoutes && usesStaticLogisticsRoutes));
   for (const operationStyle of ROAD_OPERATION_LINE_STYLES) {
     map.setLayoutProperty(
       `logistics-road-operation-${operationStyle.visualKind}`,

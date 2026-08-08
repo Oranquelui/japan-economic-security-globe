@@ -4,6 +4,7 @@ import type {
   LiveLogisticsViewModel
 } from "../../types/logistics";
 import type {
+  RoadAffectedRange,
   RoadConditionFreshness,
   RoadConditionKind,
   RoadCoordinate,
@@ -835,7 +836,7 @@ function buildRoadOperationalOverlay(
     roadName: segment.roadName,
     routeNumber: segment.routeNumber,
     direction: segment.direction,
-    coordinates: segment.coordinates,
+    coordinates: clipRoadPolylineToAffectedRange(segment.coordinates, record.affectedRange),
     recordType: record.recordType,
     visualKind,
     condition: isCondition ? record.condition : null,
@@ -848,6 +849,73 @@ function buildRoadOperationalOverlay(
     selectionId: record.id,
     selected: isActiveSelection(activeId, [record.id])
   };
+}
+
+export function clipRoadPolylineToAffectedRange(
+  coordinates: RoadCoordinate[],
+  affectedRange: RoadAffectedRange | undefined
+): RoadCoordinate[] {
+  if (!affectedRange || coordinates.length < 2) return coordinates;
+
+  const startRatio = affectedRange.startRatio ?? 0;
+  const endRatio = affectedRange.endRatio ?? 1;
+  if (
+    !Number.isFinite(startRatio) ||
+    !Number.isFinite(endRatio) ||
+    startRatio < 0 ||
+    endRatio > 1 ||
+    startRatio >= endRatio
+  ) {
+    return coordinates;
+  }
+  if (startRatio === 0 && endRatio === 1) return coordinates;
+
+  const segmentLengths = coordinates.slice(1).map((coordinate, index) => {
+    const previous = coordinates[index];
+    return Math.hypot(coordinate[0] - previous[0], coordinate[1] - previous[1]);
+  });
+  const totalDistance = segmentLengths.reduce((sum, distance) => sum + distance, 0);
+  if (!Number.isFinite(totalDistance) || totalDistance <= 0) return coordinates;
+
+  const startDistance = totalDistance * startRatio;
+  const endDistance = totalDistance * endRatio;
+  const cumulativeDistances = [0];
+  for (const length of segmentLengths) {
+    cumulativeDistances.push(cumulativeDistances.at(-1)! + length);
+  }
+  const interpolateAtDistance = (targetDistance: number): RoadCoordinate => {
+    if (targetDistance <= 0) return coordinates[0];
+    if (targetDistance >= totalDistance) return coordinates.at(-1)!;
+
+    for (let index = 0; index < segmentLengths.length; index += 1) {
+      const segmentEndDistance = cumulativeDistances[index + 1];
+      if (targetDistance > segmentEndDistance) continue;
+      const length = segmentLengths[index];
+      if (length <= 0) continue;
+      const ratio = (targetDistance - cumulativeDistances[index]) / length;
+      const start = coordinates[index];
+      const end = coordinates[index + 1];
+      return [
+        start[0] + (end[0] - start[0]) * ratio,
+        start[1] + (end[1] - start[1]) * ratio
+      ];
+    }
+    return coordinates.at(-1)!;
+  };
+
+  const clipped = [
+    interpolateAtDistance(startDistance),
+    ...coordinates.filter((_coordinate, index) => (
+      index > 0 &&
+      index < coordinates.length - 1 &&
+      cumulativeDistances[index] > startDistance &&
+      cumulativeDistances[index] < endDistance
+    )),
+    interpolateAtDistance(endDistance)
+  ];
+  return clipped.filter((coordinate, index) => (
+    index === 0 || coordinate[0] !== clipped[index - 1][0] || coordinate[1] !== clipped[index - 1][1]
+  ));
 }
 
 function buildUnknownRoadOperationalOverlay(

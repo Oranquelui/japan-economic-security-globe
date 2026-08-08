@@ -10,7 +10,7 @@ import {
 import { buildLiveLogisticsView } from "../live-logistics";
 import { buildRoadOperationsView } from "../road-operations";
 import { getThemeView } from "../../semantic/selectors";
-import { buildJapanMapCanvasModel } from "../map-canvas";
+import { buildJapanMapCanvasModel, clipRoadPolylineToAffectedRange } from "../map-canvas";
 import type {
   JapanMapCanvasModel,
   JapanMapLogisticsRoute,
@@ -20,6 +20,61 @@ import type {
 import { buildWorkspacePresentation, resolveLegacyPresentation } from "../workspace";
 
 describe("japan map canvas model", () => {
+  test("clips an affected range across an intermediate vertex using cumulative polyline distance", () => {
+    const coordinates: Array<[number, number]> = [[0, 0], [3, 0], [3, 4]];
+
+    expect(clipRoadPolylineToAffectedRange(coordinates, {
+      fromLabel: "区間始点",
+      toLabel: "区間終点",
+      startRatio: 3 / 7,
+      endRatio: 5 / 7
+    })).toEqual([
+      [3, 0],
+      [3, 2]
+    ]);
+  });
+
+  test("defaults a missing affected-range endpoint to the full polyline endpoint", () => {
+    const coordinates: Array<[number, number]> = [[0, 0], [10, 0]];
+
+    expect(clipRoadPolylineToAffectedRange(coordinates, {
+      fromLabel: "25%地点",
+      toLabel: "終点",
+      startRatio: 0.25
+    })).toEqual([[2.5, 0], [10, 0]]);
+    expect(clipRoadPolylineToAffectedRange(coordinates, {
+      fromLabel: "始点",
+      toLabel: "75%地点",
+      endRatio: 0.75
+    })).toEqual([[0, 0], [7.5, 0]]);
+  });
+
+  test("falls back to the full segment for invalid affected-range ratios", () => {
+    const coordinates: Array<[number, number]> = [[0, 0], [5, 0], [10, 0]];
+
+    expect(clipRoadPolylineToAffectedRange(coordinates, {
+      fromLabel: "不正始点",
+      toLabel: "不正終点",
+      startRatio: 0.8,
+      endRatio: 0.2
+    })).toBe(coordinates);
+    expect(clipRoadPolylineToAffectedRange(coordinates, {
+      fromLabel: "非数始点",
+      toLabel: "終点",
+      startRatio: Number.NaN
+    })).toBe(coordinates);
+    expect(clipRoadPolylineToAffectedRange(coordinates, {
+      fromLabel: "範囲外始点",
+      toLabel: "終点",
+      startRatio: -0.1
+    })).toBe(coordinates);
+    expect(clipRoadPolylineToAffectedRange(coordinates, {
+      fromLabel: "始点",
+      toLabel: "範囲外終点",
+      endRatio: 1.1
+    })).toBe(coordinates);
+  });
+
   test("requires logistics metadata only on live map routes", () => {
     const genericRoute: JapanMapRoute = {
       id: "flow:test",
@@ -369,6 +424,13 @@ describe("japan map canvas model", () => {
       disclosureLabel: "固定デモ / 現在情報ではありません",
       selected: false
     });
+    const congestionOverlay = roadOperationalOverlays.find((overlay) => (
+      overlay.id === "road-condition:demo-daikoku-ukishima-congestion"
+    ))!;
+    const congestionSegment = roadSegments.find((segment) => segment.id === congestionOverlay.segmentId)!;
+    expect(congestionOverlay.coordinates[0]).not.toEqual(congestionSegment.coordinates[0]);
+    expect(congestionOverlay.coordinates.at(-1)).not.toEqual(congestionSegment.coordinates.at(-1));
+    expect(congestionOverlay.coordinates.length).toBeGreaterThanOrEqual(2);
     expect(roadOperationalOverlays.find((overlay) => (
       overlay.id === "road-restriction:demo-oi-tatsumi-lane"
     ))).toMatchObject({
