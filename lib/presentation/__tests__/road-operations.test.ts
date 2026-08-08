@@ -153,6 +153,49 @@ describe("road operations presentation", () => {
     ]);
   });
 
+  test("selects the latest current authorized condition deterministically regardless of input order", () => {
+    const records = [
+      condition({
+        id: "condition:latest-current",
+        condition: "normal",
+        providerObservedAt: "2026-08-08T08:57:00+09:00",
+        retrievedAt: "2026-08-08T08:58:00+09:00"
+      }),
+      condition({
+        id: "condition:older-current",
+        condition: "slow",
+        providerObservedAt: "2026-08-08T08:54:00+09:00",
+        retrievedAt: "2026-08-08T08:55:00+09:00"
+      }),
+      condition({
+        id: "condition:fixed-demo",
+        condition: "congestion",
+        dataPosture: "fixed-demo",
+        providerObservedAt: "2026-08-08T08:59:00+09:00",
+        retrievedAt: "2026-08-08T08:59:30+09:00"
+      }),
+      condition({
+        id: "condition:stale",
+        condition: "congestion",
+        providerObservedAt: "2026-08-08T07:00:00+09:00",
+        retrievedAt: "2026-08-08T07:02:00+09:00"
+      })
+    ];
+
+    const forward = buildRoadOperationsView(dataset({ conditionObservations: records }), NOW)!;
+    const reversed = buildRoadOperationsView(dataset({ conditionObservations: [...records].reverse() }), NOW)!;
+
+    expect(forward.segments[0].condition).toBe("normal");
+    expect(reversed.segments[0].condition).toBe("normal");
+    expect(forward.currentSummary.conditionIds).toEqual([
+      "condition:older-current", "condition:latest-current"
+    ]);
+    expect(reversed.currentSummary.conditionIds).toEqual(forward.currentSummary.conditionIds);
+    expect(forward.currentSummary.conditionIds).toContain("condition:latest-current");
+    expect(forward.currentSummary.conditionIds).not.toContain("condition:stale");
+    expect(forward.currentSummary.conditionIds).not.toContain("condition:fixed-demo");
+  });
+
   test("reports missing directions and unmatched segment records instead of applying them", () => {
     const missingDirection = condition({ id: "condition:missing-direction" }) as unknown as Record<string, unknown>;
     delete missingDirection.direction;
@@ -195,7 +238,7 @@ describe("road operations presentation", () => {
       "current", "delayed", "stale", "current", "unknown"
     ]);
     expect(view.conditions[2].dataPosture).toBe("fixed-demo");
-    expect(view.currentSummary.conditionIds).toEqual(["condition:current", "condition:caller-unavailable"]);
+    expect(view.currentSummary.conditionIds).toEqual(["condition:caller-unavailable", "condition:current"]);
   });
 
   test("keeps restriction kind, lifecycle, freshness, and partial affected range independent", () => {

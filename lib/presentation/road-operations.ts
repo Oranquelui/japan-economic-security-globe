@@ -20,6 +20,15 @@ function hasFiniteLineGeometry(segment: RoadSegment): boolean {
   );
 }
 
+function compareOperationalTimes(
+  left: { id: string; providerObservedAt: string; retrievedAt: string },
+  right: { id: string; providerObservedAt: string; retrievedAt: string }
+): number {
+  return Date.parse(left.providerObservedAt) - Date.parse(right.providerObservedAt) ||
+    Date.parse(left.retrievedAt) - Date.parse(right.retrievedAt) ||
+    left.id.localeCompare(right.id);
+}
+
 export function deriveRoadConditionFreshness(
   providerObservedAt: string,
   retrievedAt: string,
@@ -83,10 +92,10 @@ export function buildRoadOperationsView(
       displayLifecycleLabel: item.dataPosture === "fixed-demo"
         ? "デモシナリオ内で発生中"
         : null,
-      speed: normalizeRoadQuantitativeField(item.speed),
-      congestionLength: normalizeRoadQuantitativeField(item.congestionLength),
-      delay: normalizeRoadQuantitativeField(item.delay),
-      travelTime: normalizeRoadQuantitativeField(item.travelTime)
+      speed: normalizeRoadQuantitativeField(item.speed, "speed"),
+      congestionLength: normalizeRoadQuantitativeField(item.congestionLength, "congestionLength"),
+      delay: normalizeRoadQuantitativeField(item.delay, "delay"),
+      travelTime: normalizeRoadQuantitativeField(item.travelTime, "travelTime")
     }));
   const restrictions: RoadRestrictionViewModel[] = (dataset.restrictionEvents ?? [])
     .filter((item) => {
@@ -108,24 +117,6 @@ export function buildRoadOperationsView(
             ? "予定"
             : "終了"
     }));
-  const segments = validSegments.map((segment) => {
-    const matches = conditions.filter((item) => (
-      item.segmentId === segment.id && item.direction === segment.direction
-    ));
-    return {
-      ...segment,
-      condition: (dataset.provider?.state ?? "unavailable") === "unavailable"
-        ? ("unknown" as const)
-        : matches.at(-1)?.condition ?? ("unknown" as const),
-      conditionIds: matches.map((item) => item.id),
-      restrictionIds: restrictions.filter((item) => (
-        item.segmentId === segment.id && item.direction === segment.direction
-      )).map((item) => item.id)
-    };
-  });
-  const rejectedSegmentIds = allSegments
-    .filter((segment) => !hasFiniteLineGeometry(segment))
-    .map((segment) => segment.id);
   const provider: RoadProviderState = dataset.provider?.state === "unavailable"
     ? { ...dataset.provider, label: "公式道路交通フィード未接続" }
     : dataset.provider ?? {
@@ -136,13 +127,36 @@ export function buildRoadOperationsView(
         sourceIds: []
       };
   const currentConditions = provider.state === "available"
-    ? conditions.filter((item) => item.freshness === "current" && item.dataPosture !== "fixed-demo")
+    ? conditions
+        .filter((item) => item.freshness === "current" && item.dataPosture !== "fixed-demo")
+        .sort(compareOperationalTimes)
     : [];
   const currentRestrictions = provider.state === "available"
-    ? restrictions.filter((item) => (
-        item.freshness === "current" && item.lifecycle === "current" && item.dataPosture !== "fixed-demo"
-      ))
+    ? restrictions
+        .filter((item) => (
+          item.freshness === "current" && item.lifecycle === "current" && item.dataPosture !== "fixed-demo"
+        ))
+        .sort(compareOperationalTimes)
     : [];
+  const segments = validSegments.map((segment) => {
+    const matches = conditions.filter((item) => (
+      item.segmentId === segment.id && item.direction === segment.direction
+    ));
+    const currentMatches = currentConditions.filter((item) => (
+      item.segmentId === segment.id && item.direction === segment.direction
+    ));
+    return {
+      ...segment,
+      condition: currentMatches.at(-1)?.condition ?? ("unknown" as const),
+      conditionIds: matches.map((item) => item.id),
+      restrictionIds: restrictions.filter((item) => (
+        item.segmentId === segment.id && item.direction === segment.direction
+      )).map((item) => item.id)
+    };
+  });
+  const rejectedSegmentIds = allSegments
+    .filter((segment) => !hasFiniteLineGeometry(segment))
+    .map((segment) => segment.id);
   const routeImpacts: RouteImpactSummary[] = dataset.routes.flatMap((route) => {
     const routeSegmentIds = new Set(validSegments.filter((item) => item.routeId === route.id).map((item) => item.id));
     const citedConditions = currentConditions.filter((item) => (

@@ -77,7 +77,7 @@ export function loadSeedLiveLogistics(): LiveLogisticsEvent[] {
 }
 
 export function loadRoadRouteEvidenceManifest(): RoadRouteEvidenceManifest {
-  return roadRouteEvidenceManifest as RoadRouteEvidenceManifest;
+  return structuredClone(roadRouteEvidenceManifest) as RoadRouteEvidenceManifest;
 }
 
 export function loadRoadRouteEvidenceManifests(): RoadRouteEvidenceManifest[] {
@@ -94,7 +94,7 @@ export function enforceRoadOperationsSourceGate(dataset: RoadOperationsDataset):
 
 export function loadSeedRoadOperations(): RoadOperationsDataset {
   const dataset = {
-    ...(roadOperations as unknown as Omit<RoadOperationsDataset, "evidenceManifests">),
+    ...(structuredClone(roadOperations) as unknown as Omit<RoadOperationsDataset, "evidenceManifests">),
     evidenceManifests: loadRoadRouteEvidenceManifests()
   };
   return enforceRoadOperationsSourceGate(dataset);

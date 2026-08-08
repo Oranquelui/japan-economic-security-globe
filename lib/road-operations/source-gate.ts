@@ -1,10 +1,12 @@
 import type { RoadDirection, RoadOperationsDataset } from "../../types/road-operations";
+import sourceRegistry from "../../data/seed/sources.json";
 
 const FIXED_DIRECTIONS = new Set<RoadDirection>([
   "東行き", "西行き", "北行き", "南行き", "上り", "下り", "内回り", "外回り",
   "eastbound", "westbound", "northbound", "southbound", "inbound", "outbound",
   "clockwise", "counterclockwise", "destination-bound", "general"
 ]);
+const REGISTERED_SOURCE_IDS = new Set(sourceRegistry.map((source) => source.id));
 
 export function isRoadDirection(value: unknown): value is RoadDirection {
   if (typeof value !== "string" || value.trim() !== value || value.length === 0) return false;
@@ -28,11 +30,49 @@ function isHttpsUrl(value: string): boolean {
 
 export function validateRoadRouteSources(dataset: RoadOperationsDataset): RoadRouteSourceGateResult {
   const errors: string[] = [];
+  const hasInvalidSourceList = (sourceIds: unknown) => (
+    !Array.isArray(sourceIds) ||
+    sourceIds.length === 0 ||
+    sourceIds.some((sourceId) => typeof sourceId !== "string" || !REGISTERED_SOURCE_IDS.has(sourceId))
+  );
 
   if (!dataset.licenseNoticePath?.startsWith("data/seed/licenses/") || !dataset.licenseNoticePath.endsWith(".md")) {
     errors.push("dataset: ODbL license notice path is required");
   }
   if (dataset.routes.length === 0) errors.push("dataset: at least one route is required");
+  if ((dataset.segments ?? []).some((segment) => (
+    !Array.isArray(segment.coordinates) ||
+    segment.coordinates.length < 2 ||
+    segment.coordinates.some((coordinate) => (
+      !Array.isArray(coordinate) ||
+      coordinate.length !== 2 || coordinate.some((value) => !Number.isFinite(value))
+    ))
+  ))) {
+    errors.push("dataset: every segment requires finite line geometry");
+  }
+  if ((dataset.junctions ?? []).some((junction) => (
+    !Array.isArray(junction.coordinates) ||
+    junction.coordinates.length !== 2 || junction.coordinates.some((value) => !Number.isFinite(value))
+  ))) {
+    errors.push("dataset: every junction requires a finite coordinate pair");
+  }
+  if ((dataset.segments ?? []).some((segment) => (
+    !REGISTERED_SOURCE_IDS.has(segment.geometrySourceId) || hasInvalidSourceList(segment.sourceIds)
+  ))) {
+    errors.push("dataset: every segment source ID must exist in the sources registry");
+  }
+  if ((dataset.junctions ?? []).some((junction) => hasInvalidSourceList(junction.sourceIds))) {
+    errors.push("dataset: every junction source ID must exist in the sources registry");
+  }
+  if ([
+    ...(dataset.conditionObservations ?? []),
+    ...(dataset.restrictionEvents ?? [])
+  ].some((record) => hasInvalidSourceList(record.sourceIds))) {
+    errors.push("dataset: every operational record source ID must exist in the sources registry");
+  }
+  if (dataset.provider && hasInvalidSourceList(dataset.provider.sourceIds)) {
+    errors.push("dataset: every provider source ID must exist in the sources registry");
+  }
   const manifestRouteIds = dataset.evidenceManifests?.map((item) => item.routeId) ?? [];
   if (
     manifestRouteIds.length !== dataset.routes.length ||
@@ -45,6 +85,9 @@ export function validateRoadRouteSources(dataset: RoadOperationsDataset): RoadRo
     if (!route.version) errors.push(`${route.id}: version is required`);
     if (!isRoadDirection(route.direction)) errors.push(`${route.id}: valid direction is required`);
     if (!route.geometrySourceId) errors.push(`${route.id}: geometrySourceId is required`);
+    if (!REGISTERED_SOURCE_IDS.has(route.geometrySourceId)) {
+      errors.push(`${route.id}: geometry source ID must exist in the sources registry`);
+    }
     if (!route.geometryVersion) errors.push(`${route.id}: geometryVersion is required`);
     if (!route.geometryExtractedAt) errors.push(`${route.id}: geometryExtractedAt is required`);
     if (!route.geometrySourceUrl?.startsWith("https://www.openstreetmap.org/")) {
@@ -59,8 +102,11 @@ export function validateRoadRouteSources(dataset: RoadOperationsDataset): RoadRo
     }
 
     if (
+      !Array.isArray(route.topologySourceIds) ||
       route.topologySourceIds.length === 0 ||
-      route.topologySourceIds.some((sourceId) => !sourceId.startsWith("source:"))
+      route.topologySourceIds.some((sourceId) => (
+        !sourceId.startsWith("source:") || !REGISTERED_SOURCE_IDS.has(sourceId)
+      ))
     ) {
       errors.push(`${route.id}: topology source IDs are required`);
     }

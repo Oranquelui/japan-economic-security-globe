@@ -64,7 +64,13 @@ export interface RoadProviderNormalizationResult {
   diagnostics: RoadIngestDiagnostics;
 }
 
-const SUPPORTED_ROAD_UNITS = new Set(["km/h", "km", "m", "min", "s", "h", "vehicles/h", "台/時"]);
+export type RoadQuantitativeFieldKind = "speed" | "congestionLength" | "delay" | "travelTime";
+const ROAD_QUANTITY_LIMITS: Record<RoadQuantitativeFieldKind, Record<string, number>> = {
+  speed: { "km/h": 300 },
+  congestionLength: { km: 1_000, m: 1_000_000 },
+  delay: { s: 86_400, min: 1_440, h: 24 },
+  travelTime: { s: 86_400, min: 1_440, h: 24 }
+};
 const ABSOLUTE_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|[+-](\d{2}):(\d{2}))$/;
 
 export function isAbsoluteRoadTimestamp(value: unknown): value is string {
@@ -80,12 +86,14 @@ export function isAbsoluteRoadTimestamp(value: unknown): value is string {
 }
 
 export function normalizeRoadQuantitativeField(
-  field: Partial<RoadQuantitativeField> | undefined
+  field: Partial<RoadQuantitativeField> | undefined,
+  kind: RoadQuantitativeFieldKind
 ): RoadQuantitativeField | undefined {
+  const maximum = typeof field?.unit === "string" ? ROAD_QUANTITY_LIMITS[kind][field.unit] : undefined;
   return typeof field?.value === "number" && Number.isFinite(field.value) &&
+    field.value >= 0 && maximum !== undefined && field.value <= maximum &&
     typeof field?.unit === "string" &&
     field.unit.trim() === field.unit &&
-    SUPPORTED_ROAD_UNITS.has(field.unit) &&
     isAbsoluteRoadTimestamp(field.observedAt)
     ? { value: field.value, unit: field.unit, observedAt: field.observedAt }
     : undefined;
@@ -108,10 +116,10 @@ const defaultAdapter: RoadProviderAdapter<RoadProviderRawRecord> = {
       affectedRange: record.affectedRange,
       startsAt: record.startsAt,
       endsAt: record.endsAt,
-      speed: normalizeRoadQuantitativeField(record.speed),
-      congestionLength: normalizeRoadQuantitativeField(record.congestionLength),
-      delay: normalizeRoadQuantitativeField(record.delay),
-      travelTime: normalizeRoadQuantitativeField(record.travelTime)
+      speed: normalizeRoadQuantitativeField(record.speed, "speed"),
+      congestionLength: normalizeRoadQuantitativeField(record.congestionLength, "congestionLength"),
+      delay: normalizeRoadQuantitativeField(record.delay, "delay"),
+      travelTime: normalizeRoadQuantitativeField(record.travelTime, "travelTime")
     };
 
     if (record.recordType === "condition" && record.condition) {

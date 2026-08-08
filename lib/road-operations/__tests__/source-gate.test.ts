@@ -16,6 +16,30 @@ function datasetWithout(field: keyof RoadRoute): RoadOperationsDataset {
 }
 
 describe("road route source gate", () => {
+  test("returns isolated seed and manifest values on every load", () => {
+    const firstDataset = loadSeedRoadOperations();
+    const firstManifest = loadRoadRouteEvidenceManifest();
+    const originalAnchorId = firstDataset.routes[0].anchorIds[0];
+    const originalClaim = firstManifest.anchorClaims[0].claim;
+
+    try {
+      firstDataset.routes[0].anchorIds[0] = "road-junction:mutated";
+      firstDataset.evidenceManifests[0].anchorClaims[0].claim = "mutated dataset claim";
+      firstManifest.anchorClaims[0].claim = "mutated standalone manifest claim";
+
+      const secondDataset = loadSeedRoadOperations();
+      const secondManifest = loadRoadRouteEvidenceManifest();
+      expect(secondDataset.routes[0].anchorIds[0]).toBe(originalAnchorId);
+      expect(secondDataset.evidenceManifests[0].anchorClaims[0].claim).toBe(originalClaim);
+      expect(secondManifest.anchorClaims[0].claim).toBe(originalClaim);
+      expect(validateRoadRouteSources(secondDataset).ok).toBe(true);
+    } finally {
+      firstDataset.routes[0].anchorIds[0] = originalAnchorId;
+      firstDataset.evidenceManifests[0].anchorClaims[0].claim = originalClaim;
+      firstManifest.anchorClaims[0].claim = originalClaim;
+    }
+  });
+
   test("loads an evidence manifest collection that can cover every route independently", () => {
     const dataset = loadSeedRoadOperations();
     const manifests = loadRoadRouteEvidenceManifests();
@@ -81,7 +105,7 @@ describe("road route source gate", () => {
       direction: "destination:Osaka" as const,
       anchorIds: ["junction:nationwide-a", "junction:nationwide-b"],
       segmentIds: ["segment:nationwide-a-b"],
-      topologySourceIds: ["source:nexco-west-route"]
+      topologySourceIds: ["source:mlit-road-traffic-public"]
     };
     value.routes.push(secondRoute);
     value.segments!.push({
@@ -141,6 +165,66 @@ describe("road route source gate", () => {
       attribution: "© OpenStreetMap contributors",
       redistributionPermitted: true
     });
+  });
+
+  test.each([
+    ["empty segment geometry", (value: RoadOperationsDataset) => { value.segments![0].coordinates = []; }],
+    ["non-finite segment geometry", (value: RoadOperationsDataset) => {
+      value.segments![0].coordinates[0] = [Number.NaN, 35.4];
+    }],
+    ["malformed junction geometry", (value: RoadOperationsDataset) => {
+      value.junctions![0].coordinates = [139.6] as never;
+    }],
+    ["non-finite junction geometry", (value: RoadOperationsDataset) => {
+      value.junctions![0].coordinates = [139.6, Number.POSITIVE_INFINITY];
+    }]
+  ] as const)("rejects %s at the source gate", (_label, mutate) => {
+    const invalid = loadSeedRoadOperations();
+    mutate(invalid);
+    expect(validateRoadRouteSources(invalid).ok).toBe(false);
+  });
+
+  test.each([
+    ["topology source", (value: RoadOperationsDataset) => {
+      const original = value.routes[0].topologySourceIds[0];
+      const typo = "source:shutoko-bayshore-typo";
+      value.routes[0].topologySourceIds[0] = typo;
+      value.evidenceManifests[0].topologySourceIds[0] = typo;
+      value.junctions?.forEach((junction) => {
+        junction.sourceIds = junction.sourceIds.map((sourceId) => sourceId === original ? typo : sourceId);
+      });
+    }],
+    ["geometry source", (value: RoadOperationsDataset) => {
+      const original = value.routes[0].geometrySourceId;
+      const typo = "source:openstreetmap-road-geometry-typo";
+      value.routes[0].geometrySourceId = typo;
+      value.segments?.forEach((segment) => {
+        segment.geometrySourceId = typo;
+        segment.sourceIds = segment.sourceIds.map((sourceId) => sourceId === original ? typo : sourceId);
+      });
+      value.junctions?.forEach((junction) => {
+        junction.sourceIds = junction.sourceIds.map((sourceId) => sourceId === original ? typo : sourceId);
+      });
+    }],
+    ["segment source", (value: RoadOperationsDataset) => {
+      value.segments![0].sourceIds.push("source:segment-typo");
+    }],
+    ["operational record source", (value: RoadOperationsDataset) => {
+      value.conditionObservations![0].sourceIds = ["source:condition-typo"];
+    }],
+    ["missing operational record source", (value: RoadOperationsDataset) => {
+      value.conditionObservations![0].sourceIds = [];
+    }],
+    ["provider source", (value: RoadOperationsDataset) => {
+      value.provider!.sourceIds = ["source:provider-typo"];
+    }],
+    ["missing provider source", (value: RoadOperationsDataset) => {
+      value.provider!.sourceIds = [];
+    }]
+  ] as const)("rejects a missing registry ID used as a %s", (_label, mutate) => {
+    const invalid = loadSeedRoadOperations();
+    mutate(invalid);
+    expect(validateRoadRouteSources(invalid).ok).toBe(false);
   });
 
   test("requires complete direction evidence in the approved anchor-by-anchor manifest", () => {

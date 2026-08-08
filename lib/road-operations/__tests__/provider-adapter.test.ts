@@ -289,4 +289,46 @@ describe("road provider adapter", () => {
       travelTime: undefined
     });
   });
+
+  test("applies field-specific units and non-negative reasonable limits", () => {
+    const result = normalizeRoadProviderSnapshot({
+      providerId: "provider:test-road",
+      providerObservedAt: "2026-08-08T08:55:00+09:00",
+      retrievedAt: "2026-08-08T09:00:00+09:00",
+      schemaVersion: "1",
+      coverageLabel: "test corridor",
+      records: [{
+        id: "provider-record:wrong-field-units",
+        recordType: "condition" as const,
+        providerSegmentId: "provider:known",
+        direction: "東行き" as const,
+        condition: "slow" as const,
+        sourceIds: ["source:test"],
+        speed: { value: 35, unit: "min", observedAt: "2026-08-08T08:55:00+09:00" },
+        congestionLength: { value: -1, unit: "km", observedAt: "2026-08-08T08:55:00+09:00" },
+        delay: { value: -5, unit: "min", observedAt: "2026-08-08T08:55:00+09:00" },
+        travelTime: { value: -12, unit: "min", observedAt: "2026-08-08T08:55:00+09:00" }
+      }, {
+        id: "provider-record:unreasonable",
+        recordType: "condition" as const,
+        providerSegmentId: "provider:known",
+        direction: "東行き" as const,
+        condition: "slow" as const,
+        sourceIds: ["source:test"],
+        speed: { value: 301, unit: "km/h", observedAt: "2026-08-08T08:55:00+09:00" },
+        congestionLength: { value: 1001, unit: "km", observedAt: "2026-08-08T08:55:00+09:00" },
+        delay: { value: 1441, unit: "min", observedAt: "2026-08-08T08:55:00+09:00" },
+        travelTime: { value: 25, unit: "h", observedAt: "2026-08-08T08:55:00+09:00" }
+      }]
+    }, policy(), { "provider:known": "road-segment:known" });
+
+    for (const record of result.snapshot.records) {
+      expect(record).toMatchObject({
+        speed: undefined,
+        congestionLength: undefined,
+        delay: undefined,
+        travelTime: undefined
+      });
+    }
+  });
 });
