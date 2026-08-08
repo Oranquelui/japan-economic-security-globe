@@ -1,6 +1,5 @@
 import type { LayerDefinition, ThemeView } from "../../types/presentation";
 import type {
-  LiveLogisticsLaneId,
   LiveLogisticsMapRoute,
   LiveLogisticsViewModel
 } from "../../types/logistics";
@@ -31,14 +30,10 @@ export type JapanMapRoute = {
   label: string;
   pointIds: string[];
   relatedIds: string[];
-  laneId?: LiveLogisticsLaneId;
-  modeLabel?: LiveLogisticsMapRoute["modeLabel"];
-  selectionId?: string;
-  selected?: boolean;
 };
 
 export type JapanMapLogisticsRoute = JapanMapRoute & {
-  laneId: LiveLogisticsLaneId;
+  laneId: LiveLogisticsMapRoute["laneId"];
   modeLabel: LiveLogisticsMapRoute["modeLabel"];
   selectionId: string;
   selected: boolean;
@@ -121,7 +116,7 @@ export type JapanMapCanvasModel = {
   globalPoints: JapanMapPoint[];
   globalRoutes: JapanMapRoute[];
   livePoints?: JapanMapPoint[];
-  liveRoutes?: JapanMapRoute[];
+  liveRoutes?: JapanMapLogisticsRoute[];
   liveVessels?: JapanMapPoint[];
   roadSegments?: JapanMapRoadSegment[];
   roadJunctions?: JapanMapRoadJunction[];
@@ -758,7 +753,7 @@ function isLiveRoutePointVisibleForTheme(entity: SemanticEntity, themeId: ThemeV
   return entity.kind !== "Country" && entity.kind !== "Chokepoint" && entity.kind !== "SeaLane";
 }
 
-function buildLivePoints(liveRoutes: JapanMapRoute[], graph: SemanticGraph): JapanMapPoint[] {
+function buildLivePoints(liveRoutes: JapanMapLogisticsRoute[], graph: SemanticGraph): JapanMapPoint[] {
   const livePointIds = new Set(liveRoutes.flatMap((route) => route.pointIds));
 
   return dedupeById(

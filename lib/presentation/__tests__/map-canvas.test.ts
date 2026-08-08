@@ -11,10 +11,61 @@ import { buildLiveLogisticsView } from "../live-logistics";
 import { buildRoadOperationsView } from "../road-operations";
 import { getThemeView } from "../../semantic/selectors";
 import { buildJapanMapCanvasModel } from "../map-canvas";
-import type { JapanMapRegion } from "../map-canvas";
+import type {
+  JapanMapCanvasModel,
+  JapanMapLogisticsRoute,
+  JapanMapRegion,
+  JapanMapRoute
+} from "../map-canvas";
 import { buildWorkspacePresentation, resolveLegacyPresentation } from "../workspace";
 
 describe("japan map canvas model", () => {
+  test("requires logistics metadata only on live map routes", () => {
+    const genericRoute: JapanMapRoute = {
+      id: "flow:test",
+      label: "一般経路",
+      pointIds: ["point:a", "point:b"],
+      relatedIds: []
+    };
+    const logisticsRoute: JapanMapLogisticsRoute = {
+      id: "live-logistics:test",
+      label: "物流経路",
+      laneId: "rail",
+      modeLabel: "鉄道",
+      pointIds: ["point:a", "point:b"],
+      relatedIds: [],
+      selectionId: "live-logistics:test",
+      selected: false
+    };
+    const validLiveRoutes: JapanMapCanvasModel["liveRoutes"] = [logisticsRoute];
+    const invalidLiveRoutes: JapanMapCanvasModel["liveRoutes"] = [
+      // @ts-expect-error Live routes require lane metadata.
+      {
+        id: "live-logistics:missing-lane",
+        label: "レーン欠落の物流経路",
+        modeLabel: "鉄道",
+        pointIds: ["point:a", "point:b"],
+        relatedIds: [],
+        selectionId: "live-logistics:missing-lane",
+        selected: false
+      },
+      // @ts-expect-error Live routes require mode metadata.
+      {
+        id: "live-logistics:missing-mode",
+        label: "モード欠落の物流経路",
+        laneId: "rail",
+        pointIds: ["point:a", "point:b"],
+        relatedIds: [],
+        selectionId: "live-logistics:missing-mode",
+        selected: false
+      }
+    ];
+
+    expect(genericRoute).not.toHaveProperty("laneId");
+    expect(validLiveRoutes?.every((route) => route.laneId && route.modeLabel)).toBe(true);
+    void invalidLiveRoutes;
+  });
+
   test("types geometry and metric state as strict discriminated pairs", () => {
     const validBoundaryMetric: JapanMapRegion = {
       id: "prefecture:tokyo",
@@ -350,6 +401,7 @@ describe("japan map canvas model", () => {
     );
     expect(model.roadSegments?.every((segment) => segment.selected === false)).toBe(true);
     expect(model.roadJunctions?.every((junction) => junction.selected === false)).toBe(true);
+    expect(model.liveRoutes?.every((route) => route.laneId && route.modeLabel)).toBe(true);
     expect(model.liveRoutes?.every((route) => route.selected === false)).toBe(true);
   });
 
