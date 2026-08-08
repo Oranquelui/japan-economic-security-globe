@@ -1587,7 +1587,23 @@ type PrefectureMapDiagnostics = Readonly<{
     tilesLoaded: boolean;
     zoom: number;
   };
+  readLogistics?: () => LogisticsMapDiagnosticsSnapshot;
   setPrefectureValueNull?: (entityId: string) => Promise<void>;
+}>;
+
+type LogisticsMapDiagnosticsSnapshot = Readonly<{
+  attributions: string[];
+  camera: {
+    allDetailedRoadCoordinatesInBounds: boolean;
+    center: [number, number];
+    zoom: number;
+  };
+  junctions: Array<Record<string, unknown>>;
+  layers: Array<Record<string, unknown>>;
+  logisticsRoutes: Array<Record<string, unknown>>;
+  roadOperations: Array<Record<string, unknown>>;
+  roadSegments: Array<Record<string, unknown>>;
+  tilesLoaded: boolean;
 }>;
 
 type PrefectureMapDiagnosticsContainer = HTMLDivElement & {
@@ -1696,6 +1712,7 @@ function installPrefectureMapDiagnostics(
     read,
     ...(MAP_ACCEPTANCE_FIXTURES_ENABLED
       ? {
+          readLogistics: () => buildLogisticsMapDiagnostics(map),
           setPrefectureValueNull: async (entityId: string) => {
             const prefectures = prefectureRegionsToFeatureCollection(
               latestModelRef.current.regions,
@@ -1734,6 +1751,81 @@ function installPrefectureMapDiagnostics(
 
   (container as PrefectureMapDiagnosticsContainer).__prefectureMapDiagnostics = diagnostics;
   return diagnostics;
+}
+
+function buildLogisticsMapDiagnostics(map: any): LogisticsMapDiagnosticsSnapshot {
+  const style = typeof map.getStyle === "function" ? map.getStyle() : null;
+  const sources = style?.sources && typeof style.sources === "object" ? style.sources : {};
+  const logisticsRoutes = readGeoJsonDiagnosticFeatures(sources["live-logistics-routes"]);
+  const roadSegments = readGeoJsonDiagnosticFeatures(sources["logistics-road-segments"]);
+  const roadOperations = readGeoJsonDiagnosticFeatures(sources["logistics-road-operations"]);
+  const junctions = readGeoJsonDiagnosticFeatures(sources["logistics-road-junctions"]).map((junction) => {
+    const coordinates = junction.coordinates;
+    if (!Array.isArray(coordinates) || coordinates.length < 2 || typeof map.project !== "function") {
+      return junction;
+    }
+    const point = map.project([coordinates[0], coordinates[1]]);
+    return {
+      ...junction,
+      screenPoint: [point.x, point.y]
+    };
+  });
+  const center = map.getCenter();
+  const bounds = typeof map.getBounds === "function" ? map.getBounds() : null;
+  const allDetailedRoadCoordinatesInBounds = roadSegments.every((segment) => (
+    Array.isArray(segment.coordinates)
+    && segment.coordinates.every((coordinate) => (
+      Array.isArray(coordinate)
+      && coordinate.length >= 2
+      && bounds
+      && typeof bounds.contains === "function"
+      && bounds.contains([coordinate[0], coordinate[1]])
+    ))
+  ));
+  const sourceAttributions = [
+    sources["logistics-road-segments"],
+    sources["logistics-road-operations"],
+    sources["logistics-road-junctions"]
+  ].flatMap((source) => (
+    source && typeof source.attribution === "string" ? [source.attribution] : []
+  ));
+
+  return {
+    attributions: [...new Set(sourceAttributions)],
+    camera: {
+      allDetailedRoadCoordinatesInBounds,
+      center: [center.lng, center.lat],
+      zoom: map.getZoom()
+    },
+    junctions,
+    layers: Array.isArray(style?.layers)
+      ? style.layers.filter((layer: any) => (
+          typeof layer?.id === "string"
+          && (layer.id.startsWith("live-logistics-") || layer.id.startsWith("logistics-road-"))
+        ))
+      : [],
+    logisticsRoutes,
+    roadOperations,
+    roadSegments,
+    tilesLoaded: map.areTilesLoaded()
+  };
+}
+
+function readGeoJsonDiagnosticFeatures(source: any): Array<Record<string, unknown>> {
+  const data = source?.data;
+  if (!data || typeof data !== "object" || !Array.isArray(data.features)) {
+    return [];
+  }
+
+  return data.features.flatMap((feature: any) => {
+    if (!feature || typeof feature !== "object" || !feature.properties || typeof feature.properties !== "object") {
+      return [];
+    }
+    return [{
+      ...feature.properties,
+      coordinates: feature.geometry?.coordinates
+    }];
+  });
 }
 
 function queryRenderedLayerFeatures(map: any, layerIds: readonly string[]) {

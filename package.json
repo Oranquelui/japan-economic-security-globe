@@ -15,7 +15,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run --exclude 'e2e/**'",
     "test:watch": "vitest",
-    "test:e2e:prefecture": "playwright test e2e/prefecture-map.spec.ts"
+    "test:e2e:prefecture": "playwright test e2e/prefecture-map.spec.ts",
+    "test:e2e:logistics": "playwright test e2e/logistics-road-conditions.spec.ts"
   },
   "dependencies": {
     "@react-three/fiber": "^9.1.2",

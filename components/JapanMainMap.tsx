@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 
 import type { JapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import type { OperationMapMode } from "../lib/presentation/operations";
@@ -78,8 +78,10 @@ export function JapanMainMap({
     <section
       className="relative h-full min-h-0 overflow-hidden"
       style={{
-        background: themePalette.surfaceCanvas
-      }}
+        background: themePalette.surfaceCanvas,
+        "--map-overlay-bottom": `${overlayInsets.bottom}px`,
+        "--map-overlay-left": `${overlayInsets.left}px`
+      } as CSSProperties}
     >
       <JapanOperationsMapCanvas
         activeId={activeId}

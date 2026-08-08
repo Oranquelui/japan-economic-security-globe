@@ -77,10 +77,15 @@ body {
 }
 
 .maplibregl-ctrl-bottom-right,
-.maplibregl-ctrl-bottom-left,
 .maplibregl-ctrl-top-right,
 .maplibregl-ctrl-top-left {
   display: none;
+}
+
+.maplibregl-ctrl-bottom-left {
+  bottom: var(--map-overlay-bottom, 16px);
+  display: block;
+  left: var(--map-overlay-left, 16px);
 }
 
 a {

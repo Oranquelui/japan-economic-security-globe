@@ -28,6 +28,8 @@ let lastMap: {
   fitBounds: ReturnType<typeof vi.fn>;
   getCanvas: ReturnType<typeof vi.fn>;
   getCenter: ReturnType<typeof vi.fn>;
+  getBounds: ReturnType<typeof vi.fn>;
+  getStyle: ReturnType<typeof vi.fn>;
   getZoom: ReturnType<typeof vi.fn>;
   off: ReturnType<typeof vi.fn>;
   setLayoutProperty: ReturnType<typeof vi.fn>;
@@ -94,6 +96,18 @@ vi.mock("maplibre-gl", () => {
     };
     getCanvas = vi.fn(() => this.canvas);
     getCenter = vi.fn(() => ({ lat: 35, lng: 138.45 }));
+    getBounds = vi.fn(() => ({ contains: vi.fn(() => true) }));
+    project = vi.fn(([longitude, latitude]: [number, number]) => ({
+      x: longitude - 139 + 400,
+      y: 36 - latitude + 240
+    }));
+    getStyle = vi.fn(() => ({
+      layers: addedLayers,
+      sources: Object.fromEntries([...addedSourceConfigs].map(([id, source]) => [
+        id,
+        { ...source, data: addedSources.get(id) }
+      ]))
+    }));
     getSource = vi.fn((id: string) => ({
       setData: sourceSetDataSpies.get(id),
       getClusterExpansionZoom: vi.fn(async () => 6)
@@ -681,6 +695,58 @@ describe("map canvas layer config", () => {
     rendered.unmount();
     expect(mapContainer.__prefectureMapDiagnostics).toBeUndefined();
   });
+
+  test.skipIf(process.env.NEXT_PUBLIC_MAP_ACCEPTANCE_FIXTURES !== "1")(
+    "exposes read-only logistics source and layer diagnostics only for acceptance fixtures",
+    async () => {
+      const rendered = render(
+        <JapanOperationsMapCanvas
+          activeId=""
+          focusTargetId={null}
+          mapMode="route"
+          model={detailedRoadModel()}
+          onSelect={vi.fn()}
+          statusPalette={getStatusPalette()}
+          themePalette={getThemePalette("logistics")}
+        />
+      );
+      const mapContainer = rendered.container.querySelector('[data-testid="jp-operations-map-canvas"]') as any;
+
+      await waitFor(() => {
+        expect(typeof mapContainer.__prefectureMapDiagnostics?.readLogistics).toBe("function");
+      });
+      const diagnostics = mapContainer.__prefectureMapDiagnostics.readLogistics();
+      expect(diagnostics.roadSegments).toHaveLength(2);
+      expect(diagnostics.roadSegments[0]).toMatchObject({
+        direction: "東行き",
+        id: "road-segment:test-a",
+        routeId: "live-logistics:road-keihin-tokyo",
+        selectionId: "live-logistics:road-keihin-tokyo"
+      });
+      expect(diagnostics.roadOperations.some((operation: any) => (
+        operation.visualKind === "unknown" && operation.freshness === "unavailable"
+      ))).toBe(true);
+      expect(diagnostics.junctions.map((junction: any) => junction.label)).toEqual([
+        "横浜港",
+        "本牧JCT",
+        "大黒JCT",
+        "川崎浮島JCT",
+        "大井JCT",
+        "辰巳JCT",
+        "東京湾岸配送圏"
+      ]);
+      expect(diagnostics.junctions[0].screenPoint).toEqual([
+        expect.any(Number),
+        expect.any(Number)
+      ]);
+      expect(diagnostics.layers.find((layer: any) => layer.id === "logistics-road-operation-congestion"))
+        .toMatchObject({ filter: ["==", ["get", "visualKind"], "congestion"] });
+      expect(diagnostics.attributions).toContain("© OpenStreetMap contributors");
+      expect(diagnostics.camera.allDetailedRoadCoordinatesInBounds).toBe(true);
+      expect(diagnostics.tilesLoaded).toBe(true);
+      expect(mapContainer.__prefectureMapDiagnostics?.setLogisticsSourceData).toBeUndefined();
+    }
+  );
 
   test("does not resend prefecture boundaries for palette, mode, or value-equal model rerenders", async () => {
     const regions = prefectureMetricRegions();
