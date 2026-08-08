@@ -64,6 +64,9 @@ describe("LogisticsRouteOverviewPanel", () => {
     const text = panel.textContent ?? "";
     expect(text).toContain("公式道路交通フィード未接続");
     expect(text).toContain("固定デモ");
+    expect(text).toContain("混合エビデンス");
+    expect(text).toContain("公的公開情報");
+    expect(text).toContain("遅延集約");
     expect(text).toContain("現在情報ではありません");
     expect(text).toContain("更新なし");
     expect(text).toContain("到着見込み: データなし");
@@ -143,6 +146,46 @@ describe("LogisticsRouteOverviewPanel", () => {
     })).toBeTruthy();
   });
 
+  test("orders mixed road conditions and restrictions by route, segment topology, then record id", () => {
+    const input = buildInput();
+    const route = input.roadOperations.routes[0];
+    const baseCondition = input.roadOperations.conditions[0];
+    const baseRestriction = input.roadOperations.restrictions[0];
+    const sharedSegmentId = route.segmentIds[1];
+    const laterSegmentId = route.segmentIds[2];
+    const roadOperations: RoadOperationsViewModel = {
+      ...input.roadOperations,
+      conditions: [
+        {
+          ...baseCondition,
+          id: "road-event:z-condition",
+          segmentId: sharedSegmentId,
+          affectedRange: { fromLabel: "同一区間", toLabel: "後続条件" }
+        },
+        {
+          ...baseCondition,
+          id: "road-event:a-later-condition",
+          segmentId: laterSegmentId,
+          affectedRange: { fromLabel: "後続区間", toLabel: "条件" }
+        }
+      ],
+      restrictions: [{
+        ...baseRestriction,
+        id: "road-event:a-restriction",
+        segmentId: sharedSegmentId,
+        affectedRange: { fromLabel: "同一区間", toLabel: "先行規制" }
+      }]
+    };
+
+    render(<LogisticsRouteOverviewPanel {...input} roadOperations={roadOperations} />);
+
+    const first = screen.getByRole("button", { name: /同一区間 → 先行規制/ });
+    const second = screen.getByRole("button", { name: /同一区間 → 後続条件/ });
+    const third = screen.getByRole("button", { name: /後続区間 → 条件/ });
+    expect(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(second.compareDocumentPosition(third) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   test("excludes Energy AIS routes and requires both maritime lane and general-cargo class for support", () => {
     const input = buildInput();
     const roadItem = input.liveLogistics.items.find((item) => item.laneId === "road")!;
@@ -197,5 +240,10 @@ describe("LogisticsRouteOverviewPanel", () => {
     expect(roadRoute.getAttribute("aria-label")).toContain("代表経路");
     expect(roadRoute.getAttribute("aria-label")).toContain("固定デモ");
     expect(roadRoute.getAttribute("aria-label")).toContain("現在情報ではありません");
+
+    const officialAirportRoute = screen.getByRole("button", {
+      name: /航空 代表経路 空港運用: 羽田・成田 貨物\/滑走路集約 公的公開情報 遅延集約 現在情報ではありません/
+    });
+    expect(officialAirportRoute.textContent).not.toMatch(/固定デモ|今日|監視中|次回更新|\d+分前/);
   });
 });

@@ -368,6 +368,40 @@ describe("map inbox structure", () => {
     }).getAttribute("aria-pressed")).toBe("true");
   });
 
+  test("preserves the public delayed posture for an exact official airport selection", () => {
+    const seedLogistics = buildLiveLogisticsView(
+      "logistics",
+      "live-logistics:airport-haneda-narita-ops",
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T12:00:00+09:00")
+    );
+    if (!seedLogistics) throw new Error("Expected logistics seed view.");
+
+    render(
+      <MapInboxPanel
+        activeId="live-logistics:airport-haneda-narita-ops"
+        liveLogistics={seedLogistics}
+        onQueryChange={vi.fn()}
+        onSelect={vi.fn()}
+        query=""
+        rows={[]}
+        themeId="logistics"
+        themeLabel="物流"
+        themePalette={getThemePalette("logistics")}
+      />
+    );
+
+    const scenarioBoard = screen.getByRole("region", { name: "国内物流の代表シナリオ" });
+    const primary = within(scenarioBoard).getByRole("button", {
+      name: /代表シナリオ 空港運用: 羽田・成田 貨物\/滑走路集約/
+    });
+    expect(primary.getAttribute("aria-label")).toContain("公的公開情報 遅延集約 現在情報ではありません");
+    expect(primary.textContent).toContain("公的公開情報");
+    expect(primary.textContent).toContain("遅延集約");
+    expect(primary.textContent).not.toContain("固定デモ");
+    expect(scenarioBoard.textContent).not.toMatch(/今日|監視中|次回更新|\d+分前/);
+  });
+
   test("never promotes an Energy or AIS item to the domestic scenario primary card", () => {
     render(
       <MapInboxPanel

@@ -23,10 +23,11 @@ export function LogisticsImpactBoard({
   themePalette
 }: LogisticsImpactBoardProps) {
   const primaryItem = resolvePrimaryImpactItem(liveLogistics.items, activeId);
+  const primaryPosture = primaryItem ? getItemEvidencePosture(primaryItem) : null;
+  const domesticItems = portHinterlandCandidates(liveLogistics.items);
+  const boardEvidenceSummary = buildBoardEvidenceSummary(domesticItems);
   const affectedRegions = dedupeStrings(primaryItem?.affectedRegions ?? []).slice(0, 4);
-  const portHinterlandItems = liveLogistics.items
-    .filter(isEligibleDomesticImpactItem)
-    .slice(0, 4);
+  const portHinterlandItems = domesticItems.slice(0, 4);
 
   if (roadOperations) {
     return (
@@ -63,15 +64,15 @@ export function LogisticsImpactBoard({
             国内物流の代表シナリオ
           </h2>
           <p className="mt-1 text-[0.72rem] leading-5 [overflow-wrap:anywhere]" style={{ color: themePalette.textMuted }}>
-            固定デモの代表経路を、Energy系海上輸送と分けて確認する。現在情報ではありません。
+            {boardEvidenceSummary} Energy系海上輸送とは分けて確認する。現在情報ではありません。
           </p>
         </div>
 
-        {primaryItem ? (
+        {primaryItem && primaryPosture ? (
           <>
             <button
               type="button"
-              aria-label={`代表シナリオ ${primaryItem.title} 固定デモ 現在情報ではありません`}
+              aria-label={`代表シナリオ ${primaryItem.title} ${formatAccessiblePosture(primaryPosture)}`}
               aria-pressed="true"
               onClick={() => onSelect(primaryItem.id)}
               className="w-full border-l-4 py-3 pl-3 pr-2 text-left transition hover:bg-white/[0.04]"
@@ -81,8 +82,9 @@ export function LogisticsImpactBoard({
               }}
             >
               <div className="flex flex-wrap items-center gap-2">
-                <BoardChip themePalette={themePalette}>固定デモ</BoardChip>
-                <BoardChip themePalette={themePalette}>更新なし</BoardChip>
+                {primaryPosture.chips.map((chip) => (
+                  <BoardChip key={chip} themePalette={themePalette}>{chip}</BoardChip>
+                ))}
                 <BoardChip themePalette={themePalette}>{formatRegions(primaryItem)}</BoardChip>
               </div>
               <div className="mt-2 text-base font-semibold leading-6 text-white [overflow-wrap:anywhere]">
@@ -133,7 +135,7 @@ export function LogisticsImpactBoard({
               <button
                 key={item.id}
                 type="button"
-                aria-label={`${formatOperationClass(item.operationClass)} 代表シナリオ ${formatImpactScope(item)} 固定デモ 現在情報ではありません`}
+                aria-label={`${formatOperationClass(item.operationClass)} 代表シナリオ ${formatImpactScope(item)} ${formatAccessiblePosture(getItemEvidencePosture(item))}`}
                 aria-pressed={item.id === activeId}
                 onClick={() => onSelect(item.id)}
                 className="grid w-full grid-cols-[4.25rem,1fr] gap-2 px-0 py-1.5 text-left text-[0.72rem] leading-5 transition hover:text-white"
@@ -165,6 +167,55 @@ function isEligibleDomesticImpactItem(item: LiveLogisticsItemViewModel) {
     || item.laneId === "rail"
     || item.laneId === "coastal"
     || item.laneId === "air";
+}
+
+function portHinterlandCandidates(items: LiveLogisticsItemViewModel[]) {
+  return items.filter(isEligibleDomesticImpactItem);
+}
+
+function getItemEvidencePosture(item: LiveLogisticsItemViewModel) {
+  switch (item.evidenceClass) {
+    case "official_public":
+      return {
+        label: "公的公開情報 / 遅延集約 / 現在情報ではありません",
+        chips: ["公的公開情報", "遅延集約", "現在情報ではありません"]
+      };
+    case "provider_gated_aggregate":
+      return {
+        label: "事業者集約 / 遅延集約 / 現在情報ではありません",
+        chips: ["事業者集約", "遅延集約", "現在情報ではありません"]
+      };
+    case "official_public_plus_demo":
+      return {
+        label: "固定デモ / 現在情報ではありません / 更新なし",
+        chips: ["固定デモ", "現在情報ではありません", "更新なし"]
+      };
+    default:
+      return {
+        label: "固定デモ / 現在情報ではありません / 更新なし",
+        chips: ["固定デモ", "現在情報ではありません", "更新なし"]
+      };
+  }
+}
+
+function formatAccessiblePosture(posture: ReturnType<typeof getItemEvidencePosture>) {
+  return posture.label.split(" / ").join(" ");
+}
+
+function buildBoardEvidenceSummary(items: LiveLogisticsItemViewModel[]) {
+  const hasOfficialDelayed = items.some((item) => item.evidenceClass === "official_public");
+  const hasProviderDelayed = items.some((item) => item.evidenceClass === "provider_gated_aggregate");
+  const hasDemo = items.some((item) => (
+    item.evidenceClass === "official_public_plus_demo"
+    || item.evidenceClass === "public_aggregate_demo"
+    || !item.evidenceClass
+  ));
+  const evidenceLabels = [
+    hasDemo ? "固定デモ" : null,
+    hasOfficialDelayed ? "公的公開情報の遅延集約" : null,
+    hasProviderDelayed ? "事業者集約の遅延情報" : null
+  ].filter((label): label is string => Boolean(label));
+  return `${evidenceLabels.length > 0 ? evidenceLabels.join("と") : "情報姿勢未確認"}を含む代表シナリオ。`;
 }
 
 function BoardMetric({

@@ -62,6 +62,11 @@ export function LogisticsRouteOverviewPanel({
     itemById.get(route.id)?.affectedRegions ?? []
   )));
   const modeCount = new Set(representativeRoutes.map((route) => route.laneId)).size;
+  const overviewPosture = buildOverviewPosture(
+    [...representativeRoutes, ...maritimeSupportRoutes]
+      .map((route) => itemById.get(route.id))
+      .filter((item): item is LiveLogisticsItemViewModel => Boolean(item))
+  );
   const roadEvents = roadOperations
     ? buildRoadEventChoices(roadOperations, new Set(
         representativeRoutes.filter((route) => route.laneId === "road").map((route) => route.id)
@@ -91,7 +96,7 @@ export function LogisticsRouteOverviewPanel({
             className="shrink-0 rounded border px-2 py-1 font-mono text-[0.56rem] tracking-[0.12em]"
             style={{ borderColor: themePalette.borderStrong, color: themePalette.accentText }}
           >
-            固定デモ
+            {overviewPosture.badge}
           </span>
         </div>
 
@@ -108,7 +113,7 @@ export function LogisticsRouteOverviewPanel({
               : "公式道路交通フィード未接続 / 利用不可"}
           </StateRow>
           <StateRow label="情報姿勢" themePalette={themePalette}>
-            固定デモ / 現在情報ではありません / 更新なし
+            {overviewPosture.label}
           </StateRow>
           <StateRow label="対象地域" themePalette={themePalette}>
             {regions.length > 0 ? regions.join(" / ") : "データなし"}
@@ -211,10 +216,10 @@ export function LogisticsRouteOverviewPanel({
                   <ChoiceButton
                     key={route.id}
                     active={activeId === route.id}
-                    accessibleLabel={`港湾前後の補助 ${item.title} 固定デモ 現在情報ではありません`}
+                    accessibleLabel={`港湾前後の補助 ${item.title} ${formatAccessiblePosture(getItemEvidencePosture(item))}`}
                     eyebrow="一般貨物"
                     label={item.title}
-                    meta="固定デモ / 現在情報ではありません"
+                    meta={getItemEvidencePosture(item)}
                     onClick={() => onSelect(route.id)}
                     symbol="◇"
                     themePalette={themePalette}
@@ -269,14 +274,12 @@ function RouteChoice({
   route: LiveLogisticsMapRoute;
   themePalette: ThemePalette;
 }) {
-  const posture = item.evidenceClass === "official_public"
-    ? "公開集約 / 遅延情報"
-    : "固定デモ / 現在情報ではありません";
+  const posture = getItemEvidencePosture(item);
 
   return (
     <ChoiceButton
       active={activeId === route.id}
-      accessibleLabel={`${modeLabel} 代表経路 ${item.title} ${posture.replace(" / ", " ")}`}
+      accessibleLabel={`${modeLabel} 代表経路 ${item.title} ${formatAccessiblePosture(posture)}`}
       eyebrow="代表経路"
       label={item.title}
       meta={posture}
@@ -350,19 +353,35 @@ function buildRoadEventChoices(
   representativeRoadRouteIds: ReadonlySet<string>
 ): RoadEventChoice[] {
   const segmentById = new Map(roadOperations.segments.map((segment) => [segment.id, segment]));
-  const matchesRepresentativeRoute = (segmentId: string) => {
-    const routeId = segmentById.get(segmentId)?.routeId;
-    return Boolean(routeId && representativeRoadRouteIds.has(routeId));
-  };
+  const segmentRankById = new Map<string, { routeId: string; routeOrder: number; segmentOrder: number }>();
+  roadOperations.routes.forEach((route, routeOrder) => {
+    if (!representativeRoadRouteIds.has(route.id)) return;
+    route.segmentIds.forEach((segmentId, segmentOrder) => {
+      segmentRankById.set(segmentId, { routeId: route.id, routeOrder, segmentOrder });
+    });
+  });
 
-  return [
-    ...roadOperations.conditions
-      .filter((event) => matchesRepresentativeRoute(event.segmentId))
-      .map(conditionToChoice),
-    ...roadOperations.restrictions
-      .filter((event) => matchesRepresentativeRoute(event.segmentId))
-      .map(restrictionToChoice)
-  ];
+  const rankedRecords: Array<{
+    record: RoadConditionViewModel | RoadRestrictionViewModel;
+    routeOrder: number;
+    segmentOrder: number;
+  }> = [];
+  for (const record of [...roadOperations.conditions, ...roadOperations.restrictions]) {
+    const segment = segmentById.get(record.segmentId);
+    const rank = segmentRankById.get(record.segmentId);
+    if (!segment || !rank || segment.routeId !== rank.routeId) continue;
+    rankedRecords.push({ record, routeOrder: rank.routeOrder, segmentOrder: rank.segmentOrder });
+  }
+
+  return rankedRecords
+    .sort((left, right) => (
+      left.routeOrder - right.routeOrder
+      || left.segmentOrder - right.segmentOrder
+      || left.record.id.localeCompare(right.record.id)
+    ))
+    .map(({ record }) => record.recordType === "condition"
+      ? conditionToChoice(record)
+      : restrictionToChoice(record));
 }
 
 function conditionToChoice(event: RoadConditionViewModel): RoadEventChoice {
@@ -421,4 +440,51 @@ function isRepresentativeLane(laneId: LiveLogisticsLaneId): laneId is Representa
 
 function uniqueStrings(values: string[]) {
   return [...new Set(values)];
+}
+
+function getItemEvidencePosture(item: LiveLogisticsItemViewModel) {
+  switch (item.evidenceClass) {
+    case "official_public":
+      return "公的公開情報 / 遅延集約 / 現在情報ではありません";
+    case "provider_gated_aggregate":
+      return "事業者集約 / 遅延集約 / 現在情報ではありません";
+    case "official_public_plus_demo":
+      return "固定デモ / 現在情報ではありません / 更新なし";
+    default:
+      return "固定デモ / 現在情報ではありません / 更新なし";
+  }
+}
+
+function formatAccessiblePosture(posture: string) {
+  return posture.split(" / ").join(" ");
+}
+
+function buildOverviewPosture(items: LiveLogisticsItemViewModel[]) {
+  const hasOfficialDelayed = items.some((item) => item.evidenceClass === "official_public");
+  const hasProviderDelayed = items.some((item) => item.evidenceClass === "provider_gated_aggregate");
+  const hasDemo = items.some((item) => (
+    item.evidenceClass === "official_public_plus_demo"
+    || item.evidenceClass === "public_aggregate_demo"
+    || !item.evidenceClass
+  ));
+  const evidenceLabels = [
+    hasDemo ? "固定デモ" : null,
+    hasOfficialDelayed ? "公的公開情報（空港・遅延集約）" : null,
+    hasProviderDelayed ? "事業者集約（遅延）" : null
+  ].filter((label): label is string => Boolean(label));
+  const badge = evidenceLabels.length > 1
+    ? "混合エビデンス"
+    : hasOfficialDelayed
+      ? "公的公開情報"
+      : hasProviderDelayed
+        ? "事業者集約"
+        : "固定デモ";
+  return {
+    badge,
+    label: [
+      ...evidenceLabels,
+      "現在情報ではありません",
+      hasDemo ? "更新なし" : null
+    ].filter((label): label is string => Boolean(label)).join(" / ")
+  };
 }
