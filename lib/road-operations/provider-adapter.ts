@@ -131,7 +131,26 @@ const defaultAdapter: RoadProviderAdapter<RoadProviderRawRecord> = {
 };
 
 function freezeRecord(record: RoadOperationalRecord): RoadOperationalRecord {
-  return Object.freeze(record);
+  const cloned = {
+    ...record,
+    sourceIds: [...record.sourceIds],
+    affectedRange: record.affectedRange ? { ...record.affectedRange } : undefined,
+    ...(record.recordType === "condition" ? {
+      speed: record.speed ? { ...record.speed } : undefined,
+      congestionLength: record.congestionLength ? { ...record.congestionLength } : undefined,
+      delay: record.delay ? { ...record.delay } : undefined,
+      travelTime: record.travelTime ? { ...record.travelTime } : undefined
+    } : {})
+  } as RoadOperationalRecord;
+  Object.freeze(cloned.sourceIds);
+  if (cloned.affectedRange) Object.freeze(cloned.affectedRange);
+  if (cloned.recordType === "condition") {
+    if (cloned.speed) Object.freeze(cloned.speed);
+    if (cloned.congestionLength) Object.freeze(cloned.congestionLength);
+    if (cloned.delay) Object.freeze(cloned.delay);
+    if (cloned.travelTime) Object.freeze(cloned.travelTime);
+  }
+  return Object.freeze(cloned);
 }
 
 export function normalizeRoadProviderSnapshot<TRawRecord extends RoadProviderRawRecord>(

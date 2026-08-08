@@ -51,7 +51,9 @@ export function buildRoadOperationsView(
   const unmatchedSegmentIds = [...(dataset.ingestDiagnostics?.unmatchedSegmentIds ?? [])];
   const rejectedRecords = [...(dataset.ingestDiagnostics?.rejectedRecords ?? [])];
   const deriveFreshness = (item: { dataPosture: string; providerObservedAt: string; retrievedAt: string }) => (
-    item.dataPosture === "authorized-provider" && dataset.provider?.state === "unavailable"
+    item.dataPosture === "fixed-demo"
+      ? "stale" as const
+      : dataset.provider?.state === "unavailable"
       ? "unavailable" as const
       : deriveRoadConditionFreshness(
           item.providerObservedAt,

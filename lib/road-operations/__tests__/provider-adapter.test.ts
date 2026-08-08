@@ -70,6 +70,60 @@ describe("road provider adapter", () => {
     expect(result.diagnostics.unmatchedSegmentIds).toEqual(["provider:unknown"]);
   });
 
+  test("deeply clones and freezes nested record values against input and output mutation", () => {
+    const sourceIds = ["source:test"];
+    const affectedRange = { fromLabel: "A", toLabel: "B", startRatio: 0.2, endRatio: 0.7 };
+    const speed = { value: 35, unit: "km/h", observedAt: "2026-08-08T08:55:00+09:00" };
+    const rawSnapshot = {
+      providerId: "provider:test-road",
+      providerObservedAt: "2026-08-08T08:55:00+09:00",
+      retrievedAt: "2026-08-08T09:00:00+09:00",
+      schemaVersion: "1",
+      coverageLabel: "test corridor",
+      records: [{
+        id: "provider-record:nested",
+        recordType: "condition" as const,
+        providerSegmentId: "provider:known",
+        direction: "東行き" as const,
+        condition: "slow" as const,
+        sourceIds,
+        affectedRange,
+        speed
+      }]
+    };
+
+    const result = normalizeRoadProviderSnapshot(
+      rawSnapshot,
+      policy(),
+      { "provider:known": "road-segment:known" }
+    );
+    const record = result.snapshot.records[0];
+
+    sourceIds.push("source:mutated-input");
+    affectedRange.fromLabel = "mutated-input";
+    speed.value = 999;
+    rawSnapshot.records.push({ ...rawSnapshot.records[0], id: "provider-record:late-input" });
+
+    expect(record.sourceIds).toEqual(["source:test"]);
+    expect(record.affectedRange).toEqual({ fromLabel: "A", toLabel: "B", startRatio: 0.2, endRatio: 0.7 });
+    expect(record.recordType === "condition" ? record.speed : undefined).toEqual({
+      value: 35,
+      unit: "km/h",
+      observedAt: "2026-08-08T08:55:00+09:00"
+    });
+    expect(result.snapshot.records).toHaveLength(1);
+    expect(Object.isFrozen(record.sourceIds)).toBe(true);
+    expect(Object.isFrozen(record.affectedRange)).toBe(true);
+    expect(Object.isFrozen(record.recordType === "condition" ? record.speed : undefined)).toBe(true);
+    expect(() => record.sourceIds.push("source:mutated-output")).toThrow(TypeError);
+    expect(() => {
+      if (record.affectedRange) record.affectedRange.fromLabel = "mutated-output";
+    }).toThrow(TypeError);
+    expect(() => {
+      if (record.recordType === "condition" && record.speed) record.speed.value = 999;
+    }).toThrow(TypeError);
+  });
+
   test("blocks normalization when caching is not permitted", () => {
     const rawSnapshot = {
       providerId: "provider:test-road",

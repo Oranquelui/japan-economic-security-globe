@@ -276,7 +276,7 @@ describe("road operations presentation", () => {
     expect(view.currentSummary.restrictionIds).toEqual([]);
   });
 
-  test("categorically excludes fixed-demo records from current summaries even with current timestamps", () => {
+  test("forces recent fixed-demo records stale and excludes them from current summaries", () => {
     const input = dataset({
       conditionObservations: [condition({
         id: "condition:demo-current-time",
@@ -295,7 +295,8 @@ describe("road operations presentation", () => {
     });
 
     const view = buildRoadOperationsView(input, NOW)!;
-    expect(view.conditions[0].freshness).toBe("current");
+    expect(view.conditions[0].freshness).toBe("stale");
+    expect(view.restrictions[0].freshness).toBe("stale");
     expect(view.currentSummary.conditionIds).toEqual([]);
     expect(view.currentSummary.restrictionIds).toEqual([]);
   });
