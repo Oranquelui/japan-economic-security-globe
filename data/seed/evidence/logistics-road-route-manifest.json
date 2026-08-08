@@ -1,0 +1,70 @@
+{
+  "routeId": "live-logistics:road-keihin-tokyo",
+  "routeVersion": "2026-08-08.1",
+  "directionClaim": {
+    "direction": "東行き",
+    "sourceUrl": "https://www.shutoko.jp/use/network/map/route-b/honmakifutou",
+    "accessedAt": "2026-08-08",
+    "claim": "本牧ふ頭入口の東行きが東京方面であることを確認。",
+    "directionEvidence": "首都高公式ページが「東行き＝東京方面への入口」と明記。",
+    "reviewStatus": "approved"
+  },
+  "anchorClaims": [
+    {
+      "anchorId": "road-junction:honmoku-futo",
+      "sourceUrl": "https://www.shutoko.jp/use/network/map/route-b/honmakifutou",
+      "accessedAt": "2026-08-08",
+      "claim": "本牧ふ頭が高速湾岸線の東行き入口である。",
+      "directionEvidence": "東行きを東京方面と定義する公式の出入口案内。",
+      "reviewStatus": "approved"
+    },
+    {
+      "anchorId": "road-junction:honmoku-jct",
+      "sourceUrl": "https://www.shutoko.jp/-/media/images/responsive/customer/use/network/jct/routeguide/jct_honmoku",
+      "accessedAt": "2026-08-08",
+      "claim": "本牧JCTと湾岸線の接続を確認。",
+      "directionEvidence": "公式JCT拡大図の東京方面表示による。",
+      "reviewStatus": "approved"
+    },
+    {
+      "anchorId": "road-junction:daikoku-jct",
+      "sourceUrl": "https://www.shutoko.jp/-/media/images/responsive/customer/use/network/jct/routeguide/jct_daikoku",
+      "accessedAt": "2026-08-08",
+      "claim": "大黒JCTと湾岸線の接続を確認。",
+      "directionEvidence": "公式JCT拡大図の東京・羽田方面表示による。",
+      "reviewStatus": "approved"
+    },
+    {
+      "anchorId": "road-junction:kawasaki-ukishima-jct",
+      "sourceUrl": "https://www.shutoko.jp/-/media/images/responsive/customer/use/network/jct/routeguide/jct_kawasaki",
+      "accessedAt": "2026-08-08",
+      "claim": "川崎浮島JCTと湾岸線の接続を確認。",
+      "directionEvidence": "公式JCT拡大図の東京方面表示による。",
+      "reviewStatus": "approved"
+    },
+    {
+      "anchorId": "road-junction:oi-jct",
+      "sourceUrl": "https://www.shutoko.jp/-/media/images/responsive/customer/use/network/jct/routeguide/jct_oi",
+      "accessedAt": "2026-08-08",
+      "claim": "大井JCTと湾岸線の接続を確認。",
+      "directionEvidence": "公式JCT拡大図の湾岸線東行き表示による。",
+      "reviewStatus": "approved"
+    },
+    {
+      "anchorId": "road-junction:tatsumi-jct",
+      "sourceUrl": "https://www.shutoko.jp/-/media/images/responsive/customer/use/network/jct/routeguide/jct_tatsumi",
+      "accessedAt": "2026-08-08",
+      "claim": "辰巳JCTと湾岸線の接続を確認。",
+      "directionEvidence": "公式JCT拡大図の千葉方面表示による。",
+      "reviewStatus": "approved"
+    },
+    {
+      "anchorId": "road-junction:tokyo-bay-distribution",
+      "sourceUrl": "https://www.shutoko.jp/use/network/navimap/",
+      "accessedAt": "2026-08-08",
+      "claim": "東京湾岸配送圏は、辰巳JCTより東の湾岸線方面を概略化した表示用終端である。",
+      "directionEvidence": "2026年7月1日時点の公式首都高ナビマップで、辰巳JCTから湾岸線が千葉方面へ続くことを確認。配送圏は公式地物ではない。",
+      "reviewStatus": "approved"
+    }
+  ]
+}

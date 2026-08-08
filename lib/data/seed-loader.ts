@@ -2,8 +2,11 @@ import entities from "../../data/seed/entities.json";
 import flows from "../../data/seed/flows.json";
 import liveLogistics from "../../data/seed/live-logistics.json";
 import observations from "../../data/seed/observations.json";
+import roadOperations from "../../data/seed/logistics-road-operations.json";
+import roadRouteEvidenceManifest from "../../data/seed/evidence/logistics-road-route-manifest.json";
 import sources from "../../data/seed/sources.json";
 import type { LiveLogisticsEvent } from "../../types/logistics";
+import type { RoadOperationsDataset, RoadRouteEvidenceManifest } from "../../types/road-operations";
 import type {
   DependencyFlow,
   GraphEdge,
@@ -70,6 +73,17 @@ export function loadSeedGraph(): SemanticGraph {
 
 export function loadSeedLiveLogistics(): LiveLogisticsEvent[] {
   return liveLogistics as LiveLogisticsEvent[];
+}
+
+export function loadRoadRouteEvidenceManifest(): RoadRouteEvidenceManifest {
+  return roadRouteEvidenceManifest as RoadRouteEvidenceManifest;
+}
+
+export function loadSeedRoadOperations(): RoadOperationsDataset {
+  return {
+    ...(roadOperations as Omit<RoadOperationsDataset, "evidenceManifest">),
+    evidenceManifest: loadRoadRouteEvidenceManifest()
+  };
 }
 
 export { loadRankingSignals as loadSeedRankingSignals } from "../ranking/ranking-loader";

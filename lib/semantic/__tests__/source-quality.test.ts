@@ -54,4 +54,21 @@ describe("source quality", () => {
       }
     });
   });
+
+  test("classifies road geometry as ODbL open data and keeps provider services separate", () => {
+    const graph = loadSeedGraph();
+    const geometry = graph.sources.find((item) => item.id === "source:openstreetmap-road-geometry");
+    const provider = graph.sources.find((item) => item.id === "source:jartic-road-provider-service");
+
+    expect(geometry).toMatchObject({
+      official: false,
+      sourceCategory: "open-data",
+      publisher: "OpenStreetMap contributors"
+    });
+    expect(geometry?.rights).toMatchObject({ licenseLabel: "ODbL-1.0" });
+    expect(provider).toMatchObject({
+      official: true,
+      url: "https://www.jartic.or.jp/service/opendata/"
+    });
+  });
 });

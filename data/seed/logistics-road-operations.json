@@ -1,0 +1,34 @@
+{
+  "datasetId": "dataset:logistics-road-operations",
+  "dataPosture": "fixed-demo",
+  "licenseNoticePath": "data/seed/licenses/logistics-road-operations-ODbL.md",
+  "routes": [
+    {
+      "id": "live-logistics:road-keihin-tokyo",
+      "label": "横浜港・本牧ふ頭 → 東京湾岸配送圏",
+      "version": "2026-08-08.1",
+      "direction": "東行き",
+      "anchorIds": [
+        "road-junction:honmoku-futo",
+        "road-junction:honmoku-jct",
+        "road-junction:daikoku-jct",
+        "road-junction:kawasaki-ukishima-jct",
+        "road-junction:oi-jct",
+        "road-junction:tatsumi-jct",
+        "road-junction:tokyo-bay-distribution"
+      ],
+      "segmentIds": [],
+      "topologySourceIds": [
+        "source:shutoko-bayshore-route",
+        "source:shutoko-jct-guide"
+      ],
+      "geometrySourceId": "source:openstreetmap-road-geometry",
+      "geometryVersion": "osm-extract-2026-08-08",
+      "geometryExtractedAt": "2026-08-08",
+      "geometrySourceUrl": "https://www.openstreetmap.org/export#map=10/35.5200/139.8000",
+      "geometryLicense": "ODbL-1.0",
+      "attribution": "© OpenStreetMap contributors",
+      "redistributionPermitted": true
+    }
+  ]
+}
