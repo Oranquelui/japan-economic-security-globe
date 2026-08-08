@@ -113,6 +113,69 @@ describe("RoadConditionInspector", () => {
     expect(text).not.toContain("現在情報ではありません");
   });
 
+  test("preserves a nonblank authorized-provider contractual disclosure with explicit posture", () => {
+    const input = buildInput("road-condition:demo-daikoku-ukishima-congestion");
+    const condition = {
+      ...input.roadOperations.conditions[0],
+      dataPosture: "authorized-provider" as const,
+      freshness: "current" as const,
+      disclosureLabel: "契約範囲内の画面表示のみ / 二次配布不可"
+    };
+
+    render(
+      <RoadConditionInspector
+        {...input}
+        roadOperations={{ ...input.roadOperations, conditions: [condition] }}
+      />
+    );
+    expect(screen.getByTestId("road-event-disclosure").textContent).toBe(
+      "認可済み提供元データ / 契約範囲内の画面表示のみ / 二次配布不可"
+    );
+  });
+
+  test("falls back to generic authorized-provider disclosure for blank provider text", () => {
+    const input = buildInput("road-condition:demo-daikoku-ukishima-congestion");
+    const condition = {
+      ...input.roadOperations.conditions[0],
+      dataPosture: "authorized-provider" as const,
+      freshness: "current" as const,
+      disclosureLabel: "   "
+    };
+
+    render(
+      <RoadConditionInspector
+        {...input}
+        roadOperations={{ ...input.roadOperations, conditions: [condition] }}
+      />
+    );
+    expect(screen.getByTestId("road-event-disclosure").textContent).toBe(
+      "認可済み提供元データ / 提供元の観測時刻と出典を確認してください"
+    );
+  });
+
+  test("combines fixed-demo truthfulness with the actual disclosure without duplicate posture labels", () => {
+    const input = buildInput("road-condition:demo-daikoku-ukishima-congestion");
+    const condition = {
+      ...input.roadOperations.conditions[0],
+      disclosureLabel: "検証専用シナリオ / 二次利用不可"
+    };
+    const { rerender } = render(
+      <RoadConditionInspector
+        {...input}
+        roadOperations={{ ...input.roadOperations, conditions: [condition] }}
+      />
+    );
+    expect(screen.getByTestId("road-event-disclosure").textContent).toBe(
+      "固定デモ / 現在情報ではありません / 検証専用シナリオ / 二次利用不可"
+    );
+
+    rerender(<RoadConditionInspector {...input} />);
+    const seedDisclosure = screen.getByTestId("road-event-disclosure").textContent ?? "";
+    expect(seedDisclosure).toBe("固定デモ / 現在情報ではありません");
+    expect(seedDisclosure.match(/固定デモ/g)).toHaveLength(1);
+    expect(seedDisclosure.match(/現在情報ではありません/g)).toHaveLength(1);
+  });
+
   test("shows only validated absolute timestamps and rejects relative or malformed values", () => {
     const input = buildInput("road-condition:demo-daikoku-ukishima-congestion");
     const condition = {

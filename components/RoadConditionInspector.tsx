@@ -153,7 +153,9 @@ export function RoadConditionInspector({
             {route.attribution} / 道路形状は表示用の一般化形状です。法的な道路境界、ナビゲーション精度、ライブ交通を保証しません。
           </p>
           {event ? (
-            <p className="mt-2" style={{ color: themePalette.textMuted }}>{buildEventDisclosure(event)}</p>
+            <p data-testid="road-event-disclosure" className="mt-2" style={{ color: themePalette.textMuted }}>
+              {buildEventDisclosure(event)}
+            </p>
           ) : null}
         </InspectorGroup>
       </div>
@@ -249,9 +251,26 @@ function buildPresentationDisclosure(
 }
 
 function buildEventDisclosure(event: RoadEvent) {
-  return event.dataPosture === "fixed-demo"
-    ? "固定デモ / 現在情報ではありません"
-    : "認可済み提供元データ / 提供元の観測時刻と出典を確認してください";
+  const actualDisclosure = event.disclosureLabel.trim();
+  if (event.dataPosture === "authorized-provider") {
+    if (!actualDisclosure) {
+      return "認可済み提供元データ / 提供元の観測時刻と出典を確認してください";
+    }
+    return actualDisclosure.includes("認可済み提供元データ")
+      ? actualDisclosure
+      : `認可済み提供元データ / ${actualDisclosure}`;
+  }
+
+  const required = ["固定デモ", "現在情報ではありません"];
+  if (!actualDisclosure) return required.join(" / ");
+  const actualParts = actualDisclosure
+    .split(/\s*\/\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const providerSpecificParts = actualParts.filter((part) => (
+    !required.some((requiredPart) => part.includes(requiredPart))
+  ));
+  return [...required, ...providerSpecificParts].join(" / ");
 }
 
 function QuantitativeRows({ event }: { event: RoadEvent }) {
