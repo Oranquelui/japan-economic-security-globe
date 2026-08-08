@@ -658,9 +658,7 @@ function buildLiveRoutes(
   }
 
   return liveLogistics.mapRoutes
-    .filter((route) => !(
-      route.id === "live-logistics:road-keihin-tokyo" && detailedRouteIds.has(route.id)
-    ))
+    .filter((route) => !detailedRouteIds.has(route.id))
     .map((route) => {
       const pointIds = route.pointIds
         .map((pointId) => graph.entities.find((entity) => entity.id === pointId))
@@ -699,6 +697,7 @@ function buildDetailedRoadModel(
     return { roadSegments: [], roadJunctions: [], detailedRouteIds: new Set() };
   }
 
+  const detailedRouteIds = getCompleteDetailedRoadRouteIds(roadOperations);
   const routeById = new Map(roadOperations.routes.map((route) => [route.id, route]));
   const roadSegments = roadOperations.segments.flatMap((segment): JapanMapRoadSegment[] => {
     const route = routeById.get(segment.routeId);
@@ -725,9 +724,9 @@ function buildDetailedRoadModel(
       ])
     }];
   });
-  const detailedRouteIds = new Set(roadSegments.map((segment) => segment.routeId));
+  const representedRouteIds = new Set(roadSegments.map((segment) => segment.routeId));
   const roadJunctions = roadOperations.junctions
-    .filter((junction) => detailedRouteIds.has(junction.routeId))
+    .filter((junction) => representedRouteIds.has(junction.routeId))
     .map((junction): JapanMapRoadJunction => ({
       id: junction.id,
       routeId: junction.routeId,
@@ -739,6 +738,30 @@ function buildDetailedRoadModel(
     }));
 
   return { roadSegments, roadJunctions, detailedRouteIds };
+}
+
+function getCompleteDetailedRoadRouteIds(
+  roadOperations: RoadOperationsViewModel
+): Set<string> {
+  return new Set(roadOperations.routes.flatMap((route) => {
+    const expectedSegmentIds = new Set(route.segmentIds);
+    const routeSegments = roadOperations.segments.filter((segment) => segment.routeId === route.id);
+    const isComplete = (
+      route.segmentIds.length > 0 &&
+      expectedSegmentIds.size === route.segmentIds.length &&
+      routeSegments.length === expectedSegmentIds.size &&
+      routeSegments.every((segment) => (
+        expectedSegmentIds.has(segment.id) && hasValidDetailedRoadGeometry(segment.coordinates)
+      ))
+    );
+    return isComplete ? [route.id] : [];
+  }));
+}
+
+function hasValidDetailedRoadGeometry(coordinates: readonly RoadCoordinate[]): boolean {
+  return coordinates.length >= 2 && coordinates.every(
+    (coordinate) => coordinate.length === 2 && coordinate.every(Number.isFinite)
+  );
 }
 
 function isActiveSelection(activeId: string, relatedIds: readonly string[]): boolean {

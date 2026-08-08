@@ -458,11 +458,9 @@ function buildDomesticLogisticsLayerSummary(
   if (layer.id !== "logistics-domestic" || !liveLogistics) return null;
 
   const domesticLaneIds = new Set(["road", "rail", "coastal", "air"]);
-  const validatedDetailedRoadRouteIds = new Set(
-    roadOperations?.segments
-      .filter((segment) => roadOperations.routes.some((route) => route.id === segment.routeId))
-      .map((segment) => segment.routeId) ?? []
-  );
+  const validatedDetailedRoadRouteIds = roadOperations
+    ? getCompleteDetailedRoadRouteIds(roadOperations)
+    : new Set<string>();
   const representativeRoutes = liveLogistics.mapRoutes.filter((route) => (
     domesticLaneIds.has(route.laneId) &&
     (route.laneId !== "road" || !roadOperations || validatedDetailedRoadRouteIds.has(route.id))
@@ -487,6 +485,28 @@ function buildDomesticLogisticsLayerSummary(
       `港湾前後 ${supportCount}補助`
     ].filter((part): part is string => Boolean(part)).join("。")
   };
+}
+
+function getCompleteDetailedRoadRouteIds(
+  roadOperations: RoadOperationsViewModel
+): Set<string> {
+  return new Set(roadOperations.routes.flatMap((route) => {
+    const expectedSegmentIds = new Set(route.segmentIds);
+    const routeSegments = roadOperations.segments.filter((segment) => segment.routeId === route.id);
+    const isComplete = (
+      route.segmentIds.length > 0 &&
+      expectedSegmentIds.size === route.segmentIds.length &&
+      routeSegments.length === expectedSegmentIds.size &&
+      routeSegments.every((segment) => (
+        expectedSegmentIds.has(segment.id) &&
+        segment.coordinates.length >= 2 &&
+        segment.coordinates.every(
+          (coordinate) => coordinate.length === 2 && coordinate.every(Number.isFinite)
+        )
+      ))
+    );
+    return isComplete ? [route.id] : [];
+  }));
 }
 
 type RuntimeLayerSource = WorkspacePresentation | readonly LayerDefinition[];

@@ -389,6 +389,38 @@ describe("active layer summary", () => {
     expect(summary.description).not.toMatch(/5輸送モード|海上を含む5/);
   });
 
+  test("does not count a road route when one expected detailed segment is rejected", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const dataset = loadSeedRoadOperations();
+    const rejectedSegment = dataset.segments![0];
+    rejectedSegment.coordinates = [rejectedSegment.coordinates[0]];
+    const roadOperations = buildRoadOperationsView(
+      dataset,
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const workspace = buildWorkspacePresentation(graph, view, live);
+    const layer = getLayerDefinition("logistics", "logistics-domestic", workspace)!;
+
+    const summary = buildActiveLayerSummary(
+      graph,
+      view,
+      layer,
+      workspace.scope,
+      live,
+      roadOperations
+    );
+
+    expect(roadOperations.diagnostics.rejectedSegmentIds).toContain(rejectedSegment.id);
+    expect(summary.coverage.value).toBe("4代表経路 / 3輸送モード");
+  });
+
   test("leaves non-logistics summaries unchanged when road operations are supplied", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "rice");

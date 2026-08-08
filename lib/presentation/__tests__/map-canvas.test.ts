@@ -347,6 +347,62 @@ describe("japan map canvas model", () => {
     );
   });
 
+  test("suppresses a matching endpoint chord without depending on a hardcoded road route id", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const roadOperations = buildRoadOperationsView(
+      loadSeedRoadOperations(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const originalRouteId = roadOperations.routes[0].id;
+    const genericRouteId = "live-logistics:road-complete-generic";
+    roadOperations.routes[0].id = genericRouteId;
+    roadOperations.segments
+      .filter((segment) => segment.routeId === originalRouteId)
+      .forEach((segment) => { segment.routeId = genericRouteId; });
+    roadOperations.junctions
+      .filter((junction) => junction.routeId === originalRouteId)
+      .forEach((junction) => { junction.routeId = genericRouteId; });
+    live.mapRoutes.find((route) => route.id === originalRouteId)!.id = genericRouteId;
+
+    const model = buildJapanMapCanvasModel(graph, view, "", null, live, roadOperations);
+
+    expect(model.roadSegments?.map((segment) => segment.routeId)).toContain(genericRouteId);
+    expect(model.liveRoutes?.map((route) => route.id)).not.toContain(genericRouteId);
+  });
+
+  test("keeps the endpoint chord when one expected detailed segment is rejected", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const dataset = loadSeedRoadOperations();
+    const rejectedSegment = dataset.segments![0];
+    rejectedSegment.coordinates = [rejectedSegment.coordinates[0]];
+    const roadOperations = buildRoadOperationsView(
+      dataset,
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+
+    const model = buildJapanMapCanvasModel(graph, view, "", null, live, roadOperations);
+
+    expect(roadOperations.diagnostics.rejectedSegmentIds).toContain(rejectedSegment.id);
+    expect(model.roadSegments?.map((segment) => segment.id)).not.toContain(rejectedSegment.id);
+    expect(model.liveRoutes?.map((route) => route.id)).toContain(
+      "live-logistics:road-keihin-tokyo"
+    );
+  });
+
   test("keeps supported logistics routes with lane metadata and leaves an empty active id unselected", () => {
     const graph = loadSeedGraph();
     const view = getThemeView(graph, "logistics");
