@@ -4,7 +4,11 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { loadSeedGraph } from "../../lib/data/seed-loader";
+import {
+  loadSeedGraph,
+  loadSeedLiveLogistics,
+  loadSeedRoadOperations
+} from "../../lib/data/seed-loader";
 import type { OperationMapMode } from "../../lib/presentation/operations";
 import { HOMEPAGE_NOTICE_STORAGE_KEY } from "../InitialNoticeModal";
 import type { RankingSignal } from "../../types/ranking";
@@ -90,6 +94,7 @@ vi.mock("../JapanMainMap", () => ({
       liveVessels?: Array<{ selectionId?: string }>;
       regions?: Array<{ geometryKind?: string }>;
       logisticsImpactRegions?: Array<{ geometryKind?: string }>;
+      roadSegments?: unknown[];
     };
     onMapModeChange?: (mode: OperationMapMode) => void;
     onOpenEvidence?: () => void;
@@ -107,6 +112,7 @@ vi.mock("../JapanMainMap", () => ({
       data-mode={mapMode}
       data-points={(model?.points?.length ?? 0) + (model?.globalPoints?.length ?? 0) + (model?.livePoints?.length ?? 0) + (model?.liveVessels?.length ?? 0)}
       data-regions={(model?.regions?.length ?? 0) + (model?.logisticsImpactRegions?.length ?? 0)}
+      data-road-segments={model?.roadSegments?.length ?? 0}
       data-region-geometry-kinds={[...(model?.regions ?? []), ...(model?.logisticsImpactRegions ?? [])]
         .map((region) => region.geometryKind ?? "unknown")
         .join(",")}
@@ -139,6 +145,9 @@ vi.mock("../JapanMainMap", () => ({
       ) : null}
       <button type="button" onClick={() => onSelect("prefecture:niigata")}>
         地図から新潟県を選択
+      </button>
+      <button type="button" onClick={() => onSelect("road-condition:demo-daikoku-ukishima-congestion")}>
+        地図から渋滞例を選択
       </button>
       mocked-map
     </div>
@@ -424,8 +433,8 @@ describe("AppShell url sync", () => {
     expect(stackedMap.getAttribute("data-mode")).toBe("choropleth");
     expect(stackedMap.getAttribute("data-regions")).toBe("47");
     expect(stackedMap.getAttribute("data-region-geometry-kinds")).not.toContain("representative-radius");
-    // Public spine default theme is rice; first selectable rice signal/entity is the fallback active.
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/^(observation:|flow:|prefecture:|product:)/);
+    // Internal detail fallbacks must not become an implicit map selection.
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
   });
 
@@ -697,7 +706,7 @@ describe("AppShell url sync", () => {
     );
 
     expect((within(screen.getByTestId("layout-desktop-workspace")).getByRole("combobox", { name: "テーマ" }) as HTMLSelectElement).value).toBe("rice");
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toMatch(/rice|observation:rice/);
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toMatch(/rice|observation:rice|^$/);
     expect(screen.queryByTestId("context-inspector")).toBeNull();
   });
@@ -807,7 +816,7 @@ describe("AppShell url sync", () => {
     expect(screen.getAllByTestId("map")[0].getAttribute("data-live-routes")).toBe("1");
   });
 
-  test("uses domestic logistics as the default active item when the logistics URL has no selected item", () => {
+  test("keeps domestic logistics unselected when the logistics URL has no selected item", () => {
     render(
       <AppShell
         graph={loadSeedGraph()}
@@ -860,8 +869,189 @@ describe("AppShell url sync", () => {
       />
     );
 
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("live-logistics:road-keihin-tokyo");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("");
     expect(screen.getAllByTestId("map")[0].getAttribute("data-focus")).toBe("");
+  });
+
+  test("wires the validated road model only into logistics and keeps its default selection explicit", () => {
+    const roadOperationsDataset = loadSeedRoadOperations();
+    const { rerender } = render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "logistics",
+          selectedId: null,
+          layerId: "logistics-domestic",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+        liveLogisticsEvents={loadSeedLiveLogistics()}
+        roadOperationsDataset={roadOperationsDataset}
+      />
+    );
+
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-road-segments")).toBe("6");
+    const desktopOverview = within(screen.getByTestId("layout-desktop-workspace"))
+      .getByTestId("logistics-route-overview");
+    expect(within(desktopOverview).getAllByRole("button").every((button) => button.getAttribute("aria-pressed") === "false")).toBe(true);
+    expect(screen.queryByTestId("road-condition-inspector")).toBeNull();
+
+    rerender(
+      <AppShell
+        key="energy-road-scope"
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "energy",
+          selectedId: null,
+          layerId: "energy-supply",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+        liveLogisticsEvents={loadSeedLiveLogistics()}
+        roadOperationsDataset={roadOperationsDataset}
+      />
+    );
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-road-segments")).toBe("0");
+  });
+
+  test("selects the exact road route from the desktop overview and opens one inspector per layout", async () => {
+    const user = userEvent.setup();
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "logistics",
+          selectedId: null,
+          layerId: "logistics-domestic",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+        liveLogisticsEvents={loadSeedLiveLogistics()}
+        roadOperationsDataset={loadSeedRoadOperations()}
+      />
+    );
+
+    const desktop = screen.getByTestId("layout-desktop-workspace");
+    await user.click(within(desktop).getByRole("button", { name: /道路 代表経路 陸路: 横浜港 → 首都圏配送/ }));
+
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenLastCalledWith(
+        "/?theme=logistics&selected=live-logistics%3Aroad-keihin-tokyo",
+        { scroll: false }
+      );
+    });
+    expect(within(desktop).getAllByTestId("road-condition-inspector")).toHaveLength(1);
+    expect(within(screen.getByTestId("layout-stacked-workspace")).getAllByTestId("road-condition-inspector")).toHaveLength(1);
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("live-logistics:road-keihin-tokyo");
+    const ids = Array.from(document.querySelectorAll<HTMLElement>("[id]")).map((element) => element.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  test("hydrates and selects a road event, while rejecting segment and non-logistics road ids", async () => {
+    const eventId = "road-condition:demo-daikoku-ukishima-congestion";
+    const common = {
+      graph: loadSeedGraph(),
+      hasExplicitUrlState: true,
+      liveLogisticsEvents: loadSeedLiveLogistics(),
+      roadOperationsDataset: loadSeedRoadOperations()
+    };
+    const { rerender } = render(
+      <AppShell
+        {...common}
+        initialUrlState={{
+          themeId: "logistics",
+          selectedId: eventId,
+          layerId: "logistics-domestic",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+      />
+    );
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe(eventId);
+    expect(within(screen.getByTestId("layout-desktop-workspace")).getByTestId("road-condition-inspector").textContent).toContain("渋滞例");
+
+    rerender(
+      <AppShell
+        key="invalid-road-segment"
+        {...common}
+        initialUrlState={{
+          themeId: "logistics",
+          selectedId: "road-segment:daikoku-ukishima-east",
+          layerId: "logistics-domestic",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+      />
+    );
+    await waitFor(() => expect(screen.queryByTestId("road-condition-inspector")).toBeNull());
+
+    rerender(
+      <AppShell
+        key="non-logistics-road-event"
+        {...common}
+        initialUrlState={{
+          themeId: "energy",
+          selectedId: eventId,
+          layerId: "energy-supply",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+      />
+    );
+    await waitFor(() => expect(screen.queryByTestId("road-condition-inspector")).toBeNull());
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("");
+  });
+
+  test("rejects a validated road route id under a non-logistics theme", async () => {
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "energy",
+          selectedId: "live-logistics:road-keihin-tokyo",
+          layerId: "energy-supply",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+        liveLogisticsEvents={loadSeedLiveLogistics()}
+        roadOperationsDataset={loadSeedRoadOperations()}
+      />
+    );
+    await waitFor(() => expect(screen.queryByTestId("road-condition-inspector")).toBeNull());
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-active")).toBe("");
+    await waitFor(() => expect(replaceMock).toHaveBeenLastCalledWith("/?theme=energy", { scroll: false }));
+  });
+
+  test("uses exact event ids from map clicks and serializes them", async () => {
+    const user = userEvent.setup();
+    render(
+      <AppShell
+        graph={loadSeedGraph()}
+        hasExplicitUrlState
+        initialUrlState={{
+          themeId: "logistics",
+          selectedId: null,
+          layerId: "logistics-domestic",
+          mapModeOverride: null,
+          workspaceView: "map"
+        }}
+        liveLogisticsEvents={loadSeedLiveLogistics()}
+        roadOperationsDataset={loadSeedRoadOperations()}
+      />
+    );
+    await user.click(within(screen.getByTestId("layout-desktop-workspace")).getByRole("button", { name: "地図から渋滞例を選択" }));
+    await waitFor(() => {
+      expect(replaceMock).toHaveBeenLastCalledWith(
+        "/?theme=logistics&selected=road-condition%3Ademo-daikoku-ukishima-congestion",
+        { scroll: false }
+      );
+    });
+    expect(within(screen.getByTestId("layout-desktop-workspace")).getByTestId("road-condition-inspector")).toBeTruthy();
   });
 
   test("keeps an individual live tanker selection and maps it to a safe inspector detail", () => {

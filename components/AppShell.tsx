@@ -7,6 +7,7 @@ import type { HomepageMode } from "../lib/config/homepage-mode";
 import type { LiveLogisticsEvent } from "../types/logistics";
 import type { MapPopupAnchor, SemanticLayerId, ThemeView } from "../types/presentation";
 import type { RankingSignal } from "../types/ranking";
+import type { RoadOperationsDataset, RoadOperationsViewModel } from "../types/road-operations";
 import { THEME_IDS, type SemanticGraph, type ThemeId } from "../types/semantic";
 import { buildRankingDecision } from "../lib/ranking/decision";
 import { getDetailView } from "../lib/semantic/detail";
@@ -14,6 +15,7 @@ import { buildEvidenceGraph } from "../lib/semantic/view-models";
 import { buildJapanMapCanvasModel } from "../lib/presentation/map-canvas";
 import { buildLiveLogisticsDetail } from "../lib/presentation/live-logistics-detail";
 import { buildLiveLogisticsView } from "../lib/presentation/live-logistics";
+import { buildRoadOperationsView } from "../lib/presentation/road-operations";
 import { validateMetricSeries } from "../lib/presentation/metric-series";
 import { getThemeView } from "../lib/semantic/selectors";
 import { buildOperationRows, filterOperationRows, type OperationMapMode } from "../lib/presentation/operations";
@@ -50,10 +52,12 @@ import { EvidencePanel } from "./EvidencePanel";
 import { InitialNoticeModal } from "./InitialNoticeModal";
 import { JapanMainMap } from "./JapanMainMap";
 import { LogisticsImpactBoard } from "./LogisticsImpactBoard";
+import { LogisticsRouteOverviewPanel } from "./LogisticsRouteOverviewPanel";
 import { MapInboxPanel } from "./MapInboxPanel";
 import { OperationsSignalTable } from "./OperationsSignalTable";
 import { SourceStatusBar } from "./SourceStatusBar";
 import { ScopeContextPanel } from "./ScopeContextPanel";
+import { isRoadOperationsSelection, RoadConditionInspector } from "./RoadConditionInspector";
 import { SignalsPanel } from "./SignalsPanel";
 import { WatchboardBriefing } from "./WatchboardBriefing";
 
@@ -65,6 +69,7 @@ interface AppShellProps {
   locale?: string;
   liveLogisticsEvents?: LiveLogisticsEvent[];
   rankingSignals?: RankingSignal[];
+  roadOperationsDataset?: RoadOperationsDataset | null;
 }
 
 const DESKTOP_WORKSPACE_GEOMETRY = {
@@ -91,7 +96,8 @@ export function AppShell({
   initialUrlState = DEFAULT_OPERATIONS_URL_STATE,
   locale = "ja",
   liveLogisticsEvents = [],
-  rankingSignals = []
+  rankingSignals = [],
+  roadOperationsDataset = null
 }: AppShellProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -205,8 +211,17 @@ export function AppShell({
     liveLogisticsEvents,
     new Date(rankingNowRef.current)
   );
-  const validSelectedId = resolveSelectableId(view, preliminaryLiveLogistics, selectedId);
-  const activeId = resolveActiveId(view, preliminaryLiveLogistics, validSelectedId);
+  const roadOperations = themeId === "logistics"
+    ? buildRoadOperationsView(roadOperationsDataset, new Date(rankingNowRef.current))
+    : null;
+  const validSelectedId = resolveSelectableId(view, preliminaryLiveLogistics, roadOperations, selectedId);
+  const explicitSelectionId = validSelectedId ?? "";
+  const roadSelectionActive = isRoadOperationsSelection(roadOperations, validSelectedId);
+  const activeId = resolveActiveId(
+    view,
+    preliminaryLiveLogistics,
+    roadSelectionActive ? null : validSelectedId
+  );
   const rankingExplanation = inboxDecision
     ? buildSelectedRankingExplanation(activeId, rankingSignals, inboxDecision, rankingNowRef.current)
     : null;
@@ -214,7 +229,12 @@ export function AppShell({
     ? buildWatchboardBriefing(graph, rankingSignals, homepageDecision, rankingNowRef.current, themeId)
     : null;
   const watchOverlays = buildWatchOverlayItems(themeId, activeId, new Date(rankingNowRef.current));
-  const liveLogistics = buildLiveLogisticsView(themeId, activeId, liveLogisticsEvents, new Date(rankingNowRef.current));
+  const liveLogistics = buildLiveLogisticsView(
+    themeId,
+    validSelectedId,
+    liveLogisticsEvents,
+    new Date(rankingNowRef.current)
+  );
   const workspace = buildWorkspacePresentation(graph, view, liveLogistics);
   const requestedLayer = getLayerDefinition(themeId, layerId, workspace);
   const activeLayer = requestedLayer?.available
@@ -225,7 +245,8 @@ export function AppShell({
     view,
     activeLayer,
     workspace.scope,
-    liveLogistics
+    liveLogistics,
+    roadOperations
   );
   const metricSeries = buildMetricSeries(graph, themeId, activeLayer.id);
   const comparisonValidation = validateMetricSeries(metricSeries, view.sources);
@@ -243,13 +264,21 @@ export function AppShell({
   const evidenceGraph = buildEvidenceGraph(graph, themeId);
   const selectionInspector = buildSelectionInspector(graph, activeId, detail, activeLayer);
   const routeStatus = getRouteStatus(detail);
-  const legacyMapModel = buildJapanMapCanvasModel(graph, view, activeId, null, liveLogistics);
+  const legacyMapModel = buildJapanMapCanvasModel(
+    graph,
+    view,
+    explicitSelectionId,
+    null,
+    liveLogistics,
+    roadOperations
+  );
   const semanticDesktopMapModel = buildJapanMapCanvasModel(
     graph,
     view,
-    activeId,
+    explicitSelectionId,
     activeLayer,
-    liveLogistics
+    liveLogistics,
+    roadOperations
   );
   const desktopMapModel = mapModeOverride && !usesSemanticPrefectureBoundaries
     ? legacyMapModel
@@ -264,7 +293,7 @@ export function AppShell({
           body: "公開情報 / 履歴・集約 / ライブ追跡ではありません"
         }
       : null;
-  const mapDetailPopup = validSelectedId
+  const mapDetailPopup = validSelectedId && !roadSelectionActive
     ? {
         detail,
         anchor: mapPopupAnchor,
@@ -321,6 +350,15 @@ export function AppShell({
       setLayerId(activeLayer.id);
     }
   }, [activeLayer.id, layerId]);
+
+  useEffect(() => {
+    if (!selectedId || validSelectedId || !isRoadDatasetSelectionId(roadOperationsDataset, selectedId)) {
+      return;
+    }
+    setSelectedId(null);
+    setMapPopupAnchor(null);
+    setEvidenceOpen(false);
+  }, [roadOperationsDataset, selectedId, validSelectedId]);
 
   useEffect(() => {
     const serialized = serializeOperationsUrlState({
@@ -544,7 +582,7 @@ export function AppShell({
         <div data-testid="layout-desktop-workspace" className="relative hidden h-full min-h-0 xl:block">
           <section data-testid="layout-map-section" className="absolute inset-0 min-h-0">
             <JapanMainMap
-              activeId={activeId}
+              activeId={explicitSelectionId}
               focusTargetId={focusTargetId}
               mapDisclosure={mapDisclosure}
               mapMode={desktopMapMode}
@@ -586,6 +624,15 @@ export function AppShell({
                 activeLayerId={activeLayer.id}
                 activeSummary={activeLayerSummary}
                 comparisonAvailable={comparisonValidation.comparable}
+                logisticsRouteOverview={themeId === "logistics" && liveLogistics ? (
+                  <LogisticsRouteOverviewPanel
+                    activeId={explicitSelectionId}
+                    liveLogistics={liveLogistics}
+                    roadOperations={roadOperations}
+                    onSelect={handleSelect}
+                    themePalette={themePalette}
+                  />
+                ) : null}
                 onLayerChange={handleLayerChange}
                 onOpenComparison={handleOpenComparison}
                 onOpenSignals={handleOpenSignals}
@@ -608,17 +655,28 @@ export function AppShell({
                 bottom: 0
               }}
             >
-              <ContextInspector
-                evidenceGraph={evidenceGraph}
-                inspector={selectionInspector}
-                onClose={handleCloseInspector}
-                onSelect={handleSelect}
-                rankingExplanation={liveLogisticsDetailItem ? null : rankingExplanation}
-                selectedId={activeId}
-                statusPalette={statusPalette}
-                themePalette={themePalette}
-                themeTitle={view.title}
-              />
+              {roadSelectionActive && roadOperations ? (
+                <RoadConditionInspector
+                  graph={graph}
+                  idPrefix="road-condition-desktop"
+                  onClose={handleCloseInspector}
+                  roadOperations={roadOperations}
+                  selectedId={explicitSelectionId}
+                  themePalette={themePalette}
+                />
+              ) : (
+                <ContextInspector
+                  evidenceGraph={evidenceGraph}
+                  inspector={selectionInspector}
+                  onClose={handleCloseInspector}
+                  onSelect={handleSelect}
+                  rankingExplanation={liveLogisticsDetailItem ? null : rankingExplanation}
+                  selectedId={activeId}
+                  statusPalette={statusPalette}
+                  themePalette={themePalette}
+                  themeTitle={view.title}
+                />
+              )}
             </aside>
           ) : null}
 
@@ -649,8 +707,9 @@ export function AppShell({
           {themeId === "logistics" && liveLogistics ? (
             <section className="pt-4">
               <LogisticsImpactBoard
-                activeId={activeId}
+                activeId={explicitSelectionId}
                 liveLogistics={liveLogistics}
+                roadOperations={roadOperations}
                 onSelect={handleSelect}
                 themePalette={themePalette}
               />
@@ -663,7 +722,7 @@ export function AppShell({
           ) : null}
           <section className="h-[50vh] min-h-[280px]">
             <JapanMainMap
-              activeId={activeId}
+              activeId={explicitSelectionId}
               detailPopup={mapDetailPopup}
               focusTargetId={focusTargetId}
               mapDisclosure={mapDisclosure}
@@ -715,12 +774,13 @@ export function AppShell({
             })}
           </section>
           <MapInboxPanel
-            activeId={activeId}
+            activeId={explicitSelectionId}
             onQueryChange={setSearchQuery}
             onSelect={handleSelect}
             query={searchQuery}
             rows={filteredOperationRows}
             liveLogistics={liveLogistics}
+            roadOperations={roadOperations}
             showLogisticsImpactBoard={false}
             themeId={themeId}
             themeLabel={themeLabel}
@@ -728,19 +788,30 @@ export function AppShell({
             watchOverlays={watchOverlays}
           />
           <section data-testid="layout-evidence-drawer-mobile" className="min-h-[24rem] px-0">
-            <EvidencePanel
-              collapsed={false}
-              collapsible={false}
-              detail={detail}
-              evidenceGraph={evidenceGraph}
-              onSelect={handleSelect}
-              onToggleCollapsed={() => undefined}
-              rankingExplanation={liveLogisticsDetailItem ? null : rankingExplanation}
-              selectedId={activeId}
-              statusPalette={statusPalette}
-              themePalette={themePalette}
-              themeTitle={view.title}
-            />
+            {isEvidenceOpen && roadSelectionActive && roadOperations ? (
+              <RoadConditionInspector
+                graph={graph}
+                idPrefix="road-condition-stacked"
+                onClose={handleCloseInspector}
+                roadOperations={roadOperations}
+                selectedId={explicitSelectionId}
+                themePalette={themePalette}
+              />
+            ) : (
+              <EvidencePanel
+                collapsed={false}
+                collapsible={false}
+                detail={detail}
+                evidenceGraph={evidenceGraph}
+                onSelect={handleSelect}
+                onToggleCollapsed={() => undefined}
+                rankingExplanation={liveLogisticsDetailItem ? null : rankingExplanation}
+                selectedId={activeId}
+                statusPalette={statusPalette}
+                themePalette={themePalette}
+                themeTitle={view.title}
+              />
+            )}
           </section>
           <OperationsSignalTable
             activeId={activeId}
@@ -779,9 +850,10 @@ function resolveActiveId(
 function resolveSelectableId(
   view: ThemeView,
   liveLogistics: ReturnType<typeof buildLiveLogisticsView>,
+  roadOperations: RoadOperationsViewModel | null,
   selectedId: string | null
 ) {
-  const candidateIds = getSelectableIds(view, liveLogistics);
+  const candidateIds = getSelectableIds(view, liveLogistics, roadOperations);
 
   if (selectedId && candidateIds.has(selectedId)) {
     return selectedId;
@@ -790,13 +862,38 @@ function resolveSelectableId(
   return null;
 }
 
-function getSelectableIds(view: ThemeView, liveLogistics: ReturnType<typeof buildLiveLogisticsView>) {
+function getSelectableIds(
+  view: ThemeView,
+  liveLogistics: ReturnType<typeof buildLiveLogisticsView>,
+  roadOperations: RoadOperationsViewModel | null = null
+) {
   return new Set([
     ...view.flows.map((flow) => flow.id),
     ...view.observations.map((observation) => observation.id),
     ...view.entities.map((entity) => entity.id),
-    ...(liveLogistics?.items.map((item) => item.id) ?? [])
+    ...(liveLogistics?.items
+      .filter((item) => view.id === "logistics" || item.laneId !== "road")
+      .map((item) => item.id) ?? []),
+    ...(view.id === "logistics" && roadOperations
+      ? [
+          ...roadOperations.routes.map((route) => route.id),
+          ...roadOperations.conditions.map((condition) => condition.id),
+          ...roadOperations.restrictions.map((restriction) => restriction.id)
+        ]
+      : [])
   ]);
+}
+
+function isRoadDatasetSelectionId(dataset: RoadOperationsDataset | null, selectedId: string) {
+  if (/^road-(?:condition|restriction|segment|junction):/.test(selectedId)) return true;
+  if (!dataset) return false;
+  return [
+    ...dataset.routes,
+    ...(dataset.segments ?? []),
+    ...(dataset.junctions ?? []),
+    ...(dataset.conditionObservations ?? []),
+    ...(dataset.restrictionEvents ?? [])
+  ].some((item) => item.id === selectedId);
 }
 
 function findMatchingWorkspaceControl(
