@@ -146,6 +146,9 @@ describe("live logistics view", () => {
     expect(view?.subtitle).toContain("エネルギー系の海上輸送は Energy 側で扱う");
     expect(view?.disclosureLabel).toContain("陸路/鉄道/内航/航空貨物/空港運用");
     expect(view?.disclosureLabel).toContain("一般貨物補助");
+    expect(view?.disclosureLabel).toContain("固定デモ");
+    expect(view?.disclosureLabel).toContain("更新予定なし");
+    expect(view?.disclosureLabel).not.toMatch(/今日|監視中|次回更新|\d+分前/);
     expect(view?.items.map((item) => item.kindLabel)).toEqual(["道路物流", "鉄道物流", "内航海運", "空港運用", "航空物流", "コンテナ一般貨物"]);
     expect(view?.lanes.map((lane) => lane.title)).toEqual([
       "陸路・トラック",
@@ -172,6 +175,8 @@ describe("live logistics view", () => {
     expect(view?.mapVessels).toEqual([]);
     expect(view?.mapRoutes[0]).toMatchObject({
       id: "live-logistics:road-keihin-tokyo",
+      laneId: "road",
+      modeLabel: "道路",
       pointIds: ["port:yokohama", "prefecture:tokyo"]
     });
     expect(view?.mapRoutes.map((route) => route.id)).toEqual([
@@ -181,6 +186,14 @@ describe("live logistics view", () => {
       "live-logistics:airport-haneda-narita-ops",
       "live-logistics:air-tokyo-fukuoka",
       "live-logistics:container-asia-yokohama"
+    ]);
+    expect(view?.mapRoutes.map((route) => [route.laneId, route.modeLabel])).toEqual([
+      ["road", "道路"],
+      ["rail", "鉄道"],
+      ["coastal", "内航"],
+      ["air", "航空"],
+      ["air", "航空"],
+      ["maritime", "海上"]
     ]);
   });
 

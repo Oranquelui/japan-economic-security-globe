@@ -466,7 +466,14 @@ describe("live logistics layer availability", () => {
     const unresolvedRouteWorkspace = buildWorkspacePresentation(graph, view, {
       ...live!,
       items: [],
-      mapRoutes: [{ id: "missing", label: "missing", pointIds: ["missing:a", "missing:b"], relatedIds: [] }],
+      mapRoutes: [{
+        id: "missing",
+        laneId: "domestic",
+        label: "missing",
+        modeLabel: "複合",
+        pointIds: ["missing:a", "missing:b"],
+        relatedIds: []
+      }],
       mapVessels: []
     });
     expect(unresolvedRouteWorkspace.layers.map((layer) => layer.available)).toEqual([false, false, false]);

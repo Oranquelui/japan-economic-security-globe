@@ -190,13 +190,17 @@ describe("japan map canvas model", () => {
     const liveLogistics = liveLogisticsFixture([
         {
           id: "live-logistics:container-asia-yokohama",
+          laneId: "maritime",
           label: "コンテナ一般貨物: 東アジア → 横浜港 → 首都圏配送",
+          modeLabel: "海上",
           pointIds: ["chokepoint:malacca", "port:yokohama", "prefecture:tokyo"],
           relatedIds: ["flow:japan-linked-maritime-watch"]
         },
         {
           id: "live-logistics:road-keihin-tokyo",
+          laneId: "road",
           label: "陸路: 横浜港 → 首都圏配送",
+          modeLabel: "道路",
           pointIds: ["port:yokohama", "prefecture:tokyo"],
           relatedIds: ["flow:japan-linked-maritime-watch"]
         }
@@ -256,7 +260,9 @@ describe("japan map canvas model", () => {
     const liveLogistics = liveLogisticsFixture([
         {
           id: "live-logistics:airport-haneda-narita-ops",
+          laneId: "air",
           label: "空港運用",
+          modeLabel: "航空",
           pointIds: ["airport:haneda", "airport:narita", "prefecture:tokyo"],
           relatedIds: ["airport:haneda", "airport:narita"]
         }
