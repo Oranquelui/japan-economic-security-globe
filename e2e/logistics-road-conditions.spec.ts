@@ -274,10 +274,11 @@ async function openLogistics(page: Page, viewport: Readonly<{ height: number; wi
 
 async function closeInitialNotice(page: Page) {
   const close = page.getByRole("button", { name: "お知らせを閉じる" });
-  if (await close.count()) {
+  await close.waitFor({ state: "visible", timeout: 3_000 }).catch(() => undefined);
+  if (await close.isVisible()) {
     await close.click();
-    await expect(close).toHaveCount(0);
   }
+  await expect(close).toHaveCount(0);
 }
 
 async function readLogisticsDiagnostics(page: Page): Promise<LogisticsDiagnostics> {
@@ -312,10 +313,12 @@ async function assertEventSelection(
 }
 
 async function assertPermanentLayout(page: Page, viewport: Readonly<{ height: number; width: number }>) {
+  await expect(page.getByRole("button", { name: "お知らせを閉じる" })).toHaveCount(0);
   const leftPane = await requiredBox(page.locator('[data-testid="layout-command-pane"]:visible'));
   const map = await requiredBox(page.locator('[data-testid="layout-map-section"]:visible'));
   const zoomControl = await requiredBox(page.getByRole("button", { name: "地図を拡大" }));
-  const attribution = await requiredBox(page.locator('.maplibregl-ctrl-attrib:visible'));
+  const attributionLocator = page.locator('.maplibregl-ctrl-attrib:visible');
+  const attribution = await requiredBox(attributionLocator);
   const inspectorLocator = page.locator('[data-testid="layout-context-inspector"]:visible');
   const inspector = await inspectorLocator.count() ? await requiredBox(inspectorLocator) : null;
 
@@ -327,6 +330,12 @@ async function assertPermanentLayout(page: Page, viewport: Readonly<{ height: nu
   }
   expect(zoomControl.x).toBeGreaterThanOrEqual(leftPane.x + leftPane.width + 16);
   expect(attribution.x).toBeGreaterThanOrEqual(leftPane.x + leftPane.width + 16);
+  expect(await attributionLocator.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return false;
+    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + Math.min(4, rect.height / 2));
+    return Boolean(hit && (hit === element || element.contains(hit)));
+  })).toBe(true);
   if (inspector) {
     expect(zoomControl.x + zoomControl.width).toBeLessThanOrEqual(inspector.x - 24);
     expect(attribution.x + attribution.width).toBeLessThanOrEqual(inspector.x - 24);
