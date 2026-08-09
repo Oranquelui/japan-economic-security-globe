@@ -84,7 +84,9 @@ export interface LiveLogisticsLaneViewModel {
 
 export interface LiveLogisticsMapRoute {
   id: string;
+  laneId: LiveLogisticsLaneId;
   label: string;
+  modeLabel: "道路" | "鉄道" | "内航" | "航空" | "海上" | "複合";
   pointIds: string[];
   relatedIds: string[];
 }

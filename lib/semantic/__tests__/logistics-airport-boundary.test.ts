@@ -76,6 +76,30 @@ describe("logistics airport boundary", () => {
     expect(JSON.stringify(airportEvents)).not.toMatch(/flight|tail|passenger|military|軍用機|旅客|個別便/i);
   });
 
+  test("labels non-official fixed logistics fixtures permanently as demos without live-like copy", () => {
+    const fixedLogisticsEvents = loadSeedLiveLogistics().filter(
+      (event) => event.themeIds.includes("logistics") && event.evidenceClass !== "official_public"
+    );
+
+    expect(fixedLogisticsEvents.length).toBeGreaterThan(0);
+    for (const event of fixedLogisticsEvents) {
+      const exposedCopy = [
+        event.statusLabel,
+        event.lastSeenLabel,
+        event.etaLabel,
+        event.disclosureLabel,
+        event.confidenceLabel,
+        event.sourceFreshness
+      ].filter(Boolean).join(" / ");
+
+      expect(exposedCopy).toContain("固定デモ");
+      expect(exposedCopy).toContain("代表経路");
+      expect(exposedCopy).toContain("更新予定なし");
+      expect(event.disclosureLabel).toContain("現在情報ではありません");
+      expect(exposedCopy).not.toMatch(/今日|監視中|次回更新|\d+分前/);
+    }
+  });
+
   test("keeps logistics maritime cargo distinct from energy tanker support", () => {
     const events = loadSeedLiveLogistics();
     const generalCargoEvents = events.filter((event) => event.kindLabel.includes("コンテナ") || event.kindLabel.includes("一般貨物") || event.kindLabel.includes("自動車船"));

@@ -425,5 +425,77 @@
       "processingStatement": "Natural Earth 5.1.1 Admin-1 States, Provinces から日本の47都道府県を抽出し、座標を小数点以下5桁へ丸め、リングの向きと始点を決定論的に正規化して作成",
       "limitationStatement": "Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。"
     }
+  },
+  {
+    "id": "source:shutoko-bayshore-route",
+    "label": "首都高 高速湾岸線・首都高ナビマップ",
+    "url": "https://www.shutoko.jp/use/network/navimap/",
+    "publisher": "首都高速道路株式会社",
+    "published": "2026-07-01",
+    "accessed": "2026-08-08",
+    "description": "高速湾岸線の概略トポロジーと東行きの方向性に限定して参照する公式ネットワーク案内。座標の根拠には使用しない。",
+    "official": true,
+    "sourceCategory": "official",
+    "accessMode": "html",
+    "tier": "A"
+  },
+  {
+    "id": "source:shutoko-jct-guide",
+    "label": "首都高 JCT・複雑なルート案内",
+    "url": "https://www.shutoko.jp/use/network/jct/",
+    "publisher": "首都高速道路株式会社",
+    "accessed": "2026-08-08",
+    "description": "本牧、大黒、川崎浮島、大井、辰巳の各JCT接続を確認する公式拡大図の入口。",
+    "official": true,
+    "sourceCategory": "official",
+    "accessMode": "html",
+    "tier": "A"
+  },
+  {
+    "id": "source:jartic-road-provider-service",
+    "label": "JARTIC 各種情報の提供（オープンデータ）",
+    "url": "https://www.jartic.or.jp/service/opendata/",
+    "publisher": "公益財団法人日本道路交通情報センター",
+    "accessed": "2026-08-08",
+    "description": "交通規制情報等の提供と利用規約を確認するprovider-service候補。本seedはサービスに接続せず、キャッシュと公開再配布の許可をadapterで別途要求する。",
+    "official": true,
+    "sourceCategory": "official",
+    "accessMode": "html",
+    "tier": "A"
+  },
+  {
+    "id": "source:openstreetmap-road-geometry",
+    "label": "OpenStreetMap 道路形状（一般化・静的抽出）",
+    "url": "https://www.openstreetmap.org/export#map=10/35.5200/139.8000",
+    "publisher": "OpenStreetMap contributors",
+    "accessed": "2026-08-08",
+    "description": "横浜港・本牧ふ頭から東京湾岸までの表示用に一般化した静的道路形状。トポロジーと方向の根拠は首都高公式情報で別管理する。",
+    "official": false,
+    "sourceCategory": "open-data",
+    "accessMode": "geojson",
+    "tier": "A",
+    "rights": {
+      "licenseLabel": "ODbL-1.0",
+      "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "sourceVersion": "OpenStreetMap extract 2026-08-08",
+      "artifactVersion": "osm-extract-2026-08-08",
+      "processingDate": "2026-08-08",
+      "immutableArchiveUrl": "/data/logistics-road-geometry-osm-extract-2026-08-08.geojson",
+      "immutableArchiveSha256": "fcb0f53770a9f136f32572a5cedfc6fbf0ef5431887918160533ad4c25063904",
+      "processingStatement": "OpenStreetMap由来の道路形状を表示用に抽出・一般化し、経緯度の有限な静的線形として保存",
+      "limitationStatement": "ライブ交通、法的な道路境界、ナビゲーション精度を保証しない一般化形状。ランタイムのタイルまたはルーティング取得は行わない。"
+    }
+  },
+  {
+    "id": "source:logistics-road-demo-fixture",
+    "label": "国内物流道路状況 固定デモシナリオ",
+    "url": "https://github.com/louistoyozaki/jp-strategic-dependency-graph",
+    "publisher": "jp-strategic-dependency-graph",
+    "accessed": "2026-08-08",
+    "description": "混雑・工事・車線規制の表示検証に限定した静的シナリオ。現在の道路交通情報ではない。",
+    "official": false,
+    "sourceCategory": "private",
+    "accessMode": "html",
+    "tier": "C"
   }
 ]

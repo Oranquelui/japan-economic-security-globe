@@ -74,6 +74,30 @@ describe("ScopeContextPanel", () => {
     expect(layerRegion.compareDocumentPosition(signalsAction) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  test("renders the optional logistics route overview before active layer details", () => {
+    const input = buildPanelInput();
+
+    render(
+      <ScopeContextPanel
+        {...input}
+        logisticsRouteOverview={<section aria-label="物流経路概要">物流経路スロット</section>}
+      />
+    );
+
+    const overview = screen.getByRole("region", { name: "物流経路概要" });
+    const activeSummary = screen.getByRole("region", { name: "いま表示中" });
+    expect(overview.textContent).toBe("物流経路スロット");
+    expect(overview.compareDocumentPosition(activeSummary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  test("does not render an empty logistics overview container when the slot is omitted", () => {
+    const input = buildPanelInput();
+
+    render(<ScopeContextPanel {...input} />);
+
+    expect(screen.queryByTestId("scope-logistics-route-overview")).toBeNull();
+  });
+
   test("routes theme, semantic-layer, and secondary-view actions", async () => {
     const input = buildPanelInput();
 

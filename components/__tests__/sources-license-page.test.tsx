@@ -51,7 +51,9 @@ describe("SourcesLicensePage", () => {
     expect(within(officialSection!).queryByRole("link", { name: sourceLabel })).toBeNull();
     expect(within(privateSection!).queryByRole("link", { name: sourceLabel })).toBeNull();
 
-    const rights = within(openDataSection!).getByTestId("source-rights");
+    const naturalEarthCard = sourceLink.closest("article");
+    expect(naturalEarthCard).not.toBeNull();
+    const rights = within(naturalEarthCard!).getByTestId("source-rights");
     for (const field of [
       "利用条件",
       "ソース版",
@@ -86,6 +88,22 @@ describe("SourcesLicensePage", () => {
     );
     expect(archiveLink.getAttribute("target")).toBe("_blank");
     expect(archiveLink.getAttribute("rel")).toBe("noreferrer");
+  });
+
+  test("renders OSM geometry rights with its checked-in immutable artifact and SHA-256", () => {
+    render(<SourcesLicensePage sources={loadSeedGraph().sources} />);
+
+    const sourceLink = screen.getByRole("link", { name: "OpenStreetMap 道路形状（一般化・静的抽出）" });
+    const sourceCard = sourceLink.closest("article");
+    expect(sourceCard).not.toBeNull();
+    const rights = within(sourceCard!).getByTestId("source-rights");
+    const archiveLink = within(rights).getByRole("link", { name: "固定アーカイブ" });
+
+    expect(rights.textContent).toContain("ODbL-1.0");
+    expect(rights.textContent).toMatch(/[a-f0-9]{64}/);
+    expect(archiveLink.getAttribute("href")).toBe(
+      "/data/logistics-road-geometry-osm-extract-2026-08-08.geojson"
+    );
   });
 
   test("does not add a rights block to existing cards without structured rights metadata", () => {

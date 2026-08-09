@@ -79,7 +79,9 @@ export function buildLiveLogisticsView(
       .filter((item) => item.pointIds.length >= 2)
       .map((item) => ({
         id: item.id,
+        laneId: item.laneId,
         label: item.kindLabel,
+        modeLabel: getRouteModeLabel(item.laneId),
         pointIds: item.pointIds,
         relatedIds: [item.id, ...item.relatedIds]
       })),
@@ -215,9 +217,26 @@ function getLanePriority(item: LiveLogisticsItemViewModel, themeId: ThemeId) {
   }
 }
 
+function getRouteModeLabel(laneId: LiveLogisticsLaneId): LiveLogisticsViewModel["mapRoutes"][number]["modeLabel"] {
+  switch (laneId) {
+    case "road":
+      return "道路";
+    case "rail":
+      return "鉄道";
+    case "coastal":
+      return "内航";
+    case "air":
+      return "航空";
+    case "maritime":
+      return "海上";
+    case "domestic":
+      return "複合";
+  }
+}
+
 function getSurfaceDisclosureLabel(themeId: ThemeId) {
   if (themeId === "logistics") {
-    return "公開系統 / route-level only / 陸路/鉄道/内航/航空貨物/空港運用 / 一般貨物補助 / 15-60分遅延";
+    return "固定デモ / 代表経路 / 更新予定なし / 現在情報ではありません / 陸路/鉄道/内航/航空貨物/空港運用 / 一般貨物補助 / 空港運用のみ公的公開情報の遅延集約";
   }
 
   return "AIS coverage / 15-60分遅延 / provider-gated";

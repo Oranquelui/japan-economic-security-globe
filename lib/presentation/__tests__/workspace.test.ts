@@ -1,10 +1,15 @@
 import { describe, expect, test } from "vitest";
 
 import { THEME_IDS } from "../../../types/semantic";
-import { loadSeedGraph, loadSeedLiveLogistics } from "../../data/seed-loader";
+import {
+  loadSeedGraph,
+  loadSeedLiveLogistics,
+  loadSeedRoadOperations
+} from "../../data/seed-loader";
 import { getDetailView } from "../../semantic/detail";
 import { getThemeView } from "../../semantic/selectors";
 import { buildLiveLogisticsView } from "../live-logistics";
+import { buildRoadOperationsView } from "../road-operations";
 import {
   buildActiveLayerSummary,
   buildMetricSeries,
@@ -352,6 +357,122 @@ describe("active layer summary", () => {
     expect(summary.missingDataLabel).toBe("データなし");
   });
 
+  test("summarizes domestic logistics as five representative routes across four modes", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const roadOperations = buildRoadOperationsView(
+      loadSeedRoadOperations(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const workspace = buildWorkspacePresentation(graph, view, live);
+    const layer = getLayerDefinition("logistics", "logistics-domestic", workspace)!;
+
+    const summary = buildActiveLayerSummary(
+      graph,
+      view,
+      layer,
+      workspace.scope,
+      live,
+      roadOperations
+    );
+
+    expect(summary.coverage.value).toBe("5代表経路 / 4輸送モード");
+    expect(summary.description).toContain("港湾前後 1補助");
+    expect(summary.description).toContain("首都圏・中京圏・関西圏・九州北部");
+    expect(summary.description.match(/首都圏/g)).toHaveLength(1);
+    expect(summary.description).not.toMatch(/5輸送モード|海上を含む5/);
+  });
+
+  test("does not count a road route when one expected detailed segment is rejected", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const dataset = loadSeedRoadOperations();
+    const rejectedSegment = dataset.segments![0];
+    rejectedSegment.coordinates = [rejectedSegment.coordinates[0]];
+    const roadOperations = buildRoadOperationsView(
+      dataset,
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const workspace = buildWorkspacePresentation(graph, view, live);
+    const layer = getLayerDefinition("logistics", "logistics-domestic", workspace)!;
+
+    const summary = buildActiveLayerSummary(
+      graph,
+      view,
+      layer,
+      workspace.scope,
+      live,
+      roadOperations
+    );
+
+    expect(roadOperations.diagnostics.rejectedSegmentIds).toContain(rejectedSegment.id);
+    expect(summary.coverage.value).toBe("4代表経路 / 3輸送モード");
+  });
+
+  test("does not count a road route when actual segment ids duplicate one expected id and omit another", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "logistics");
+    const live = buildLiveLogisticsView(
+      "logistics",
+      null,
+      loadSeedLiveLogistics(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const roadOperations = buildRoadOperationsView(
+      loadSeedRoadOperations(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+    const duplicateSegmentId = roadOperations.segments[0].id;
+    const missingSegmentId = roadOperations.segments[1].id;
+    roadOperations.segments[1].id = duplicateSegmentId;
+    const workspace = buildWorkspacePresentation(graph, view, live);
+    const layer = getLayerDefinition("logistics", "logistics-domestic", workspace)!;
+
+    const summary = buildActiveLayerSummary(
+      graph,
+      view,
+      layer,
+      workspace.scope,
+      live,
+      roadOperations
+    );
+
+    expect(roadOperations.routes[0].segmentIds).toContain(missingSegmentId);
+    expect(summary.coverage.value).toBe("4代表経路 / 3輸送モード");
+  });
+
+  test("leaves non-logistics summaries unchanged when road operations are supplied", () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "rice");
+    const workspace = buildWorkspacePresentation(graph, view);
+    const layer = getLayerDefinition("rice", "rice-harvest", workspace)!;
+    const roadOperations = buildRoadOperationsView(
+      loadSeedRoadOperations(),
+      new Date("2026-08-08T00:00:00Z")
+    )!;
+
+    expect(buildActiveLayerSummary(
+      graph,
+      view,
+      layer,
+      workspace.scope,
+      null,
+      roadOperations
+    )).toEqual(buildActiveLayerSummary(graph, view, layer, workspace.scope));
+  });
+
   test("resolves active sources in registry order and labels fixed demo data", () => {
     const graph = loadSeedGraph();
     const riceView = getThemeView(graph, "rice");
@@ -466,7 +587,14 @@ describe("live logistics layer availability", () => {
     const unresolvedRouteWorkspace = buildWorkspacePresentation(graph, view, {
       ...live!,
       items: [],
-      mapRoutes: [{ id: "missing", label: "missing", pointIds: ["missing:a", "missing:b"], relatedIds: [] }],
+      mapRoutes: [{
+        id: "missing",
+        laneId: "domestic",
+        label: "missing",
+        modeLabel: "複合",
+        pointIds: ["missing:a", "missing:b"],
+        relatedIds: []
+      }],
       mapVessels: []
     });
     expect(unresolvedRouteWorkspace.layers.map((layer) => layer.available)).toEqual([false, false, false]);

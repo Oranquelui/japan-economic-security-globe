@@ -4,10 +4,11 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { ReactElement } from "react";
 
-const { loadSeedGraphMock, loadSeedLiveLogisticsMock, loadSeedRankingSignalsMock, parseOperationsUrlStateMock } = vi.hoisted(() => ({
+const { loadSeedGraphMock, loadSeedLiveLogisticsMock, loadSeedRankingSignalsMock, loadSeedRoadOperationsMock, parseOperationsUrlStateMock } = vi.hoisted(() => ({
   loadSeedGraphMock: vi.fn(() => ({ mocked: true })),
   loadSeedLiveLogisticsMock: vi.fn(() => [{ id: "live-logistics:fixture" }]),
   loadSeedRankingSignalsMock: vi.fn(() => []),
+  loadSeedRoadOperationsMock: vi.fn(() => ({ datasetId: "road-operations:fixture" })),
   parseOperationsUrlStateMock: vi.fn(() => ({
     themeId: "energy",
     selectedId: null,
@@ -22,12 +23,14 @@ vi.mock("../../components/AppShell", () => ({
     hasExplicitUrlState,
     liveLogisticsEvents,
     locale,
-    homepageMode
+    homepageMode,
+    roadOperationsDataset
   }: {
     hasExplicitUrlState?: boolean;
     liveLogisticsEvents?: unknown[];
     locale?: string;
     homepageMode?: string;
+    roadOperationsDataset?: { datasetId: string } | null;
   }) => (
     <div
       data-testid="app-shell"
@@ -35,6 +38,7 @@ vi.mock("../../components/AppShell", () => ({
       data-homepage-mode={homepageMode ?? ""}
       data-live-logistics={liveLogisticsEvents?.length ?? 0}
       data-locale={locale ?? ""}
+      data-road-operations={roadOperationsDataset?.datasetId ?? ""}
     />
   )
 }));
@@ -42,7 +46,8 @@ vi.mock("../../components/AppShell", () => ({
 vi.mock("../../lib/data/seed-loader", () => ({
   loadSeedGraph: loadSeedGraphMock,
   loadSeedLiveLogistics: loadSeedLiveLogisticsMock,
-  loadSeedRankingSignals: loadSeedRankingSignalsMock
+  loadSeedRankingSignals: loadSeedRankingSignalsMock,
+  loadSeedRoadOperations: loadSeedRoadOperationsMock
 }));
 
 vi.mock("../../lib/presentation/url-state", () => ({
@@ -69,6 +74,7 @@ beforeEach(() => {
   loadSeedGraphMock.mockClear();
   loadSeedLiveLogisticsMock.mockClear();
   loadSeedRankingSignalsMock.mockClear();
+  loadSeedRoadOperationsMock.mockClear();
   parseOperationsUrlStateMock.mockClear();
 });
 
@@ -98,9 +104,11 @@ describe("app page routes", () => {
     expect(screen.getByTestId("app-shell").getAttribute("data-locale")).toBe("ja");
     expect(screen.getByTestId("app-shell").getAttribute("data-homepage-mode")).toBe("app");
     expect(screen.getByTestId("app-shell").getAttribute("data-live-logistics")).toBe("1");
+    expect(screen.getByTestId("app-shell").getAttribute("data-road-operations")).toBe("road-operations:fixture");
     expect(loadSeedGraphMock).toHaveBeenCalledTimes(1);
     expect(loadSeedLiveLogisticsMock).toHaveBeenCalledTimes(1);
     expect(loadSeedRankingSignalsMock).toHaveBeenCalledTimes(1);
+    expect(loadSeedRoadOperationsMock).toHaveBeenCalledTimes(1);
     expect(parseOperationsUrlStateMock).toHaveBeenCalledWith({ theme: "rice" });
   });
 

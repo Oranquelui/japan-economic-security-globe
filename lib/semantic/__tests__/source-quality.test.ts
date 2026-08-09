@@ -1,6 +1,9 @@
 import { describe, expect, test } from "vitest";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
-import { loadSeedGraph } from "../../data/seed-loader";
+import { loadSeedGraph, loadSeedRoadOperations } from "../../data/seed-loader";
 
 describe("source quality", () => {
   test("uses a concrete METI energy source URL instead of the METI homepage", () => {
@@ -52,6 +55,43 @@ describe("source quality", () => {
         limitationStatement:
           "Natural Earth Admin-1 は beta で、原則として de facto（実効支配）境界を採用した一般化地図です。日本政府の領土・管轄に関する公式見解を示すものではなく、法令、測量、境界確定その他の正確な行政区域確認には使用できません。"
       }
+    });
+  });
+
+  test("classifies road geometry as ODbL open data and keeps provider services separate", () => {
+    const graph = loadSeedGraph();
+    const geometry = graph.sources.find((item) => item.id === "source:openstreetmap-road-geometry");
+    const provider = graph.sources.find((item) => item.id === "source:jartic-road-provider-service");
+
+    expect(geometry).toMatchObject({
+      official: false,
+      sourceCategory: "open-data",
+      publisher: "OpenStreetMap contributors"
+    });
+    expect(geometry?.rights).toMatchObject({ licenseLabel: "ODbL-1.0" });
+    expect(geometry?.rights?.immutableArchiveUrl).toBe(
+      "/data/logistics-road-geometry-osm-extract-2026-08-08.geojson"
+    );
+    expect(geometry?.rights?.immutableArchiveSha256).toMatch(/^[a-f0-9]{64}$/);
+    const artifact = readFileSync(
+      join(process.cwd(), "public", geometry!.rights!.immutableArchiveUrl.replace(/^\//, ""))
+    );
+    expect(createHash("sha256").update(artifact).digest("hex")).toBe(
+      geometry?.rights?.immutableArchiveSha256
+    );
+    const artifactJson = JSON.parse(artifact.toString()) as {
+      features: Array<{ id: string; geometry: { coordinates: number[][] } }>;
+    };
+    expect(artifactJson.features.map((feature) => ({
+      id: feature.id,
+      coordinates: feature.geometry.coordinates
+    }))).toEqual(loadSeedRoadOperations().segments?.map((segment) => ({
+      id: segment.id,
+      coordinates: segment.coordinates
+    })));
+    expect(provider).toMatchObject({
+      official: true,
+      url: "https://www.jartic.or.jp/service/opendata/"
     });
   });
 });

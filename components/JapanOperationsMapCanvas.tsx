@@ -17,6 +17,7 @@ import type { OperationMapMode } from "../lib/presentation/operations";
 import type {
   JapanMapCanvasModel,
   JapanMapCorridor,
+  JapanMapLogisticsRoute,
   JapanMapPoint,
   JapanMapRegion,
   JapanMapRoute,
@@ -34,6 +35,12 @@ interface JapanOperationsMapCanvasProps {
     nonce: number;
     type: "recenter" | "zoomIn" | "zoomOut";
   };
+  fitInsets?: Readonly<{
+    bottom: number;
+    left: number;
+    right: number;
+    top: number;
+  }>;
   focusTargetId: string | null;
   mapMode: OperationMapMode;
   model: JapanMapCanvasModel;
@@ -76,6 +83,33 @@ const INTERACTIVE_SEMANTIC_LAYER_IDS = [
   "live-logistics-route-glow",
   "live-logistics-route-pulse",
   "live-logistics-route-label",
+  "live-logistics-road-line",
+  "live-logistics-road-label",
+  "live-logistics-rail-line",
+  "live-logistics-rail-label",
+  "live-logistics-coastal-line",
+  "live-logistics-coastal-label",
+  "live-logistics-air-line",
+  "live-logistics-air-label",
+  "live-logistics-maritime-support-line",
+  "live-logistics-maritime-support-label",
+  "logistics-road-base-line",
+  "logistics-road-direction",
+  "logistics-road-operation-hit",
+  "logistics-road-operation-normal",
+  "logistics-road-operation-slow",
+  "logistics-road-operation-congestion",
+  "logistics-road-operation-accident",
+  "logistics-road-operation-construction",
+  "logistics-road-operation-lane-restriction",
+  "logistics-road-operation-closure",
+  "logistics-road-operation-other",
+  "logistics-road-operation-unknown",
+  "logistics-road-operation-planned-outline",
+  "logistics-road-operation-symbol",
+  "logistics-road-operation-label",
+  "logistics-road-junction-circle",
+  "logistics-road-junction-label",
   "logistics-impact-region-fill",
   "logistics-impact-corridor-fill",
   "logistics-impact-corridor-outline",
@@ -84,10 +118,67 @@ const INTERACTIVE_SEMANTIC_LAYER_IDS = [
   "live-vessel-marker",
   "live-vessel-label"
 ];
+const LOGISTICS_ROUTE_MODE_STYLES = [
+  {
+    id: "road",
+    laneId: "road",
+    symbol: "◆",
+    dash: null,
+    color: (palette: StatusPalette) => palette.monitoring
+  },
+  {
+    id: "rail",
+    laneId: "rail",
+    symbol: "╫",
+    dash: [1.5, 1],
+    color: (palette: StatusPalette) => palette.normal
+  },
+  {
+    id: "coastal",
+    laneId: "coastal",
+    symbol: "≈",
+    dash: [0.25, 1.25],
+    color: (palette: StatusPalette) => palette.selected
+  },
+  {
+    id: "air",
+    laneId: "air",
+    symbol: "✈",
+    dash: [4, 2],
+    color: (palette: StatusPalette) => palette.watch
+  },
+  {
+    id: "maritime-support",
+    laneId: "maritime",
+    symbol: "≈",
+    dash: [0.2, 1.7],
+    color: (palette: StatusPalette) => palette.monitoring
+  }
+] as const;
+const ROAD_OPERATION_OPACITY_EXPRESSION: any = [
+  "case",
+  ["==", ["get", "lifecycle"], "ended"],
+  0.28,
+  ["==", ["get", "freshness"], "stale"],
+  0.46,
+  0.9
+];
+const ROAD_OPERATION_LINE_STYLES = [
+  { visualKind: "normal", dash: null, color: (_palette: StatusPalette) => "#8a98a6" },
+  { visualKind: "slow", dash: [2, 1.5], color: (palette: StatusPalette) => palette.watch },
+  { visualKind: "congestion", dash: [0.75, 0.5], color: (palette: StatusPalette) => palette.high },
+  { visualKind: "accident", dash: [2, 1], color: (palette: StatusPalette) => palette.high },
+  { visualKind: "construction", dash: [1, 1], color: (palette: StatusPalette) => palette.watch },
+  { visualKind: "lane-restriction", dash: [2.5, 1], color: (palette: StatusPalette) => palette.watch },
+  { visualKind: "closure", dash: [0.5, 0.5], color: (palette: StatusPalette) => palette.high },
+  { visualKind: "other", dash: [1, 1.5], color: (palette: StatusPalette) => palette.monitoring },
+  { visualKind: "unknown", dash: [0.25, 1.25], color: (_palette: StatusPalette) => "#778493" }
+] as const;
 
 export function JapanOperationsMapCanvas({
   activeId,
   command,
+  fitInsets,
   focusTargetId,
   mapMode,
   model,
@@ -111,6 +202,7 @@ export function JapanOperationsMapCanvas({
   latestModelRef.current = model;
   latestActiveIdRef.current = activeId;
   latestMapModeRef.current = mapMode;
+  const usesStaticLogisticsRoutes = usesStaticLogisticsRoutePresentation(model);
 
   useEffect(() => {
     let disposed = false;
@@ -227,7 +319,25 @@ export function JapanOperationsMapCanvas({
 
         map.addSource("live-logistics-routes", {
           type: "geojson",
-          data: routesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId)
+          data: logisticsRoutesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId)
+        });
+
+        map.addSource("logistics-road-segments", {
+          type: "geojson",
+          data: roadSegmentsToFeatureCollection(model.roadSegments ?? []),
+          attribution: "© OpenStreetMap contributors"
+        });
+
+        map.addSource("logistics-road-operations", {
+          type: "geojson",
+          data: roadOperationsToFeatureCollection(model.roadOperationalOverlays ?? []),
+          attribution: "© OpenStreetMap contributors"
+        });
+
+        map.addSource("logistics-road-junctions", {
+          type: "geojson",
+          data: roadJunctionsToFeatureCollection(model.roadJunctions ?? []),
+          attribution: "© OpenStreetMap contributors"
         });
 
         map.addSource("logistics-impact-regions", {
@@ -409,7 +519,7 @@ export function JapanOperationsMapCanvas({
             "line-join": "round"
           },
           paint: {
-            ...getLiveLogisticsRouteGlowPaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))
+            ...getAnimatedTrackingRouteGlowPaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))
           }
         });
 
@@ -422,7 +532,7 @@ export function JapanOperationsMapCanvas({
             "line-join": "round"
           },
           paint: {
-            ...getLiveLogisticsRoutePaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))
+            ...getAnimatedTrackingRoutePaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))
           }
         });
 
@@ -444,6 +554,235 @@ export function JapanOperationsMapCanvas({
             "text-halo-color": "rgba(6, 12, 20, 0.9)",
             "text-halo-width": 1.4,
             "text-opacity": hasFilledLogisticsCorridors(model) ? 0 : mapMode === "route" ? 0.82 : 0.62
+          }
+        });
+
+        for (const mode of LOGISTICS_ROUTE_MODE_STYLES) {
+          map.addLayer({
+            id: `live-logistics-${mode.id}-line`,
+            type: "line",
+            source: "live-logistics-routes",
+            filter: ["==", ["get", "laneId"], mode.laneId],
+            layout: {
+              "line-cap": "round",
+              "line-join": "round"
+            },
+            paint: {
+              ...getLiveLogisticsModeRoutePaint(
+                statusPalette,
+                mapMode,
+                hasFilledLogisticsCorridors(model),
+                mode.dash,
+                mode.color(statusPalette)
+              )
+            }
+          });
+          map.addLayer({
+            id: `live-logistics-${mode.id}-label`,
+            type: "symbol",
+            source: "live-logistics-routes",
+            filter: ["==", ["get", "laneId"], mode.laneId],
+            layout: {
+              "symbol-placement": "line",
+              "text-field": [
+                "concat",
+                `${mode.symbol} `,
+                ["get", "modeLabel"],
+                " / ",
+                ["get", "label"]
+              ],
+              "text-size": 10,
+              "symbol-spacing": 220,
+              "text-keep-upright": true,
+              "text-allow-overlap": false
+            },
+            paint: {
+              "text-color": mode.color(statusPalette),
+              "text-halo-color": "rgba(6, 12, 20, 0.9)",
+              "text-halo-width": 1.4,
+              "text-opacity": hasFilledLogisticsCorridors(model) ? 0.45 : mapMode === "route" ? 0.88 : 0.66
+            }
+          });
+        }
+
+        map.addLayer({
+          id: "logistics-road-base-line",
+          type: "line",
+          source: "logistics-road-segments",
+          layout: { "line-cap": "round", "line-join": "round" },
+          paint: {
+            "line-color": [
+              "case",
+              ["boolean", ["get", "selected"], false],
+              statusPalette.selected,
+              "rgba(128, 151, 169, 0.88)"
+            ],
+            "line-width": ["case", ["boolean", ["get", "selected"], false], 7, 5],
+            "line-opacity": 0.74
+          }
+        });
+
+        map.addLayer({
+          id: "logistics-road-direction",
+          type: "symbol",
+          source: "logistics-road-segments",
+          layout: {
+            "symbol-placement": "line",
+            "text-field": [
+              "concat",
+              ["get", "direction"],
+              " ",
+              [
+                "match",
+                ["get", "direction"],
+                "東行き", "→",
+                "西行き", "←",
+                "北行き", "↑",
+                "南行き", "↓",
+                "上り", "↗",
+                "下り", "↙",
+                "内回り", "↻",
+                "外回り", "↺",
+                "→"
+              ]
+            ],
+            "text-size": 10,
+            "symbol-spacing": 130,
+            "text-keep-upright": true,
+            "text-allow-overlap": false
+          },
+          paint: {
+            "text-color": [
+              "case",
+              ["boolean", ["get", "selected"], false],
+              statusPalette.selected,
+              themePalette.textMuted
+            ],
+            "text-halo-color": themePalette.surfaceCanvas,
+            "text-halo-width": 1.4,
+            "text-opacity": 0.92
+          }
+        });
+
+        for (const operationStyle of ROAD_OPERATION_LINE_STYLES) {
+          map.addLayer({
+            id: `logistics-road-operation-${operationStyle.visualKind}`,
+            type: "line",
+            source: "logistics-road-operations",
+            filter: ["==", ["get", "visualKind"], operationStyle.visualKind],
+            layout: { "line-cap": "round", "line-join": "round" },
+            paint: {
+              "line-color": operationStyle.color(statusPalette),
+              "line-width": ["case", ["boolean", ["get", "selected"], false], 5.5, 3.5],
+              "line-opacity": ROAD_OPERATION_OPACITY_EXPRESSION,
+              ...(operationStyle.dash ? { "line-dasharray": [...operationStyle.dash] } : {})
+            }
+          });
+        }
+
+        map.addLayer({
+          id: "logistics-road-operation-planned-outline",
+          type: "line",
+          source: "logistics-road-operations",
+          filter: ["==", ["get", "lifecycle"], "planned"],
+          layout: { "line-cap": "round", "line-join": "round" },
+          paint: {
+            "line-color": statusPalette.selected,
+            "line-width": 7,
+            "line-opacity": 0.38,
+            "line-dasharray": [0.4, 1.2]
+          }
+        });
+
+        map.addLayer({
+          id: "logistics-road-operation-hit",
+          type: "line",
+          source: "logistics-road-operations",
+          paint: { "line-color": "rgba(255,255,255,0)", "line-width": 16, "line-opacity": 0 }
+        });
+
+        map.addLayer({
+          id: "logistics-road-operation-symbol",
+          type: "symbol",
+          source: "logistics-road-operations",
+          filter: ["in", ["get", "visualKind"], ["literal", ["accident", "construction", "lane-restriction", "closure"]]],
+          layout: {
+            "symbol-placement": "line",
+            "text-field": [
+              "match",
+              ["get", "visualKind"],
+              "accident", "!",
+              "construction", "◆",
+              "lane-restriction", "|",
+              "closure", "×",
+              ""
+            ],
+            "text-size": 14,
+            "symbol-spacing": 90,
+            "text-allow-overlap": true
+          },
+          paint: {
+            "text-color": [
+              "match",
+              ["get", "visualKind"],
+              "accident", statusPalette.high,
+              "construction", statusPalette.watch,
+              "lane-restriction", statusPalette.watch,
+              "closure", statusPalette.high,
+              themePalette.textMuted
+            ],
+            "text-halo-color": themePalette.surfaceCanvas,
+            "text-halo-width": 1.5,
+            "text-opacity": ROAD_OPERATION_OPACITY_EXPRESSION
+          }
+        });
+
+        map.addLayer({
+          id: "logistics-road-operation-label",
+          type: "symbol",
+          source: "logistics-road-operations",
+          layout: {
+            "symbol-placement": "line-center",
+            "text-field": "{stateLabel}",
+            "text-size": 10,
+            "text-offset": [0, -1.25],
+            "text-allow-overlap": false
+          },
+          paint: {
+            "text-color": themePalette.textPrimary,
+            "text-halo-color": themePalette.surfaceCanvas,
+            "text-halo-width": 1.5,
+            "text-opacity": ROAD_OPERATION_OPACITY_EXPRESSION
+          }
+        });
+
+        map.addLayer({
+          id: "logistics-road-junction-circle",
+          type: "circle",
+          source: "logistics-road-junctions",
+          paint: {
+            "circle-color": ["case", ["boolean", ["get", "selected"], false], statusPalette.selected, themePalette.surfaceCanvas],
+            "circle-stroke-color": statusPalette.monitoring,
+            "circle-stroke-width": 1.5,
+            "circle-radius": 4.5
+          }
+        });
+
+        map.addLayer({
+          id: "logistics-road-junction-label",
+          type: "symbol",
+          source: "logistics-road-junctions",
+          layout: {
+            "text-field": "{label}",
+            "text-size": 10,
+            "text-offset": [0, 1.1],
+            "text-anchor": "top",
+            "text-allow-overlap": false
+          },
+          paint: {
+            "text-color": themePalette.textPrimary,
+            "text-halo-color": themePalette.surfaceCanvas,
+            "text-halo-width": 1.5
           }
         });
 
@@ -859,14 +1198,19 @@ export function JapanOperationsMapCanvas({
         map.on("mouseleave", "jp-cluster-circle", handleClusterMouseLeave);
 
         const handleDesktopLabelViewportChange = () => {
-          applyModeVisibility(map, latestMapModeRef.current, desktopLabelMedia?.matches ?? false);
+          applyModeVisibility(
+            map,
+            latestMapModeRef.current,
+            desktopLabelMedia?.matches ?? false,
+            usesStaticLogisticsRoutePresentation(latestModelRef.current)
+          );
         };
         desktopLabelMedia?.addEventListener("change", handleDesktopLabelViewportChange);
         interactionSubscriptions.push({
           unsubscribe: () => desktopLabelMedia?.removeEventListener("change", handleDesktopLabelViewportChange)
         });
 
-        applyModeVisibility(map, mapMode, desktopLabelMedia?.matches ?? false);
+        applyModeVisibility(map, mapMode, desktopLabelMedia?.matches ?? false, usesStaticLogisticsRoutes);
         installedDiagnostics = installPrefectureMapDiagnostics(
           containerRef.current,
           map,
@@ -874,10 +1218,12 @@ export function JapanOperationsMapCanvas({
           latestActiveIdRef
         );
         diagnosticsContainer = containerRef.current as PrefectureMapDiagnosticsContainer | null;
-        startRouteScanAnimation(map, scanPhaseRef, scanRafRef);
+        if (!usesStaticLogisticsRoutes) {
+          startRouteScanAnimation(map, scanPhaseRef, scanRafRef);
+        }
 
         if (focusTargetId) {
-          focusMapOnSelection(map, model, focusTargetId, mapMode, zoomRef.current);
+          focusMapOnSelection(map, model, focusTargetId, mapMode, zoomRef.current, fitInsets);
         }
       });
     }
@@ -934,12 +1280,12 @@ export function JapanOperationsMapCanvas({
     applyPaintObject(
       map,
       "live-logistics-route-glow",
-      getLiveLogisticsRouteGlowPaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))
+      getAnimatedTrackingRouteGlowPaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))
     );
     applyPaintObject(
       map,
       "live-logistics-route-pulse",
-      getLiveLogisticsRoutePaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))
+      getAnimatedTrackingRoutePaint(statusPalette, mapMode, hasFilledLogisticsCorridors(model))
     );
     map.setPaintProperty("live-logistics-route-label", "text-color", statusPalette.monitoring);
     map.setPaintProperty(
@@ -947,6 +1293,56 @@ export function JapanOperationsMapCanvas({
       "text-opacity",
       hasFilledLogisticsCorridors(model) ? 0 : mapMode === "route" ? 0.82 : 0.62
     );
+    for (const modeStyle of LOGISTICS_ROUTE_MODE_STYLES) {
+      applyPaintObject(
+        map,
+        `live-logistics-${modeStyle.id}-line`,
+        getLiveLogisticsModeRoutePaint(
+          statusPalette,
+          mapMode,
+          hasFilledLogisticsCorridors(model),
+          modeStyle.dash,
+          modeStyle.color(statusPalette)
+        )
+      );
+      map.setPaintProperty(
+        `live-logistics-${modeStyle.id}-label`,
+        "text-color",
+        modeStyle.color(statusPalette)
+      );
+      map.setPaintProperty(
+        `live-logistics-${modeStyle.id}-label`,
+        "text-opacity",
+        hasFilledLogisticsCorridors(model) ? 0.45 : mapMode === "route" ? 0.88 : 0.66
+      );
+    }
+    map.setPaintProperty("logistics-road-base-line", "line-color", [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      statusPalette.selected,
+      "rgba(128, 151, 169, 0.88)"
+    ]);
+    map.setPaintProperty("logistics-road-direction", "text-color", [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      statusPalette.selected,
+      themePalette.textMuted
+    ]);
+    map.setPaintProperty("logistics-road-direction", "text-halo-color", themePalette.surfaceCanvas);
+    for (const operationStyle of ROAD_OPERATION_LINE_STYLES) {
+      map.setPaintProperty(
+        `logistics-road-operation-${operationStyle.visualKind}`,
+        "line-color",
+        operationStyle.color(statusPalette)
+      );
+    }
+    map.setPaintProperty("logistics-road-operation-planned-outline", "line-color", statusPalette.selected);
+    map.setPaintProperty("logistics-road-operation-label", "text-color", themePalette.textPrimary);
+    map.setPaintProperty("logistics-road-operation-label", "text-halo-color", themePalette.surfaceCanvas);
+    map.setPaintProperty("logistics-road-operation-symbol", "text-halo-color", themePalette.surfaceCanvas);
+    map.setPaintProperty("logistics-road-junction-circle", "circle-stroke-color", statusPalette.monitoring);
+    map.setPaintProperty("logistics-road-junction-label", "text-color", themePalette.textPrimary);
+    map.setPaintProperty("logistics-road-junction-label", "text-halo-color", themePalette.surfaceCanvas);
   map.setPaintProperty("logistics-impact-route-line", "line-color", statusPalette.selected);
   map.setPaintProperty("logistics-impact-route-line", "line-opacity", mapMode === "route" ? 0.18 : 0.1);
   map.setPaintProperty("logistics-impact-route-line", "line-width", mapMode === "route" ? 1.6 : 1);
@@ -1006,7 +1402,10 @@ export function JapanOperationsMapCanvas({
 
     updateSource(map, "global-points", pointsToFeatureCollection(model.globalPoints, activeId));
     updateSource(map, "global-routes", routesToFeatureCollection(model.globalRoutes, model.globalPoints, activeId));
-    updateSource(map, "live-logistics-routes", routesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId));
+    updateSource(map, "live-logistics-routes", logisticsRoutesToFeatureCollection(model.liveRoutes ?? [], model.livePoints ?? [], activeId));
+    updateSource(map, "logistics-road-segments", roadSegmentsToFeatureCollection(model.roadSegments ?? []));
+    updateSource(map, "logistics-road-operations", roadOperationsToFeatureCollection(model.roadOperationalOverlays ?? []));
+    updateSource(map, "logistics-road-junctions", roadJunctionsToFeatureCollection(model.roadJunctions ?? []));
     updateSource(map, "logistics-impact-regions", representativeRadiusRegionsToFeatureCollection(model.logisticsImpactRegions ?? [], activeId));
     updateSource(map, "logistics-impact-routes", routesToFeatureCollection(model.logisticsImpactRoutes ?? [], model.livePoints ?? [], activeId));
     updateSource(map, "logistics-impact-corridors", corridorsToFeatureCollection(model.logisticsImpactCorridors ?? [], activeId));
@@ -1028,7 +1427,7 @@ export function JapanOperationsMapCanvas({
       setPrefectureGeometryUnavailable(prefectureSources.unavailable);
     }
     updateSource(map, "jp-regions", representativeRadiusRegionsToFeatureCollection(model.regions, activeId));
-    applyModeVisibility(map, mapMode, isXlDesktopViewport());
+    applyModeVisibility(map, mapMode, isXlDesktopViewport(), usesStaticLogisticsRoutes);
   }, [activeId, mapMode, model, statusPalette, themePalette]);
 
   useEffect(() => {
@@ -1038,8 +1437,31 @@ export function JapanOperationsMapCanvas({
       return;
     }
 
-    focusMapOnSelection(map, model, focusTargetId, mapMode, zoomRef.current);
-  }, [focusTargetId, mapMode, model]);
+    focusMapOnSelection(map, model, focusTargetId, mapMode, zoomRef.current, fitInsets);
+  }, [
+    fitInsets?.bottom,
+    fitInsets?.left,
+    fitInsets?.right,
+    fitInsets?.top,
+    focusTargetId,
+    mapMode,
+    model
+  ]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (usesStaticLogisticsRoutes) {
+      if (scanRafRef.current !== null) {
+        cancelAnimationFrame(scanRafRef.current);
+        scanRafRef.current = null;
+      }
+      return;
+    }
+
+    startRouteScanAnimation(map, scanPhaseRef, scanRafRef);
+  }, [usesStaticLogisticsRoutes]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -1087,7 +1509,12 @@ export function JapanOperationsMapCanvas({
   );
 }
 
-function applyModeVisibility(map: any, mapMode: OperationMapMode, showPrefectureLabels: boolean) {
+function applyModeVisibility(
+  map: any,
+  mapMode: OperationMapMode,
+  showPrefectureLabels: boolean,
+  usesStaticLogisticsRoutes: boolean
+) {
   const visibility = (show: boolean) => (show ? "visible" : "none");
   const { showClusters, showPoints, showRegions, showRoutes } = getModeVisibilityState(mapMode);
 
@@ -1097,9 +1524,36 @@ function applyModeVisibility(map: any, mapMode: OperationMapMode, showPrefecture
   map.setLayoutProperty("global-route-line", "visibility", visibility(showRoutes));
   map.setLayoutProperty("global-route-highlight", "visibility", visibility(showRoutes));
   map.setLayoutProperty("global-route-direction", "visibility", visibility(showRoutes));
-  map.setLayoutProperty("live-logistics-route-glow", "visibility", visibility(showRoutes));
-  map.setLayoutProperty("live-logistics-route-pulse", "visibility", visibility(showRoutes));
-  map.setLayoutProperty("live-logistics-route-label", "visibility", visibility(showRoutes));
+  map.setLayoutProperty("live-logistics-route-glow", "visibility", visibility(showRoutes && !usesStaticLogisticsRoutes));
+  map.setLayoutProperty("live-logistics-route-pulse", "visibility", visibility(showRoutes && !usesStaticLogisticsRoutes));
+  map.setLayoutProperty("live-logistics-route-label", "visibility", visibility(showRoutes && !usesStaticLogisticsRoutes));
+  for (const modeStyle of LOGISTICS_ROUTE_MODE_STYLES) {
+    map.setLayoutProperty(
+      `live-logistics-${modeStyle.id}-line`,
+      "visibility",
+      visibility(showRoutes && usesStaticLogisticsRoutes)
+    );
+    map.setLayoutProperty(
+      `live-logistics-${modeStyle.id}-label`,
+      "visibility",
+      visibility(showRoutes && usesStaticLogisticsRoutes)
+    );
+  }
+  map.setLayoutProperty("logistics-road-base-line", "visibility", visibility(showRoutes && usesStaticLogisticsRoutes));
+  map.setLayoutProperty("logistics-road-direction", "visibility", visibility(showRoutes && usesStaticLogisticsRoutes));
+  for (const operationStyle of ROAD_OPERATION_LINE_STYLES) {
+    map.setLayoutProperty(
+      `logistics-road-operation-${operationStyle.visualKind}`,
+      "visibility",
+      visibility(showRoutes && usesStaticLogisticsRoutes)
+    );
+  }
+  map.setLayoutProperty("logistics-road-operation-planned-outline", "visibility", visibility(showRoutes && usesStaticLogisticsRoutes));
+  map.setLayoutProperty("logistics-road-operation-hit", "visibility", visibility(showRoutes && usesStaticLogisticsRoutes));
+  map.setLayoutProperty("logistics-road-operation-symbol", "visibility", visibility(showRoutes && usesStaticLogisticsRoutes));
+  map.setLayoutProperty("logistics-road-operation-label", "visibility", visibility(showRoutes && usesStaticLogisticsRoutes));
+  map.setLayoutProperty("logistics-road-junction-circle", "visibility", visibility(showRoutes && usesStaticLogisticsRoutes));
+  map.setLayoutProperty("logistics-road-junction-label", "visibility", visibility(showRoutes && usesStaticLogisticsRoutes));
   map.setLayoutProperty("logistics-impact-route-line", "visibility", visibility(showRoutes));
   map.setLayoutProperty("logistics-impact-corridor-fill", "visibility", visibility(showRoutes || showRegions));
   map.setLayoutProperty("logistics-impact-corridor-outline", "visibility", visibility(showRoutes || showRegions));
@@ -1148,7 +1602,23 @@ type PrefectureMapDiagnostics = Readonly<{
     tilesLoaded: boolean;
     zoom: number;
   };
+  readLogistics?: () => LogisticsMapDiagnosticsSnapshot;
   setPrefectureValueNull?: (entityId: string) => Promise<void>;
+}>;
+
+type LogisticsMapDiagnosticsSnapshot = Readonly<{
+  attributions: string[];
+  camera: {
+    allDetailedRoadCoordinatesInBounds: boolean;
+    center: [number, number];
+    zoom: number;
+  };
+  junctions: Array<Record<string, unknown>>;
+  layers: Array<Record<string, unknown>>;
+  logisticsRoutes: Array<Record<string, unknown>>;
+  roadOperations: Array<Record<string, unknown>>;
+  roadSegments: Array<Record<string, unknown>>;
+  tilesLoaded: boolean;
 }>;
 
 type PrefectureMapDiagnosticsContainer = HTMLDivElement & {
@@ -1257,6 +1727,7 @@ function installPrefectureMapDiagnostics(
     read,
     ...(MAP_ACCEPTANCE_FIXTURES_ENABLED
       ? {
+          readLogistics: () => buildLogisticsMapDiagnostics(map),
           setPrefectureValueNull: async (entityId: string) => {
             const prefectures = prefectureRegionsToFeatureCollection(
               latestModelRef.current.regions,
@@ -1295,6 +1766,92 @@ function installPrefectureMapDiagnostics(
 
   (container as PrefectureMapDiagnosticsContainer).__prefectureMapDiagnostics = diagnostics;
   return diagnostics;
+}
+
+function buildLogisticsMapDiagnostics(map: any): LogisticsMapDiagnosticsSnapshot {
+  const style = typeof map.getStyle === "function" ? map.getStyle() : null;
+  const sources = style?.sources && typeof style.sources === "object" ? style.sources : {};
+  const logisticsRoutes = readGeoJsonDiagnosticFeatures(sources["live-logistics-routes"]);
+  const roadSegments = readGeoJsonDiagnosticFeatures(sources["logistics-road-segments"]).map((segment) => {
+    const coordinates = segment.coordinates;
+    if (!Array.isArray(coordinates) || typeof map.project !== "function") return segment;
+    return {
+      ...segment,
+      screenCoordinates: coordinates.flatMap((coordinate) => {
+        if (!Array.isArray(coordinate) || coordinate.length < 2) return [];
+        const point = map.project([coordinate[0], coordinate[1]]);
+        return [[point.x, point.y]];
+      })
+    };
+  });
+  const roadOperations = readGeoJsonDiagnosticFeatures(sources["logistics-road-operations"]);
+  const junctions = readGeoJsonDiagnosticFeatures(sources["logistics-road-junctions"]).map((junction) => {
+    const coordinates = junction.coordinates;
+    if (!Array.isArray(coordinates) || coordinates.length < 2 || typeof map.project !== "function") {
+      return junction;
+    }
+    const point = map.project([coordinates[0], coordinates[1]]);
+    return {
+      ...junction,
+      screenPoint: [point.x, point.y]
+    };
+  });
+  const center = map.getCenter();
+  const bounds = typeof map.getBounds === "function" ? map.getBounds() : null;
+  const allDetailedRoadCoordinatesInBounds = roadSegments.every((segment) => (
+    Array.isArray(segment.coordinates)
+    && segment.coordinates.every((coordinate) => (
+      Array.isArray(coordinate)
+      && coordinate.length >= 2
+      && bounds
+      && typeof bounds.contains === "function"
+      && bounds.contains([coordinate[0], coordinate[1]])
+    ))
+  ));
+  const sourceAttributions = [
+    sources["logistics-road-segments"],
+    sources["logistics-road-operations"],
+    sources["logistics-road-junctions"]
+  ].flatMap((source) => (
+    source && typeof source.attribution === "string" ? [source.attribution] : []
+  ));
+
+  return {
+    attributions: [...new Set(sourceAttributions)],
+    camera: {
+      allDetailedRoadCoordinatesInBounds,
+      center: [center.lng, center.lat],
+      zoom: map.getZoom()
+    },
+    junctions,
+    layers: Array.isArray(style?.layers)
+      ? style.layers.filter((layer: any) => (
+          typeof layer?.id === "string"
+          && (layer.id.startsWith("live-logistics-") || layer.id.startsWith("logistics-road-"))
+        ))
+      : [],
+    logisticsRoutes,
+    roadOperations,
+    roadSegments,
+    tilesLoaded: map.areTilesLoaded()
+  };
+}
+
+function readGeoJsonDiagnosticFeatures(source: any): Array<Record<string, unknown>> {
+  const data = source?.data;
+  if (!data || typeof data !== "object" || !Array.isArray(data.features)) {
+    return [];
+  }
+
+  return data.features.flatMap((feature: any) => {
+    if (!feature || typeof feature !== "object" || !feature.properties || typeof feature.properties !== "object") {
+      return [];
+    }
+    return [{
+      ...feature.properties,
+      coordinates: feature.geometry?.coordinates
+    }];
+  });
 }
 
 function queryRenderedLayerFeatures(map: any, layerIds: readonly string[]) {
@@ -1434,7 +1991,7 @@ function getGlobalRouteHighlightPaint(statusPalette: StatusPalette, mapMode: Ope
   };
 }
 
-function getLiveLogisticsRouteGlowPaint(
+function getAnimatedTrackingRouteGlowPaint(
   statusPalette: StatusPalette,
   mapMode: OperationMapMode,
   hasCorridorFill = false
@@ -1465,21 +2022,11 @@ function getLiveLogisticsRouteGlowPaint(
       10,
       hasCorridorFill ? 0.03 : routeFocused ? 0.18 : 0.12
     ],
-    "line-blur": [
-      "interpolate",
-      ["linear"],
-      ["zoom"],
-      2,
-      8.5,
-      6,
-      6.5,
-      10,
-      4.5
-    ]
+    "line-blur": ["interpolate", ["linear"], ["zoom"], 2, 8.5, 6, 6.5, 10, 4.5]
   };
 }
 
-function getLiveLogisticsRoutePaint(
+function getAnimatedTrackingRoutePaint(
   statusPalette: StatusPalette,
   mapMode: OperationMapMode,
   hasCorridorFill = false
@@ -1510,8 +2057,49 @@ function getLiveLogisticsRoutePaint(
       10,
       hasCorridorFill ? 0.08 : routeFocused ? 0.78 : 0.62
     ],
-    // Scanner ticks: short bright segments with breathing gap.
     "line-dasharray": routeFocused ? [0.2, 1.2] : [0.16, 1.45]
+  };
+}
+
+function getLiveLogisticsModeRoutePaint(
+  statusPalette: StatusPalette,
+  mapMode: OperationMapMode,
+  hasCorridorFill = false,
+  dash: readonly number[] | null = null,
+  routeColor = statusPalette.monitoring
+): any {
+  const routeFocused = mapMode === "route";
+
+  return {
+    "line-color": [
+      "case",
+      ["boolean", ["get", "selected"], false],
+      statusPalette.selected,
+      routeColor
+    ],
+    "line-width": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      2,
+      routeFocused ? 2.6 : 2,
+      6,
+      routeFocused ? 2.2 : 1.7,
+      10,
+      routeFocused ? 1.8 : 1.35
+    ],
+    "line-opacity": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      2,
+      hasCorridorFill ? 0.12 : routeFocused ? 0.92 : 0.78,
+      6,
+      hasCorridorFill ? 0.1 : routeFocused ? 0.86 : 0.7,
+      10,
+      hasCorridorFill ? 0.08 : routeFocused ? 0.78 : 0.62
+    ],
+    ...(dash ? { "line-dasharray": [...dash] } : {})
   };
 }
 
@@ -1573,6 +2161,14 @@ function startRouteScanAnimation(
 
 function hasFilledLogisticsCorridors(model: JapanMapCanvasModel) {
   return Boolean(model.logisticsImpactCorridors?.length);
+}
+
+function usesStaticLogisticsRoutePresentation(model: JapanMapCanvasModel) {
+  if (model.liveRoutePresentation) {
+    return model.liveRoutePresentation === "static-logistics-modes";
+  }
+
+  return Boolean(model.roadSegments?.length || model.roadOperationalOverlays?.length);
 }
 
 function getLogisticsCorridorFillColor(statusPalette: StatusPalette): any {
@@ -1888,6 +2484,113 @@ function routesToFeatureCollection(routes: JapanMapRoute[], points: JapanMapPoin
   };
 }
 
+function logisticsRoutesToFeatureCollection(
+  routes: JapanMapLogisticsRoute[],
+  points: JapanMapPoint[],
+  activeId: string
+) {
+  const routeById = new Map(routes.map((route) => [route.id, route]));
+  const featureCollection = routesToFeatureCollection(routes, points, activeId);
+  return {
+    ...featureCollection,
+    features: featureCollection.features.map((feature) => {
+      const route = routeById.get(feature.properties.id)!;
+      return {
+        ...feature,
+        properties: {
+          ...feature.properties,
+          laneId: route.laneId,
+          modeLabel: route.modeLabel,
+          selectionId: route.selectionId,
+          selected: route.selected || feature.properties.selected
+        }
+      };
+    })
+  };
+}
+
+function roadSegmentsToFeatureCollection(
+  segments: NonNullable<JapanMapCanvasModel["roadSegments"]>
+) {
+  return {
+    type: "FeatureCollection" as const,
+    features: segments.map((segment) => ({
+      type: "Feature" as const,
+      geometry: {
+        type: "LineString" as const,
+        coordinates: segment.coordinates
+      },
+      properties: {
+        id: segment.id,
+        routeId: segment.routeId,
+        selectionId: segment.routeId,
+        label: segment.label,
+        roadName: segment.roadName,
+        routeNumber: segment.routeNumber,
+        direction: segment.direction,
+        selected: segment.selected
+      }
+    }))
+  };
+}
+
+function roadOperationsToFeatureCollection(
+  operations: NonNullable<JapanMapCanvasModel["roadOperationalOverlays"]>
+) {
+  return {
+    type: "FeatureCollection" as const,
+    features: operations.map((operation) => ({
+      type: "Feature" as const,
+      geometry: {
+        type: "LineString" as const,
+        coordinates: operation.coordinates
+      },
+      properties: {
+        id: operation.id,
+        segmentId: operation.segmentId,
+        routeId: operation.routeId,
+        selectionId: operation.selectionId,
+        label: operation.label,
+        roadName: operation.roadName,
+        routeNumber: operation.routeNumber,
+        direction: operation.direction,
+        recordType: operation.recordType,
+        visualKind: operation.visualKind,
+        condition: operation.condition,
+        restrictionKind: operation.restrictionKind,
+        lifecycle: operation.lifecycle,
+        freshness: operation.freshness,
+        dataPosture: operation.dataPosture,
+        stateLabel: operation.stateLabel,
+        disclosureLabel: operation.disclosureLabel,
+        selected: operation.selected
+      }
+    }))
+  };
+}
+
+function roadJunctionsToFeatureCollection(
+  junctions: NonNullable<JapanMapCanvasModel["roadJunctions"]>
+) {
+  return {
+    type: "FeatureCollection" as const,
+    features: junctions.map((junction) => ({
+      type: "Feature" as const,
+      geometry: {
+        type: "Point" as const,
+        coordinates: junction.coordinates
+      },
+      properties: {
+        id: junction.id,
+        routeId: junction.routeId,
+        selectionId: junction.selectionId,
+        label: junction.label,
+        selected: junction.selected
+      }
+    }))
+  };
+}
+
 function buildRouteCoordinates(route: JapanMapRoute, anchors: LonLat[]): LonLat[] {
   // Ocean / tanker / energy corridors: sea-lane aware curves.
   // Domestic road/rail/coastal: geodesic densify only (no ocean detours).
@@ -2133,7 +2836,11 @@ function updateSource(map: any, sourceId: string, data: unknown) {
   }
 }
 
-function getResponsiveFitPadding(map: any, prefersGlobal: boolean) {
+function getResponsiveFitPadding(
+  map: any,
+  prefersGlobal: boolean,
+  fitInsets?: Readonly<{ bottom: number; left: number; right: number; top: number }>
+) {
   const canvas = typeof map.getCanvas === "function" ? map.getCanvas() : null;
   const width = getCanvasDimension(canvas?.clientWidth, canvas?.width, 1024);
   const height = getCanvasDimension(canvas?.clientHeight, canvas?.height, 720);
@@ -2141,11 +2848,16 @@ function getResponsiveFitPadding(map: any, prefersGlobal: boolean) {
   const top = Math.min(180, Math.max(44, Math.floor(height * 0.16)));
   const bottom = Math.min(prefersGlobal ? 200 : 260, Math.max(56, Math.floor(height * 0.2)));
 
+  if (!fitInsets) {
+    return { top, right: horizontal, bottom, left: horizontal };
+  }
+
+  const withSafety = (value: number) => (Number.isFinite(value) ? Math.max(0, value) : 0) + 24;
   return {
-    top,
-    right: horizontal,
-    bottom,
-    left: horizontal
+    top: Math.max(top, withSafety(fitInsets.top)),
+    right: Math.max(horizontal, withSafety(fitInsets.right)),
+    bottom: Math.max(bottom, withSafety(fitInsets.bottom)),
+    left: Math.max(horizontal, withSafety(fitInsets.left))
   };
 }
 
@@ -2164,7 +2876,8 @@ function focusMapOnSelection(
   model: JapanMapCanvasModel,
   activeId: string,
   mapMode: OperationMapMode,
-  currentZoom: number
+  currentZoom: number,
+  fitInsets?: Readonly<{ bottom: number; left: number; right: number; top: number }>
 ) {
   const activeRoute = model.routes.find((route) => routeMatchesSelection(route, activeId));
   const activePoint = model.points.find((point) => point.id === activeId);
@@ -2176,6 +2889,19 @@ function focusMapOnSelection(
   const activeGlobalPoint = model.globalPoints.find((point) => point.id === activeId);
   const activeLiveRoute = model.liveRoutes?.find((route) => routeMatchesSelection(route, activeId));
   const activeLiveVessel = model.liveVessels?.find((point) => point.id === activeId || point.selectionId === activeId);
+  const activeDetailedRoadRouteId = resolveDetailedRoadRouteId(model, activeId);
+  const detailedRoadRoutePoints = activeDetailedRoadRouteId
+    ? (model.roadSegments ?? [])
+        .filter((segment) => segment.routeId === activeDetailedRoadRouteId)
+        .flatMap((segment) => segment.coordinates.map(([lon, lat]) => ({
+          id: segment.id,
+          kind: "RoadCoordinate",
+          label: segment.label,
+          lon,
+          lat,
+          tone: "watch" as const
+        })))
+    : [];
   const globalRoutePoints = activeGlobalRoute
     ? activeGlobalRoute.pointIds
         .map((pointId) => model.globalPoints.find((point) => point.id === pointId))
@@ -2191,18 +2917,20 @@ function focusMapOnSelection(
         .map((pointId) => model.points.find((point) => point.id === pointId))
         .filter((point): point is JapanMapPoint => Boolean(point))
     : [];
-  const prefersGlobalRoute = mapMode === "route" && Boolean(activeGlobalRoute || activeLiveRoute || activeLiveVessel);
+  const prefersGlobalRoute = mapMode === "route" && !activeDetailedRoadRouteId && Boolean(activeGlobalRoute || activeLiveRoute || activeLiveVessel);
   const prefersGlobal = Boolean(
     prefersGlobalRoute ||
-      (!activeRoute && !activePoint && !activeRegion && (activeGlobalRoute || activeGlobalPoint || activeLiveRoute || activeLiveVessel)) ||
-      currentZoom <= GLOBAL_CONTEXT_MAX_ZOOM + 0.15
+      (!activeDetailedRoadRouteId && !activeRoute && !activePoint && !activeRegion && (activeGlobalRoute || activeGlobalPoint || activeLiveRoute || activeLiveVessel)) ||
+      (!activeDetailedRoadRouteId && currentZoom <= GLOBAL_CONTEXT_MAX_ZOOM + 0.15)
   );
 
-  const focusPoints = liveRoutePoints.length > 0 || activeLiveVessel
-    ? resolveLiveFocusPoints(model, activeLiveVessel, liveRoutePoints)
-    : prefersGlobal
-      ? resolveGlobalFocusPoints(model, activeGlobalPoint, globalRoutePoints)
-    : resolveDomesticFocusPoints(model, activePoint, activeRegion, domesticRoutePoints);
+  const focusPoints = detailedRoadRoutePoints.length > 0
+    ? detailedRoadRoutePoints
+    : liveRoutePoints.length > 0 || activeLiveVessel
+      ? resolveLiveFocusPoints(model, activeLiveVessel, liveRoutePoints)
+      : prefersGlobal
+        ? resolveGlobalFocusPoints(model, activeGlobalPoint, globalRoutePoints)
+      : resolveDomesticFocusPoints(model, activePoint, activeRegion, domesticRoutePoints);
 
   if (focusPoints.length === 0) {
     return;
@@ -2237,10 +2965,35 @@ function focusMapOnSelection(
   );
 
   map.fitBounds(bounds, {
-    padding: getResponsiveFitPadding(map, prefersGlobal),
+    padding: getResponsiveFitPadding(
+      map,
+      prefersGlobal,
+      activeDetailedRoadRouteId ? fitInsets : undefined
+    ),
     maxZoom: prefersGlobal ? 4.4 : mapMode === "route" ? 8.4 : 7.6,
     duration: 700
   });
+}
+
+function resolveDetailedRoadRouteId(model: JapanMapCanvasModel, activeId: string): string | null {
+  const overlay = model.roadOperationalOverlays?.find((candidate) => (
+    candidate.id === activeId || candidate.selectionId === activeId
+  ));
+  if (overlay) return overlay.routeId;
+
+  const segment = model.roadSegments?.find((candidate) => (
+    candidate.id === activeId ||
+    candidate.routeId === activeId ||
+    candidate.selectionId === activeId ||
+    candidate.conditionIds.includes(activeId) ||
+    candidate.restrictionIds.includes(activeId)
+  ));
+  if (segment) return segment.routeId;
+
+  const junction = model.roadJunctions?.find((candidate) => (
+    candidate.id === activeId || candidate.routeId === activeId || candidate.selectionId === activeId
+  ));
+  return junction?.routeId ?? null;
 }
 
 function routeMatchesSelection(route: JapanMapRoute, activeId: string) {

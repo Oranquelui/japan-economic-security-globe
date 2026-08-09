@@ -1,0 +1,258 @@
+export type RoadDirection =
+  | "東行き"
+  | "西行き"
+  | "北行き"
+  | "南行き"
+  | "上り"
+  | "下り"
+  | "内回り"
+  | "外回り"
+  | "eastbound"
+  | "westbound"
+  | "northbound"
+  | "southbound"
+  | "inbound"
+  | "outbound"
+  | "clockwise"
+  | "counterclockwise"
+  | "destination-bound"
+  | "general"
+  | `destination:${string}`
+  | `provider:${string}`
+  | `${string}方面`;
+export type RoadDataPosture = "authorized-provider" | "fixed-demo";
+export type RoadConditionFreshness = "current" | "delayed" | "stale" | "unavailable" | "unknown";
+export type RoadEventLifecycle = "current" | "planned" | "ended";
+
+export type RoadCoordinate = [number, number];
+export type RoadConditionKind = "normal" | "slow" | "congestion";
+export type RoadRestrictionKind =
+  | "accident"
+  | "construction"
+  | "lane-restriction"
+  | "closure"
+  | "other";
+export type RoadProviderIngestOutcome = "complete" | "partial" | "rejected" | "unavailable";
+
+export interface RoadAffectedRange {
+  fromLabel: string;
+  toLabel: string;
+  startRatio?: number;
+  endRatio?: number;
+}
+
+export interface RoadQuantitativeField {
+  value: number;
+  unit: string;
+  observedAt: string;
+}
+
+interface RoadOperationalRecordBase {
+  id: string;
+  segmentId: string;
+  direction: RoadDirection;
+  dataPosture: RoadDataPosture;
+  freshness?: RoadConditionFreshness;
+  providerObservedAt: string;
+  retrievedAt: string;
+  sourceIds: string[];
+  disclosureLabel: string;
+  affectedRange?: RoadAffectedRange;
+  startsAt?: string;
+  endsAt?: string;
+}
+
+export interface RoadConditionObservation extends RoadOperationalRecordBase {
+  recordType: "condition";
+  condition: RoadConditionKind;
+  speed?: RoadQuantitativeField;
+  congestionLength?: RoadQuantitativeField;
+  delay?: RoadQuantitativeField;
+  travelTime?: RoadQuantitativeField;
+}
+
+export interface RoadRestrictionEvent extends RoadOperationalRecordBase {
+  recordType: "restriction";
+  restrictionKind: RoadRestrictionKind;
+  lifecycle: RoadEventLifecycle;
+}
+
+export type RoadOperationalRecord = RoadConditionObservation | RoadRestrictionEvent;
+
+export interface RoadSegment {
+  id: string;
+  routeId: string;
+  label: string;
+  roadName: string;
+  routeNumber: string;
+  kilometerPostRange?: { startKm: number; endKm: number };
+  fromAnchorId: string;
+  toAnchorId: string;
+  direction: RoadDirection;
+  coordinates: RoadCoordinate[];
+  sourceIds: string[];
+  geometrySourceId: string;
+  geometryVersion: string;
+  geometryExtractedAt: string;
+  geometrySourceUrl: string;
+  geometryLicense: "ODbL-1.0";
+  attribution: "© OpenStreetMap contributors";
+  redistributionPermitted: boolean;
+}
+
+export interface RoadJunction {
+  id: string;
+  routeId: string;
+  label: string;
+  coordinates: RoadCoordinate;
+  sourceIds: string[];
+}
+
+export interface RoadProviderPolicy {
+  providerId: string;
+  termsUrl: string;
+  accessMethod: "api" | "download" | "licensed-feed";
+  coverageLabel: string;
+  refreshIntervalSeconds: number;
+  currentMaxAgeSeconds: number;
+  freshnessLimitSeconds: number;
+  attribution: string;
+  cachingPermitted: boolean;
+  redistributionPermitted: boolean;
+  cacheTtlSeconds?: number;
+}
+
+export interface ProviderSnapshot {
+  readonly providerId: string;
+  readonly providerObservedAt: string;
+  readonly retrievedAt: string;
+  readonly schemaVersion: string;
+  readonly coverageLabel: string;
+  readonly ingestOutcome: RoadProviderIngestOutcome;
+  readonly records: readonly RoadOperationalRecord[];
+  readonly cachingPermitted: boolean;
+  readonly redistributionPermitted: boolean;
+  readonly policy: Readonly<RoadProviderPolicy>;
+}
+
+export interface RoadRejectedRecord {
+  providerRecordId: string;
+  reason: string;
+}
+
+export interface RoadIngestDiagnostics {
+  unmatchedSegmentIds: string[];
+  rejectedRecords: RoadRejectedRecord[];
+  rejectedSegmentIds?: string[];
+}
+
+export interface RoadProviderState {
+  id: string;
+  label: string;
+  state: "available" | "unavailable";
+  dataPosture: RoadDataPosture;
+  sourceIds: string[];
+  lastSuccessfulRetrievalAt?: string;
+  policy?: RoadProviderPolicy;
+  snapshot?: ProviderSnapshot;
+}
+
+export interface RoadRoute {
+  id: string;
+  label: string;
+  version: string;
+  direction: RoadDirection;
+  anchorIds: string[];
+  segmentIds: string[];
+  topologySourceIds: string[];
+  geometrySourceId: string;
+  geometryVersion: string;
+  geometryExtractedAt: string;
+  geometrySourceUrl: string;
+  geometryLicense: "ODbL-1.0";
+  attribution: "© OpenStreetMap contributors";
+  redistributionPermitted: boolean;
+}
+
+export interface RoadRouteAnchorClaim {
+  anchorId: string;
+  sourceUrl: string;
+  accessedAt: string;
+  claim: string;
+  directionEvidence: string;
+  reviewStatus: "approved" | "blocked" | "pending";
+}
+
+export interface RoadRouteEvidenceManifest {
+  routeId: string;
+  routeVersion: string;
+  topologySourceIds: string[];
+  directionClaim: {
+    direction: RoadDirection;
+    sourceUrl: string;
+    accessedAt: string;
+    claim: string;
+    directionEvidence: string;
+    reviewStatus: "approved" | "blocked" | "pending";
+  };
+  anchorClaims: RoadRouteAnchorClaim[];
+}
+
+export interface RoadOperationsDataset {
+  datasetId: string;
+  dataPosture: RoadDataPosture;
+  licenseNoticePath: string;
+  routes: RoadRoute[];
+  segments?: RoadSegment[];
+  junctions?: RoadJunction[];
+  conditionObservations?: RoadConditionObservation[];
+  restrictionEvents?: RoadRestrictionEvent[];
+  provider?: RoadProviderState;
+  ingestDiagnostics?: RoadIngestDiagnostics;
+  evidenceManifests: RoadRouteEvidenceManifest[];
+}
+
+export interface RoadSegmentViewModel extends RoadSegment {
+  condition: RoadConditionKind | "unknown";
+  conditionIds: string[];
+  restrictionIds: string[];
+}
+
+export interface RoadConditionViewModel extends RoadConditionObservation {
+  freshness: RoadConditionFreshness;
+  displayLifecycleLabel: string | null;
+}
+
+export interface RoadRestrictionViewModel extends RoadRestrictionEvent {
+  freshness: RoadConditionFreshness;
+  displayLifecycleLabel: string;
+}
+
+export interface RouteImpactSummary {
+  routeId: string;
+  affectedSegmentIds: string[];
+  conditionIds: string[];
+  restrictionIds: string[];
+  sourceIds: string[];
+  citations: Array<{ recordId: string; sourceIds: string[] }>;
+}
+
+export interface RoadOperationsViewModel {
+  routes: RoadRoute[];
+  segments: RoadSegmentViewModel[];
+  junctions: RoadJunction[];
+  conditions: RoadConditionViewModel[];
+  restrictions: RoadRestrictionViewModel[];
+  provider: RoadProviderState;
+  diagnostics: RoadIngestDiagnostics & { rejectedSegmentIds: string[] };
+  currentSummary: {
+    conditionIds: string[];
+    restrictionIds: string[];
+    routeImpacts: RouteImpactSummary[];
+  };
+  counts: {
+    routeCount: number;
+    modeCount: number;
+    segmentCount: number;
+  };
+}

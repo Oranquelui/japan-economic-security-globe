@@ -1,7 +1,13 @@
 import { AppShell } from "../../components/AppShell";
 import { resolveHomepageMode } from "../../lib/config/homepage-mode";
-import { loadSeedGraph, loadSeedLiveLogistics, loadSeedRankingSignals } from "../../lib/data/seed-loader";
+import {
+  loadSeedGraph,
+  loadSeedLiveLogistics,
+  loadSeedRankingSignals,
+  loadSeedRoadOperations
+} from "../../lib/data/seed-loader";
 import { parseOperationsUrlState } from "../../lib/presentation/url-state";
+import { buildRoadOperationsAcceptanceDataset } from "../../lib/road-operations/acceptance-fixtures";
 
 interface AppPageProps {
   locale?: string;
@@ -12,6 +18,7 @@ export async function AppPage({ locale, searchParams }: AppPageProps) {
   const graph = loadSeedGraph();
   const liveLogisticsEvents = loadSeedLiveLogistics();
   const rankingSignals = loadSeedRankingSignals();
+  const roadOperationsDataset = buildRoadOperationsAcceptanceDataset(loadSeedRoadOperations());
   const resolvedSearchParams = await searchParams;
   const initialUrlState = parseOperationsUrlState(resolvedSearchParams);
   const hasExplicitUrlState = ["theme", "layer", "mode", "view", "selected"].some((key) => {
@@ -31,6 +38,7 @@ export async function AppPage({ locale, searchParams }: AppPageProps) {
       locale={resolvedLocale}
       liveLogisticsEvents={liveLogisticsEvents}
       rankingSignals={rankingSignals}
+      roadOperationsDataset={roadOperationsDataset}
     />
   );
 }
