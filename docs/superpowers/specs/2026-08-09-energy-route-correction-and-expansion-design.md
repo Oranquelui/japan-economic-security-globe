@@ -205,7 +205,7 @@ Country labels may remain visible for context. Loading-region labels should appe
 - Invalid waypoint order, coordinate, role, or source: reject the corridor during validation.
 - Antimeridian split producing a part with fewer than two points: reject the generated geometry in tests and development diagnostics.
 - Land-crossing validation failure outside an allowed loading/landing connector: block that corridor and report the failing segment.
-- MapLibre `MultiLineString` interaction regression: retain the prior route state until the selection and direction-symbol contract passes focused tests.
+- MapLibre `MultiLineString` interaction regression: withhold the converted route and show the fail-closed `代表航路未整備` state until the selection and direction-symbol contract passes focused tests; never restore a legacy centroid-based line.
 - Missing explicit selection: render overview state with no selected route.
 
 ## 10. In scope
@@ -248,7 +248,7 @@ Country labels may remain visible for context. Loading-region labels should appe
 12. With no explicit selection, no corridor receives selected styling.
 13. The active-layer summary reports `5代表航路` and the permanent non-live disclosure is visible.
 14. Selected-route fitting keeps mandatory nodes at least 24 CSS pixels inside the unobscured map safe-area edge at 1280x800, 1680x900, and the reported 2048x1176 desktop viewport.
-15. Automated land-crossing validation uses the existing `world-atlas` land fixture and permits only documented loading/landing connectors within the approved endpoint allowance.
+15. Automated land-crossing validation uses the existing `world-atlas` land fixture and permits only documented loading/landing connectors within a 25 km endpoint allowance.
 16. The existing rice homepage default, non-Energy themes, route selection contracts, and evidence/source displays do not regress.
 17. Focused tests, the full unit suite, type checking, production build, and accepted desktop screenshot checks pass before completion is claimed.
 
