@@ -1,6 +1,6 @@
 # Energy Route Correction and Five-Corridor Expansion Design
 
-Status: Approved for specification (`Option B`); implementation requires written-spec review
+Status: Approved for implementation (`Option B`; product approval recorded 2026-08-09)
 
 Date: 2026-08-09
 
