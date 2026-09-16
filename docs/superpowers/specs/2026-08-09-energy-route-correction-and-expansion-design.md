@@ -10,6 +10,10 @@ Target: `Energy / 供給ルート`
 
 Reference URL: <https://economic-security.quadrillionaaa.com/?theme=energy&layer=energy-route>
 
+## 2026-09-16 scoped rendering correction
+
+The local renderer now splits existing generated route coordinates at the antimeridian, using `MultiLineString` only for crossing routes. This reuses the splitter from `codex/energy-route-correction`, preserves each flow's selection identity, and removes the two world-spanning North American connectors. Seed-to-renderer regression coverage checks both affected flows and every emitted segment. This local fix does not complete the five-corridor conversion below: country-centroid anchors, evidence-backed corridor integration, and selection camera framing remain outstanding. Production is unchanged.
+
 ## Relationship to the 2026-08-08 design
 
 This document extends `2026-08-08-energy-representative-maritime-route-design.md` after production review exposed two unresolved classes of defect:

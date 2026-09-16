@@ -57,7 +57,7 @@ export function SemanticLayerDeck({
       >
         表示レイヤー
       </h3>
-      <div role="group" aria-label="表示レイヤー" className="mt-2 grid grid-cols-1 gap-1.5">
+      <div role="group" aria-label="表示レイヤー" className="mt-2 grid grid-cols-2 gap-1.5">
         {layers.map((layer, index) => {
           const active = layer.available && layer.id === activeLayerId;
 
@@ -113,7 +113,7 @@ export function SemanticLayerDeck({
                   </span>
                 ) : null}
               </span>
-              <span className="mt-1 block h-8 overflow-hidden text-[0.6rem] leading-4" style={{ color: themePalette.textMuted }}>
+              <span className="mt-1 block text-[0.66rem] leading-5" style={{ color: themePalette.textMuted }}>
                 {layer.description}
               </span>
             </button>

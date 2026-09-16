@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition, type CSSProperties } from "react";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 
 import type { HomepageMode } from "../lib/config/homepage-mode";
@@ -45,6 +46,9 @@ import {
   resolveLegacyPresentation
 } from "../lib/presentation/workspace";
 import { summarizeSourceStatus } from "../lib/official/source-freshness";
+import type { TransportSelection } from "./transport/TransportWorkspace";
+import { RiceReadingPanel } from "./RiceReadingPanel";
+import { RICE_HARVEST_BINS, RICE_MISSING_COLOR } from "../lib/presentation/rice-harvest-scale";
 import { ActionBar } from "./ActionBar";
 import { ComparisonPanel } from "./ComparisonPanel";
 import { ContextInspector } from "./ContextInspector";
@@ -72,9 +76,11 @@ interface AppShellProps {
   roadOperationsDataset?: RoadOperationsDataset | null;
 }
 
+const TransportWorkspace = dynamic(() => import("./transport/TransportWorkspace").then(module => module.TransportWorkspace));
+
 const DESKTOP_WORKSPACE_GEOMETRY = {
   comparisonHeight: 264,
-  contextPaneWidth: 320,
+  contextPaneWidth: 380,
   inspectorWidth: 360
 } as const;
 const DESKTOP_WORKSPACE_MEDIA_QUERY = "(min-width: 1280px)";
@@ -99,6 +105,8 @@ export function AppShell({
   rankingSignals = [],
   roadOperationsDataset = null
 }: AppShellProps) {
+  const [transportSelection, setTransportSelection] = useState<TransportSelection>({ category:initialUrlState.transportCategory ?? "shinkansen", region:initialUrlState.transportRegion ?? "japan", routeId:initialUrlState.transportRouteId ?? null });
+  const [legacyLogistics,setLegacyLogistics] = useState(Boolean(initialUrlState.themeId === "logistics" && (initialUrlState.selectedId || initialUrlState.layerId !== "logistics-domestic" || initialUrlState.workspaceView !== "map" || initialUrlState.mapModeOverride)));
   const router = useRouter();
   const pathname = usePathname();
   const focusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -327,14 +335,14 @@ export function AppShell({
     "--ops-text-primary": themePalette.textPrimary,
     "--ops-text-muted": themePalette.textMuted
   } as CSSProperties;
-  const paneWidth = DESKTOP_WORKSPACE_GEOMETRY.contextPaneWidth;
+  const paneWidth = isEvidenceOpen ? 320 : DESKTOP_WORKSPACE_GEOMETRY.contextPaneWidth;
   const inspectorExpandedWidth = DESKTOP_WORKSPACE_GEOMETRY.inspectorWidth;
   const inspectorWidth = isEvidenceOpen ? inspectorExpandedWidth : 0;
   const compareHeight = workspaceView === "comparison" ? DESKTOP_WORKSPACE_GEOMETRY.comparisonHeight : 0;
   const mapOverlayInsets = {
     top: 16,
-    left: paneWidth + 16,
-    right: inspectorWidth + 16,
+    left: 16,
+    right: 16,
     bottom: compareHeight + 16
   };
 
@@ -367,7 +375,8 @@ export function AppShell({
       selectedId: validSelectedId,
       layerId: activeLayer.id,
       mapModeOverride,
-      workspaceView
+      workspaceView,
+      ...(themeId === "logistics" && !legacyLogistics ? {transportCategory:transportSelection.category,transportRegion:transportSelection.region,transportRouteId:transportSelection.routeId??undefined} : {})
     });
 
     if (serialized === initialSerializedRef.current) {
@@ -376,9 +385,10 @@ export function AppShell({
 
     initialSerializedRef.current = serialized;
     router.replace(serialized ? `${pathname}?${serialized}` : pathname, { scroll: false });
-  }, [activeLayer.id, layerId, mapModeOverride, pathname, router, themeId, validSelectedId, workspaceView]);
+  }, [activeLayer.id, layerId, mapModeOverride, pathname, router, themeId, validSelectedId, workspaceView, legacyLogistics, transportSelection]);
 
   function handleThemeChange(nextThemeId: ThemeId) {
+    setLegacyLogistics(false);
     const nextView = getThemeView(graph, nextThemeId);
     const nextLiveLogistics = buildLiveLogisticsView(
       nextThemeId,
@@ -561,8 +571,13 @@ export function AppShell({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [isEvidenceOpen, workspaceView]);
 
+  if (themeId === "logistics" && !legacyLogistics) {
+    return <TransportWorkspace initialSelection={transportSelection} onChange={setTransportSelection} onThemeChange={handleThemeChange} onOpenLegacy={()=>{setLegacyLogistics(true);setWorkspaceView("signals");}} />;
+  }
+
   return (
-    <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 xl:grid xl:grid-rows-[56px,minmax(0,1fr)]" style={shellStyle}>
+    <main className="relative h-screen min-h-screen overflow-hidden text-slate-100 xl:grid xl:grid-rows-[72px_minmax(0,1fr)]" style={shellStyle}>
+      {themeId === "logistics" && legacyLogistics ? <button type="button" className="fixed right-5 bottom-5 z-50 rounded-lg border border-cyan-500 bg-slate-950 px-4 py-3 text-sm" onClick={()=>{setLegacyLogistics(false);setWorkspaceView("map");setSelectedId(null);setLayerId("logistics-domestic");setMapModeOverride(null);}}>交通・物流の地図に戻る</button> : null}
       <InitialNoticeModal homepageMode={homepageMode} locale={locale} />
 
       <ActionBar
@@ -581,7 +596,7 @@ export function AppShell({
 
       <div data-testid="layout-workspace-scroll" className="h-full min-h-0 min-w-0 overflow-x-hidden overflow-y-auto xl:overflow-hidden">
         <div data-testid="layout-desktop-workspace" className="relative hidden h-full min-h-0 xl:block">
-          <section data-testid="layout-map-section" className="absolute inset-0 min-h-0">
+          <section data-testid="layout-map-section" className="absolute inset-y-0 min-h-0" style={{left:paneWidth,right:inspectorWidth}}>
             <JapanMainMap
               activeId={mapSelectionId}
               focusTargetId={focusTargetId}
@@ -594,6 +609,11 @@ export function AppShell({
               statusPalette={statusPalette}
               themePalette={themePalette}
             />
+            {activeLayer.id === "rice-harvest" ? <aside className="absolute bottom-14 right-6 z-20 w-72 rounded-lg border border-slate-600 bg-slate-950/90 p-4" aria-label="収穫量の色の読み方">
+              <p className="text-xs font-semibold">主食用米の収穫量</p>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-slate-200">{[...RICE_HARVEST_BINS,{color:RICE_MISSING_COLOR,label:"データなし"}].map(({color,label})=><span key={label} className="flex items-center gap-2"><i className="inline-block h-3 w-3 rounded-sm" style={{background:color}}/>{label}</span>)}</div>
+              <p className="mt-3 text-[11px] leading-5 text-slate-400">金色が明るいほど収穫量が多い。</p>
+            </aside> : null}
           </section>
 
           <aside
@@ -622,6 +642,7 @@ export function AppShell({
               />
             ) : (
               <ScopeContextPanel
+                readingOverview={activeLayer.id === "rice-harvest" ? <RiceReadingPanel series={metricSeries} onSelect={handleSelect}/> : null}
                 activeLayerId={activeLayer.id}
                 activeSummary={activeLayerSummary}
                 comparisonAvailable={comparisonValidation.comparable}

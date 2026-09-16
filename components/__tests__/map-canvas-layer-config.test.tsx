@@ -4,9 +4,12 @@ import { cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { JapanOperationsMapCanvas } from "../JapanOperationsMapCanvas";
+import { loadSeedGraph } from "../../lib/data/seed-loader";
 import { prefectureBoundaryCollection } from "../../lib/geo/prefecture-boundaries";
 import { getStatusPalette, getThemePalette } from "../../lib/presentation/palette";
-import type { JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
+import { buildJapanMapCanvasModel, type JapanMapCanvasModel } from "../../lib/presentation/map-canvas";
+import { buildWorkspacePresentation } from "../../lib/presentation/workspace";
+import { getThemeView } from "../../lib/semantic/selectors";
 
 const addedLayers: Array<Record<string, unknown>> = [];
 const addedLayerCalls: Array<{
@@ -362,11 +365,9 @@ describe("map canvas layer config", () => {
     const representativeRegions = addedSources.get("jp-regions") as { features: unknown[] };
     const prefectureLabels = addedSources.get("jp-prefecture-labels") as { features: unknown[] };
     const selectedPrefectureLabels = addedSources.get("jp-prefecture-selected-labels") as { features: unknown[] };
-    const prefectureLeaders = addedSources.get("jp-prefecture-leaders") as { features: unknown[] };
     const fill = getAddedLayer("jp-prefecture-fill") as any;
     const outline = getAddedLayer("jp-prefecture-outline") as any;
     const selectedOutline = getAddedLayer("jp-prefecture-selected-outline") as any;
-    const leaderLine = getAddedLayer("jp-prefecture-leader-line") as any;
     const label = getAddedLayer("jp-prefecture-label") as any;
     const selectedLabel = getAddedLayer("jp-prefecture-selected-label") as any;
 
@@ -376,8 +377,9 @@ describe("map canvas layer config", () => {
     });
     expect(prefectures.features).toHaveLength(47);
     expect(prefectureLabels.features).toHaveLength(47);
+    expect(addedSources.has("jp-prefecture-leaders")).toBe(false);
+    expect(getAddedLayer("jp-prefecture-leader-line")).toBeUndefined();
     expect(selectedPrefectureLabels.features).toHaveLength(1);
-    expect(prefectureLeaders.features.length).toBeGreaterThan(0);
     expect(prefectures.features[0].geometry).toBe(prefectureBoundaryCollection.features[0].geometry);
     expect(prefectures.features.find((feature) => feature.properties.entityId === "prefecture:tokyo")?.properties.selected).toBe(true);
     expect(representativeRegions.features).toEqual([]);
@@ -403,13 +405,6 @@ describe("map canvas layer config", () => {
       maxzoom: 9,
       filter: ["==", ["get", "selected"], true]
     });
-    expect(leaderLine).toMatchObject({
-      id: "jp-prefecture-leader-line",
-      type: "line",
-      source: "jp-prefecture-leaders",
-      minzoom: 3.2,
-      maxzoom: 9
-    });
     expect(label).toMatchObject({
       id: "jp-prefecture-label",
       type: "symbol",
@@ -420,8 +415,8 @@ describe("map canvas layer config", () => {
         "text-field": ["get", "label"],
         "text-size": 12,
         "text-anchor": "center",
-        "text-allow-overlap": true,
-        "text-ignore-placement": true
+        "text-allow-overlap": false,
+        "text-ignore-placement": false
       }
     });
     expect(label.paint).toMatchObject({
@@ -432,16 +427,14 @@ describe("map canvas layer config", () => {
       id: "jp-prefecture-selected-label",
       type: "symbol",
       source: "jp-prefecture-selected-labels",
-      minzoom: 9,
+      minzoom: 3.2,
       filter: ["==", ["get", "selected"], true]
     });
     expect(selectedLabel).not.toHaveProperty("maxzoom");
     expect(getAddedLayerCall("jp-prefecture-fill")?.beforeId).toBe("gray-canvas-reference");
     expect(getAddedLayerCall("jp-prefecture-outline")?.beforeId).toBe("gray-canvas-reference");
-    expect(getAddedLayerCall("jp-prefecture-leader-line")?.beforeId).toBe("jp-prefecture-selected-outline");
     expect(getAddedLayerCall("jp-prefecture-label")?.beforeId).toBe("jp-prefecture-selected-outline");
     expect(getAddedLayerCall("jp-prefecture-selected-outline")?.beforeId).toBeUndefined();
-    expect(getAddedLayerCallIndex("jp-prefecture-leader-line")).toBeLessThan(getAddedLayerCallIndex("jp-prefecture-label"));
     expect(getAddedLayerCallIndex("jp-prefecture-label")).toBeLessThan(getAddedLayerCallIndex("jp-prefecture-selected-outline"));
     expect(getAddedLayerCallIndex("jp-prefecture-selected-outline")).toBeLessThan(getAddedLayerCallIndex("jp-prefecture-selected-label"));
     expect(getAddedLayerCallIndex("jp-prefecture-selected-outline")).toBeLessThan(
@@ -496,7 +489,8 @@ describe("map canvas layer config", () => {
       9,
       0
     ]);
-    expect(JSON.stringify(fill.paint["fill-color"])).toContain("selected");
+    expect(JSON.stringify(fill.paint["fill-color"])).toContain("rawValue");
+    expect(JSON.stringify(fill.paint["fill-color"])).not.toContain("selected");
     expect(selectedOutline.paint["line-width"]).toBeGreaterThan(outline.paint["line-width"]);
   });
 
@@ -565,7 +559,6 @@ describe("map canvas layer config", () => {
     expect(prefectureLayerIds).toEqual([
       "jp-prefecture-fill",
       "jp-prefecture-outline",
-      "jp-prefecture-leader-line",
       "jp-prefecture-label",
       "jp-prefecture-selected-outline",
       "jp-prefecture-selected-label"
@@ -580,7 +573,7 @@ describe("map canvas layer config", () => {
     expect(groupedRegistrations("click")[0].layerIds).not.toContain("jp-prefecture-outline");
     expect(groupedRegistrations("click")[0].layerIds).not.toContain("jp-prefecture-selected-outline");
     expect(lastMap?.easeTo).not.toHaveBeenCalled();
-    expect(lastMap?.fitBounds).not.toHaveBeenCalled();
+    expect(lastMap?.fitBounds).toHaveBeenCalledWith([[122.8, 24], [146.2, 45.8]], expect.objectContaining({duration:0}));
   });
 
   test("applies region visibility consistently to prefecture boundaries and representative-radius layers", async () => {
@@ -632,7 +625,7 @@ describe("map canvas layer config", () => {
     });
 
     expect(lastMap?.easeTo).not.toHaveBeenCalled();
-    expect(lastMap?.fitBounds).not.toHaveBeenCalled();
+    expect(lastMap?.fitBounds).toHaveBeenCalledWith([[122.8, 24], [146.2, 45.8]], expect.objectContaining({duration:0}));
   });
 
   test("toggles the all-prefecture labels at the xl boundary without recreating the map", async () => {
@@ -651,7 +644,6 @@ describe("map canvas layer config", () => {
 
     await waitFor(() => {
       expect(getLastLayoutVisibility("jp-prefecture-fill")).toBe("visible");
-      expect(getLastLayoutVisibility("jp-prefecture-leader-line")).toBe("none");
       expect(getLastLayoutVisibility("jp-prefecture-label")).toBe("none");
       expect(getLastLayoutVisibility("jp-prefecture-selected-label")).toBe("none");
     });
@@ -663,7 +655,6 @@ describe("map canvas layer config", () => {
     }
 
     await waitFor(() => {
-      expect(getLastLayoutVisibility("jp-prefecture-leader-line")).toBe("visible");
       expect(getLastLayoutVisibility("jp-prefecture-label")).toBe("visible");
       expect(getLastLayoutVisibility("jp-prefecture-selected-label")).toBe("visible");
     });
@@ -1021,7 +1012,6 @@ describe("map canvas layer config", () => {
     for (const sourceId of [
       "jp-prefecture-labels",
       "jp-prefecture-selected-labels",
-      "jp-prefecture-leaders"
     ]) {
       expect(addedSources.get(sourceId), sourceId).toEqual({
         type: "FeatureCollection",
@@ -1032,7 +1022,6 @@ describe("map canvas layer config", () => {
     for (const layerId of [
       "jp-prefecture-label",
       "jp-prefecture-selected-label",
-      "jp-prefecture-leader-line"
     ]) {
       const layer = getAddedLayer(layerId) as { source: string };
       const source = addedSources.get(layer.source) as { features: unknown[] };
@@ -1125,6 +1114,67 @@ describe("map canvas layer config", () => {
     expect(routeLayer.paint["line-width"][0]).toBe("interpolate");
     expect(routeLayer.paint["line-opacity"][0]).toBe("interpolate");
     expect(pointLayer.paint["circle-radius"][0]).toBe("interpolate");
+  });
+
+  test("renders seeded North American routes without a connector across the world", async () => {
+    const graph = loadSeedGraph();
+    const view = getThemeView(graph, "energy");
+    const layer = buildWorkspacePresentation(graph, view).layers.find(
+      (candidate) => candidate.id === "energy-route"
+    )!;
+    const activeId = "flow:us-gulf-energy-japan";
+    const energyModel = buildJapanMapCanvasModel(graph, view, activeId, layer);
+
+    render(
+      <JapanOperationsMapCanvas
+        activeId={activeId}
+        focusTargetId={null}
+        mapMode="route"
+        model={energyModel}
+        onSelect={vi.fn()}
+        statusPalette={getStatusPalette()}
+        themePalette={getThemePalette("energy")}
+      />
+    );
+
+    await waitFor(() => {
+      expect(addedSources.has("global-routes")).toBe(true);
+    });
+
+    type Coordinate = [number, number];
+    const globalRoutes = addedSources.get("global-routes") as {
+      features: Array<{
+        geometry:
+          | { type: "LineString"; coordinates: Coordinate[] }
+          | { type: "MultiLineString"; coordinates: Coordinate[][] };
+        properties: { id: string; selected: boolean; selectionId: string };
+      }>;
+    };
+
+    expect(globalRoutes.features.map((feature) => feature.properties.id)).toEqual(
+      energyModel.globalRoutes.map((route) => route.id)
+    );
+    for (const id of [activeId, "flow:canada-lng-japan"]) {
+      const feature = globalRoutes.features.find((candidate) => candidate.properties.id === id)!;
+      expect(feature.geometry.type, id).toBe("MultiLineString");
+      expect(feature.properties).toMatchObject({ selectionId: id, selected: id === activeId });
+    }
+    expect(globalRoutes.features.find(
+      (feature) => feature.properties.id === "flow:saudi-oil-japan"
+    )?.geometry.type).toBe("LineString");
+
+    for (const feature of globalRoutes.features) {
+      const parts = feature.geometry.type === "MultiLineString"
+        ? feature.geometry.coordinates
+        : [feature.geometry.coordinates];
+      for (const part of parts) {
+        expect(part.length).toBeGreaterThanOrEqual(2);
+        for (let index = 1; index < part.length; index += 1) {
+          expect(Math.abs(part[index][0] - part[index - 1][0]), feature.properties.id)
+            .toBeLessThanOrEqual(180);
+        }
+      }
+    }
   });
 
   test("marks global routes as selected when the active item is a chokepoint on that route", async () => {
@@ -1984,9 +2034,10 @@ describe("map canvas layer config", () => {
     expect(niigata.properties).toMatchObject({ rawValue: null, value: null });
     expect(hokkaido.properties).toMatchObject({ rawValue: 0, value: 0 });
     expect(niigata.geometry).not.toEqual(hokkaido.geometry);
-    expect(JSON.stringify(regionFill.paint["fill-color"])).toContain("value");
-    expect(JSON.stringify(regionFill.paint["fill-color"])).toContain("selected");
-    expect(JSON.stringify(regionFill.paint["fill-opacity"])).toContain("value");
+    expect(regionFill.paint["fill-color"].slice(0, 3)).toEqual(["case", ["==", ["get", "rawValue"], null], "#56616d"]);
+    expect(regionFill.paint["fill-color"][3].slice(0, 3)).toEqual(["step", ["get", "rawValue"], "#4b493e"]);
+    expect(JSON.stringify(regionFill.paint["fill-color"])).not.toContain("selected");
+    expect(JSON.stringify(regionFill.paint["fill-opacity"])).toContain("selected");
     expect(selectedOutline.paint["line-width"]).toBeGreaterThan(regionOutline.paint["line-width"]);
   });
 
@@ -2178,7 +2229,6 @@ function expectRegionLayerVisibility(expectedVisibility: "visible" | "none") {
     "jp-prefecture-fill",
     "jp-prefecture-outline",
     "jp-prefecture-selected-outline",
-    "jp-prefecture-leader-line",
     "jp-prefecture-label",
     "jp-prefecture-selected-label",
     "jp-region-fill",

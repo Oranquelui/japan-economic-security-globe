@@ -1,3 +1,4 @@
+import { RICE_HARVEST_BINS, RICE_MISSING_COLOR } from "./rice-harvest-scale";
 import type {
   ActiveLayerSummary,
   DetailViewModel,
@@ -45,11 +46,11 @@ const LAYER_REGISTRY: Record<ThemeId, LayerDefinition[]> = {
       themeId: "rice",
       label: "収穫量",
       description: "都道府県別の主食用米収穫量",
-      mapEncodingDescription: "都道府県の一般化された地域形状を収穫量の濃淡で表示します。境界線と都道府県名から対象地域を確認できます。",
+      mapEncodingDescription: "収穫量を10万トン刻みの5段階で表示します。金色が明るいほど多く、灰色はデータなしです。境界は一般化した地理的な表現です。",
       renderMode: "choropleth",
       periodLabel: "令和5年産",
       sourceIds: [RICE_HARVEST_SOURCE_ID, NATURAL_EARTH_PREFECTURE_SOURCE_ID],
-      legend: continuousLegend("主食用米収穫量", "トン"),
+      legend: {kind:"categorical",title:"主食用米収穫量",unit:"トン",missingLabel:"データなし",items:[...RICE_HARVEST_BINS.map(bin=>({colorToken:bin.color,label:bin.label})),{colorToken:RICE_MISSING_COLOR,label:"データなし"}]},
       available: true,
       content: {
         kind: "regional-metric",

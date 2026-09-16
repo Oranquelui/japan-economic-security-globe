@@ -26,11 +26,11 @@ export const THEME_REGISTRY: Record<ThemeId, ThemeDefinition> = {
   },
   logistics: {
     accent: "#4ea4bf",
-    headline: "港湾・空港・国内輸送網への波及は、日本のどこに現れるのか。",
-    label: "物流",
+    headline: "人や物を運ぶ道は、あなたの街をどこにつないでいるのか。",
+    label: "交通・物流",
     question: "国内物流の着地点と後続接続は、どの港・施設・地域から先に揺れるのか。",
     sublabel: "国内着地点 / 港湾後続 / 一般貨物",
-    title: "物流"
+    title: "交通・物流"
   },
   "regional-security": {
     accent: "#e05243",

@@ -31,17 +31,17 @@ describe("operations basemap style", () => {
       paint: { "background-color": "#0a121c" }
     });
     expect(style.layers.find((layer) => layer.id === "terrain-shaded-relief")).toMatchObject({
-      paint: { "raster-opacity": 0.34 }
+      paint: { "raster-opacity": 0.07 }
     });
     expect(style.layers.find((layer) => layer.id === "terrain-contours")).toMatchObject({
       minzoom: 2.4,
-      paint: { "raster-opacity": 0.22 }
+      paint: { "raster-opacity": 0.04 }
     });
     expect(style.layers.find((layer) => layer.id === "gray-canvas-base")).toMatchObject({
-      paint: { "raster-opacity": 0.28 }
+      paint: { "raster-opacity": 0.06 }
     });
     expect(style.layers.find((layer) => layer.id === "world-land-fill")).toMatchObject({
-      paint: { "fill-color": "rgba(92, 128, 148, 0.12)" }
+      paint: { "fill-color": "rgba(52, 76, 94, 0.42)" }
     });
   });
 

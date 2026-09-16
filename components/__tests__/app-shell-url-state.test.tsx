@@ -45,6 +45,8 @@ vi.mock("next/navigation", () => ({
   })
 }));
 
+vi.mock("../transport/TransportMap", () => ({ TransportMap: () => <div data-testid="transport-map" /> }));
+
 vi.mock("../MapInboxPanel", () => ({
   MapInboxPanel: ({
     briefing,
@@ -302,7 +304,7 @@ describe("AppShell url sync", () => {
     const stackedWorkspace = screen.getByTestId("layout-stacked-workspace");
 
     expect(shell.className).toContain("xl:grid");
-    expect(shell.className).toContain("xl:grid-rows-[56px,minmax(0,1fr)]");
+    expect(shell.className).toContain("xl:grid-rows-[72px_minmax(0,1fr)]");
     expect(shell.className).not.toContain("lg:grid");
     expect(actionBar.className).toContain("hidden");
     expect(actionBar.className).toContain("xl:flex");
@@ -905,7 +907,7 @@ describe("AppShell url sync", () => {
           themeId: "logistics",
           selectedId: null,
           layerId: "logistics-domestic",
-          mapModeOverride: null,
+          mapModeOverride: "route",
           workspaceView: "map"
         }}
         liveLogisticsEvents={loadSeedLiveLogistics()}
@@ -949,7 +951,7 @@ describe("AppShell url sync", () => {
           themeId: "logistics",
           selectedId: null,
           layerId: "logistics-domestic",
-          mapModeOverride: null,
+          mapModeOverride: "route",
           workspaceView: "map"
         }}
         liveLogisticsEvents={loadSeedLiveLogistics()}
@@ -962,7 +964,7 @@ describe("AppShell url sync", () => {
 
     await waitFor(() => {
       expect(replaceMock).toHaveBeenLastCalledWith(
-        "/?theme=logistics&selected=live-logistics%3Aroad-keihin-tokyo",
+        "/?theme=logistics&mode=route&selected=live-logistics%3Aroad-keihin-tokyo",
         { scroll: false }
       );
     });
@@ -1059,7 +1061,7 @@ describe("AppShell url sync", () => {
           themeId: "logistics",
           selectedId: null,
           layerId: "logistics-domestic",
-          mapModeOverride: null,
+          mapModeOverride: "route",
           workspaceView: "map"
         }}
         liveLogisticsEvents={loadSeedLiveLogistics()}
@@ -1069,7 +1071,7 @@ describe("AppShell url sync", () => {
     await user.click(within(screen.getByTestId("layout-desktop-workspace")).getByRole("button", { name: "地図から渋滞例を選択" }));
     await waitFor(() => {
       expect(replaceMock).toHaveBeenLastCalledWith(
-        "/?theme=logistics&selected=road-condition%3Ademo-daikoku-ukishima-congestion",
+        "/?theme=logistics&mode=route&selected=road-condition%3Ademo-daikoku-ukishima-congestion",
         { scroll: false }
       );
     });
@@ -1238,7 +1240,7 @@ describe("AppShell url sync", () => {
       expect(screen.getByTestId("context-inspector")).toBeTruthy();
     });
     expect(screen.getByTestId("context-inspector").getAttribute("data-summary")).toBeTruthy();
-    expect(screen.getAllByTestId("map")[0].getAttribute("data-overlay-right")).toBe("376");
+    expect(screen.getAllByTestId("map")[0].getAttribute("data-overlay-right")).toBe("16");
   });
 
   test("does not focus the CSS-hidden desktop workspace when mobile Escape closes URL-hydrated inspector state", async () => {
@@ -1369,17 +1371,20 @@ describe("AppShell url sync", () => {
     const commandPane = screen.getByTestId("layout-command-pane");
     expect(screen.queryByTestId("layout-navigation-rail")).toBeNull();
     expect(commandPane.style.left).toBe("0px");
-    expect(commandPane.style.width).toBe("320px");
+    expect(commandPane.style.width).toBe("380px");
 
     await user.click(screen.getAllByText("select-rice-from-inbox")[0]);
 
     const inspector = screen.getByTestId("layout-context-inspector");
+    expect(commandPane.style.width).toBe("320px");
+    expect(screen.getByTestId("layout-map-section").style.left).toBe("320px");
+    expect(screen.getByTestId("layout-map-section").style.right).toBe("360px");
     expect(inspector.style.width).toBe("360px");
     expect(1280 - Number.parseInt(commandPane.style.width) - Number.parseInt(inspector.style.width)).toBe(600);
 
     const map = screen.getAllByTestId("map")[0];
-    expect(map.getAttribute("data-overlay-left")).toBe("336");
-    expect(map.getAttribute("data-overlay-right")).toBe("376");
+    expect(map.getAttribute("data-overlay-left")).toBe("16");
+    expect(map.getAttribute("data-overlay-right")).toBe("16");
 
     await user.click(within(screen.getByTestId("layout-desktop-workspace")).getByRole("button", { name: "比較する" }));
     const comparison = screen.getByTestId("layout-compare-drawer");

@@ -1,3 +1,5 @@
+import { isTransportCategory, type TransportCategory } from "../../types/transport";
+import { TRANSPORT_REGIONS, TRANSPORT_ROUTES } from "../transport/catalog";
 import { DEFAULT_THEME_ID, isThemeId } from "../config/theme-registry";
 import type { SemanticLayerId, WorkspaceView } from "../../types/presentation";
 import type { ThemeId } from "../../types/semantic";
@@ -14,6 +16,9 @@ export interface OperationsUrlState {
   layerId: SemanticLayerId;
   mapModeOverride: OperationMapMode | null;
   workspaceView: WorkspaceView;
+  transportCategory?: TransportCategory;
+  transportRegion?: string;
+  transportRouteId?: string;
 }
 
 const defaultLayer = getDefaultLayerDefinition(DEFAULT_THEME_ID);
@@ -44,7 +49,15 @@ export function parseOperationsUrlState(
     : null;
   const resolvedLayer = semanticLayer ?? legacyPresentation?.layer ?? getDefaultLayerDefinition(themeId);
 
+  const transport = getValue(source, "transport");
+  const transportRoute = TRANSPORT_ROUTES.find(r => r.id === getValue(source, "route"));
+  const region = getValue(source, "region");
   return {
+    ...(themeId === "logistics" && isTransportCategory(transport) ? {
+      transportCategory: transport,
+      transportRegion: TRANSPORT_REGIONS.some(r=>r.id===region) ? region! : "japan",
+      ...(transportRoute?.category === transport ? { transportRouteId: transportRoute.id } : {})
+    } : {}),
     themeId,
     selectedId: selected?.trim() ? selected : null,
     layerId: resolvedLayer.id,
@@ -74,6 +87,11 @@ export function serializeOperationsUrlState(state: OperationsUrlState): string {
     params.set("selected", state.selectedId);
   }
 
+  if (state.themeId === "logistics" && state.transportCategory) {
+    params.set("transport", state.transportCategory);
+    if(state.transportRegion && state.transportRegion !== "japan") params.set("region", state.transportRegion);
+    if(state.transportRouteId) params.set("route", state.transportRouteId);
+  }
   return params.toString();
 }
 

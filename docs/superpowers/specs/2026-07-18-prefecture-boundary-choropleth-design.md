@@ -6,6 +6,16 @@
 **Mobile:** Layout and interaction redesign explicitly deferred; shared-map boundary replacement plus regression checks only
 **Reference:** User-approved screenshot with full-Japan choropleth, prefecture borders, and prefecture labels
 
+## 2026-09-16 label placement correction
+
+The product owner's request to remove prefecture leader lines and put names directly in their regions supersedes the displaced-label, mandatory-leader, and simultaneous 47-visible-label requirements below. Those earlier sections describe the original release.
+
+- Keep all 47 full Japanese names in the source, with one shared normal/selected anchor inside each prefecture's largest polygon. Anchors use interior clearance from the existing generalized geometry, not prefectural-capital points or sea offsets.
+- Remove the leader source and layer. Use MapLibre collision placement to show readable labels at the current zoom; zooming or panning reveals additional labels without relocating their anchors.
+- Keep the selected prefecture label visible at its in-region anchor. Preserve borders, values, units, source attribution, selection/URL state, and the existing mobile label visibility boundary.
+- Initial camera framing is unchanged; this change does not promise that all 47 regions/names fit on screen simultaneously. Verification covers anchor containment, collision placement, selected-label continuity, and the rendered desktop flow.
+
+
 ## 1. Decision
 
 Replace the rice-harvest layer's representative-point radius polygons with a geographically meaningful, explicitly generalized prefecture display surface.
@@ -288,3 +298,8 @@ Before implementation planning begins:
 4. review this amended written specification for product, technical, source, and copy consistency;
 5. retain the user's explicit approval of the map direction and delegated source judgment;
 6. create the phased implementation plan, then execute it with subagent-driven development and review checkpoints.
+
+
+### 2026-09-16 読み取り画面のローカル更新
+
+ユーザーのデザイン・構造の修正依頼により、収穫量は10万トン刻みの5階級（`rice-harvest-scale.ts`）で表示する。塗りの色は選択時にも数値を保ち、輪郭だけを強調する。暗い基図と県内ラベルを維持し、初期表示/日本中心への復帰は北海道から南西諸島までの表示範囲に合わせる。地図は左ペイン・詳細ペインと別の領域を使い、コンテナ変更時に再計算する。従来の固定中心/固定ズームの初期カメラ指定はこの実装で置き換える。公開反映は未実施。

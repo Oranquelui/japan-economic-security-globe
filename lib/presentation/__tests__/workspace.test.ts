@@ -191,7 +191,7 @@ describe("workspace layer registry", () => {
     expect(getLayerDefinition("energy", "rice-harvest")).toBeNull();
     const riceHarvestCopy = getLayerDefinition("rice", "rice-harvest")?.mapEncodingDescription;
     expect(riceHarvestCopy).toBe(
-      "都道府県の一般化された地域形状を収穫量の濃淡で表示します。境界線と都道府県名から対象地域を確認できます。"
+      "収穫量を10万トン刻みの5段階で表示します。金色が明るいほど多く、灰色はデータなしです。境界は一般化した地理的な表現です。"
     );
     expect(riceHarvestCopy).not.toMatch(/代表点|行政区域ポリゴン|精密/);
     expect(getLayerDefinition("logistics", "logistics-domestic")?.mapEncodingDescription).toMatch(

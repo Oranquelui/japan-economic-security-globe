@@ -18,6 +18,7 @@ interface ScopeContextPanelProps {
   activeSummary: ActiveLayerSummary;
   comparisonAvailable: boolean;
   logisticsRouteOverview?: ReactNode;
+  readingOverview?: ReactNode;
   onLayerChange: (id: SemanticLayerId) => void;
   onOpenComparison: () => void;
   onOpenSignals: () => void;
@@ -33,6 +34,7 @@ export function ScopeContextPanel({
   activeSummary,
   comparisonAvailable,
   logisticsRouteOverview,
+  readingOverview,
   onLayerChange,
   onOpenComparison,
   onOpenSignals,
@@ -50,7 +52,7 @@ export function ScopeContextPanel({
   const resolvedComparisonAvailable = Boolean(activeLayer) && comparisonAvailable;
 
   return (
-    <div data-testid="scope-context-panel" className="h-full overflow-y-auto px-3 py-3">
+    <div data-testid="scope-context-panel" className="h-full min-w-0 overflow-y-auto px-5 py-5 break-words">
       <label className="block">
         <span
           className="font-mono text-[0.6rem] uppercase tracking-[0.28em]"
@@ -80,22 +82,6 @@ export function ScopeContextPanel({
         </select>
       </label>
 
-      {logisticsRouteOverview ? (
-        <div data-testid="scope-logistics-route-overview" className="mt-3">
-          {logisticsRouteOverview}
-        </div>
-      ) : null}
-
-      {activeLayer ? (
-        <div className="mt-3">
-          <ActiveLayerSummaryPanel
-            legend={activeLayer.legend}
-            summary={activeSummary}
-            themePalette={themePalette}
-          />
-        </div>
-      ) : null}
-
       <div className="mt-3 border-t pt-3" style={{ borderColor: themePalette.borderSubtle }}>
         <SemanticLayerDeck
           activeLayerId={resolvedActiveLayerId}
@@ -104,6 +90,28 @@ export function ScopeContextPanel({
           themePalette={themePalette}
         />
       </div>
+
+      {readingOverview}
+
+      {logisticsRouteOverview ? (
+        <div data-testid="scope-logistics-route-overview" className="mt-3">
+          {logisticsRouteOverview}
+        </div>
+      ) : null}
+
+      {activeLayer ? (
+        <details className="mt-4" open={!readingOverview}>
+          <summary className="cursor-pointer py-2 text-xs text-slate-300">凡例・数値の定義・出典</summary>
+        <div className="mt-3">
+          <ActiveLayerSummaryPanel
+            legend={activeLayer.legend}
+            summary={activeSummary}
+            themePalette={themePalette}
+          />
+        </div>
+        </details>
+      ) : null}
+
 
       <div className="mt-3 grid grid-cols-2 gap-2">
         <SecondaryAction actionId="signals" label="シグナルを見る" onClick={onOpenSignals} themePalette={themePalette} />

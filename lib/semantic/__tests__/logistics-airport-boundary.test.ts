@@ -63,14 +63,16 @@ describe("logistics airport boundary", () => {
     }
   });
 
-  test("keeps airport operations delayed and aggregate without aircraft or passenger tracking fields", () => {
+  test("keeps airport seed explicitly static without pretending to fetch current operations", () => {
     const airportEvents = loadSeedLiveLogistics().filter((event) => event.kindLabel === "空港運用");
 
     expect(airportEvents.map((event) => event.id)).toEqual(["live-logistics:airport-haneda-narita-ops"]);
     expect(airportEvents[0]).toMatchObject({
       laneId: "air",
       themeIds: ["logistics"],
-      disclosureLabel: "公開集約 / airport-level only / delayed"
+      evidenceClass: "fixed-demo",
+      sourceFreshness: "固定デモ・更新なし",
+      disclosureLabel: "固定デモ / 空港単位 / 現在情報ではありません"
     });
     expect(airportEvents[0].currentPosition).toBeUndefined();
     expect(JSON.stringify(airportEvents)).not.toMatch(/flight|tail|passenger|military|軍用機|旅客|個別便/i);
@@ -93,7 +95,7 @@ describe("logistics airport boundary", () => {
       ].filter(Boolean).join(" / ");
 
       expect(exposedCopy).toContain("固定デモ");
-      expect(exposedCopy).toContain("代表経路");
+      if (event.kindLabel !== "空港運用") expect(exposedCopy).toContain("代表経路");
       expect(exposedCopy).toContain("更新予定なし");
       expect(event.disclosureLabel).toContain("現在情報ではありません");
       expect(exposedCopy).not.toMatch(/今日|監視中|次回更新|\d+分前/);

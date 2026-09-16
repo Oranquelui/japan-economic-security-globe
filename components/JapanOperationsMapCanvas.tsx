@@ -25,6 +25,8 @@ import type {
   RepresentativeRadiusMapRegion
 } from "../lib/presentation/map-canvas";
 import type { StatusPalette, ThemePalette } from "../lib/presentation/palette";
+import { RICE_HARVEST_BINS, RICE_MISSING_COLOR } from "../lib/presentation/rice-harvest-scale";
+import { splitRouteAtAntimeridian } from "../lib/presentation/antimeridian";
 import { buildMaritimeRouteCoordinates, densifyGeodesicPolyline, type LonLat } from "../lib/presentation/route-geometry";
 import type { MapHoverViewModel, MapPopupAnchor } from "../types/presentation";
 import { buildOperationsBasemapStyle } from "../lib/presentation/basemap-style";
@@ -69,7 +71,6 @@ const EMPTY_FEATURE_COLLECTION = Object.freeze({
 });
 const EMPTY_PREFECTURE_LABEL_SOURCES = Object.freeze({
   labelPoints: EMPTY_FEATURE_COLLECTION as unknown as GeoJSONSourceSpecification["data"],
-  leaderLines: EMPTY_FEATURE_COLLECTION as unknown as GeoJSONSourceSpecification["data"],
   selectedLabelPoints: EMPTY_FEATURE_COLLECTION as unknown as GeoJSONSourceSpecification["data"]
 });
 const INTERACTIVE_SEMANTIC_LAYER_IDS = [
@@ -206,6 +207,7 @@ export function JapanOperationsMapCanvas({
 
   useEffect(() => {
     let disposed = false;
+    let resizeObserver: ResizeObserver | null = null;
     let installedDiagnostics: PrefectureMapDiagnostics | null = null;
     let diagnosticsContainer: PrefectureMapDiagnosticsContainer | null = null;
     const interactionSubscriptions: Array<{ unsubscribe: () => void }> = [];
@@ -256,6 +258,13 @@ export function JapanOperationsMapCanvas({
       map.addControl(new maplibre.AttributionControl({ compact: true }), "bottom-left");
 
       mapRef.current = map;
+      if (typeof ResizeObserver !== "undefined") {
+        resizeObserver = new ResizeObserver(() => {
+          map.resize();
+          if (latestMapModeRef.current === "choropleth" && latestModelRef.current.regions.some(region => region.geometryKind === "prefecture-boundary")) fitJapanOverview(map);
+        });
+        resizeObserver.observe(containerRef.current);
+      }
 
       map.on("zoomend", () => {
         zoomRef.current = map.getZoom();
@@ -301,10 +310,6 @@ export function JapanOperationsMapCanvas({
         map.addSource("jp-prefecture-selected-labels", {
           type: "geojson",
           data: prefectureSources.labels.selectedLabelPoints
-        });
-        map.addSource("jp-prefecture-leaders", {
-          type: "geojson",
-          data: prefectureSources.labels.leaderLines
         });
 
         map.addSource("global-points", {
@@ -395,32 +400,19 @@ export function JapanOperationsMapCanvas({
         });
 
         map.addLayer({
-          id: "jp-prefecture-leader-line",
-          type: "line",
-          source: "jp-prefecture-leaders",
-          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
-          maxzoom: PREFECTURE_LABEL_MAX_ZOOM,
-          layout: {
-            "line-cap": "round",
-            "line-join": "round"
-          },
-          paint: {
-            ...getPrefectureLeaderLinePaint(themePalette, statusPalette)
-          }
-        }, "jp-prefecture-selected-outline");
-
-        map.addLayer({
           id: "jp-prefecture-label",
           type: "symbol",
           source: "jp-prefecture-labels",
           minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
           maxzoom: PREFECTURE_LABEL_MAX_ZOOM,
+          filter: ["!=", ["get", "selected"], true],
           layout: {
             "text-field": ["get", "label"],
             "text-size": PREFECTURE_LABEL_FONT_SIZE,
             "text-anchor": "center",
-            "text-allow-overlap": true,
-            "text-ignore-placement": true
+            "text-allow-overlap": false,
+            "text-ignore-placement": false,
+            "text-padding": 3
           },
           paint: {
             ...getPrefectureLabelPaint(themePalette)
@@ -431,14 +423,14 @@ export function JapanOperationsMapCanvas({
           id: "jp-prefecture-selected-label",
           type: "symbol",
           source: "jp-prefecture-selected-labels",
-          minzoom: PREFECTURE_LABEL_MAX_ZOOM,
+          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
           filter: ["==", ["get", "selected"], true],
           layout: {
             "text-field": ["get", "label"],
             "text-size": PREFECTURE_LABEL_FONT_SIZE + 1,
             "text-anchor": "center",
             "text-allow-overlap": true,
-            "text-ignore-placement": true
+            "text-ignore-placement": false
           },
           paint: {
             ...getPrefectureSelectedLabelPaint(statusPalette)
@@ -1110,7 +1102,7 @@ export function JapanOperationsMapCanvas({
           },
           paint: {
             "text-color": "#23303b",
-            "text-halo-color": "rgba(250,252,255,0.98)",
+            "text-halo-color": "rgba(12,24,34,0.95)",
             "text-halo-width": 1.7
           }
         });
@@ -1222,6 +1214,7 @@ export function JapanOperationsMapCanvas({
           startRouteScanAnimation(map, scanPhaseRef, scanRafRef);
         }
 
+        if (mapMode === "choropleth" && model.regions.some(region => region.geometryKind === "prefecture-boundary")) fitJapanOverview(map);
         if (focusTargetId) {
           focusMapOnSelection(map, model, focusTargetId, mapMode, zoomRef.current, fitInsets);
         }
@@ -1232,6 +1225,7 @@ export function JapanOperationsMapCanvas({
 
     return () => {
       disposed = true;
+      resizeObserver?.disconnect();
       const map = mapRef.current;
       if (map) {
         map.off("mouseenter", "jp-cluster-circle", handleClusterMouseEnter);
@@ -1364,7 +1358,6 @@ export function JapanOperationsMapCanvas({
     applyPaintObject(map, "jp-prefecture-fill", getPrefectureFillPaint(themePalette, statusPalette));
     applyPaintObject(map, "jp-prefecture-outline", getPrefectureOutlinePaint(themePalette));
     applyPaintObject(map, "jp-prefecture-selected-outline", getPrefectureSelectedOutlinePaint(statusPalette));
-    applyPaintObject(map, "jp-prefecture-leader-line", getPrefectureLeaderLinePaint(themePalette, statusPalette));
     applyPaintObject(map, "jp-prefecture-label", getPrefectureLabelPaint(themePalette));
     applyPaintObject(map, "jp-prefecture-selected-label", getPrefectureSelectedLabelPaint(statusPalette));
     applyPaintObject(map, "jp-region-fill", getRegionFillPaint(themePalette));
@@ -1423,7 +1416,6 @@ export function JapanOperationsMapCanvas({
       }
       updateSource(map, "jp-prefecture-labels", prefectureSources.labels.labelPoints);
       updateSource(map, "jp-prefecture-selected-labels", prefectureSources.labels.selectedLabelPoints);
-      updateSource(map, "jp-prefecture-leaders", prefectureSources.labels.leaderLines);
       setPrefectureGeometryUnavailable(prefectureSources.unavailable);
     }
     updateSource(map, "jp-regions", representativeRadiusRegionsToFeatureCollection(model.regions, activeId));
@@ -1480,6 +1472,10 @@ export function JapanOperationsMapCanvas({
       return;
     }
 
+    if (mapMode === "choropleth" && model.regions.some(region => region.geometryKind === "prefecture-boundary")) {
+      fitJapanOverview(map);
+      return;
+    }
     map.easeTo({
       center: INITIAL_CENTER,
       zoom: INITIAL_ZOOM,
@@ -1571,7 +1567,6 @@ function applyModeVisibility(
   map.setLayoutProperty("jp-prefecture-fill", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-prefecture-outline", "visibility", visibility(showRegions));
   map.setLayoutProperty("jp-prefecture-selected-outline", "visibility", visibility(showRegions));
-  map.setLayoutProperty("jp-prefecture-leader-line", "visibility", visibility(showRegions && showPrefectureLabels));
   map.setLayoutProperty("jp-prefecture-label", "visibility", visibility(showRegions && showPrefectureLabels));
   map.setLayoutProperty("jp-prefecture-selected-label", "visibility", visibility(showRegions && showPrefectureLabels));
   map.setLayoutProperty("jp-region-fill", "visibility", visibility(showRegions));
@@ -1649,11 +1644,16 @@ function installPrefectureMapDiagnostics(
       top: exclusion.top - rect.top,
       bottom: exclusion.bottom - rect.top
     }));
-    const projected = inspectProjectedPrefectureLabelLayout(PREFECTURE_LABEL_LAYOUT, {
-      center: [center.lng, center.lat],
-      zoom: map.getZoom(),
-      viewport
-    }, localExclusions);
+    const labelFeatures = queryRenderedLayerFeatures(map, [
+      "jp-prefecture-label",
+      "jp-prefecture-selected-label"
+    ]);
+    const renderedLabelIds = new Set(uniqueRenderedEntityIds(labelFeatures));
+    const projected = inspectProjectedPrefectureLabelLayout(
+      PREFECTURE_LABEL_LAYOUT.filter((entry) => renderedLabelIds.has(entry.entityId)),
+      { center: [center.lng, center.lat], zoom: map.getZoom(), viewport },
+      localExclusions
+    );
     const collisionReport = {
       ...projected,
       boxes: projected.boxes.map((box) => ({
@@ -1664,10 +1664,6 @@ function installPrefectureMapDiagnostics(
         bottom: box.bottom + rect.top
       }))
     };
-    const labelFeatures = queryRenderedLayerFeatures(map, [
-      "jp-prefecture-label",
-      "jp-prefecture-selected-label"
-    ]);
     const polygonFeatures = queryRenderedLayerFeatures(map, ["jp-prefecture-fill"]);
     const representativeRegionFeatures = queryRenderedLayerFeatures(map, ["jp-region-fill"]);
     const renderedByEntityId = new Map<string, {
@@ -1757,7 +1753,6 @@ function installPrefectureMapDiagnostics(
             );
             updateSource(map, "jp-prefecture-labels", labels.labelPoints);
             updateSource(map, "jp-prefecture-selected-labels", labels.selectedLabelPoints);
-            updateSource(map, "jp-prefecture-leaders", labels.leaderLines);
             await waitForMapIdle(map);
           }
         }
@@ -2224,29 +2219,16 @@ function getDomesticRoutePaint(themePalette: ThemePalette, statusPalette: Status
   };
 }
 
-function getPrefectureFillPaint(themePalette: ThemePalette, statusPalette: StatusPalette): any {
-  const visibleOpacity = [
-    "case",
-    ["boolean", ["get", "selected"], false],
-    0.78,
-    [
-      "case",
-      ["==", ["get", "value"], null],
-      0.34,
-      ["interpolate", ["linear"], ["get", "value"], 0, 0.18, 100, 0.62]
-    ]
-  ];
+function fitJapanOverview(map: import("maplibre-gl").Map) {
+  map.fitBounds([[122.8, 24], [146.2, 45.8]], {padding: {top:40,right:35,bottom:55,left:35}, maxZoom:5.2, duration:0});
+}
 
+function getPrefectureFillPaint(_themePalette: ThemePalette, _statusPalette: StatusPalette): any {
+  // Absolute tonnage classes keep the nationwide legend stable; selection uses an outline.
   return {
-    "fill-color": [
-      "case",
-      ["boolean", ["get", "selected"], false],
-      statusPalette.selected,
-      ["==", ["get", "value"], null],
-      "rgba(116, 126, 137, 0.28)",
-      themePalette.accent
-    ],
-    "fill-opacity": getPrefectureZoomFadeOpacity(visibleOpacity)
+    "fill-color": ["case", ["==", ["get", "rawValue"], null], RICE_MISSING_COLOR,
+      ["step", ["get", "rawValue"], RICE_HARVEST_BINS[0].color, ...RICE_HARVEST_BINS.slice(1).flatMap(bin => [bin.min, bin.color])]],
+    "fill-opacity": getPrefectureZoomFadeOpacity(["case", ["boolean", ["get", "selected"], false], 0.98, 0.9])
   };
 }
 
@@ -2271,30 +2253,15 @@ function getPrefectureSelectedOutlinePaint(statusPalette: StatusPalette): any {
   };
 }
 
-function getPrefectureLeaderLinePaint(themePalette: ThemePalette, statusPalette: StatusPalette): any {
-  return {
-    "line-color": [
-      "case",
-      ["boolean", ["get", "selected"], false],
-      statusPalette.selected,
-      ["==", ["get", "value"], null],
-      "rgba(125, 137, 149, 0.72)",
-      themePalette.accent
-    ],
-    "line-opacity": ["case", ["boolean", ["get", "selected"], false], 0.95, 0.68],
-    "line-width": ["case", ["boolean", ["get", "selected"], false], 1.8, 1]
-  };
-}
-
 function getPrefectureLabelPaint(themePalette: ThemePalette): any {
   return {
     "text-color": [
       "case",
       ["==", ["get", "value"], null],
       "#697580",
-      themePalette.accent
+      "#f4f1e6"
     ],
-    "text-halo-color": "rgba(250,252,255,0.98)",
+    "text-halo-color": "rgba(12,24,34,0.95)",
     "text-halo-width": 1.8,
     "text-halo-blur": 0.25
   };
@@ -2302,8 +2269,8 @@ function getPrefectureLabelPaint(themePalette: ThemePalette): any {
 
 function getPrefectureSelectedLabelPaint(statusPalette: StatusPalette): any {
   return {
-    "text-color": statusPalette.selected,
-    "text-halo-color": "rgba(250,252,255,0.99)",
+    "text-color": "#ffffff",
+    "text-halo-color": "rgba(12,24,34,0.95)",
     "text-halo-width": 2.4,
     "text-halo-blur": 0.2
   };
@@ -2458,14 +2425,16 @@ function routesToFeatureCollection(routes: JapanMapRoute[], points: JapanMapPoin
           return null;
         }
 
-        const coordinates = buildRouteCoordinates(route, anchors);
+        const parts = splitRouteAtAntimeridian(buildRouteCoordinates(route, anchors));
+        if (parts.length === 0) {
+          return null;
+        }
 
         return {
           type: "Feature" as const,
-          geometry: {
-            type: "LineString" as const,
-            coordinates
-          },
+          geometry: parts.length === 1
+            ? { type: "LineString" as const, coordinates: parts[0] }
+            : { type: "MultiLineString" as const, coordinates: parts },
           properties: {
             id: route.id,
             label: route.label,
@@ -2693,10 +2662,6 @@ function buildPrefectureLabelSources(
     selectedLabelPoints: {
       ...collections.selectedLabelPoints,
       features: collections.selectedLabelPoints.features.map(addMetricState)
-    },
-    leaderLines: {
-      ...collections.leaderLines,
-      features: collections.leaderLines.features.map(addMetricState)
     }
   };
 }

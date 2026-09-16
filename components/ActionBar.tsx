@@ -32,7 +32,7 @@ export function ActionBar({
       />
 
       <div className="flex min-w-0 items-center gap-4">
-        <h1 className="ops-title shrink-0 text-[1.05rem] text-white">日本レジリエンス地図</h1>
+        <h1 className="shrink-0 text-xl font-semibold tracking-[0.05em] text-white">日本レジリエンス地図</h1>
         <span aria-hidden="true" className="h-5 w-px" style={{ background: themePalette.borderStrong }} />
         <p className="truncate text-[0.78rem] font-medium" style={{ color: themePalette.textMuted }}>
           {currentViewLabel}

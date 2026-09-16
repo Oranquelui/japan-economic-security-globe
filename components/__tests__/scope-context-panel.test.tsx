@@ -70,7 +70,7 @@ describe("ScopeContextPanel", () => {
     expect(screen.queryByText("監視インボックス")).toBeNull();
     expect(panel.querySelectorAll("[data-prefecture-row]")).toHaveLength(0);
     expect(themeSelect.compareDocumentPosition(activeSummary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(activeSummary.compareDocumentPosition(layerRegion) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(layerRegion.compareDocumentPosition(activeSummary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(layerRegion.compareDocumentPosition(signalsAction) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 

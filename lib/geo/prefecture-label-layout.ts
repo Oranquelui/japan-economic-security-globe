@@ -3,7 +3,6 @@ import { prefectureBoundaryCollection } from "./prefecture-boundaries";
 
 export const PREFECTURE_LABEL_FONT_SIZE = 12;
 export const PREFECTURE_LABEL_LINE_HEIGHT = 18;
-export const PREFECTURE_LABEL_LEADER_THRESHOLD_PX = 28;
 
 type Coordinate = readonly [number, number];
 
@@ -11,8 +10,7 @@ export type PrefectureLabelLayoutEntry = Readonly<{
   prefectureCode: `JP-${string}`;
   entityId: `prefecture:${string}`;
   label: string;
-  targetAnchor: Coordinate;
-  displayAnchor: Coordinate;
+  anchor: Coordinate;
 }>;
 
 export type PrefectureLabelProjection = Readonly<{
@@ -44,12 +42,6 @@ type LabelProperties = Readonly<{
   label: string;
   selected: boolean;
 }>;
-
-const DEFAULT_PROJECTION: PrefectureLabelProjection = {
-  center: [138.45, 35],
-  zoom: 5,
-  viewport: { width: 1440, height: 900 }
-};
 
 const JAPAN_LAYOUT_BOUNDS = Object.freeze({
   minLongitude: 122,
@@ -125,22 +117,19 @@ export function assertPrefectureLabelLayout(
       );
     }
 
-    assertLayoutCoordinate(record.targetAnchor, prefectureCode, "targetAnchor");
-    assertLayoutCoordinate(record.displayAnchor, prefectureCode, "displayAnchor");
+    assertLayoutCoordinate(record.anchor, prefectureCode);
   }
 }
 
 export function loadPrefectureLabelLayout(value: unknown): readonly PrefectureLabelLayoutEntry[] {
   assertPrefectureLabelLayout(value);
   const cloned = value.map((entry): PrefectureLabelLayoutEntry => {
-    const targetAnchor: Coordinate = Object.freeze([entry.targetAnchor[0], entry.targetAnchor[1]]);
-    const displayAnchor: Coordinate = Object.freeze([entry.displayAnchor[0], entry.displayAnchor[1]]);
+    const anchor: Coordinate = Object.freeze([entry.anchor[0], entry.anchor[1]]);
     return Object.freeze({
       prefectureCode: entry.prefectureCode,
       entityId: entry.entityId,
       label: entry.label,
-      targetAnchor,
-      displayAnchor
+      anchor
     });
   });
   return Object.freeze(cloned);
@@ -150,14 +139,13 @@ export const prefectureLabelLayout = loadPrefectureLabelLayout(importedPrefectur
 
 export function buildPrefectureLabelFeatureCollections(
   entries: readonly PrefectureLabelLayoutEntry[],
-  activeId: string,
-  projection: PrefectureLabelProjection = DEFAULT_PROJECTION
+  activeId: string
 ) {
   const labelPoints = entries.map((entry) => ({
     type: "Feature" as const,
     geometry: {
       type: "Point" as const,
-      coordinates: [...entry.displayAnchor] as [number, number]
+      coordinates: [...entry.anchor] as [number, number]
     },
     properties: buildProperties(entry, activeId)
   }));
@@ -167,20 +155,7 @@ export function buildPrefectureLabelFeatureCollections(
       type: "Feature" as const,
       geometry: {
         type: "Point" as const,
-        coordinates: [...entry.targetAnchor] as [number, number]
-      },
-      properties: buildProperties(entry, activeId)
-    }));
-  const leaderLines = entries
-    .filter((entry) => projectedDisplacement(entry, projection) >= PREFECTURE_LABEL_LEADER_THRESHOLD_PX)
-    .map((entry) => ({
-      type: "Feature" as const,
-      geometry: {
-        type: "LineString" as const,
-        coordinates: [
-          [...entry.targetAnchor] as [number, number],
-          [...entry.displayAnchor] as [number, number]
-        ]
+        coordinates: [...entry.anchor] as [number, number]
       },
       properties: buildProperties(entry, activeId)
     }));
@@ -193,10 +168,6 @@ export function buildPrefectureLabelFeatureCollections(
     selectedLabelPoints: {
       type: "FeatureCollection" as const,
       features: selectedLabelPoints
-    },
-    leaderLines: {
-      type: "FeatureCollection" as const,
-      features: leaderLines
     }
   };
 }
@@ -208,7 +179,7 @@ export function inspectProjectedPrefectureLabelLayout(
 ) {
   const boxes = entries.map((entry) => {
     const point = projectPrefectureLabelAnchor(
-      entry.displayAnchor,
+      entry.anchor,
       projection.center,
       projection.zoom,
       projection.viewport
@@ -262,36 +233,19 @@ export function projectPrefectureLabelAnchor(
   };
 }
 
-function projectedDisplacement(entry: PrefectureLabelLayoutEntry, projection: PrefectureLabelProjection) {
-  const target = projectPrefectureLabelAnchor(
-    entry.targetAnchor,
-    projection.center,
-    projection.zoom,
-    projection.viewport
-  );
-  const display = projectPrefectureLabelAnchor(
-    entry.displayAnchor,
-    projection.center,
-    projection.zoom,
-    projection.viewport
-  );
-  return Math.hypot(display.x - target.x, display.y - target.y);
-}
-
 function assertLayoutCoordinate(
   value: unknown,
-  prefectureCode: string,
-  anchorName: "targetAnchor" | "displayAnchor"
+  prefectureCode: string
 ): asserts value is Coordinate {
   if (!Array.isArray(value) || value.length !== 2) {
     throw new Error(
-      `Invalid prefecture label layout: prefectureCode ${prefectureCode} ${anchorName} must be a two-coordinate tuple`
+      `Invalid prefecture label layout: prefectureCode ${prefectureCode} anchor must be a two-coordinate tuple`
     );
   }
   const [longitude, latitude] = value;
   if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
     throw new Error(
-      `Invalid prefecture label layout: prefectureCode ${prefectureCode} ${anchorName} must contain finite coordinates`
+      `Invalid prefecture label layout: prefectureCode ${prefectureCode} anchor must contain finite coordinates`
     );
   }
   if (
@@ -301,7 +255,7 @@ function assertLayoutCoordinate(
     || latitude > JAPAN_LAYOUT_BOUNDS.maxLatitude
   ) {
     throw new Error(
-      `Invalid prefecture label layout: prefectureCode ${prefectureCode} ${anchorName} must stay within Japan bounds`
+      `Invalid prefecture label layout: prefectureCode ${prefectureCode} anchor must stay within Japan bounds`
     );
   }
 }

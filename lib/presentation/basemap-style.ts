@@ -7,7 +7,7 @@ import type {
   StyleSpecification
 } from "maplibre-gl";
 import { feature } from "topojson-client";
-import countries110m from "world-atlas/countries-110m.json";
+import countries110m from "world-atlas/land-50m.json";
 
 import type { ThemePalette } from "./palette";
 
@@ -39,7 +39,7 @@ export function buildOperationsBasemapStyle(
           type: "fill",
           source: "world-land",
           paint: {
-            "fill-color": "rgba(92, 128, 148, 0.12)",
+            "fill-color": "rgba(52, 76, 94, 0.42)",
             "fill-opacity": 1
           }
         },
@@ -111,9 +111,9 @@ export function buildOperationsBasemapStyle(
       type: "raster",
       source: "terrain-shaded-relief",
       paint: {
-        "raster-opacity": 0.34,
+        "raster-opacity": 0.07,
         "raster-brightness-min": 0.08,
-        "raster-brightness-max": 0.82,
+        "raster-brightness-max": 0.4,
         "raster-saturation": -0.28,
         "raster-fade-duration": 0
       }
@@ -124,9 +124,9 @@ export function buildOperationsBasemapStyle(
       source: "terrain-contours",
       minzoom: 2.4,
       paint: {
-        "raster-opacity": 0.22,
+        "raster-opacity": 0.04,
         "raster-brightness-min": 0.1,
-        "raster-brightness-max": 0.78,
+        "raster-brightness-max": 0.4,
         "raster-saturation": -0.35,
         "raster-fade-duration": 0
       }
@@ -136,9 +136,9 @@ export function buildOperationsBasemapStyle(
       type: "raster",
       source: "gray-canvas-base",
       paint: {
-        "raster-opacity": 0.28,
+        "raster-opacity": 0.06,
         "raster-brightness-min": 0.05,
-        "raster-brightness-max": 0.72,
+        "raster-brightness-max": 0.4,
         "raster-saturation": -0.45,
         "raster-fade-duration": 0
       }
@@ -148,7 +148,7 @@ export function buildOperationsBasemapStyle(
       type: "fill",
       source: "world-land",
       paint: {
-        "fill-color": "rgba(92, 128, 148, 0.12)",
+        "fill-color": "rgba(52, 76, 94, 0.42)",
         "fill-opacity": 1
       }
     },
@@ -158,7 +158,7 @@ export function buildOperationsBasemapStyle(
       source: "gray-canvas-reference",
       minzoom: 6.6,
       paint: {
-        "raster-opacity": 0.28,
+        "raster-opacity": 0.06,
         "raster-brightness-min": 0.08,
         "raster-brightness-max": 0.8,
         "raster-saturation": -0.3,
