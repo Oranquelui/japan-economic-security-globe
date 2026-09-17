@@ -369,7 +369,7 @@ export function JapanOperationsMapCanvas({
           id: "jp-prefecture-fill",
           type: "fill",
           source: "jp-prefectures",
-          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          minzoom: 0,
           maxzoom: PREFECTURE_POLYGON_MAX_ZOOM,
           paint: {
             ...getPrefectureFillPaint(themePalette, statusPalette)
@@ -380,7 +380,7 @@ export function JapanOperationsMapCanvas({
           id: "jp-prefecture-outline",
           type: "line",
           source: "jp-prefectures",
-          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          minzoom: 0,
           maxzoom: PREFECTURE_POLYGON_MAX_ZOOM,
           paint: {
             ...getPrefectureOutlinePaint(themePalette)
@@ -391,7 +391,7 @@ export function JapanOperationsMapCanvas({
           id: "jp-prefecture-selected-outline",
           type: "line",
           source: "jp-prefectures",
-          minzoom: DOMESTIC_CONTEXT_MIN_ZOOM,
+          minzoom: 0,
           maxzoom: PREFECTURE_POLYGON_MAX_ZOOM,
           filter: ["==", ["get", "selected"], true],
           paint: {

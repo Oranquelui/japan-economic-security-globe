@@ -368,7 +368,7 @@ describe("map inbox structure", () => {
     }).getAttribute("aria-pressed")).toBe("true");
   });
 
-  test("preserves the public delayed posture for an exact official airport selection", () => {
+  test("does not present the static airport seed as a delayed operational feed", () => {
     const seedLogistics = buildLiveLogisticsView(
       "logistics",
       "live-logistics:airport-haneda-narita-ops",
@@ -395,10 +395,10 @@ describe("map inbox structure", () => {
     const primary = within(scenarioBoard).getByRole("button", {
       name: /代表シナリオ 空港運用: 羽田・成田 貨物\/滑走路集約/
     });
-    expect(primary.getAttribute("aria-label")).toContain("公的公開情報 遅延集約 現在情報ではありません");
-    expect(primary.textContent).toContain("公的公開情報");
-    expect(primary.textContent).toContain("遅延集約");
-    expect(primary.textContent).not.toContain("固定デモ");
+    expect(primary.getAttribute("aria-label")).toContain("固定デモ 現在情報ではありません");
+    expect(primary.textContent).not.toContain("公的公開情報");
+    expect(primary.textContent).not.toContain("遅延集約");
+    expect(primary.textContent).toContain("固定デモ");
     expect(scenarioBoard.textContent).not.toMatch(/今日|監視中|次回更新|\d+分前/);
   });
 

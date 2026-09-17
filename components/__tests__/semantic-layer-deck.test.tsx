@@ -31,7 +31,7 @@ describe("SemanticLayerDeck", () => {
     );
 
     expect(screen.getByRole("group", { name: "表示レイヤー" })).toBeTruthy();
-    expect(screen.getByRole("group", { name: "表示レイヤー" }).className).toContain("grid-cols-1");
+    expect(screen.getByRole("group", { name: "表示レイヤー" }).className).toContain("grid-cols-2");
     expect(screen.getByRole("button", { name: "収穫量" }).getAttribute("aria-pressed")).toBe("true");
 
     await userEvent.click(screen.getByRole("button", { name: "価格" }));
