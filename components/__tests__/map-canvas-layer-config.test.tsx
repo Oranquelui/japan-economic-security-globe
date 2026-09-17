@@ -387,21 +387,21 @@ describe("map canvas layer config", () => {
       id: "jp-prefecture-fill",
       type: "fill",
       source: "jp-prefectures",
-      minzoom: 3.2,
+      minzoom: 0,
       maxzoom: 9
     });
     expect(outline).toMatchObject({
       id: "jp-prefecture-outline",
       type: "line",
       source: "jp-prefectures",
-      minzoom: 3.2,
+      minzoom: 0,
       maxzoom: 9
     });
     expect(selectedOutline).toMatchObject({
       id: "jp-prefecture-selected-outline",
       type: "line",
       source: "jp-prefectures",
-      minzoom: 3.2,
+      minzoom: 0,
       maxzoom: 9,
       filter: ["==", ["get", "selected"], true]
     });

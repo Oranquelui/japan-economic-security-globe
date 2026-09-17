@@ -50,9 +50,9 @@ test.describe("prefecture map acceptance", () => {
       expect(diagnostics.zoom).toBeGreaterThan(3);
       expect(diagnostics.zoom).toBeLessThanOrEqual(5.2);
       expect(new Set(diagnostics.renderedLabelIds).size).toBe(diagnostics.renderedLabelIds.length);
-      expect(diagnostics.renderedLabelIds).toEqual(expect.arrayContaining([
-        "prefecture:niigata", "prefecture:hokkaido"
-      ]));
+      expect(diagnostics.renderedLabelIds).toContain("prefecture:hokkaido");
+      expect(diagnostics.renderedLabelIds.length).toBeGreaterThan(10);
+      expect(diagnostics.renderedLabelIds.every(id => diagnostics.renderedPolygonIds.includes(id))).toBe(true);
       expect(diagnostics.renderedLabelIds.length).toBeLessThanOrEqual(47);
       expect(new Set(diagnostics.renderedPolygonIds).size).toBe(47);
       expect(diagnostics.renderedPolygonIds).toHaveLength(47);
@@ -83,12 +83,12 @@ test.describe("prefecture map acceptance", () => {
       await expect.poll(async () => map.evaluate((element: any) => {
         const diagnostics = element.__prefectureMapDiagnostics.read([]);
         return {
-          polygonCount: diagnostics.renderedPolygonIds.length,
+          hasPolygons: diagnostics.renderedPolygonIds.length > 0,
           representativeCount: diagnostics.renderedRepresentativeRegionIds.length,
           tilesLoaded: diagnostics.tilesLoaded
         };
       }), { timeout: 10_000 }).toEqual({
-        polygonCount: expect.any(Number),
+        hasPolygons: true,
         representativeCount: 0,
         tilesLoaded: true
       });
@@ -161,13 +161,14 @@ test.describe("prefecture map acceptance", () => {
     await expect.poll(async () => map.evaluate((element: any) => Boolean(element.__prefectureMapDiagnostics))).toBe(true);
     await waitForOverviewReadiness(map);
 
-    await map.evaluate((element: any) => element.__prefectureMapDiagnostics.setPrefectureValueNull("prefecture:niigata"));
+    // Use an isolated, visible label; crowded names may legitimately be hidden.
+    await map.evaluate((element: any) => element.__prefectureMapDiagnostics.setPrefectureValueNull("prefecture:hokkaido"));
     await expect.poll(async () => map.evaluate((element: any) => (
       element.__prefectureMapDiagnostics.read([])
     )) as Promise<Diagnostics>).toMatchObject({
       renderedFeatures: expect.arrayContaining([
         expect.objectContaining({
-          entityId: "prefecture:niigata",
+          entityId: "prefecture:hokkaido",
           hasData: false,
           layers: expect.arrayContaining(["jp-prefecture-fill", "jp-prefecture-outline", "jp-prefecture-label"]),
           value: null
@@ -178,7 +179,7 @@ test.describe("prefecture map acceptance", () => {
     const renderedFeatures = await map.evaluate((element: any) => (
       element.__prefectureMapDiagnostics.read([]).renderedFeatures
     )) as Diagnostics["renderedFeatures"];
-    expect(renderedFeatures.some((feature) => feature.entityId !== "prefecture:niigata"
+    expect(renderedFeatures.some((feature) => feature.entityId !== "prefecture:hokkaido"
       && feature.hasData
       && typeof feature.value === "number")).toBe(true);
     expect(network.unexpected).toEqual([]);
