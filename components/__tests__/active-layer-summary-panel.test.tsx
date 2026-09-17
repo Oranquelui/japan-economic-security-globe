@@ -77,7 +77,8 @@ describe("ActiveLayerSummaryPanel", () => {
     expect(screen.getByText("47都道府県")).toBeTruthy();
     expect(screen.getByText("令和5年産")).toBeTruthy();
     expect(screen.getByText("データなし")).toBeTruthy();
-    expect(screen.getByText(/都道府県の一般化された地域形状/)).toBeTruthy();
+    expect(screen.getByText(/収穫量を10万トン刻みの5段階/)).toBeTruthy();
+    expect(screen.getByText(/境界は一般化した地理的な表現/)).toBeTruthy();
     expect(screen.queryByText(/代表点|行政区域ポリゴン|精密/)).toBeNull();
     expect(screen.getAllByText("公式")).toHaveLength(1);
     expect(screen.getByText("97日前確認")).toBeTruthy();

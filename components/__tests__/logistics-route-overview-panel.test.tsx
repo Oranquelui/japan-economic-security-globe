@@ -64,9 +64,9 @@ describe("LogisticsRouteOverviewPanel", () => {
     const text = panel.textContent ?? "";
     expect(text).toContain("公式道路交通フィード未接続");
     expect(text).toContain("固定デモ");
-    expect(text).toContain("混合エビデンス");
-    expect(text).toContain("公的公開情報");
-    expect(text).toContain("遅延集約");
+    expect(text).not.toContain("混合エビデンス");
+    expect(text).not.toContain("公的公開情報");
+    expect(text).not.toContain("遅延集約");
     expect(text).toContain("現在情報ではありません");
     expect(text).toContain("更新なし");
     expect(text).toContain("到着見込み: データなし");
@@ -241,9 +241,10 @@ describe("LogisticsRouteOverviewPanel", () => {
     expect(roadRoute.getAttribute("aria-label")).toContain("固定デモ");
     expect(roadRoute.getAttribute("aria-label")).toContain("現在情報ではありません");
 
-    const officialAirportRoute = screen.getByRole("button", {
-      name: /航空 代表経路 空港運用: 羽田・成田 貨物\/滑走路集約 公的公開情報 遅延集約 現在情報ではありません/
+    const demoAirportRoute = screen.getByRole("button", {
+      name: /航空 代表経路 空港運用: 羽田・成田 貨物\/滑走路集約 固定デモ 現在情報ではありません/
     });
-    expect(officialAirportRoute.textContent).not.toMatch(/固定デモ|今日|監視中|次回更新|\d+分前/);
+    expect(demoAirportRoute.textContent).toContain("固定デモ");
+    expect(demoAirportRoute.textContent).not.toMatch(/公的公開情報|遅延集約|今日|監視中|次回更新|\d+分前/);
   });
 });

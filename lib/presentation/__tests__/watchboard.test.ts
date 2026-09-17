@@ -48,7 +48,7 @@ describe("watchboard presentation", () => {
       expect.objectContaining({
         rankLabel: "#5",
         themeId: "logistics",
-        themeLabel: "物流",
+        themeLabel: "交通・物流",
         title: "一般貨物・港湾後続 → 首都圏",
         sourceProofLabel: "根拠: Trade Statistics"
       })

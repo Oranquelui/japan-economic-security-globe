@@ -46,10 +46,12 @@ test.describe("prefecture map acceptance", () => {
         element.__prefectureMapDiagnostics.read(rectangles)
       ), exclusions) as Diagnostics;
 
-      expect(diagnostics.zoom).toBeCloseTo(5, 1);
+      // Overview fits the available map area, so zoom varies with the viewport.
+      expect(diagnostics.zoom).toBeGreaterThan(3);
+      expect(diagnostics.zoom).toBeLessThanOrEqual(5.2);
       expect(new Set(diagnostics.renderedLabelIds).size).toBe(diagnostics.renderedLabelIds.length);
       expect(diagnostics.renderedLabelIds).toEqual(expect.arrayContaining([
-        "prefecture:niigata", "prefecture:iwate", "prefecture:nagano"
+        "prefecture:niigata", "prefecture:hokkaido"
       ]));
       expect(diagnostics.renderedLabelIds.length).toBeLessThanOrEqual(47);
       expect(new Set(diagnostics.renderedPolygonIds).size).toBe(47);
@@ -57,7 +59,7 @@ test.describe("prefecture map acceptance", () => {
       expect(diagnostics.renderedRepresentativeRegionIds).toEqual([]);
       expect(diagnostics.tilesLoaded).toBe(true);
       expect(diagnostics.collisionReport.overlaps).toEqual([]);
-      // Names stay in their regions; the camera/panels may clip regions at this zoom.
+      expect(diagnostics.collisionReport.clipped).toEqual([]);
       // Crowded labels are revealed by zooming instead of being displaced into the sea.
       expect(network.unexpected).toEqual([]);
 
@@ -118,17 +120,15 @@ test.describe("prefecture map acceptance", () => {
 
     const initialUrl = page.url();
     const overview = await map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([])) as Diagnostics;
-    expect(overview.zoom).toBeCloseTo(5, 1);
+    expect(overview.zoom).toBeGreaterThan(3);
+    expect(overview.zoom).toBeLessThanOrEqual(5.2);
     expect(overview.renderedLabelIds).toContain("prefecture:tokyo");
     expect(page.url()).toBe(initialUrl);
 
-    await panInitialCoordinateToMapCenter(page, map, {
-      latitude: 35.69,
-      longitude: 139.69,
-      zoom: overview.zoom
-    });
+    await panLabelToMapCenter(page, map, "prefecture:tokyo");
     const zoomIn = page.locator('button[aria-label="地図を拡大"]:visible');
-    for (let index = 0; index < 4; index += 1) {
+    const zoomSteps = Math.ceil(9 - overview.zoom);
+    for (let index = 0; index < zoomSteps; index += 1) {
       await zoomIn.click();
       await expect.poll(async () => (
         map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([]).zoom)
@@ -143,11 +143,12 @@ test.describe("prefecture map acceptance", () => {
       zoom: expect.any(Number)
     });
     const detailed = await map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([])) as Diagnostics;
-    expect(detailed.zoom).toBeCloseTo(9, 1);
+    expect(detailed.zoom).toBeCloseTo(overview.zoom + zoomSteps, 1);
+    expect(detailed.zoom).toBeGreaterThanOrEqual(9);
     expect(detailed.renderedLabelIds).toEqual(["prefecture:tokyo"]);
     expect(detailed.renderedPolygonIds).toEqual([]);
     expect(detailed.tilesLoaded).toBe(true);
-    await map.click({ position: { x: 720, y: 450 } });
+    await map.click();
     expect(page.url()).toBe(initialUrl);
     expect(network.unexpected).toEqual([]);
   });
@@ -231,17 +232,19 @@ async function waitForOverviewReadiness(map: Locator) {
   });
 }
 
-async function panInitialCoordinateToMapCenter(
+async function panLabelToMapCenter(
   page: Page,
   map: Locator,
-  target: Readonly<{ latitude: number; longitude: number; zoom: number }>
+  entityId: string
 ) {
   const rect = await map.boundingBox();
   expect(rect).not.toBeNull();
-  const worldSize = 512 * (2 ** target.zoom);
+  const diagnostics = await map.evaluate((element: any) => element.__prefectureMapDiagnostics.read([])) as Diagnostics;
+  const label = diagnostics.collisionReport.boxes.find(box => box.entityId === entityId);
+  expect(label).toBeDefined();
   const start = {
-    x: rect!.x + rect!.width / 2 + (target.longitude - 138.45) / 360 * worldSize,
-    y: rect!.y + rect!.height / 2 + (mercatorY(target.latitude) - mercatorY(35)) * worldSize
+    x: (label!.left + label!.right) / 2,
+    y: (label!.top + label!.bottom) / 2
   };
   const center = {
     x: rect!.x + rect!.width / 2,
@@ -252,11 +255,6 @@ async function panInitialCoordinateToMapCenter(
   await page.mouse.down();
   await page.mouse.move(center.x, center.y, { steps: 12 });
   await page.mouse.up();
-}
-
-function mercatorY(latitude: number) {
-  const radians = latitude * Math.PI / 180;
-  return (1 - Math.log(Math.tan(radians) + 1 / Math.cos(radians)) / Math.PI) / 2;
 }
 
 async function installLocalNetworkGuard(page: Page) {
